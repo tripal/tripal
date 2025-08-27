@@ -25,6 +25,13 @@ use Drupal\tripal\Entity\TripalEntityType;
 class ChadoStockTypeDefault extends ChadoFieldItemBase {
 
   /**
+   * The id of this field. This must match what is in the attribute above.
+   *
+   * @var string
+   */
+  protected static $id = 'chado_stock_type_default';
+
+  /**
    * The linked table which is the object of this relationship.
    *
    * @var string
@@ -79,6 +86,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     // Create a variable for easy access to settings.
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'];
+    $field_id = self::$id;
 
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
@@ -160,7 +168,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     $properties = [];
 
     // Define the base table record id.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, 'record_id', self::$record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,
@@ -168,7 +176,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
 
     // This property will store the Drupal entity ID of the linked chado
     // record, if one exists.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'entity_id', self::$drupal_entity_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, 'entity_id', self::$drupal_entity_term, [
       'action' => 'function',
       'drupal_store' => TRUE,
       'namespace' => self::$chadostorage_namespace,
@@ -179,7 +187,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
 
     // Base table links directly.
     if ($base_table == $linker_table) {
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
         'path' => $base_table . '.' . $linker_fkey_column,
@@ -190,21 +198,21 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     // An intermediate linker table is used.
     else {
       // Define the linker table that links the base table to the object table.
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', self::$record_id_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, 'linker_id', self::$record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'path' => $linker_table . '.' . $linker_pkey_col,
       ]);
 
       // Define the link between the base table and the linker table.
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, 'link', $linker_left_term, [
         'action' => 'store_link',
         'drupal_store' => FALSE,
         'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
       ]);
 
       // Define the link between the linker table and the object table.
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
         'path' => $linker_table . '.' . $linker_fkey_column,
@@ -217,7 +225,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
       // rank, but are not present in all linker tables, so they are added
       // only if present in the linker table.
       foreach ($extra_linker_columns as $column => $term) {
-        $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
+        $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, 'linker_' . $column, $term, [
           'action' => 'store',
           'drupal_store' => FALSE,
           'path' => $linker_table . '.' . $column,
@@ -227,28 +235,28 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     }
 
     // The object table, the destination table of the linker table.
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_name', $name_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, $field_id, 'stock_name', $name_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';name',
       'as' => 'stock_name',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_uniquename', $uniquename_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, $field_id, 'stock_uniquename', $uniquename_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';uniquename',
       'as' => 'stock_uniquename',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_description', $description_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, $field_id, 'stock_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';description',
       'as' => 'stock_description',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_type', $stock_type_term, $stock_type_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, $field_id, 'stock_type', $stock_type_term, $stock_type_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
@@ -256,14 +264,14 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
       'as' => 'stock_type',
     ]);
 
-    $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'stock_is_obsolete', $is_obsolete_term, [
+    $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, $field_id, 'stock_is_obsolete', $is_obsolete_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';is_obsolete',
       'as' => 'stock_is_obsolete',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_genus', $genus_term, $genus_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, $field_id, 'stock_genus', $genus_term, $genus_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
@@ -271,7 +279,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
       'as' => 'stock_genus',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_species', $species_term, $species_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, $field_id, 'stock_species', $species_term, $species_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
@@ -279,7 +287,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
       'as' => 'stock_species',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_infraspecific_type', $infraspecific_type_term, $infraspecific_type_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, $field_id, 'stock_infraspecific_type', $infraspecific_type_term, $infraspecific_type_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
@@ -287,7 +295,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
       'as' => 'stock_infraspecific_type',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_infraspecific_name', $infraspecific_name_term, $infraspecific_name_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, $field_id, 'stock_infraspecific_name', $infraspecific_name_term, $infraspecific_name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
@@ -295,7 +303,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
       'as' => 'stock_infraspecific_name',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_abbreviation', $abbreviation_term, $abbreviation_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, $field_id, 'stock_abbreviation', $abbreviation_term, $abbreviation_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
@@ -303,7 +311,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
       'as' => 'stock_abbreviation',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_common_name', $common_name_term, $common_name_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, $field_id, 'stock_common_name', $common_name_term, $common_name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
@@ -311,7 +319,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
       'as' => 'stock_common_name',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_database_accession', $dbxref_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, $field_id, 'stock_database_accession', $dbxref_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
@@ -319,7 +327,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
       'as' => 'stock_database_accession',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_database_name', $db_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, $field_id, 'stock_database_name', $db_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
@@ -363,7 +371,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     // Specific settings for this field
     // There are four stock types in core Tripal, use the most generic one.
     $options += [
-      'id' => self::$id,
+      'id' => $this->definition->getFieldDefinition()['id'],
       'table' => self::$object_table,
       'label' => 'Germplasm',
       'termIdSpace' => 'NCIT',
