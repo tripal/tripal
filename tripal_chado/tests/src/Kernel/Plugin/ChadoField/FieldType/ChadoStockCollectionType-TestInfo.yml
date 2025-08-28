@@ -104,7 +104,7 @@ scenarios:
           value: '1234S'
         stock_type:
         - record_id: 0
-          type_id: 3
+          type_id: 3183
           term_name: ''
           id_space: ''
           accession: ''
@@ -134,7 +134,7 @@ scenarios:
           value: '1234S'
         stock_type:
         - record_id: 1
-          type_id: 3
+          type_id: 3183
           term_name: 'germplasm'
           id_space: 'EFO'
           accession: '0007059'
@@ -157,7 +157,7 @@ scenarios:
           value: '1234S'
         stock_type:
         - record_id: 1
-          type_id: 3
+          type_id: 3183
           term_name: 'germplasm'
           id_space: 'EFO'
           accession: '0007059'
