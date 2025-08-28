@@ -28,7 +28,7 @@ class ChadoStockCollectionTypeDefault extends ChadoFieldItemBase {
    *
    * @var string
    */
-  protected static $id = 'chado_stockcollection_type_default';
+  public static $id = 'chado_stockcollection_type_default';
 
   /**
    * The linked table which is the object of this relationship.
@@ -267,7 +267,7 @@ class ChadoStockCollectionTypeDefault extends ChadoFieldItemBase {
 
     // Specific settings for this field.
     $options += [
-      'id' => $this->definition->getFieldDefinition()['id'],
+      'id' => self::$id,
       'table' => self::$object_table,
       'label' => 'Germplasm Collection',
       'termIdSpace' => 'OBI',

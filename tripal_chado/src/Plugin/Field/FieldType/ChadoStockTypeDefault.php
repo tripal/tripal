@@ -29,7 +29,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
    *
    * @var string
    */
-  protected static $id = 'chado_stock_type_default';
+  public static $id = 'chado_stock_type_default';
 
   /**
    * The linked table which is the object of this relationship.
@@ -371,7 +371,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     // Specific settings for this field
     // There are four stock types in core Tripal, use the most generic one.
     $options += [
-      'id' => $this->definition->getFieldDefinition()['id'],
+      'id' => self::$id,
       'table' => self::$object_table,
       'label' => 'Germplasm',
       'termIdSpace' => 'NCIT',
