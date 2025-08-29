@@ -68,15 +68,15 @@ class TripalFileLocationFormatterDefault extends ChadoFormatterBase {
       $scheme = parse_url($uri, PHP_URL_SCHEME);
       $host = '';
       $link = $uri;
-      if ($scheme == 'public') {
-        $host = \Drupal::config('system.site')->get('name');
-        $url = \Drupal::service('file_url_generator')->generate($uri);
-      }
-      else {
-        $host = parse_url($uri, PHP_URL_HOST);
-        $url = Url::fromUri($uri);
-      }
       if ($scheme) {
+        if ($scheme == 'public') {
+          $host = \Drupal::config('system.site')->get('name');
+          $url = \Drupal::service('file_url_generator')->generate($uri);
+        }
+        else {
+          $host = parse_url($uri, PHP_URL_HOST);
+          $url = Url::fromUri($uri);
+        }
         $link = Link::fromTextAndUrl($values['filename'], $url);
       }
 
