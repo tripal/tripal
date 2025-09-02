@@ -537,7 +537,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
         // This item was removed from the form. Add back a value
         // so that chado storage knows to remove the chado record.
         $values[$next_delta][$linker_key] = $linker_id;
-        $values[$next_delta][$val] = '';
+        $values[$next_delta][$val] = NULL;
         $next_delta++;
       }
     }

@@ -997,12 +997,13 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
             $delta_remove[$field_name][] = $delta;
           }
 
-          // If there is a zero value in $store_values, this means that
-          // we chose "- Select -" in a widget, or removed the row with the
-          // "Remove" button.
+          // If there is an integer zero value in $store_values, this means
+          // that we chose "- Select -" in a widget, or removed the row with
+          // the "Remove" button.
+          // For properties or other single-hop fields we send all NULL values.
           // Chado storage has already done its work, so now remove this
           // delta so that Drupal doesn't make a blank field table entry.
-          $remove = FALSE;
+          $remove = $this->allNull($store_values);
           foreach ($store_values as $value) {
             if ($value === 0) {
               $remove = TRUE;
