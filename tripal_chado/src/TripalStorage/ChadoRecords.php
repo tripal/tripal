@@ -1060,6 +1060,9 @@ class ChadoRecords  {
    *   The alias for the column.
    * @param mixed $value
    *   The value to set for the field.
+   * @param bool $set_value
+   *   The value that is being set is a valid value. Set to FALSE when
+   *   clearing a value by setting it to zero.
    *
    * @throws \Exception
    *   If the base_table, table_alias or delta don't exist then an error is
@@ -1069,7 +1072,7 @@ class ChadoRecords  {
    *   TRUE if the value was set, FALSE otherwise
    */
   protected function setColumnValue(string $base_table, string $table_alias,
-      int $delta, string $column_alias, $value) : bool {
+      int $delta, string $column_alias, $value, $set_value = TRUE) : bool {
 
     if (!array_key_exists($base_table, $this->records)) {
       throw new \Exception("ChadoRecords::setColumnValue(): The base table has not been added to the ChadoRecords object: $base_table.");
@@ -1090,7 +1093,9 @@ class ChadoRecords  {
 
     // Set the value.
     $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] = $value;
-    $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['has_values'] = TRUE;
+    if ($set_value) {
+      $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['has_values'] = TRUE;
+    }
     return TRUE;
   }
 
@@ -1888,7 +1893,7 @@ class ChadoRecords  {
       }
 
       // Unset the record Id for this deleted record.
-      $this->setColumnValue($base_table, $table_alias, $delta, $pkey, 0);
+      $this->setColumnValue($base_table, $table_alias, $delta, $pkey, 0, FALSE);
     }
   }
 
