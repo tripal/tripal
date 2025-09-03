@@ -1038,7 +1038,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
             if ($value === 0) {
               $remove = TRUE;
             }
-            if ($key == $main_property_name && ($value === NULL || $value == '')) {
+            if ($key == $main_property_name && ($value === NULL || $value === '')) {
               $remove = TRUE;
             }
           }
