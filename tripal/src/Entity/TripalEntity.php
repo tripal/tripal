@@ -878,6 +878,33 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Returns the name of the main property for a field.
+   *
+   * The main property name defaults to 'value', but a field can define
+   * a function mainPropertyName() to indicate a different name.
+   *
+   * @param string $field_name
+   *   The machine name of the field.
+   *
+   * @return string
+   *   The main property name for this field.
+   */
+  public function getMainPropertyName(string $field_name): string {
+    $main_property_name = 'value';
+    /** @var \Drupal\Core\Field\FieldItemList $items **/
+    $items = $this->get($field_name);
+    /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $item **/
+    foreach ($items as $item) {
+      if (method_exists($item, 'mainPropertyName')) {
+        $main_property_name = $item->mainPropertyName();
+      }
+      // We only need to examine the first item.
+      break;
+    }
+    return $main_property_name;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage): void {
@@ -935,6 +962,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $delta_remove = [];
     $fields = $this->getFields();
     foreach ($fields as $field_name => $items) {
+      $main_property_name = $this->getMainPropertyName($field_name);
       foreach($items as $item) {
 
         // If it is not a TripalField then skip it.
@@ -1003,9 +1031,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           // For properties or other single-hop fields we send all NULL values.
           // Chado storage has already done its work, so now remove this
           // delta so that Drupal doesn't make a blank field table entry.
-          $remove = $this->allNull($store_values);
-          foreach ($store_values as $value) {
+          $remove = FALSE;
+          foreach ($store_values as $key => $value) {
             if ($value === 0) {
+              $remove = TRUE;
+            }
+            if ($key == $main_property_name && ($value === NULL || $value == '')) {
               $remove = TRUE;
             }
           }
