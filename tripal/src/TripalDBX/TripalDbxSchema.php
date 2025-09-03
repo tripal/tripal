@@ -628,7 +628,18 @@ EOD;
     // If they didn't supply the column, then we can look it up.
     if ($column === NULL) {
       $parameters = ['source' => 'database', 'format' => 'Drupal',];
-      $table_schema = $this->getTableDef($table, $parameters);
+
+      // Cache the table schema so we don't fetch it thousands of times.
+      $cache_id = 'table_def_' . $table . '_' . $parameters;
+      // Check if this table definition is cached.
+      if ($cache = \Drupal::cache()->get($cache_id)) {
+        $table_schema = $cache->data;
+      }
+      else {
+        $table_schema = $this->getTableDef($table, $parameters);
+        // Cache the table definition for an hour.
+        \Drupal::cache()->set($cache_id, $table_schema, \Drupal::time()->getRequestTime() + (3600));
+      }
       $column = $table_schema['primary key'][0];
     }
 
