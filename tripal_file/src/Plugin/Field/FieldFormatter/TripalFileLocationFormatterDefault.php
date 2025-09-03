@@ -6,7 +6,6 @@ use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-#use Drupal\file\Entity\File;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
@@ -86,7 +85,7 @@ class TripalFileLocationFormatterDefault extends ChadoFormatterBase {
       '#theme' => 'table',
       '#header' => $header,
       '#rows' => $rows,
-#     '#attributes' => ['class' => 'responsive-enabled'],  // no change
+      // @todo testing here '#attributes' => ['class' => 'responsive-enabled'],  // no change.
       '#wrapper_attributes' => ['class' => 'container'],
     ];
 

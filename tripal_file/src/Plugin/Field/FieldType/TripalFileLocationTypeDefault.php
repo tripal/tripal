@@ -105,7 +105,6 @@ class TripalFileLocationTypeDefault extends ChadoFieldItemBase {
     // The fileloc table has a file_id column which is how it
     // links to the file table.
     $object_fkey_col = 'file_id';
-#@@@    $object_fkey_term = self::getColumnTermId($base_table, $object_fkey_col, self::$record_id_term);
 
     $properties = [];
 

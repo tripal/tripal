@@ -102,13 +102,10 @@ class TripalLicenseTypeDefault extends ChadoFieldItemBase {
 
     // Columns specific to the object table.
     $object_schema_def = self::getChadoTableDef($schema, $object_table);
-#@@@    $cvterm_schema_def = self::getChadoTableDef($schema, 'cvterm');
     $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
     $name_len = $object_schema_def['fields']['name']['length'];
     $summary_term = self::getColumnTermId($object_table, 'summary', 'schema:description');
     $uri_term = self::getColumnTermId($object_table, 'uri', 'schema:url');
-#@@@    $type_term = self::getColumnTermId($object_table, 'type_id', 'schema:additionalType');
-#@@@    $type_len = $cvterm_schema_def['fields']['name']['size'];
     // Linker table, when used, requires specifying the linker table and column.
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
 

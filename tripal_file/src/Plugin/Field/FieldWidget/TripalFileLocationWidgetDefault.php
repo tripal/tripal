@@ -2,14 +2,11 @@
 
 namespace Drupal\tripal_file\Plugin\Field\FieldWidget;
 
-#use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\File\FileUrlGenerator;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-#use Drupal\Core\Url;
-#use Drupal\file\Entity\File;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
@@ -40,7 +37,6 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
     // Get the field settings.
-#@@@    $field_definition = $items[$delta]->getFieldDefinition();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
     $item_vals = $items[$delta]->getValue();
@@ -48,7 +44,6 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
     $fileloc_id = $item_vals['fileloc_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
     $uri = $item_vals['fileloc_uri'] ?? '';
-#@@@    $rank = $item_vals['fileloc_rank'] ?? $delta;
     $md5checksum = $item_vals['fileloc_md5checksum'] ?? '';
     $size = $item_vals['fileloc_size'] ?? '';
     $filename = $item_vals['fileloc_filename'] ?? '';
@@ -123,10 +118,10 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
 
     // Remove any empty values that don't have a uri. Because of
     // validation, if this is empty, then other values are empty too.
-#@todo test that this is even needed
+    // @todo test that this is even needed.
     foreach ($values as $delta => $item) {
       if (trim($item['fileloc_uri']) == '') {
-#        unset($values[$delta]);
+        // unset($values[$delta]);?
       }
     }
 
@@ -137,7 +132,8 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
       // Use the Drupal delta value as the chado rank.
       if ($item['fileloc_uri'] ?? '') {
         $values[$delta]['fileloc_rank'] = $delta;
-#        $values[$delta]['_weight'] = $delta;
+        // @todo test if _weight is even needed.
+        // $values[$delta]['_weight'] = $delta;?
       }
     }
 
