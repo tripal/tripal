@@ -216,7 +216,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    *      -.
    *
    * @return TripalEntityType
-   *   An TripalEntityType with the values passed in set appropriately.
+   *   A TripalEntityType with the values passed in set appropriately.
    */
   public static function create(array $values = []) {
 
