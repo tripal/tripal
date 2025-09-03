@@ -13,8 +13,6 @@ use Drupal\user\EntityOwnerInterface;
  */
 interface TripalEntityInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
 
-  // Add get/set methods for your configuration properties here.
-
   /**
    * Gets the Tripal Content type.
    *
@@ -56,7 +54,8 @@ interface TripalEntityInterface extends ContentEntityInterface, EntityChangedInt
    * Sets the published status of a Tripal Content.
    *
    * @param bool $published
-   *   TRUE to set this Tripal Content to published, FALSE to set it to unpublished.
+   *   TRUE to set this Tripal Content to published,
+   *   FALSE to set it to unpublished.
    *
    * @return \Drupal\tripal\Entity\TripalEntityInterface
    *   The called Tripal Content entity.
