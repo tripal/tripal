@@ -109,47 +109,33 @@ function tripal_file_add_linker_table_terms(): void {
   $storage_id = 'chado_term_mapping';
   $core_config_id = 'core_mapping';
   $tripal_file_config_id = 'tripal_file_mapping';
+  /** @var Drupal\Core\Config\Entity\ConfigEntityStorage $storage */
   $storage = \Drupal::entityTypeManager()->getStorage($storage_id);
+  /** @var Drupal\tripal_chado\Entity\ChadoTermMapping $chado_core_mapping */
   $chado_core_mapping = $storage->load($core_config_id);
   $core_mapping_tables = $chado_core_mapping->get('tables');
 
   // Get a keyed list to be able to determine if a table is already present.
   $existing_tables = [];
-  foreach ($core_mapping_tables as $index => $table) {
-    $existing_tables[$table['name']] = $index;
+  foreach ($core_mapping_tables as $table) {
+    $existing_tables[$table['name']] = TRUE;
   }
 
   // Get the table mapping for this module.
   $tripal_file_mapping = $storage->load($tripal_file_config_id);
   $tripal_file_tables = $tripal_file_mapping->get('tables');
 
-  // Add module table mappings to core mapping.
+  // Add table mappings from this module to core mapping.
   $updated = FALSE;
   foreach ($tripal_file_tables as $table) {
     if (!isset($existing_tables[$table['name']])) {
       $core_mapping_tables[] = $table;
       $updated = TRUE;
-print "CP77 adding table \"".$table['name']."\"\n";//@@@
     }
   }
   if ($updated) {
-print "CP79 saving updated\n";//@@@
+    $chado_core_mapping->set('tables', $core_mapping_tables);
     $chado_core_mapping->save();
-  }
-  return;
-
-//@todo add to yaml instead
-  // Terms for linker tables
-  $linked_tables = tripal_file_get_linked_tables();
-
-  foreach ($linked_tables as $linked_table) {
-    $linked_schema = chado_get_schema($linked_table);
-    $pkey = $linked_schema['primary key'][0];
-    $linker_table = $linked_table . '_file';
-
-    // Add the term for rank.
-    $term = chado_get_cvterm(['id' => 'OBCS:0000117']);
-    chado_associate_semweb_term($linker_table, 'rank', $term);
   }
 }
 
@@ -229,7 +215,7 @@ function tripal_file_add_default_licenses($chado): void {
     }
   }
 
-  // Publish new licenses.
+  // Publish the new licenses.
   if ($n_added) {
     $tripal_publish_service = \Drupal::service('tripal.backend_publish');
     $default_schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
@@ -244,40 +230,20 @@ function tripal_file_add_default_licenses($chado): void {
 }
 
 /**
- * Repopulates db2cv materialized view.
- */
-function NOTUPGRADEDtripal_file_repopulate_db2cv_mview($jobname='Repopulating db2cv_mview') {
-  global $user;
-  $sql = "SELECT mview_id FROM [tripal_mviews] WHERE modulename=:modulename AND name=:name";
-  $args = [':modulename' => 'tripal_chado', ':name' => 'db2cv_mview'];
-  $mview_id = chado_query($sql, $args)->fetchField();
-  tripal_add_job(
-    $jobname,
-    'tripal_chado',
-    'chado_populate_mview',
-    [$mview_id],
-    $user->uid
-  );
-}
-
-/**
- * Add default licenses
- */
-function tripal_file_update_7100() {
-  try {
-    tripal_file_add_default_licenses();
-    tripal_file_repopulate_db2cv_mview('Repopulating db2cv_mview to fix legacy SOFP');
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
-  }
-}
-
-/**
  * Add support for displayed filename.
+ *
+ * This is only applicable to a migrated Tripal 3 site that never
+ * ran Tripal File v3 update 7101 and 7102. On a new install it
+ * will not do anything.
+ * @todo
  */
-function tripal_file_update_7101() {
+function legacy_update_7102() {
+
+  $filename_schema = [
+    'type' => 'text',
+    'not null' => FALSE,
+    'description' => t('The short name of the uri as displayed to the user.'),
+  ];
 
   $transaction = db_transaction();
   try {
@@ -294,29 +260,6 @@ function tripal_file_update_7101() {
       // The CVterm for the new column is added as of this update, data:1050 = 'File name'.
       tripal_file_add_terms();
     }
-
-  }
-  catch (\PDOException $e) {
-    $transaction->rollback();
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
-  }
-
-}
-
-/**
- * Add missing schema for filename column
- */
-function tripal_file_update_7102() {
-
-  $filename_schema = [
-    'type' => 'text',
-    'not null' => FALSE,
-    'description' => t('The short name of the uri as displayed to the user.'),
-  ];
-
-  $transaction = db_transaction();
-  try {
 
     // Retrieve the table_id of the fileloc custom table, this will be
     // needed to update the schema.
@@ -342,189 +285,3 @@ function tripal_file_update_7102() {
   }
 
 }
-
-/**
- * Add the file_relationship table.
- */
-function tripal_file_update_7103() {
-
-  $transaction = db_transaction();
-  try {
-    tripal_file_add_file_relationship_table();
-  }
-  catch (\PDOException $e) {
-    $transaction->rollback();
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
-  }
-}
-
-/**
- *
- */
-function NOTUPGRADEDtripal_file_add_terms() {
-  // The SIO cv does not need to be added because it is
-  // automatically added by the base Tripal setup.
-
-  //
-  // Content type terms
-  //
-  $term = chado_insert_cvterm([
-    'id' => 'SIO:000396',
-    'name' => 'file',
-    'cv_name' => 'SIO',
-    'definition' => 'A file is an information-bearing object that contains a physical embodiment of some information using a particular character encoding',
-  ], ['update_existing' => false]);
-  chado_associate_semweb_term(NULL, 'file_id', $term);
-
-  $term = chado_insert_cvterm([
-    'id' => 'schema:license',
-    'name' => 'license',
-    'cv_name' => 'schema',
-    'definition' => 'A license document that applies to this content, typically indicated by URL.',
-  ], ['update_existing' => false]);
-  chado_associate_semweb_term(NULL, 'license_id', $term);
-
-  //
-  // Terms for the File table.
-  //
-  $term = chado_get_cvterm(['id' => 'schema:name']);
-  chado_associate_semweb_term('file', 'name', $term);
-
-  $term = chado_get_cvterm(['id' => 'schema:description']);
-  chado_associate_semweb_term('file', 'description', $term);
-
-  $term = chado_insert_cvterm([
-    'id' => 'format:1915',
-    'name' => 'Format',
-    'cv_name' => 'EDAM',
-    'definition' => 'A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere.',
-  ], ['update_existing' => false]);
-  chado_associate_semweb_term('file', 'type_id', $term);
-
-  //
-  // Terms for the file_contact table
-  //
-  $term = chado_get_cvterm(['id' => 'local:contact']);
-  chado_associate_semweb_term('file_contact', 'contact_id', $term);
-
-  //
-  // Terms for the fileloc table
-  //
-  $term = chado_get_cvterm(['id' => 'data:1047']);
-  chado_associate_semweb_term('fileloc', 'uri', $term);
-
-  $term = chado_get_cvterm(['id' => 'OBCS:0000117']);
-  chado_associate_semweb_term('fileloc', 'rank', $term);
-
-  $term = chado_get_cvterm(['id' => 'data:2190']);
-  chado_associate_semweb_term('fileloc', 'md5checksum', $term);
-
-  $term = chado_insert_cvterm([
-    'id' => 'schema:fileSize',
-    'name' => 'fileSize',
-    'cv_name' => 'schema',
-    'definition' => 'Size of the application / package (e.g. 18MB). In the absence of a unit (MB, KB etc.), KB will be assumed.',
-  ], ['update_existing' => false]);
-  chado_associate_semweb_term('fileloc', 'size', $term);
-
-  $term = chado_insert_cvterm([
-    'id' => 'data:1050',
-    'name' => 'File name',
-    'cv_name' => 'EDAM',
-    'definition' => 'The name (or part of a name) of a file (of any type).',
-  ], ['update_existing' => false]);
-  chado_associate_semweb_term('fileloc', 'filename', $term);
-
-  //
-  // Terms for the fileprop table
-  //
-  $term = chado_get_cvterm(['id' => 'OBCS:0000117']);
-  chado_associate_semweb_term('fileprop', 'rank', $term);
-
-  $term = chado_get_cvterm(['id' => 'NCIT:C25712']);
-  chado_associate_semweb_term('fileprop', 'value', $term);
-
-  $term = chado_get_cvterm(['id' => 'schema:additionalType']);
-  chado_associate_semweb_term('fileprop', 'type_id', $term);
-
-  //
-  // Terms for the license table
-  //
-
-  $term = chado_get_cvterm(['id' => 'schema:name']);
-  chado_associate_semweb_term('license', 'name', $term);
-
-  $term = chado_get_cvterm(['id' => 'data:1047']);
-  chado_associate_semweb_term('license', 'uri', $term);
-
-  $term = chado_insert_cvterm([
-    'id' => 'schema:disambiguatingDescription',
-    'name' => 'disambiguatingDescription',
-    'cv_name' => 'schema',
-    'definition' => 'A sub property of description. A short description of the item used to disambiguate from other, similar items. Information from other properties (in particular, name) may be necessary for the description to be useful for disambiguation.',
-  ], ['update_existing' => false]);
-  chado_associate_semweb_term('license', 'summary', $term);
-
-
-  //
-  // Terms for the file_license table
-  //
-  // No terms needed, just linking fields.
-
-
-  //
-  // Field types
-  //
-  $term = chado_insert_cvterm([
-    'id' => 'schema:itemLocation',
-    'name' => 'itemLocation',
-    'cv_name' => 'schema',
-    'definition' => 'Current location of the item.',
-  ], ['update_existing' => false]);
-}
-
-/**
- * Adds Tripal v3 content types.
- */
-function NOTUPGRADEDtripal_file_add_ctypes() {
-
-  // Add the File content type
-  $bundle = tripal_load_bundle_entity(['accession' => 'SIO:000396']);
-  if (!$bundle) {
-    $args = [
-      'vocabulary' => 'SIO',
-      'accession' => '000396',
-      'term_name' => 'file',
-      'label' => "File",
-      'storage_args' => [
-        'data_table' => 'file',
-      ],
-      'category' => 'Other',
-    ];
-    if (!tripal_create_bundle($args, $job)) {
-      $msg = t('Error encountered creating !type Content Type.', ['!type' => $args['term_name']]);
-      throw new Exception($msg);
-    }
-  }
-
-  // Add the License content type
-  $bundle = tripal_load_bundle_entity(['accession' => 'schema:license']);
-  if (!$bundle) {
-    $args = [
-      'vocabulary' => 'schema',
-      'accession' => 'license',
-      'term_name' => 'license',
-      'label' => "License",
-      'storage_args' => [
-        'data_table' => 'license',
-      ],
-      'category' => 'Other',
-    ];
-    if (!tripal_create_bundle($args, $job)) {
-      $msg = t('Error encountered creating !type Content Type.', ['!type' => $args['term_name']]);
-      throw new Exception($msg);
-    }
-  }
-}
-

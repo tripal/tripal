@@ -10,6 +10,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of default Tripal file field type.
+ */
 #[FieldType(
   id: 'tripal_file_type_default',
   category: 'tripal_chado',
@@ -20,16 +23,32 @@ use Drupal\tripal\Entity\TripalEntityType;
 )]
 class TripalFileTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The machine name of this field.
+   *
+   * @var string
+   */
   public static $id = 'tripal_file_type_default';
+
+  /**
+   * The name of the table linked to from the base table.
+   *
+   * @var string
+   */
   protected static $object_table = 'file';
+
+  /**
+   * The name of the primary key column in the object table.
+   *
+   * @var string
+   */
   protected static $object_id = 'file_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'
-    return 'value';
+    return 'file_name';
   }
 
   /**
@@ -49,7 +68,7 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'file'
+    // CV Term is 'file'.
     $field_settings['termIdSpace'] = 'SIO';
     $field_settings['termAccession'] = '000396';
     return $field_settings;
@@ -70,24 +89,24 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
       return;
     }
 
-    // Get the various tables and columns needed for this field.
-    // We will get the property terms by using the Chado table columns they map to.
+    // Get the various tables and columns needed for this field. We will
+    // get the property terms by using the Chado table columns they map to.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
-    // Base table
+    // Base table.
     $base_pkey_col = self::getPrimaryKey($schema, $base_table);
 
-    // Object table
+    // Object table.
     $object_table = self::$object_table;
     $object_pkey_col = self::getPrimaryKey($schema, $object_table);
 
-    // Columns specific to the object table
+    // Columns specific to the object table.
     $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
     $description_term = self::getColumnTermId($object_table, 'description', 'schema:description');
 
-    // Cvterm table, to retrieve the name for the file type
+    // Cvterm table, to retrieve the name for the file type.
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
     $file_type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $file_type_len = $cvterm_schema_def['fields']['name']['size'];
@@ -99,14 +118,15 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
     if ($linker_table != $base_table) {
       $linker_schema_def = self::getChadoTableDef($schema, $linker_table);
       $linker_pkey_col = self::getPrimaryKey($schema, $linker_table);
-      // the following should be the same as $base_pkey_col @todo make sure it is
+      // The following should be the same as $base_pkey_col.
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
       $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
       $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
 
-      // Some but not all linker tables contain rank, type_id, and maybe other columns.
-      // These are conditionally added only if they exist in the linker
-      // table, and if a term is defined for them.
+      // Other columns in the linker table. Set in the widget, but currently
+      // not implemented in the formatter. Typically these are type_id and rank,
+      // but are not present in all linker tables, so they are added only if
+      // present in the linker table.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
           $term = self::getColumnTermId($linker_table, $column, 'NCIT:C25712');
@@ -140,7 +160,7 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
       'fkey' => $linker_fkey_column,
     ]);
 
-    // Base table links directly
+    // Base table links directly.
     if ($base_table == $linker_table) {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
         'action' => 'store',
@@ -150,10 +170,9 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
         'empty_value' => 0,
       ]);
     }
-    // An intermediate linker table is used
+    // An intermediate linker table is used.
     else {
       // Define the linker table that links the base table to the object table.
-      // E.g.:  project_file.project_file_id
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', self::$record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
@@ -161,7 +180,6 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
       ]);
 
       // Define the link between the base table and the linker table.
-      // E.g.:  project.project_id>project_file.project_id
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
         'action' => 'store_link',
         'drupal_store' => TRUE,
@@ -169,7 +187,6 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
       ]);
 
       // Define the link between the linker table and the object table.
-      // E.g.:  project_file.file_id
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
@@ -178,9 +195,10 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
         'empty_value' => 0,
       ]);
 
-      // Other columns in the linker table. Set in the widget, but currently not implemented in the formatter.
-      // Typically these are type_id and rank, but are not present in all linker tables,
-      // so they are added only if present in the linker table.
+      // Other columns in the linker table. Set in the widget, but currently
+      // not implemented in the formatter. Typically these are type_id and rank,
+      // but are not present in all linker tables, so they are added only if
+      // present in the linker table.
       foreach ($extra_linker_columns as $column => $term) {
         $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
           'action' => 'store',
@@ -191,8 +209,8 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
       }
     }
 
-    // The object table, the destination table of the linker table
-    // The file name
+    // The object table, the destination table of the linker table.
+    // The file name.
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'file_name', $name_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -200,7 +218,7 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
       'as' => 'file_name',
     ]);
 
-    // The file description
+    // The file description.
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'file_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -208,12 +226,11 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
       'as' => 'file_description',
     ]);
 
-    // The type of file
+    // The type of file.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'file_type', $file_type_term, $file_type_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
       'as' => 'file_type',
     ]);
 
@@ -222,6 +239,7 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -238,12 +256,18 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
-      array $field_instances, array $options = []): array {
+  public static function discover(
+    TripalEntityType $bundle,
+    string $field_id,
+    array $field_types,
+    array $field_instances,
+    array $options = [],
+  ): array {
 
-    // Specific settings for this field
+    // Specific settings for this field.
     $options += [
       'id' => self::$id,
       'table' => self::$object_table,
@@ -254,7 +278,7 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
       'cardinality' => -1,
     ];
 
-    // Call the parent discover() with this field's specific options
+    // Call the parent discover() with this field's specific options.
     $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
 
     return $field_list;

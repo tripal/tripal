@@ -8,6 +8,9 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
+/**
+ * Plugin implementation of the default Tripal license widget.
+ */
 #[FieldWidget(
   id: 'tripal_license_widget_default',
   label: new TranslatableMarkup('Tripal License Widget'),
@@ -50,18 +53,18 @@ class TripalLicenseWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $link,
     ];
-    // pass the foreign key name through the form for massageFormValues()
+    // Pass the foreign key name through the form for massageFormValues().
     $elements['linker_fkey_column'] = [
       '#type' => 'value',
       '#default_value' => $linker_fkey_column,
     ];
-    // pass the field machine name through the form for massageFormValues()
+    // Pass the field machine name through the form for massageFormValues().
     $elements['field_name'] = [
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
 
-    // Create a select element specific to this content type
+    // Create a select element specific to this content type.
     $options = [
       'base_table' => 'license',
       'column_name' => 'name',
@@ -71,14 +74,14 @@ class TripalLicenseWidgetDefault extends ChadoWidgetBase {
     $select_element = $this->genericSelectElement('license_id', $license_id, $options);
     $elements[$linker_fkey_column] = $element + $select_element;
 
-    // Special processing for the null license which is defined by chado
-    if (array_key_exists('#options', $select_element)) {
-      $null_license = array_search('null', $select_element['#options']);
-      if ($null_license) {
-        $select_element['#options'][$null_license] = '- Unknown -';  // This will sort to the top
-      }
-      natcasesort($select_element['#options']);
-    }
+#    // Special processing for the null license which is defined by chado
+#    if (array_key_exists('#options', $select_element)) {
+#      $null_license = array_search('null', $select_element['#options']);
+#      if ($null_license) {
+#        $select_element['#options'][$null_license] = '- Unknown -';  // This will sort to the top
+#      }
+#      natcasesort($select_element['#options']);
+#    }
 
     // Insert the select element, either a select or an autocomplete depending
     // on the number of options.
@@ -115,17 +118,17 @@ class TripalLicenseWidgetDefault extends ChadoWidgetBase {
       ];
     }
 
-    // If there is a pub_id and it is not already set, then we want to use
-    // the null pub which has an id of 1.
-    if (array_key_exists('linker_pub_id', $property_definitions)) {
-      $default_value = $item_vals['linker_pub_id'] ?? 1;
-      $elements['linker_pub_id'] = [
-        '#type' => 'value',
-        '#default_value' => $default_value,
-      ];
-    }
+#    // If there is a pub_id and it is not already set, then we want to use
+#    // the null pub which has an id of 1.
+#    if (array_key_exists('linker_pub_id', $property_definitions)) {
+#      $default_value = $item_vals['linker_pub_id'] ?? 1;
+#      $elements['linker_pub_id'] = [
+#        '#type' => 'value',
+#        '#default_value' => $default_value,
+#      ];
+#    }
 
-    // Save some initial values to allow later handling of the "Remove" button
+    // Save some initial values to allow later handling of the "Remove" button.
     $this->saveInitialValues($delta, $field_name, $linker_id, $form_state);
 
     return $elements;
@@ -159,4 +162,5 @@ class TripalLicenseWidgetDefault extends ChadoWidgetBase {
   public function settingsSummary() {
     return $this->selectSettingsSummary() + parent::settingsSummary();
   }
+
 }

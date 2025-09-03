@@ -10,6 +10,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of default Tripal file location field type.
+ */
 #[FieldType(
   id: 'tripal_file_location_type_default',
   category: 'tripal_chado',
@@ -20,15 +23,24 @@ use Drupal\tripal\Entity\TripalEntityType;
 )]
 class TripalFileLocationTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The machine name of this field.
+   *
+   * @var string
+   */
   public static $id = 'tripal_file_location_type_default';
+
+  /**
+   * The name of the table linked to from the base table.
+   *
+   * @var string
+   */
   protected static $object_table = 'fileloc';
-#  protected static $object_id = 'fileloc_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'
     return 'fileloc_uri';
   }
 
@@ -46,7 +58,7 @@ class TripalFileLocationTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'itemLocation'
+    // CV Term is 'itemLocation'.
     $field_settings['termIdSpace'] = 'schema';
     $field_settings['termAccession'] = 'itemLocation';
     return $field_settings;
@@ -67,8 +79,8 @@ class TripalFileLocationTypeDefault extends ChadoFieldItemBase {
       return;
     }
 
-    // Get the various tables and columns needed for this field.
-    // We will get the property terms by using the Chado table columns they map to.
+    // Get the various tables and columns needed for this field. We will
+    // get the property terms by using the Chado table columns they map to.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $entity_type_id = $field_definition->getTargetEntityTypeId();
@@ -76,7 +88,7 @@ class TripalFileLocationTypeDefault extends ChadoFieldItemBase {
     // Base table.
     $base_pkey_col = self::getPrimaryKey($schema, $base_table);
 
-    // fileloc table.
+    // The fileloc table.
     $object_table = self::$object_table;
     $object_schema = self::getChadoTableDef($schema, $object_table);
     $object_pkey_col = $object_schema['primary key'];
@@ -93,7 +105,7 @@ class TripalFileLocationTypeDefault extends ChadoFieldItemBase {
     // The fileloc table has a file_id column which is how it
     // links to the file table.
     $object_fkey_col = 'file_id';
-    $object_fkey_term = self::getColumnTermId($base_table, $object_fkey_col, self::$record_id_term);
+#@@@    $object_fkey_term = self::getColumnTermId($base_table, $object_fkey_col, self::$record_id_term);
 
     $properties = [];
 
@@ -123,7 +135,7 @@ class TripalFileLocationTypeDefault extends ChadoFieldItemBase {
       'path' => $base_table . '.' . $base_pkey_col . '>' . $object_table . '.' . $object_fkey_col . ';uri',
       'as' => 'fileloc_uri',
       'delete_if_empty' => TRUE,
-      'empty_value' => ''
+      'empty_value' => '',
     ]);
 
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fileloc_rank', $rank_term, [
@@ -159,6 +171,7 @@ class TripalFileLocationTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -174,12 +187,18 @@ class TripalFileLocationTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
-      array $field_instances, array $options = []): array {
+  public static function discover(
+    TripalEntityType $bundle,
+    string $field_id,
+    array $field_types,
+    array $field_instances,
+    array $options = [],
+  ): array {
 
-    // Specific settings for this field
+    // Specific settings for this field.
     $options += [
       'id' => self::$id,
       'table' => self::$object_table,
@@ -190,7 +209,7 @@ class TripalFileLocationTypeDefault extends ChadoFieldItemBase {
       'cardinality' => -1,
     ];
 
-    // Call the parent discover() with this field's specific options
+    // Call the parent discover() with this field's specific options.
     $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
     return $field_list;
   }

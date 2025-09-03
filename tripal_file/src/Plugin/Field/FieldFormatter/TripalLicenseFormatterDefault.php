@@ -2,12 +2,14 @@
 
 namespace Drupal\tripal_file\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+/**
+ * The default formatter for license content type.
+ */
 #[TripalFieldFormatter(
   id: 'tripal_license_formatter_default',
   label: new TranslatableMarkup('Tripal license formatter'),

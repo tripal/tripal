@@ -2,17 +2,16 @@
 
 namespace Drupal\tripal_file\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\file\Entity\File;
+#use Drupal\file\Entity\File;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * The default formatter for file content type.
+ * The default formatter for file location content type.
  *
  * The default is a table to match the Tripal 3 version of this module.
  */
@@ -46,7 +45,6 @@ class TripalFileLocationFormatterDefault extends ChadoFormatterBase {
       $this->t('Size'),
       $this->t('MD5'),
     ];
-    $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
 
     foreach ($items as $delta => $item) {
       $values = [
@@ -88,7 +86,7 @@ class TripalFileLocationFormatterDefault extends ChadoFormatterBase {
       '#theme' => 'table',
       '#header' => $header,
       '#rows' => $rows,
-//      '#attributes' => ['class' => 'responsive-enabled'],  // no change
+#     '#attributes' => ['class' => 'responsive-enabled'],  // no change
       '#wrapper_attributes' => ['class' => 'container'],
     ];
 

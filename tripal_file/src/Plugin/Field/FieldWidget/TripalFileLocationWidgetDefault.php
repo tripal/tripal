@@ -2,16 +2,19 @@
 
 namespace Drupal\tripal_file\Plugin\Field\FieldWidget;
 
-use Drupal\Component\Utility\UrlHelper;
+#use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\File\FileUrlGenerator;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\Core\Url;
-use Drupal\file\Entity\File;
+#use Drupal\Core\Url;
+#use Drupal\file\Entity\File;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
+/**
+ * Plugin implementation of the default Tripal file location widget.
+ */
 #[FieldWidget(
   id: 'tripal_file_location_widget_default',
   label: new TranslatableMarkup('Tripal File Location Widget'),
@@ -37,7 +40,7 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
     // Get the field settings.
-    $field_definition = $items[$delta]->getFieldDefinition();
+#@@@    $field_definition = $items[$delta]->getFieldDefinition();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
     $item_vals = $items[$delta]->getValue();
@@ -45,7 +48,7 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
     $fileloc_id = $item_vals['fileloc_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
     $uri = $item_vals['fileloc_uri'] ?? '';
-    $rank = $item_vals['fileloc_rank'] ?? $delta;
+#@@@    $rank = $item_vals['fileloc_rank'] ?? $delta;
     $md5checksum = $item_vals['fileloc_md5checksum'] ?? '';
     $size = $item_vals['fileloc_size'] ?? '';
     $filename = $item_vals['fileloc_filename'] ?? '';
@@ -55,7 +58,7 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $record_id,
     ];
-    // pass the field machine name through the form for massageFormValues()
+    // Pass the field machine name through the form for massageFormValues().
     $elements['field_name'] = [
       '#type' => 'value',
       '#default_value' => $field_name,
@@ -107,7 +110,7 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $delta,
     ];
 
-    // Save some initial values to allow later handling of the "Remove" button
+    // Save some initial values to allow later handling of the "Remove" button.
     $this->saveInitialValues($delta, $field_name, $fileloc_id, $form_state);
 
     return $elements;
@@ -145,7 +148,7 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
         // We can only lookup local files, ignore external files.
         $scheme = parse_url($uri, PHP_URL_SCHEME);
         if ($scheme == 'public') {
-          $file_path = self::GetLocalPath($uri);
+          $file_path = self::getLocalPath($uri);
           if ($file_path) {
             $file_size = filesize($file_path);
             $file_md5_checksum = md5_file($file_path);
@@ -162,13 +165,14 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
    * Get the local filesystem absolute path for a public:// uri.
    *
    * @param string $uri
-   *   The uri to look up, e.g. public://dir/filename.txt.
+   *   The uri to look up, e.g. 'public://dir/filename.txt'.
+   *
    * @return string
    *   If the uri is for a local filesystem file, returns the local
    *   filesystem absolute path, or an empty string if the file does not exist.
    *   If the uri is external, the passed uri value is returned unchanged.
    */
-  protected static function GetLocalPath(string $uri): string {
+  protected static function getLocalPath(string $uri): string {
     $file_path = $uri;
     $scheme = parse_url($uri, PHP_URL_SCHEME);
     // Only evaluate for a local file.
@@ -188,7 +192,7 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
    * Form element validation handler for the uri field.
    *
    * This field is required in the database table, but we do not set
-   * it as required in the form because doing so affects empty records.
+   * the form field as required because doing so affects empty records.
    *
    * @param array $element
    *   The form element being validated.
@@ -199,7 +203,8 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
    *   No return value.
    */
   public static function validateFilelocUri($element, FormStateInterface $form_state): void {
-    // element_parents e.g. 0 => "project_relationship", 1 => 0, 2 => "related_record".
+    // Element_parents e.g. 0 => "file_location",
+    // 1 => 0, 2 => "fileloc_uri".
     $element_parents = $element['#parents'];
     $delta = $element_parents[1];
     $element_value = $element['#value'];
@@ -225,7 +230,7 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
           t('The specified URI is not valid.'));
       }
       // Validates that public:// files exist.
-      else if (!self::GetLocalPath($element_value)) {
+      elseif (!self::getLocalPath($element_value)) {
         $form_state->setErrorByName(implode('][', $element_parents),
           t('The specified file does not exist in the local filesystem.'));
       }
@@ -239,16 +244,17 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
    * hexadecimal characters. An empty value is also allowed.
    *
    * @param array $element
-   *   The form element being validated
+   *   The form element being validated.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state of the (entire) configuration form
+   *   The form state of the (entire) configuration form.
    *
    * @return void
    *   No return value.
    */
   public static function validateMd5checksum($element, FormStateInterface $form_state): void {
     $element_parents = $element['#parents'];
-    // element_parents e.g. 0 => "project_relationship", 1 => 0, 2 => "related_record"
+    // Element_parents e.g. 0 => "file_location",
+    // 1 => 0, 2 => "fileloc_md5checksum".
     $element_value = $element['#value'];
     if ($element_value != '' && $element_value != '                                ') {
       if (!preg_match('/^[0-9A-Fa-f]{32}$/', $element_value)) {
@@ -263,20 +269,6 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
    */
   public static function defaultSettings() {
     return self::defaultSelectSettings() + parent::defaultSettings();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    return parent::settingsForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary() {
-    return parent::settingsSummary();
   }
 
 }

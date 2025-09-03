@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal_file\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Link;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -11,8 +10,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * The default formatter for file content type.
- *
- * The default is a table to match the Tripal 3 version of this module.
  */
 #[TripalFieldFormatter(
   id: 'tripal_file_formatter_default',
