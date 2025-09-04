@@ -5,16 +5,19 @@
  * Contains tripal.module.
  */
 
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Drupal\Core\Render\Markup;
+use Drupal\tripal\Services\TripalJob;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\user\Entity\User;
 use Drupal\Core\Entity\EntityBase;
-use Symfony\Component\HttpFoundation\JsonResponse;
-// use Drupal\shortcut\Entity\ShortcutSet;
+// Use Drupal\shortcut\Entity\ShortcutSet;.
 use Drupal\Core\Hook\Attribute\Hook;
-use Drupal\Core\Render\Element;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
+use Drupal\tripal\Hook\TripalEntityHooks;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\views\ViewEntityInterface;
 use Drupal\views\ViewExecutable;
@@ -60,16 +63,16 @@ function tripal_theme() {
     'template' => 'tripal_entity_type',
   ];
 
-  $theme['tripal_entity'] = array(
+  $theme['tripal_entity'] = [
     'render element' => 'elements',
     'file' => 'templates/tripal_entity.page.php',
     'template' => 'tripal_entity',
-  );
+  ];
 
-  $theme['tripal_entity_edit_form'] = array(
+  $theme['tripal_entity_edit_form'] = [
     'render element' => 'form',
     'template' => 'tripal-entity-edit-form',
-  );
+  ];
 
   $theme['tripal_entity_content_add_list'] = [
     'render element' => 'types',
@@ -83,7 +86,7 @@ function tripal_theme() {
 /**
  * Implements hook_toolbar().
  */
-function tripal_toolbar () {
+function tripal_toolbar() {
   $items = [];
 
   $items['tripal'] = [
@@ -121,7 +124,7 @@ function tripal_toolbar () {
           '#url' => Url::fromRoute('entity.tripal_entity.collection'),
           '#attributes' => [
             'title' => 'Find biological content pages.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-content'],
+            'class' => ['toolbar-icon', 'toolbar-icon-tripal-content'],
           ],
           '#prefix' => '<li class="menu-item">',
           '#suffix' => '</li>',
@@ -132,7 +135,7 @@ function tripal_toolbar () {
           '#url' => Url::fromRoute('tripal.jobs'),
           '#attributes' => [
             'title' => 'Configure the form/page display for biological content.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-jobs'],
+            'class' => ['toolbar-icon', 'toolbar-icon-tripal-jobs'],
           ],
           '#prefix' => '<li class="menu-item">',
           '#suffix' => '</li>',
@@ -143,7 +146,7 @@ function tripal_toolbar () {
           '#url' => Url::fromRoute('tripal.data_loaders'),
           '#attributes' => [
             'title' => 'Importers for biological content.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-importers'],
+            'class' => ['toolbar-icon', 'toolbar-icon-tripal-importers'],
           ],
           '#prefix' => '<li class="menu-item">',
           '#suffix' => '</li>',
@@ -154,7 +157,7 @@ function tripal_toolbar () {
           '#url' => Url::fromRoute('entity.tripal_entity_type.collection'),
           '#attributes' => [
             'title' => 'Configure the form/page display for biological content.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-structure'],
+            'class' => ['toolbar-icon', 'toolbar-icon-tripal-structure'],
           ],
           '#prefix' => '<li class="menu-item">',
           '#suffix' => '</li>',
@@ -171,14 +174,14 @@ function tripal_toolbar () {
           '#prefix' => '<li class="menu-item">',
           '#suffix' => '</li>',
         ],
-        */
+         */
         'storage' => [
           '#type' => 'link',
           '#title' => t('Data Storage'),
           '#url' => Url::fromRoute('tripal.storage'),
           '#attributes' => [
             'title' => 'Flexible data storage for your biological content.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-storage'],
+            'class' => ['toolbar-icon', 'toolbar-icon-tripal-storage'],
           ],
           '#prefix' => '<li class="menu-item">',
           '#suffix' => '</li>',
@@ -189,7 +192,7 @@ function tripal_toolbar () {
           '#url' => Url::fromRoute('tripal.extension'),
           '#attributes' => [
             'title' => 'Provides administration of Tripal Extension modules.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-extend'],
+            'class' => ['toolbar-icon', 'toolbar-icon-tripal-extend'],
           ],
           '#prefix' => '<li class="menu-item">',
           '#suffix' => '</li>',
@@ -200,7 +203,7 @@ function tripal_toolbar () {
           '#url' => Url::fromRoute('tripal.admin'),
           '#attributes' => [
             'title' => 'For additional Tripal administration.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-more'],
+            'class' => ['toolbar-icon', 'toolbar-icon-tripal-more'],
           ],
           '#prefix' => '<li class="menu-item">',
           '#suffix' => '</li>',
@@ -214,7 +217,7 @@ function tripal_toolbar () {
 
   // Determine which tray item should be active
   // based on the current page.
-  Url::fromRoute('<current>', [], ['absolute'=>'true'])->toString();
+  Url::fromRoute('<current>', [], ['absolute' => 'true'])->toString();
   $curr_route_name = \Drupal::routeMatch()->getRouteName();
 
   // Tray items routeNames (#url key in the toolbar tray definition above).
@@ -223,15 +226,15 @@ function tripal_toolbar () {
     'tripal.jobs' => 'jobs',
     'tripal.data_loaders' => 'importers',
     'entity.tripal_entity_type.collection' => 'page_structure',
-    //'entity.tripal_vocab.collection' => 'vocab',
+    // 'entity.tripal_vocab.collection' => 'vocab',
     'tripal.storage' => 'storage',
     'tripal.extension' => 'extensions',
-    'tripal.admin' => 'more'
+    'tripal.admin' => 'more',
   ];
 
-  foreach($tray_items as $route_name => $page_name) {
+  foreach ($tray_items as $route_name => $page_name) {
     if ($route_name == $curr_route_name) {
-      array_push($items['tripal']['tray']['tripal-toolbar-tray'][ $page_name ]['#attributes']['class'], 'is-active');
+      array_push($items['tripal']['tray']['tripal-toolbar-tray'][$page_name]['#attributes']['class'], 'is-active');
       break;
     }
   }
@@ -251,10 +254,10 @@ function tripal_page_attachments(array &$attachments) {
 }
 
 /**
-* Implements hook_theme_suggestions_HOOK().
-*/
+ * Implements hook_theme_suggestions_HOOK().
+ */
 function tripal_theme_suggestions_tripal_entity(array $variables) {
-  $suggestions = array();
+  $suggestions = [];
   $entity = $variables['elements']['#tripal_entity'];
   $sanitized_view_mode = strtr($variables['elements']['#view_mode'], '.', '_');
 
@@ -269,37 +272,38 @@ function tripal_theme_suggestions_tripal_entity(array $variables) {
 /**
  * Replacement for tripal_init.
  * Implements hook_preprocess_html()
+ *
  * @param &$variables
  *   An associative array containing:
  *    page: A render element representing the page.
  */
 function tripal_preprocess_html(&$variables) {
   global $base_url;
-  //@todo Need to look into service injection in the module file.
+  // @todo Need to look into service injection in the module file.
   $config = \Drupal::config('tripal_admin.settings');
-  // add some variables for all javasript to use for building URLs
+  // Add some variables for all javasript to use for building URLs.
   $clean_urls = $config->get('clean_url', 0);
   $tripal_path = \Drupal::service('extension.list.module')->getPath('tripal');
-  //Add a JS library
+  // Add a JS library.
   $variables['#attached']['library'][] = 'tripal/tripal-js';
   $variables['#attached']['drupalSettings']['tripal']['tripalJS']['baseurl'] = $base_url;
   $variables['#attached']['drupalSettings']['tripal']['tripalJS']['isClean'] = $clean_urls;
   $variables['#attached']['drupalSettings']['tripal']['tripalJS']['tripal_path'] = $tripal_path;
-  // make sure the date time settings are the way Tripal will insert them
+  // Make sure the date time settings are the way Tripal will insert them
   // otherwise PostgreSQL version that may have a different datestyle setting
   // will fail when inserting or updating a date column in a table.
-  Drupal::database()->query("SET DATESTYLE TO :style", array(':style' => 'MDY'));
+  Drupal::database()->query("SET DATESTYLE TO :style", [':style' => 'MDY']);
 
-  //Ask users to do the registration form
+  // Ask users to do the registration form.
   // @upgrade when Issue #45 is closed.
-  //if (\Drupal::currentUser()->hasPermission('administer tripal')) {
-    //if (empty($config->get('tripal_site_registration') ?: FALSE) || !($config->get('disable_tripal_reporting') ?: FALSE)) {
-      //\Drupal::messenger()->addWarning(t('Please register your Tripal Site.
-      //Registering provides important information that will help secure funding
-      //for continued improvements to Tripal. <a href="admin/tripal/register">Click to register
-      //now or opt out</a>.'));
-    //}
-  //}
+  // if (\Drupal::currentUser()->hasPermission('administer tripal')) {
+  // if (empty($config->get('tripal_site_registration') ?: FALSE) || !($config->get('disable_tripal_reporting') ?: FALSE)) {
+  // \Drupal::messenger()->addWarning(t('Please register your Tripal Site.
+  // Registering provides important information that will help secure funding
+  // for continued improvements to Tripal. <a href="admin/tripal/register">Click to register
+  // now or opt out</a>.'));
+  // }
+  // }
 }
 
 /**
@@ -314,7 +318,7 @@ function tripal_preprocess_html(&$variables) {
  *   The file ID.
  */
 function tripal_access_user_files($op, $uid, $fid = NULL) {
-  // global $user is deprecated in D8 use the currentUser service.
+  // Global $user is deprecated in D8 use the currentUser service.
   // this only returns an AccountProxyInterface object and not a full
   // UserInterface object.  To get access to the full UserInterface object, load
   // the user using the uid of the currentUser
@@ -356,7 +360,7 @@ function tripal_access_user_files($op, $uid, $fid = NULL) {
 /**
  * An access function for data collections.
  *
- * @return boolean
+ * @return bool
  */
 function tripal_accesss_user_collections($uid) {
   $config = \Drupal::config('tripal_admin.settings');
@@ -377,9 +381,10 @@ function tripal_accesss_user_collections($uid) {
  * function can be used to check access for any type of user-specfic data
  * added by any Tripal module.
  *
- * @param  $uid
+ * @param $uid
  *   The UID of the user's account to access.
- * @return boolean
+ *
+ * @return bool
  */
 function tripal_access_user_data($uid) {
   if ($uid == \Drupal::currentUser()->id()) {
@@ -399,10 +404,10 @@ function tripal_menu_local_tasks_alter(&$data, $router_item, $root_path) {
   if ($root_path == 'admin/content/bio_data') {
     $item = menu_get_item('bio_data/add');
     if ($item['access']) {
-      $data['actions']['output'][] = array(
+      $data['actions']['output'][] = [
         '#theme' => 'menu_local_task',
         '#link' => $item,
-      );
+      ];
     }
   }
 }
@@ -410,6 +415,7 @@ function tripal_menu_local_tasks_alter(&$data, $router_item, $root_path) {
 /**
  * Implements hook_shortcut_default_set().
  * Modify the shortcut menu to include Biological content links.
+ *
  * @upgrade when Issue #21 decides what to do here.
  *
  * @param object $account
@@ -420,7 +426,7 @@ function tripal_menu_local_tasks_alter(&$data, $router_item, $root_path) {
  *   An object representing the default shortcut set.
  */
 function tripal_shortcut_default_set($account) {
-  //@todo This will set another dependency as this is a contrib module.
+  // @todo This will set another dependency as this is a contrib module.
   // $sets = ShortcutSet::getShortcuts();
   // $found = FALSE;
   // foreach ($sets as $set) {
@@ -457,7 +463,6 @@ function tripal_shortcut_default_set($account) {
   //   );
   //   shortcut_set_save($shortcut_set);
   // }
-
   // $sets = shortcut_sets();
   // foreach ($sets as $set) {
   //   if ($set->title == 'TripalDefault') {
@@ -474,6 +479,7 @@ function tripal_shortcut_default_set($account) {
  *
  * @param $type
  *   The machine-readable name of a tripal data type to load.
+ *
  * @return
  *   A tripal data type array or FALSE if $type does not exist.
  */
@@ -504,6 +510,7 @@ function TripalBundle_load($bundle_type, $reset = FALSE) {
  *   Integer specifying the tripal_entity id.
  * @param $reset
  *   A boolean indicating that the internal cache should be reset.
+ *
  * @return
  *   A fully-loaded $tripal_entity object or FALSE if it cannot be loaded.
  *
@@ -511,7 +518,7 @@ function TripalBundle_load($bundle_type, $reset = FALSE) {
  */
 function TripalEntity_load($id, $reset = FALSE) {
   // $entity = entity_load('TripalEntity', array($id), array(), $reset);
-  $entity = tripal_load_entity('TripalEntity', array($id), $reset);
+  $entity = tripal_load_entity('TripalEntity', [$id], $reset);
   return reset($entity);
 }
 
@@ -528,7 +535,6 @@ function TripalEntity_load($id, $reset = FALSE) {
  *   module_load_include('module', 'tripal', 'tripal');
  *   tripal_import_api();
  * @endcode
- *
  */
 function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.d3js.api');
@@ -546,9 +552,12 @@ function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.DEPRECATED.api');
 }
 
+/**
+ *
+ */
 function tripal_check_new_fields($bundle_name) {
-  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+  $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
+  $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
 
   $added = tripal_create_bundle_fields($bundle, $term);
   if (count($added) == 0) {
@@ -562,7 +571,6 @@ function tripal_check_new_fields($bundle_name) {
   $response->send();
 }
 
-
 /**
  * Implements hook_rebuild().
  */
@@ -575,7 +583,6 @@ function tripal_rebuild() {
   //
   // Make sure the CustomTables view is present. If not then add it.
   //
-
   // First get the config file.
   $dir = \Drupal::service('extension.list.module')->getPath('tripal');
   $fileStorage = new FileStorage($dir);
@@ -612,11 +619,11 @@ function tripal_rebuild() {
  *       ones have a value the same as the key. All collections not chosen to be
  *       installed will have a value of 0.
  */
-function import_tripalentitytype_collection(array $options, \Drupal\tripal\Services\TripalJob $job = NULL) {
+function import_tripalentitytype_collection(array $options, ?TripalJob $job = NULL) {
 
   // We need to ensure that we only submit the chosen collections.
   $collection_ids = $options['collection_ids'];
-  $chosen_collection_ids = array_filter($collection_ids, function($e) {
+  $chosen_collection_ids = array_filter($collection_ids, function ($e) {
       return ($e !== 0);
   });
 
@@ -635,7 +642,7 @@ function import_tripalentitytype_collection(array $options, \Drupal\tripal\Servi
  * vocabulary.  The function only does this for fields that are not
  * Tripal fields but which are attached to a tripal content type.
  */
-function tripal_form_field_config_edit_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function tripal_form_field_config_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 
   /** @var \Drupal\field\Entity\FieldConfig $field **/
   $field = $form_state->getFormObject()->getEntity();
@@ -651,11 +658,10 @@ function tripal_form_field_config_edit_form_alter(&$form, \Drupal\Core\Form\Form
  * This is to permit HTML markup in the page title field, for
  * example on an organism page, to display genus and species
  * in italics.
- *
  */
 function tripal_preprocess_field(&$variables) {
   if ($variables['element']['#field_name'] == 'title') {
-    // We can configure which tags are allowed at /admin/tripal/config
+    // We can configure which tags are allowed at /admin/tripal/config.
     $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
     $tripal_allowed_tags = explode(' ', $tag_string ?? '');
 
@@ -667,7 +673,7 @@ function tripal_preprocess_field(&$variables) {
         // Convert strings into markup, this will cause HTML tags to be rendered.
         if (is_string($value)) {
           $sanitized_value = Xss::filter($value, $tripal_allowed_tags);
-          $variables['items'][$delta]['content']['#context']['value'] = Drupal\Core\Render\Markup::create($sanitized_value);
+          $variables['items'][$delta]['content']['#context']['value'] = Markup::create($sanitized_value);
         }
       }
       elseif ($item['content']['#type'] == 'link') {
@@ -675,7 +681,7 @@ function tripal_preprocess_field(&$variables) {
         // Convert strings into markup, this will cause HTML tags to be rendered.
         if (is_string($value)) {
           $sanitized_value = Xss::filter($value, $tripal_allowed_tags);
-          $variables['items'][$delta]['content']['#title']['#context']['value'] = Drupal\Core\Render\Markup::create($sanitized_value);
+          $variables['items'][$delta]['content']['#title']['#context']['value'] = Markup::create($sanitized_value);
         }
       }
     }
@@ -687,6 +693,7 @@ function tripal_preprocess_field(&$variables) {
  *
  * @param array $route_names
  *   A simple list of route names that should be considered to be content forms.
+ *
  * @return array
  *   The $route_names parameter with our content form routes added.
  */
@@ -705,7 +712,7 @@ function tripal_gin_content_form_routes() {
 function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
   // Override permission of Tripal Content Type listing (admin/content/bio_data)
   // in order to support OR when evaluating permissions since views UI does
-  // not support this. 
+  // not support this.
   // WARNING: requires you to have NO Permissions on this view through the UI!
   if ($view->id() == 'tripal_content_type_listing') {
     // The user must have 1+ of the following permissions to access the
@@ -728,7 +735,7 @@ function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) 
 
     // Deny access if user does not have necessary permission.
     if (!$has_permission) {
-      throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException();
+      throw new AccessDeniedHttpException();
     }
   }
 }
@@ -748,4 +755,15 @@ function tripal_view_presave(ViewEntityInterface $view): void {
     $config_updater->setDeprecationsEnabled(FALSE);
     $config_updater->processTableCssClassUpdate($view);
   }
+}
+
+/**
+ * Legacy implementation for TripalEntityHooks::tripalEntityStorageLoad().
+ *
+ * @param array $entities
+ *   Entities to be loaded.
+ */
+#[LegacyHook]
+function tripal_tripal_entity_storage_load(&$entities) {
+  \Drupal::service(TripalEntityHooks::class)->tripalEntityStorageLoad($entities);
 }
