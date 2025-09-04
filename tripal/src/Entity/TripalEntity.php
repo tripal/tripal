@@ -894,6 +894,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   Values returned from TripalStorage mapping to fields of this entity.
    * @param array $tripal_storages
    *   Array of TripalStorage objects.
+   * @param bool $do_save
+   *   TRUE indicates this is being called within the save workflow and
+   *   when FALSE if is being called in the load workflow.
    *
    * @return void
    *   This method does not return anything since the params are updated
@@ -901,7 +904,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *
    * @see TripalEntityHooks::tripalEntityStorageLoad()
    */
-  public static function saveValuesArray(TripalEntity &$entity, array &$values, array &$tripal_storages) {
+  public static function saveValuesArray(TripalEntity &$entity, array &$values, array &$tripal_storages, bool $do_save = FALSE) {
     $bundle = $entity->bundle();
 
     // Update the entity values with the values returned by loadValues().
@@ -932,18 +935,101 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // Create a new properties array for this field item.
         $prop_values = [];
         $prop_types = [];
+        // Keep track of the properties that indicate this field is not empty.
+        $store_values = [];
         foreach ($values[$tsid][$field_name][$delta] as $key => $info) {
-          $prop_values[] = $info['value'];
-          $prop_types[] = $tripal_storages[$tsid]->getPropertyType($bundle, $field_name, $key);
+
+          // Get the specific prop type and it's corresponding value.
+          $prop_type = $tripal_storages[$tsid]->getPropertyType($bundle, $field_name, $key);
+          $prop_value = $info['value'];
+
+          // Add it to the list if it's action is 'store'.
+          if ($this->isStorePropType($prop_type)) {
+            $store_values[$key] = $prop_value;
+          }
+
+          // We do some extra work here when saving
+          // related to conditionally saving field values.
+          if ($do_save && $storage->isDrupalStoreByFieldNameKey($field_name, $key)) {
+            $prop_values[] = $prop_value;
+            $prop_types[] = $prop_type;
+          }
+          // When loading we add all property types/fields.
+          elseif ($do_save === FALSE) {
+            $prop_values[] = $prop_value;
+            $prop_types[] = $prop_type;
+          }
+        }
+
+        // During save we do extra checks here to ensure
+        // that empty delta are not saved.
+        if (($do_save === TRUE) & ($this->isEmptyFieldItem($prop_values, $store_values))) {
+          $prop_values = [];
         }
 
         // Now set the entity values for this field.
-        $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $entity);
+        if (count($prop_values) > 0) {
+          $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $entity);
+        }
 
         // Set the item back to the list.
         $items->set($k, $item);
       }
     }
+  }
+
+  /**
+   * Helper function: check if a field item is empty based on property values.
+   *
+   * @param array $prop_values
+   *   An array of property value objects for the current field item.
+   * @param array $store_values
+   *   A mapping of property key => value for property types with store action.
+   *
+   * @return bool
+   *   TRUE if this field item is considered empty and FALSE otherwise.
+   */
+  public static function isEmptyFieldItem(array $prop_values, array $store_values) {
+
+    // Does this field item have only empty values?
+    // If yes, it should be removed.
+    if ($this->allNull($prop_values)) {
+      return TRUE;
+    }
+
+    // If there is a zero value in $store_values, this means that
+    // we chose "- Select -" in a widget, or removed the row with the
+    // "Remove" button.
+    // Chado storage has already done its work, so now remove this
+    // delta so that Drupal doesn't make a blank field table entry.
+    foreach ($store_values as $value) {
+      if ($value === 0) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * Helper function: is this a property type and if yes, is its action store?
+   *
+   * @param ?object $prop_type
+   *   What we think should be a property type. We do need to check that is is.
+   * @return bool
+   *   TRUE if this is a property type and it's action is STORE
+   *   and FALSE otherwise.
+   */
+  public static function isStorePropType (?object $prop_type): bool {
+
+    // First get the action for this prop type.
+    $action = '';
+    if ($prop_type) {
+      $action = $prop_type->getStorageSettings()['action'] ?? '';
+    }
+
+    // Now indicate if this is a store property type based on that action.
+    return ($action == 'store') ? TRUE : FALSE;
   }
 
   /**
@@ -972,6 +1058,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // Create a values array appropriate for `loadValues()`
     [$values, $tripal_storages] = TripalEntity::getValuesArray($this);
+
     // Perform the Insert or Update of the submitted values to the
     // underlying data store.
     foreach ($values as $tsid => $tsid_values) {
@@ -1019,6 +1106,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // Set the property values that should be saved in Drupal, everything
     // else will stay in the underlying data store (e.g. Chado).
+    // @todo use saveValuesArray here!!!
     $delta_remove = [];
     $fields = $this->getFields();
     foreach ($fields as $field_name => $items) {
