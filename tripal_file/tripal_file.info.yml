@@ -1,11 +1,11 @@
 name: 'Tripal File'
 type: 'module'
 description: 'A module for associating files with Tripal content and for accessing files via web services.'
-core_version_requirement: ^10.4 || ^11.1
-php: 8.1
+core_version_requirement: '^10.4 || ^11.1'
+php: '8.1'
 package: 'Tripal'
 version: '4.0.alpha3'
 dependencies:
-  - tripal:tripal
-  - tripal:tripal_biodb
-  - tripal:tripal_chado
+  - 'tripal:tripal'
+  - 'tripal:tripal_biodb'
+  - 'tripal:tripal_chado'
