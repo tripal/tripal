@@ -9,17 +9,17 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
- * Plugin implementation of the default Tripal file widget.
+ * Plugin implementation of the default Chado file widget.
  */
 #[FieldWidget(
-  id: 'tripal_file_widget_default',
-  label: new TranslatableMarkup('Tripal File Widget'),
+  id: 'chado_file_widget_default',
+  label: new TranslatableMarkup('Chado File Widget'),
   description: new TranslatableMarkup('The default file widget.'),
   field_types: [
-    'tripal_file_type_default',
+    'chado_file_type_default',
   ],
 )]
-class TripalFileWidgetDefault extends ChadoWidgetBase {
+class ChadoFileWidgetDefault extends ChadoWidgetBase {
 
   /**
    * {@inheritdoc}

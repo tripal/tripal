@@ -11,24 +11,24 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- * Plugin implementation of default Tripal file field type.
+ * Plugin implementation of default Chado file field type.
  */
 #[FieldType(
-  id: 'tripal_file_type_default',
+  id: 'chado_file_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('File'),
   description: new TranslatableMarkup('A file is an information-bearing object that contains a physical embodiment of some information using a particular character encoding.'),
-  default_widget: 'tripal_file_widget_default',
-  default_formatter: 'tripal_file_formatter_default',
+  default_widget: 'chado_file_widget_default',
+  default_formatter: 'chado_file_formatter_default',
 )]
-class TripalFileTypeDefault extends ChadoFieldItemBase {
+class ChadoFileTypeDefault extends ChadoFieldItemBase {
 
   /**
    * The machine name of this field.
    *
    * @var string
    */
-  public static $id = 'tripal_file_type_default';
+  public static $id = 'chado_file_type_default';
 
   /**
    * The name of the table linked to from the base table.

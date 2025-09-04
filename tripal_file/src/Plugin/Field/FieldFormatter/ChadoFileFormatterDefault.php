@@ -9,17 +9,17 @@ use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * The default formatter for file content type.
+ * The default formatter for chado file content type.
  */
 #[TripalFieldFormatter(
-  id: 'tripal_file_formatter_default',
-  label: new TranslatableMarkup('Tripal file formatter'),
-  description: new TranslatableMarkup('A tripal file formatter'),
+  id: 'chado_file_formatter_default',
+  label: new TranslatableMarkup('Chado file formatter'),
+  description: new TranslatableMarkup('A chado file formatter'),
   field_types: [
-    'tripal_file_type_default',
+    'chado_file_type_default',
   ],
 )]
-class TripalFileFormatterDefault extends ChadoFormatterBase {
+class ChadoFileFormatterDefault extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}

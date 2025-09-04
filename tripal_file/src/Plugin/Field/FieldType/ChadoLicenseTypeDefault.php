@@ -11,17 +11,17 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- * Plugin implementation of default Tripal license field type.
+ * Plugin implementation of default Chado license field type.
  */
 #[FieldType(
-  id: 'tripal_license_type_default',
+  id: 'chado_license_type_default',
   category: 'tripal_file',
   label: new TranslatableMarkup('License'),
   description: new TranslatableMarkup('A license document that applies to this content, typically indicated by URL.'),
-  default_widget: 'tripal_license_widget_default',
-  default_formatter: 'tripal_license_formatter_default',
+  default_widget: 'chado_license_widget_default',
+  default_formatter: 'chado_license_formatter_default',
 )]
-class TripalLicenseTypeDefault extends ChadoFieldItemBase {
+class ChadoLicenseTypeDefault extends ChadoFieldItemBase {
 
   // @todo is this still needed? can this be found from attributes?
   /**
@@ -29,7 +29,7 @@ class TripalLicenseTypeDefault extends ChadoFieldItemBase {
    *
    * @var string
    */
-  public static $id = 'tripal_license_type_default';
+  public static $id = 'chado_license_type_default';
 
   /**
    * The name of the table linked to from the base table.

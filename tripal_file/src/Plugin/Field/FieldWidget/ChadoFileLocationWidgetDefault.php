@@ -10,17 +10,17 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
- * Plugin implementation of the default Tripal file location widget.
+ * Plugin implementation of the default Chado file location widget.
  */
 #[FieldWidget(
-  id: 'tripal_file_location_widget_default',
-  label: new TranslatableMarkup('Tripal File Location Widget'),
+  id: 'chado_file_location_widget_default',
+  label: new TranslatableMarkup('Chado File Location Widget'),
   description: new TranslatableMarkup('The default file location widget.'),
   field_types: [
-    'tripal_file_location_type_default',
+    'chado_file_location_type_default',
   ],
 )]
-class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
+class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
 
   /**
    * Service to convert a uri to its corresponding local path.

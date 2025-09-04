@@ -9,17 +9,17 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
- * Plugin implementation of the default Tripal license widget.
+ * Plugin implementation of the default Chado license widget.
  */
 #[FieldWidget(
-  id: 'tripal_license_widget_default',
-  label: new TranslatableMarkup('Tripal License Widget'),
+  id: 'chado_license_widget_default',
+  label: new TranslatableMarkup('Chado License Widget'),
   description: new TranslatableMarkup('The default license widget.'),
   field_types: [
-    'tripal_license_type_default',
+    'chado_license_type_default',
   ],
 )]
-class TripalLicenseWidgetDefault extends ChadoWidgetBase {
+class ChadoLicenseWidgetDefault extends ChadoWidgetBase {
 
   /**
    * {@inheritdoc}

@@ -10,19 +10,19 @@ use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * The default formatter for file location content type.
+ * The default formatter for chado file location content type.
  *
  * The default is a table to match the Tripal 3 version of this module.
  */
 #[TripalFieldFormatter(
-  id: 'tripal_file_location_formatter_default',
-  label: new TranslatableMarkup('Tripal file location formatter'),
-  description: new TranslatableMarkup('A tripal file location formatter'),
+  id: 'chado_file_location_formatter_default',
+  label: new TranslatableMarkup('Chado file location formatter'),
+  description: new TranslatableMarkup('A chado file location formatter'),
   field_types: [
-    'tripal_file_location_type_default',
+    'chado_file_location_type_default',
   ],
 )]
-class TripalFileLocationFormatterDefault extends ChadoFormatterBase {
+class ChadoFileLocationFormatterDefault extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}

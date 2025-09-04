@@ -100,7 +100,7 @@ fields:
     -   name: 'file_license'
         content_type: 'tripal_file'
         label: 'License'
-        type: 'tripal_license_type_default'
+        type: 'chado_license_type_default'
         description: 'The license associated with this file.'
         cardinality: 1
         required: true
@@ -127,7 +127,7 @@ fields:
     -   name: 'file_location'
         content_type: 'tripal_file'
         label: 'File Location'
-        type: 'tripal_file_location_type_default'
+        type: 'chado_file_location_type_default'
         description: 'The location of the file.'
         cardinality: -1
         required: false

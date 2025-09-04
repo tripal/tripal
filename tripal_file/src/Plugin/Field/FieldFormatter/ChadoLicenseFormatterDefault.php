@@ -8,14 +8,14 @@ use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * The default formatter for license content type.
+ * The default formatter for chado license content type.
  */
 #[TripalFieldFormatter(
-  id: 'tripal_license_formatter_default',
-  label: new TranslatableMarkup('Tripal license formatter'),
-  description: new TranslatableMarkup('A tripal license formatter'),
+  id: 'chado_license_formatter_default',
+  label: new TranslatableMarkup('Chado license formatter'),
+  description: new TranslatableMarkup('A chado license formatter'),
   field_types: [
-    'tripal_license_type_default',
+    'chado_license_type_default',
   ],
   valid_tokens: [
     '[name]',
@@ -23,7 +23,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     '[uri]',
   ],
 )]
-class TripalLicenseFormatterDefault extends ChadoFormatterBase {
+class ChadoLicenseFormatterDefault extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}
