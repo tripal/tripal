@@ -2,6 +2,7 @@
 
 use Symfony\Component\Yaml\Yaml;
 use Drupal\Core\Messenger\Messenger;
+use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
 use Drupal\tripal_chado\Database\ChadoSchema;
 use Drupal\tripal_chado\Entity\ChadoTermMapping;
 use Drupal\tripal_chado\Services\ChadoTermsInit;
@@ -39,27 +40,42 @@ function tripal_file_requirements($phase) {
  * @ingroup tripal_file
  */
 function tripal_file_install() {
-  $messenger = \Drupal::messenger();
   $chado = \Drupal::service('tripal_chado.database');
 
   // Create tripal terms for the new CV terms defined in YAML files.
-  $messenger->addStatus(t('Adding new vocabulary terms'));
+  show_message('Adding new vocabulary terms');
   tripal_file_create_tripal_terms();
 
   // Add the custom tables needed to associate Chado content with files.
-  tripal_file_create_custom_tables($messenger);
+  show_message('Adding custom tables');
+  tripal_file_create_custom_tables();
 
   // Associate terms with the linker tables.
-  $messenger->addStatus(t('Adding linker table terms'));
+  show_message('Adding linker table terms');
   tripal_file_add_linker_table_terms();
 
   // Import new content types defined in YAML for this module.
-  $messenger->addStatus(t('Creating new content types: file, license'));
+  show_message('Creating new content types: file, license');
   tripal_file_import_content_types();
 
   // Insert standard license types.
-  $messenger->addStatus(t('Adding standard license types'));
+  show_message('Adding and publishing standard license types');
   tripal_file_add_default_licenses($chado);
+}
+
+/**
+ * Displays a status message.
+ *
+ * This handles
+ *
+ * @param string $message
+ *   The message to be displayed.
+ */
+function show_message(string $message) {
+  // This is displayed when this module is installed with the UI.
+  \Drupal::messenger()->addStatus($message);
+  // This is displayed when this module is installed with drush.
+  \Drupal::logger('tripal_file')->notice($message);
 }
 
 /**
@@ -80,19 +96,23 @@ function tripal_file_create_tripal_terms(): void {
 /**
  * Creates the custom tables used by this module.
  *
- * @param Drupal\Core\Messenger\Messenger $messenger
- *   The Drupal messenger service.
- *
  * @return void
  *   No return value.
  */
-function tripal_file_create_custom_tables(Messenger $messenger): void {
+function tripal_file_create_custom_tables(): void {
   $config = __DIR__ . '/config/tables/tripal_file.custom_tables.yml';
   $schemas = Yaml::parseFile($config);
   foreach ($schemas as $schema) {
     $table_name = $schema['table'];
-    $messenger->addStatus(t('Creating custom table "@table"', ['@table' => $table_name]));
-    chado_create_custom_table($table_name, $schema, TRUE, NULL, FALSE);
+    $customTable = new ChadoCustomTable($table_name);
+    // If the table already exists, e.g. for a migrated Tripal 3
+    // site, then do nothing.
+    $existing_schema = $customTable->getTableSchema();
+    if (!$existing_schema) {
+      show_message('Creating custom table "' . $table_name . '"');
+      $customTable->setTableSchema($schema, FALSE);
+      $customTable->setLocked(TRUE);
+    }
   }
 }
 
@@ -236,8 +256,13 @@ function tripal_file_add_default_licenses($chado): void {
  * ran Tripal File v3 update 7101 and 7102. On a new install it
  * will not do anything.
  * @todo
+ *
+ * @param Drupal\tripal_chado\Database\ChadoConnection $chado
+ *   A connection to the chado database.
  */
-function legacy_update_7102() {
+function legacy_update_7102(Drupal\tripal_chado\Database\ChadoConnection $chado) {
+// how to get chado_schema?
+  $file_schema = $chado_schema->getCustomTableSchema('file');
 
   $filename_schema = [
     'type' => 'text',
