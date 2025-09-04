@@ -880,6 +880,73 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Updates the fields in the entity with the values from Tripal Storage.
+   *
+   * This method is expected to be called as part of the TripalStorage backend
+   * load workflow. Specifically, the entity is prepared using getValuesArray(),
+   * the values are loaded for each backend using TripalStorage::loadValues()
+   * and then this method processes those values in order to update the fields
+   * on the original entity.
+   *
+   * @param TripalEntity $entity
+   *   The entity that we want to update.
+   * @param array $values
+   *   Values returned from TripalStorage mapping to fields of this entity.
+   * @param array $tripal_storages
+   *   Array of TripalStorage objects.
+   *
+   * @return void
+   *   This method does not return anything since the params are updated
+   *   in place.
+   *
+   * @see TripalEntityHooks::tripalEntityStorageLoad()
+   */
+  public static function saveValuesArray(TripalEntity &$entity, array &$values, array &$tripal_storages) {
+    $bundle = $entity->bundle();
+
+    // Update the entity values with the values returned by loadValues().
+    $field_items = $entity->getFields();
+    foreach ($field_items as $field_name => $items) {
+      foreach ($items as $k => $item) {
+
+        // If it is not a TripalField then skip it.
+        if (!$item instanceof TripalFieldItemInterface) {
+          continue;
+        }
+        $delta = $item->getName();
+        $tsid = $item->tripalStorageId();
+
+        // If the Tripal Storage Backend is not set on a Tripal-based field,
+        // we log an error and not support the field. If developers want
+        // to use Drupal storage for a Tripal-based field then they need to
+        // indicate that by using our Drupal SQL Storage option OR by not
+        // creating a Tripal-based field at all depending on their needs.
+        if (empty($tsid)) {
+          \Drupal::logger('tripal')->error('The Tripal-based field :field on
+                this content type must indicate a TripalStorage backend and currently does not.',
+            [':field' => $field_name]
+          );
+          continue;
+        }
+
+        // Create a new properties array for this field item.
+        $prop_values = [];
+        $prop_types = [];
+        foreach ($values[$tsid][$field_name][$delta] as $key => $info) {
+          $prop_values[] = $info['value'];
+          $prop_types[] = $tripal_storages[$tsid]->getPropertyType($bundle, $field_name, $key);
+        }
+
+        // Now set the entity values for this field.
+        $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $entity);
+
+        // Set the item back to the list.
+        $items->set($k, $item);
+      }
+    }
+  }
+
+  /**
    * Helper function: Confirm array contains all null elements.
    *
    * @param array $array_to_check

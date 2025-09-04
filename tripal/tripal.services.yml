@@ -70,5 +70,5 @@ services:
      - '@database'
 
   Drupal\tripal\Hook\TripalEntityHooks:
-    class: Drupal\tripal\Hook\TripalEntityHooks
-    autowire: true
+    class: 'Drupal\tripal\Hook\TripalEntityHooks'
+    autowire: TRUE
