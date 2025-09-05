@@ -1,5 +1,5 @@
--
-    table: file
+file:
+    table: 'file'
     fields:
         file_id:
             size: big
@@ -28,8 +28,8 @@
             table: cvterm
             columns:
                 type_id: cvterm_id
--
-    table: license
+license:
+    table: 'license'
     fields:
         license_id:
             type: serial
@@ -52,8 +52,8 @@
     indexes:
         license_idx1:
             - name
--
-    table: fileloc
+fileloc:
+    table: 'fileloc'
     fields:
         fileloc_id:
             size: big
@@ -97,8 +97,8 @@
             table: file
             columns:
                 file_id: file_id
--
-    table: fileprop
+fileprop:
+    table: 'fileprop'
     fields:
         fileprop_id:
             type: serial
@@ -136,8 +136,8 @@
             table: cvterm
             columns:
                 type_id: cvterm_id
--
-    table: file_relationship
+file_relationship:
+    table: 'file_relationship'
     fields:
         file_relationship_id:
             type: serial
@@ -175,8 +175,8 @@
             table: cvterm
             columns:
                 type_id: cvterm_id
--
-    table: file_license
+file_license:
+    table: 'file_license'
     fields:
         file_license_id:
             type: serial
@@ -207,8 +207,8 @@
             table: license
             columns:
                 license_id: license_id
--
-    table: file_contact
+file_contact:
+    table: 'file_contact'
     fields:
         file_contact_id:
             size: big
@@ -239,8 +239,8 @@
             table: contact
             columns:
                 contact_id: contact_id
--
-    table: file_pub
+file_pub:
+    table: 'file_pub'
     fields:
         file_pub_id:
             size: big
@@ -274,8 +274,8 @@
             table: file
             columns:
                 file_id: file_id
--
-    table: analysis_file
+analysis_file:
+    table: 'analysis_file'
     fields:
         analysis_file_id:
             size: big
@@ -313,8 +313,8 @@
             table: analysis
             columns:
                 analysis_id: analysis_id
--
-    table: assay_file
+assay_file:
+    table: 'assay_file'
     fields:
         assay_file_id:
             size: big
@@ -352,8 +352,8 @@
             table: assay
             columns:
                 assay_id: assay_id
--
-    table: biomaterial_file
+biomaterial_file:
+    table: 'biomaterial_file'
     fields:
         biomaterial_file_id:
             size: big
@@ -391,8 +391,8 @@
             table: biomaterial
             columns:
                 biomaterial_id: biomaterial_id
--
-    table: cv_file
+cv_file:
+    table: 'cv_file'
     fields:
         cv_file_id:
             size: big
@@ -430,8 +430,8 @@
             table: cv
             columns:
                 cv_id: cv_id
--
-    table: eimage_file
+eimage_file:
+    table: 'eimage_file'
     fields:
         eimage_file_id:
             size: big
@@ -469,8 +469,8 @@
             table: eimage
             columns:
                 eimage_id: eimage_id
--
-    table: feature_file
+feature_file:
+    table: 'feature_file'
     fields:
         feature_file_id:
             size: big
@@ -508,8 +508,8 @@
             table: feature
             columns:
                 feature_id: feature_id
--
-    table: featuremap_file
+featuremap_file:
+    table: 'featuremap_file'
     fields:
         featuremap_file_id:
             size: big
@@ -547,8 +547,8 @@
             table: featuremap
             columns:
                 featuremap_id: featuremap_id
--
-    table: library_file
+library_file:
+    table: 'library_file'
     fields:
         library_file_id:
             size: big
@@ -586,8 +586,8 @@
             table: library
             columns:
                 library_id: library_id
--
-    table: nd_protocol_file
+nd_protocol_file:
+    table: 'nd_protocol_file'
     fields:
         nd_protocol_file_id:
             size: big
@@ -625,8 +625,8 @@
             table: nd_protocol
             columns:
                 nd_protocol_id: nd_protocol_id
--
-    table: organism_file
+organism_file:
+    table: 'organism_file'
     fields:
         organism_file_id:
             size: big
@@ -664,8 +664,8 @@
             table: organism
             columns:
                 organism_id: organism_id
--
-    table: phylotree_file
+phylotree_file:
+    table: 'phylotree_file'
     fields:
         phylotree_file_id:
             size: big
@@ -703,8 +703,8 @@
             table: phylotree
             columns:
                 phylotree_id: phylotree_id
--
-    table: project_file
+project_file:
+    table: 'project_file'
     fields:
         project_file_id:
             size: big
@@ -742,8 +742,8 @@
             table: project
             columns:
                 project_id: project_id
--
-    table: pub_file
+pub_file:
+    table: 'pub_file'
     fields:
         pub_file_id:
             size: big
@@ -781,8 +781,8 @@
             table: pub
             columns:
                 pub_id: pub_id
--
-    table: stock_file
+stock_file:
+    table: 'stock_file'
     fields:
         stock_file_id:
             size: big
@@ -820,8 +820,8 @@
             table: stock
             columns:
                 stock_id: stock_id
--
-    table: stockcollection_file
+stockcollection_file:
+    table: 'stockcollection_file'
     fields:
         stockcollection_file_id:
             size: big
@@ -859,8 +859,8 @@
             table: stockcollection
             columns:
                 stockcollection_id: stockcollection_id
--
-    table: study_file
+study_file:
+    table: 'study_file'
     fields:
         study_file_id:
             size: big
