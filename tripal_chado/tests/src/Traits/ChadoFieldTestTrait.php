@@ -217,12 +217,27 @@ trait ChadoFieldTestTrait {
    */
   public function setupChadoEntityFieldSystemUnderTest(array $system_under_test): array {
 
-    // 1. Create the bundle.
+    // 1. Create any needed collections. Collections for the bundle get
+    // created automatically, but not those for fields.
+    if (array_key_exists('termIdSpace', $system_under_test)) {
+      $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+      foreach ($system_under_test['termIdSpace'] as $termIdSpace) {
+        $idsmanager->createCollection($termIdSpace, "chado_id_space");
+      }
+    }
+    if (array_key_exists('termVocab', $system_under_test)) {
+      $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+      foreach ($system_under_test['termVocab'] as $termVocab) {
+        $vmanager->createCollection($termVocab, "chado_vocabulary");
+      }
+    }
+
+    // 2. Create the bundle.
     $bundle = $this->createTripalContentType($system_under_test['bundle']);
     $bundle->setThirdPartySetting('tripal', 'chado_base_table', $system_under_test['bundle']['settings']['chado_base_table']);
     $bundle_name = $bundle->id();
 
-    // 2. Create the fields.
+    // 3. Create the fields.
     $fields = [];
     foreach ($system_under_test['fields'] as $field_details) {
 
