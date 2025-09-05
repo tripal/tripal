@@ -749,3 +749,14 @@ function tripal_view_presave(ViewEntityInterface $view): void {
     $config_updater->processTableCssClassUpdate($view);
   }
 }
+
+/**
+ * Legacy implementation for TripalEntityHooks::tripalEntityStorageLoad().
+ *
+ * @param array $entities
+ *   Entities to be loaded.
+ */
+#[LegacyHook]
+function tripal_tripal_entity_storage_load(&$entities) {
+  \Drupal::service(TripalEntityHooks::class)->tripalEntityStorageLoad($entities);
+}
