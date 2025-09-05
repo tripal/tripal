@@ -944,7 +944,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $prop_value = $info['value'];
 
           // Add it to the list if it's action is 'store'.
-          if ($this->isStorePropType($prop_type)) {
+          if (self::isStorePropType($prop_type)) {
             $store_values[$key] = $prop_value;
           }
 
@@ -963,7 +963,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
         // During save we do extra checks here to ensure
         // that empty delta are not saved.
-        if (($do_save === TRUE) & ($this->isEmptyFieldItem($prop_values, $store_values))) {
+        if (($do_save === TRUE) & (self::isEmptyFieldItem($prop_values, $store_values))) {
           $prop_values = [];
         }
 
@@ -993,7 +993,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // Does this field item have only empty values?
     // If yes, it should be removed.
-    if ($this->allNull($prop_values)) {
+    if (self::allNull($prop_values)) {
       return TRUE;
     }
 
