@@ -1,7 +1,34 @@
 <?php
 
+use Symfony\Component\Yaml\Yaml;
+use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
+
 /**
  * @file
  * Contains tripal_file.module.
  */
 
+/**
+ * Creates the custom chado tables used by this module.
+ *
+ * @param string $chado_schema
+ *   Optional. The chado schema where the custom table will live. If no
+ *   schema is specified then the default schema is used.
+ *
+ * @return void
+ *   No return value.
+ */
+function tripal_file_create_custom_chado_tables(string $chado_schema = NULL): void {
+  $config = __DIR__ . '/config/tables/tripal_file.custom_tables.yml';
+  $schemas = Yaml::parseFile($config);
+  foreach ($schemas as $table_name => $schema) {
+    $customTable = new ChadoCustomTable($table_name, $chado_schema);
+    // If the table already exists, e.g. for a migrated Tripal 3 site,
+    // then do nothing, so that we preserve existing table content.
+    $existing_schema = $customTable->getTableSchema();
+    if (!$existing_schema) {
+      $customTable->setTableSchema($schema, FALSE);
+      $customTable->setLocked(TRUE);
+    }
+  }
+}
