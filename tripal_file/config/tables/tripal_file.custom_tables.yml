@@ -28,10 +28,6 @@
             table: cvterm
             columns:
                 type_id: cvterm_id
-#        fileloc:
-#            table: fileloc
-#            columns:
-#                file_id: file_id
 -
     table: license
     fields:
@@ -56,38 +52,6 @@
     indexes:
         license_idx1:
             - name
--
-    table: file_contact
-    fields:
-        file_contact_id:
-            size: big
-            type: serial
-            'not null': true
-        file_id:
-            type: int
-            'not null': true
-        contact_id:
-            type: int
-    'primary key':
-        - file_contact_id
-    'unique keys':
-        file_contact_c1:
-            - file_id
-            - contact_id
-    indexes:
-        file_contact_idx1:
-            - file_id
-        file_contact_idx2:
-            - contact_id
-    'foreign keys':
-        file:
-            table: file
-            columns:
-                file_id: file_id
-        contact:
-            table: contact
-            columns:
-                contact_id: contact_id
 -
     table: fileloc
     fields:
@@ -243,6 +207,38 @@
             table: license
             columns:
                 license_id: license_id
+-
+    table: file_contact
+    fields:
+        file_contact_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            type: int
+            'not null': true
+        contact_id:
+            type: int
+    'primary key':
+        - file_contact_id
+    'unique keys':
+        file_contact_c1:
+            - file_id
+            - contact_id
+    indexes:
+        file_contact_idx1:
+            - file_id
+        file_contact_idx2:
+            - contact_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        contact:
+            table: contact
+            columns:
+                contact_id: contact_id
 -
     table: file_pub
     fields:
