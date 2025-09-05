@@ -935,18 +935,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // Create a new properties array for this field item.
         $prop_values = [];
         $prop_types = [];
-        // Keep track of the properties that indicate this field is not empty.
-        $store_values = [];
         foreach ($values[$tsid][$field_name][$delta] as $key => $info) {
 
           // Get the specific prop type and it's corresponding value.
           $prop_type = $tripal_storages[$tsid]->getPropertyType($bundle, $field_name, $key);
           $prop_value = $info['value'];
-
-          // Add it to the list if it's action is 'store'.
-          if (self::isStorePropType($prop_type)) {
-            $store_values[$key] = $prop_value;
-          }
 
           // We do some extra work here when saving
           // related to conditionally saving field values.
@@ -959,12 +952,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
             $prop_values[] = $prop_value;
             $prop_types[] = $prop_type;
           }
-        }
-
-        // During save we do extra checks here to ensure
-        // that empty delta are not saved.
-        if (($do_save === TRUE) & (self::isEmptyFieldItem($prop_values, $store_values))) {
-          $prop_values = [];
         }
 
         // Now set the entity values for this field.
@@ -1016,11 +1003,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *
    * @param ?object $prop_type
    *   What we think should be a property type. We do need to check that is is.
+   *
    * @return bool
    *   TRUE if this is a property type and it's action is STORE
    *   and FALSE otherwise.
    */
-  public static function isStorePropType (?object $prop_type): bool {
+  public static function isStorePropType(?object $prop_type): bool {
 
     // First get the action for this prop type.
     $action = '';
