@@ -1039,6 +1039,33 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Returns the name of the main property for a field.
+   *
+   * The main property name defaults to 'value', but a field can define
+   * a function mainPropertyName() to indicate a different name.
+   *
+   * @param string $field_name
+   *   The machine name of the field.
+   *
+   * @return string
+   *   The main property name for this field.
+   */
+  public function getMainPropertyName(string $field_name): string {
+    $main_property_name = 'value';
+    /** @var \Drupal\Core\Field\FieldItemList $items **/
+    $items = $this->get($field_name);
+    /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $item **/
+    foreach ($items as $item) {
+      if (method_exists($item, 'mainPropertyName')) {
+        $main_property_name = $item->mainPropertyName();
+      }
+      // We only need to examine the first item.
+      break;
+    }
+    return $main_property_name;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage): void {
@@ -1098,6 +1125,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $delta_remove = [];
     $fields = $this->getFields();
     foreach ($fields as $field_name => $items) {
+      $main_property_name = $this->getMainPropertyName($field_name);
       foreach ($items as $item) {
 
         // If it is not a TripalField then skip it.
@@ -1161,14 +1189,20 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
             $delta_remove[$field_name][] = $delta;
           }
 
-          // If there is a zero value in $store_values, this means that
-          // we chose "- Select -" in a widget, or removed the row with the
-          // "Remove" button.
+          // If there is an integer zero value in $store_values, this means
+          // that we chose "- Select -" in a widget, or removed the row with
+          // the "Remove" button.
+          // For properties or other single-hop fields we check the main property
+          // value for a NULL or empty string. Note that in this case, other
+          // $store_values may not be empty, e.g. type_id for a property.
           // Chado storage has already done its work, so now remove this
           // delta so that Drupal doesn't make a blank field table entry.
           $remove = FALSE;
-          foreach ($store_values as $value) {
+          foreach ($store_values as $key => $value) {
             if ($value === 0) {
+              $remove = TRUE;
+            }
+            if ($key == $main_property_name && ($value === NULL || $value === '')) {
               $remove = TRUE;
             }
           }
