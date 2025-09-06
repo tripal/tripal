@@ -178,9 +178,6 @@ class ChadoTermMapping extends ConfigEntityBase implements ChadoTermMappingInter
       throw new \Exception("refreshMapping configuration path not found: $config_path");
     }
 
-    // Provide a hook for other modules to add to core mapping.
-    \Drupal::moduleHandler()->invokeAll('chado_core_mapping_alter', [&$config]);
-
     $mapping = $storage->load($mapping_id);
     if ($mapping) {
       $storage->delete([$mapping]);

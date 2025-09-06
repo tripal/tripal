@@ -929,14 +929,13 @@ EOD;
       }
       if (!$table_def && 'tripal' == $source) {
         $valid_source = TRUE;
-        $sql = "SELECT schema FROM [tripal_custom_tables] WHERE table_name = :table_name;";
-        $results = $this->connection->query($sql, [':table_name' => $table]);
-        $custom = $results->fetchObject();
-        if (!$custom) {
-          $table_def = [];
-        }
-        else {
-          $table_def = unserialize($custom->schema);
+        $table_def = [];
+        $query = $this->connection->select('tripal_custom_tables','ct');
+        $query->fields('ct', ['schema']);
+        $query->condition('ct.table_name', $table);
+        $schema = $query->execute()->fetchField();
+        if ($schema) {
+          $table_def = unserialize($schema);
         }
       }
       if (!$table_def && 'database' == $source) {
