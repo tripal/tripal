@@ -2,17 +2,16 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
-
-use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\TripalWidgetBase;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 
 /**
  * Plugin implementation of default Tripal integer type widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'default_tripal_boolean_type_widget',
   label: new TranslatableMarkup('Tripal Boolean Widget'),
   description: new TranslatableMarkup('The default boolean type widget.'),

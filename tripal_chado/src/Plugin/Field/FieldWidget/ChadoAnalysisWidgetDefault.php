@@ -2,16 +2,16 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
-use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
  * Plugin implementation of default Chado analysis widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_analysis_widget_default',
   label: new TranslatableMarkup('Chado Analysis Widget'),
   description: new TranslatableMarkup('The default analysis widget.'),
