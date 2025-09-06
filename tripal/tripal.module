@@ -11,7 +11,7 @@ use Drupal\Core\Entity\EntityBase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 // use Drupal\shortcut\Entity\ShortcutSet;
 use Drupal\Core\Hook\Attribute\Hook;
-use Drupal\Core\Render\Element;
+use Drupal\Core\Hook\Attribute\LegacyHook;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
@@ -758,5 +758,5 @@ function tripal_view_presave(ViewEntityInterface $view): void {
  */
 #[LegacyHook]
 function tripal_tripal_entity_storage_load(&$entities) {
-  \Drupal::service(TripalEntityHooks::class)->tripalEntityStorageLoad($entities);
+  \Drupal::service('tripal.entity_hooks')->tripalEntityStorageLoad($entities);
 }

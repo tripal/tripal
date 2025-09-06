@@ -69,6 +69,6 @@ services:
      - '@entity_type.manager'
      - '@database'
 
-  Drupal\tripal\Hook\TripalEntityHooks:
+  tripal.entity_hooks:
     class: 'Drupal\tripal\Hook\TripalEntityHooks'
     autowire: TRUE

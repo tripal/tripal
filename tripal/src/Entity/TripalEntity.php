@@ -13,6 +13,7 @@ use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\user\UserInterface;
 use Drupal\tripal\Access\TripalEntityAccessControlHandler;
@@ -891,25 +892,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $context['empty_items'][$field_name] ??= [];
       foreach ($items as $k => $item) {
 
-        // If it is not a TripalField then skip it.
-        if (!$item instanceof TripalFieldItemInterface) {
+        $storage = self::getFieldItemBackendStorage($field_name, $item);
+        if ($storage === FALSE) {
           continue;
         }
-        $delta = $item->getName();
-        $tsid = $item->tripalStorageId();
-
-        // If the Tripal Storage Backend is not set on a Tripal-based field,
-        // we log an error and not support the field. If developers want
-        // to use Drupal storage for a Tripal-based field then they need to
-        // indicate that by using our Drupal SQL Storage option OR by not
-        // creating a Tripal-based field at all depending on their needs.
-        if (empty($tsid)) {
-          \Drupal::logger('tripal')->error('The Tripal-based field :field on
-                this content type must indicate a TripalStorage backend and currently does not.',
-            [':field' => $field_name]
-          );
-          continue;
-        }
+        [$delta, $tsid] = $storage;
 
         // Create a new properties array for this field item.
         $prop_values = [];
@@ -958,6 +945,49 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
 
     return $context;
+  }
+
+  /**
+   * Retrieve Tripal Backend storage for a TripalField item.
+   *
+   * @param string $field_name
+   *   The name of the field this item is for.
+   * @param Drupal\Core\Field\FieldItemInterface $item
+   *   The item whose backend storage we want to retrieve.
+   *
+   * @return array|bool
+   *   FALSE if this is not a TripalFieldItem or if it doesn't indicate its
+   *   TripalStorage plugin. Otherwise, an associative array describing the
+   *   backend storage for this item. Specifically,
+   *   - delta: the delta of this item in the fielditemlist it came from.
+   *   - tsid: the tripalstorage id for it's storage backend.
+   *   - storage: an instance of this items tripalstorage backend.
+   */
+  public static function getFieldItemBackendStorage(string $field_name, FieldItemInterface $item): bool|array {
+    $info = [];
+
+    // This must be a TripalField item.
+    if (!$item instanceof TripalFieldItemInterface) {
+      return FALSE;
+    }
+
+    $info['delta'] = $item->getName();
+    $info['tsid'] = $item->tripalStorageId();
+
+    // If the Tripal Storage Backend is not set on a Tripal-based field,
+    // we log an error and will not support the field. If developers want
+    // to use Drupal storage for a Tripal-based field then they need to
+    // indicate that by using our Drupal SQL Storage option OR by not
+    // creating a Tripal-based field at all depending on their needs.
+    if (empty($tsid)) {
+      \Drupal::logger('tripal')->error('The Tripal-based field :field on
+            this content type must indicate a TripalStorage backend and currently does not.',
+        [':field' => $field_name]
+      );
+      return FALSE;
+    }
+
+    return $info;
   }
 
   /**
