@@ -110,7 +110,7 @@ class ChadoCustomTable {
    * @return integer
    */
   public function getTableId() {
-    return $this->table_id;
+    return (int) $this->table_id;
   }
 
   /**
