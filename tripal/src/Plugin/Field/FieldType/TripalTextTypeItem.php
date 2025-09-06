@@ -2,16 +2,16 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 
 /**
  * Plugin implementation of the 'text' field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'tripal_text_type',
   category: 'tripal',
   label: new TranslatableMarkup('Tripal Text Field Type'),

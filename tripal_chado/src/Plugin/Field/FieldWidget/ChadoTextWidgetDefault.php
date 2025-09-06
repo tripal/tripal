@@ -2,16 +2,16 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
-use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal\Plugin\Field\FieldWidget\TripalTextTypeWidget;
 
 /**
  * Plugin implementation of default Chado text type widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_text_type_widget',
   label: new TranslatableMarkup('Chado Text Widget'),
   description: new TranslatableMarkup('The default text type widget.'),
