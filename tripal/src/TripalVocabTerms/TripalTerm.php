@@ -2,10 +2,14 @@
 
 namespace Drupal\tripal\TripalVocabTerms;
 
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+
 /**
  * Defines a vocabulary term object.
  */
 class TripalTerm {
+
+  use DependencySerializationTrait;
 
   /**
    * Constructs a new term object.
@@ -41,10 +45,10 @@ class TripalTerm {
    *   If the same property is used multiple times with different values,
    *   then the rank will be set in the order that they are provided.
    *
-   * @param array|NULL $details
+   * @param array|null $details
    *   The name.
    */
-  public function __construct(array $details = NULL) {
+  public function __construct(?array $details = NULL) {
 
     // Instantiate the TripalLogger.
     $this->messageLogger = \Drupal::service('tripal.logger');
@@ -53,8 +57,8 @@ class TripalTerm {
     $this->name = '';
     $this->definition = '';
     $this->accession = '';
-    $this->is_obsolete = False;
-    $this->is_relationship_type = False;
+    $this->is_obsolete = FALSE;
+    $this->is_relationship_type = FALSE;
     $this->idSpace = '';
     $this->vocabulary = '';
     $this->vocabulary_plugin_id = '';
@@ -64,13 +68,13 @@ class TripalTerm {
     $this->synonyms = [];
     $this->properties = [];
     $this->loaded_attributes = [
-      'definition' => False,
-      'is_obsolete' => False,
-      'is_relationship_type' => False,
-      'properties' => False,
-      'synonyms' => False,
-      'altIds' => False,
-      'parents' => False,
+      'definition' => FALSE,
+      'is_obsolete' => FALSE,
+      'is_relationship_type' => FALSE,
+      'properties' => FALSE,
+      'synonyms' => FALSE,
+      'altIds' => FALSE,
+      'parents' => FALSE,
     ];
     $this->internalId = NULL;
 
@@ -160,7 +164,7 @@ class TripalTerm {
   /**
    * Indicates if this term is valid and can be saved.
    *
-   * @return boolean
+   * @return bool
    *   True if valid, False otherwise.
    */
   public function isValid() : bool {
@@ -169,7 +173,7 @@ class TripalTerm {
     if (empty($this->getName())) {
       $is_valid = FALSE;
     }
-    if (empty($this->getIdSpace()) OR empty($this->getAccession())) {
+    if (empty($this->getIdSpace()) or empty($this->getAccession())) {
       $is_valid = FALSE;
     }
     if (empty($this->getVocabulary())) {
@@ -192,7 +196,7 @@ class TripalTerm {
   /**
    * Sets the ID space for the term.
    *
-   * @param string setIdSpace
+   * @param string $idSpace
    *   The name of the ID space.
    */
   public function setIdSpace(string $idSpace) {
@@ -200,11 +204,10 @@ class TripalTerm {
     $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     // An ID space added to a site by an importer may not yet have been added
     // to the appropriate Tripal collection, so configure the load to optionally
-    // create it. This requires $this->id_space_plugin_id has been previously set.
+    // create it. This requires the plugin id has been previously set.
     $idsp = $manager->loadCollection($idSpace, $this->id_space_plugin_id);
     if (!$idsp) {
-      $this->messageLogger->error(t('TripalTerm::setIdSpace(). The specified ID space, "@idSpace", does not exist.',
-          ['@idSpace' => $idSpace]));
+      $this->messageLogger->error("TripalTerm::setIdSpace(). The specified ID space, '$idSpace', does not exist.");
       return;
     }
     $this->idSpace = $idSpace;
@@ -231,11 +234,10 @@ class TripalTerm {
     $manager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
     // A vocabulary added to a site by an importer may not yet have been added
     // to the appropriate Tripal collection, so configure the load to optionally
-    // create it. This requires $this->vocabulary_plugin_id has been previously set.
+    // create it. This requires that the plugin id has been previously set.
     $vocab = $manager->loadCollection($vocabulary, $this->vocabulary_plugin_id);
     if (!$vocab) {
-      $this->messageLogger->error(t('TripalTerm::setVocabulary(). The specified vocabulary, "@vocab" does not exist.',
-          ['@vocab' => $vocabulary]));
+      $this->messageLogger->error("TripalTerm::setVocabulary(). The specified vocabulary, '$vocabulary' does not exist.");
       return;
     }
     $this->vocabulary = $vocabulary;
@@ -244,21 +246,21 @@ class TripalTerm {
   /**
    * Sets the term's description.
    *
-   * @param string $description
+   * @param string $definition
+   *   The definition for this term.
    */
   public function setDefinition(string $definition) {
-    $this->loaded_attributes['definition'] = True;
+    $this->loaded_attributes['definition'] = TRUE;
     $this->definition = $definition;
   }
 
-
   /**
-   * Returns a list of valid terms based off matches from the given partial term
-   * name. A given max number of terms are returned.
+   * Suggests valid terms based off matches from the given partial term name.
+   *
+   * Note: A given max number of terms are returned.
    *
    * @param string $partial
    *   The partial term name.
-   *
    * @param int $max
    *   The given max number returned.
    *
@@ -280,14 +282,14 @@ class TripalTerm {
   /**
    * Tests if the given term is equal to this term.
    *
-   * @param Drupal\tripal\TripalVocabTerms\TripalTerm other
+   * @param Drupal\tripal\TripalVocabTerms\TripalTerm $other
    *   The other given term.
    *
    * @return bool
    *   True if equal otherwise false.
    */
   public function isEqual(TripalTerm $other) {
-      return $this->idSpace == $other->idSpace && $this->accession == $other->accession;
+    return $this->idSpace == $other->idSpace && $this->accession == $other->accession;
   }
 
   /**
@@ -355,7 +357,7 @@ class TripalTerm {
   /**
    * Sets this term's accession.
    *
-   * @param string
+   * @param string $accession
    *   The accession.
    */
   public function setAccession($accession) {
@@ -392,7 +394,7 @@ class TripalTerm {
     $idSpace = $this->getIdSpaceObject();
     $term_url = $idSpace->getURLPrefix();
     $idSpace_name = $idSpace->getName();
-    $subbed = False;
+    $subbed = FALSE;
 
     if (!$term_url) {
       $this->messageLogger->warning('TripalTerm::getURL(). The ID space has no URL prefix.');
@@ -401,11 +403,11 @@ class TripalTerm {
     // If the URL prefix has replacement tokens then apply those.
     if (preg_match('/\{db\}/', $term_url)) {
       $term_url = preg_replace("/\{db\}/", $idSpace_name, $term_url);
-      $subbed = True;
+      $subbed = TRUE;
     }
     if (preg_match('/\{accession\}/', $term_url)) {
       $term_url = preg_replace("/\{accession\}/", $this->accession, $term_url);
-      $subbed = True;
+      $subbed = TRUE;
     }
 
     // If no replacement tokens were applied then just add the term
@@ -448,9 +450,9 @@ class TripalTerm {
    */
   public function save($options) {
 
-    if(!$this->isValid()) {
+    if (!$this->isValid()) {
       $this->messageLogger->error('TripalTerm::save(). Cannot save the term as it is not currently in a valid state.');
-      return False;
+      return FALSE;
     }
     $idspace = $this->getIdSpace();
     return $idspace->saveTerm($this, $options);
@@ -470,7 +472,7 @@ class TripalTerm {
   }
 
   /**
-   * Adds a parent term
+   * Adds a parent term.
    *
    * A term may have zero or more parents. A term without parents
    * will be considered a root term.  The relationship between the
@@ -479,7 +481,6 @@ class TripalTerm {
    *
    * @param Drupal\tripal\TripalVocabTerms\TripalTerm $parent
    *   The parent term or NULL.
-   *
    * @param Drupal\tripal\TripalVocabTerms\TripalTerm $relationship
    *   The relationship term or NULL.
    *
@@ -487,8 +488,10 @@ class TripalTerm {
    *   True on success or false otherwise.
    */
   public function addParent(TripalTerm $parent, TripalTerm $relationship) {
-    $this->loaded_attributes['parents'] = True;
+    $this->loaded_attributes['parents'] = TRUE;
     $this->parents[$parent->getTermId()] = [$parent, $relationship];
+
+    return TRUE;
   }
 
   /**
@@ -508,7 +511,6 @@ class TripalTerm {
    *
    * @param string $idSpace
    *   The ID space name of the parent term.
-   *
    * @param string $accession
    *   The accession for the parent term.
    *
@@ -519,24 +521,22 @@ class TripalTerm {
     $term_id = $idSpace . ':' . $accession;
     if (array_key_exists($term_id, $this->parents)) {
       unset($this->parents[$term_id]);
-      return True;
+      return TRUE;
     }
-    return False;
+    return FALSE;
   }
-
 
   /**
    * Adds an alternative term ID for this term.
    *
    * @param string $idSpace
    *   The ID space name of the parent term.
-   *
    * @param string $accession
    *   The accession for the parent term.
    */
   public function addAltId(string $idSpace, string $accession) {
-    $this->loaded_attributes['altIds'] = True;
-    $term_id =  $idSpace . ':' . $accession;
+    $this->loaded_attributes['altIds'] = TRUE;
+    $term_id = $idSpace . ':' . $accession;
     $this->altIds[$term_id] = 1;
   }
 
@@ -555,7 +555,6 @@ class TripalTerm {
    *
    * @param string $idSpace
    *   The ID space name of the parent term.
-   *
    * @param string $accession
    *   The accession for the parent term.
    *
@@ -566,9 +565,9 @@ class TripalTerm {
     $term_id = $idSpace . ':' . $accession;
     if (array_key_exists($term_id, $this->altIds)) {
       unset($this->altIds[$term_id]);
-      return True;
+      return TRUE;
     }
-    return False;
+    return FALSE;
   }
 
   /**
@@ -581,14 +580,13 @@ class TripalTerm {
    * It is highly encouraged to always provide a type for the
    * synonym.
    *
-   *
    * @param string $synonym
    *   The synonym.
    * @param Drupal\tripal\TripalVocabTerms\TripalTerm $type
    *   An optional Tripal term indicating the type of synonym.
    */
-  public function addSynonym(string $synonym, TripalTerm $type = NULL) {
-    $this->loaded_attributes['synonyms'] = True;
+  public function addSynonym(string $synonym, ?TripalTerm $type = NULL) {
+    $this->loaded_attributes['synonyms'] = TRUE;
     $this->synonyms[$synonym] = $type;
   }
 
@@ -604,9 +602,9 @@ class TripalTerm {
   public function removeSynonym(string $synonym) : bool {
     if (array_key_exists($synonym, $this->synonyms)) {
       unset($this->synonyms[$synonym]);
-      return True;
+      return TRUE;
     }
-    return False;
+    return FALSE;
   }
 
   /**
@@ -627,7 +625,7 @@ class TripalTerm {
    *   True if the term is obsolete, False otherwise.
    */
   public function setIsObsolete(bool $is_obsolete) {
-    $this->loaded_attributes['is_obsolete'] = True;
+    $this->loaded_attributes['is_obsolete'] = TRUE;
     $this->is_obsolete = $is_obsolete;
   }
 
@@ -644,11 +642,11 @@ class TripalTerm {
   /**
    * Sets if the term is a relationship type term.
    *
-   * @param bool $is_obsolete
+   * @param bool $is_relationship_type
    *   True if the term is a relationship type, False otherwise.
    */
   public function setIsRelationshipType(bool $is_relationship_type) {
-    $this->loaded_attributes['is_relationship_type'] = True;
+    $this->loaded_attributes['is_relationship_type'] = TRUE;
     $this->is_relationship_type = $is_relationship_type;
   }
 
@@ -662,7 +660,6 @@ class TripalTerm {
     return $this->is_relationship_type;
   }
 
-
   /**
    * Adds a property to this term.
    *
@@ -670,7 +667,7 @@ class TripalTerm {
    *   A term indicating the propery type.
    * @param string $value
    *   The value of the property.
-   * @param int|NULL $rank
+   * @param int|null $rank
    *   The rank (or order) of the value. If no rank is specified and if a
    *   property of the same term is already present then the rank will be
    *   incremented for the next value added.
@@ -678,8 +675,8 @@ class TripalTerm {
    * @return bool
    *   True if the property was successfully added, False otherwise.
    */
-  public function addProperty(TripalTerm $term, string $value, int $rank = NULL) : bool {
-    $this->loaded_attributes['properties'] = True;
+  public function addProperty(TripalTerm $term, string $value, ?int $rank = NULL) : bool {
+    $this->loaded_attributes['properties'] = TRUE;
 
     // Get the max rank for this property.
     $term_id = $term->getTermId();
@@ -692,7 +689,7 @@ class TripalTerm {
     for ($i = 0; $i < $max_rank; $i++) {
       if (!array_key_exists($i, $this->properties[$term_id])) {
         $this->messageLogger->error('TripalTerm::addProperty. The property term ranks are out of order, cannot add a new property.');
-        return False;
+        return FALSE;
       }
     }
 
@@ -700,7 +697,7 @@ class TripalTerm {
     if ($rank != NULL) {
       if ($rank > $max_rank) {
         $this->messageLogger->error('TripalTerm::addProperty. The specified rank is higher than the next max rank.');
-        return False;
+        return FALSE;
       }
     }
     else {
@@ -709,16 +706,18 @@ class TripalTerm {
 
     // Set the property.
     $this->properties[$term_id][$rank] = [$term, $value];
-    return True;
+    return TRUE;
   }
 
   /**
    * Retrieves the list of properties for this term.
    *
    * @return array
-   *  An associative array where the first level key is the term_id for the property.
-   *  The second level key is the rank and the value is a tuple with the first element
-   *  being the TripalTerm for the property type and the second being the propertly value.
+   *   An associative array where the
+   *   - first level key is the term_id for the property.
+   *   - second level key is the rank and the value is a tuple with the first
+   *     element being the TripalTerm for the property type and the second
+   *     being the propertly value.
    */
   public function getProperties() : array {
     return $this->properties;
@@ -729,31 +728,28 @@ class TripalTerm {
    *
    * @param string $idSpace
    *   The ID space name of the property term.
-   *
    * @param string $accession
    *   The accession for the property term.
-   *
    * @param int $rank
    *   The rank of the value to remove.
    *
    * @return bool
    *   True on success or false otherwise.
-
    */
   public function removeProperty(string $idSpace, string $accession, int $rank) : bool {
-     $term_id = $idSpace . ':' . $accession;
-     if (array_key_exists($term_id, $this->properties)) {
-       if (array_key_exists($rank, $this->properties[$term_id])) {
-         unset($this->properties[$term_id][$rank]);
-         if (count($this->properties[$term_id]) == 0) {
-           unset($this->properties[$term_id]);
-         }
-         return True;
-       }
-     }
-     $this->messageLogger->error('TripalTerm::removeProperty(). Could not find the property, "@prop", for removal.',
+    $term_id = $idSpace . ':' . $accession;
+    if (array_key_exists($term_id, $this->properties)) {
+      if (array_key_exists($rank, $this->properties[$term_id])) {
+        unset($this->properties[$term_id][$rank]);
+        if (count($this->properties[$term_id]) == 0) {
+          unset($this->properties[$term_id]);
+        }
+        return TRUE;
+      }
+    }
+    $this->messageLogger->error('TripalTerm::removeProperty(). Could not find the property, "@prop", for removal.',
        ['@prop' => $term_id]);
-     return False;
+    return FALSE;
   }
 
   /**
@@ -786,7 +782,8 @@ class TripalTerm {
     $this->internalId = $internalId;
   }
 
-  /** Gets the internal ID of this term. The default is NULL.
+  /**
+   * Gets the internal ID of this term. The default is NULL.
    *
    * @return mixed
    *   The internal ID.
@@ -794,8 +791,6 @@ class TripalTerm {
   public function getInternalId() {
     return $this->internalId;
   }
-
-
 
   /**
    * An associative array listing the parents.
@@ -912,17 +907,24 @@ class TripalTerm {
 
   /**
    * An instance of the TripalLogger.
+   *
+   * @var ?Drupal\tripal\Services\TripalLogger
    */
   private $messageLogger = NULL;
 
 
   /**
    * An associative array indicating which attributes of the term are loaded.
+   *
+   * @var array
    */
   private $loaded_attributes;
 
   /**
    * An internal ID that can be used by specific plugin implementations.
+   *
+   * @var string
    */
   private $internalId;
+
 }
