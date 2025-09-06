@@ -971,8 +971,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       return FALSE;
     }
 
-    $info['delta'] = $item->getName();
-    $info['tsid'] = $item->tripalStorageId();
+    $delta = $item->getName();
+    $tsid = $item->tripalStorageId();
 
     // If the Tripal Storage Backend is not set on a Tripal-based field,
     // we log an error and will not support the field. If developers want
@@ -987,7 +987,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       return FALSE;
     }
 
-    return $info;
+    return [
+      $delta,
+      $tsid,
+    ];
   }
 
   /**
