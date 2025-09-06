@@ -309,14 +309,14 @@ class ChadoCustomTable {
    *
    * Returns a list of messages indicating if any errors are present.
    *
-   * @param string $table_schema
+   * @param array $table_schema
    *   The Drupal table schema array defining the table.
    *
    * @return array
    *   A list of error message strings indicating what is wrong with the
    *   schema. If the array is empty then no errors were detected.
    */
-  static public function validateTableSchema($table_schema) {
+  static public function validateTableSchema(array $table_schema) {
 
     $messages = [];
     $logger = \Drupal::service('tripal.logger');
@@ -326,14 +326,8 @@ class ChadoCustomTable {
       $logger->error($message);
       return $messages;
     }
-    if ($table_schema and !is_array($table_schema)) {
-      $message = 'The custom table schema is not an array';
-      $messages[] = $message;
-      $logger->error($message);
-      return $messages;
-    }
 
-    if (is_array($table_schema) and !array_key_exists('table', $table_schema)) {
+    if (!array_key_exists('table', $table_schema)) {
       $message = "The schema array must have key named 'table'";
       $messages[] = $message;
       $logger->error($message);
