@@ -340,13 +340,13 @@ scenarios:
         project_prop1:
         - record_id:
             '#type': 'value'
-            '#value': 0
+            '#value': 1
           prop_id:
             '#type': 'value'
             '#value': 0
           linker_id:
             '#type': 'value'
-            '#value': 0
+            '#value': 1
           type_id:
             '#type': 'value'
             '#value': 3
@@ -362,13 +362,13 @@ scenarios:
         project_prop2:
         - record_id:
             '#type': 'value'
-            '#value': 0
+            '#value': 1
           prop_id:
             '#type': 'value'
             '#value': 0
           linker_id:
             '#type': 'value'
-            '#value': 0
+            '#value': 1
           type_id:
             '#type': 'value'
             '#value': 4
