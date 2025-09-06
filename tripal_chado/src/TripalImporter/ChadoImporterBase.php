@@ -286,10 +286,10 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
 
       // Find if there are any bundles to be published.
       foreach ($run_args as $key => $value) {
-        if (preg_match('/^do_not_publish_(.+)$/', $key, $matches)) {
+        if (preg_match('/^publish_(.+)$/', $key, $matches)) {
           $bundle = $matches[1];
-          if (!$value) {
-            // If opt-out is not TRUE, then publish this bundle.
+          if ($value) {
+            // If checkbox is set, then publish this bundle.
             $bundles_to_publish[] = $bundle;
           }
         }

@@ -124,20 +124,20 @@ class TripalImporterForm implements FormInterface {
     }
 
     // Adds a checkbox to indicate whether or not to publish the imported
-    // content. The default will be to publish, so this is an opt-out.
+    // content. The default will be to publish (checked), uncheck to opt-out.
     // An importer attribute can specify a list of bundles to publish,
     // e.g. both 'gene' and 'mrna' for GFF importer.
     if ($importer_def['publish'] ?? FALSE) {
       $bundles = (array) $importer_def['publish'];
-      $form['do_not_publish'] = [
+      $form['publish'] = [
         '#type' => 'fieldset',
         '#title' => $this->t('Specify publishing behavior after importing'),
       ];
       foreach ($bundles as $bundle) {
-        $form['do_not_publish']['do_not_publish_' . $bundle] = [
+        $form['publish']['publish_' . $bundle] = [
           '#type' => 'checkbox',
-          '#title' => $this->t('Check to skip publish for imported %bundle records', ['%bundle' => $bundle]),
-          '#default_value' => 0,
+          '#title' => $this->t('Publish imported %bundle records', ['%bundle' => $bundle]),
+          '#default_value' => 1,
         ];
       }
     }
