@@ -2,15 +2,15 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalTextTypeFormatter;
 
 /**
  * Plugin implementation of default Chado text type formatter.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'chado_text_type_formatter',
   label: new TranslatableMarkup('Chado Text Type Formatter'),
   description: new TranslatableMarkup('The Chado text type formatter.'),
