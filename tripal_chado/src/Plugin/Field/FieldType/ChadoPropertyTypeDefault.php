@@ -2,10 +2,10 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 /**
  * Plugin implementation of Tripal linker property field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_property_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Property'),

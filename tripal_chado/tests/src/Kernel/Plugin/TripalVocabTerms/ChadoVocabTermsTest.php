@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalVocabTerms;
 
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
@@ -12,7 +13,7 @@ use Drupal\tripal\Services\TripalLogger;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Tests for the ChadoCVTerm classes
+ * Tests for the ChadoCVTerm classes.
  *
  * @group Tripal
  * @group Tripal Chado
@@ -23,6 +24,11 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('Tripal Chado ChadoVocabTerms')]
 class ChadoVocabTermsTest extends ChadoTestKernelBase {
 
+  /**
+   * Modules to be enabled in the test environment.
+   *
+   * @var array
+   */
   protected static $modules = ['system', 'tripal_chado'];
 
   /**
@@ -55,7 +61,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     // Ensure we install the schema/modules we need.
     $this->prepareEnvironment(['TripalTerm']);
 
-    // Get Chado in place
+    // Get Chado in place.
     $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY);
 
     // Ensure the db2cv table exists.
@@ -90,18 +96,18 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
 
   }
 
-    /**
-     * Update a chado record assuming the name is unique.
-     *
-     * @param string $table
-     *   The name of chado table to update.
-     * @param string $name
-     *   The value of the [table].name record in chado you want to update.
-     * @param string $field
-     *   The name of the column in the chado [table] you want to update.
-     * @param mixed $value
-     *   The value to update [table].[field] to.
-     */
+  /**
+   * Update a chado record assuming the name is unique.
+   *
+   * @param string $table
+   *   The name of chado table to update.
+   * @param string $name
+   *   The value of the [table].name record in chado you want to update.
+   * @param string $field
+   *   The name of the column in the chado [table] you want to update.
+   * @param mixed $value
+   *   The value to update [table].[field] to.
+   */
   protected function updateRecord(string $table, string $name, string $field, mixed $value): void {
 
     $query = $this->chado_connection->update('1:' . $table)
@@ -163,7 +169,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
    *   - name: the name of the Vocab.
    *   - definition: the definition of the Vocab.
    *   - chado_record: TRUE OR FALSE depending on if the record should exist.
-   * @param mixed $idspace
+   * @param mixed $vocab
    *   An Vocab collection instance to be checked.
    * @param string $prefix
    *   Will be prefixed to the message for all our asserts to provide context.
@@ -179,13 +185,14 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
       $this->assertIsObject($chado_record, $prefix . "Chado Record did not exist.");
       $this->assertEquals($expectations['name'], $chado_record->name, $prefix . "The Chado Record name does not match.");
       $this->assertEquals($expectations['definition'], $chado_record->definition, $prefix . "The Chado Record definition does not match.");
-    } else {
+    }
+    else {
       $this->assertFalse($chado_record, $prefix . "Chado Record should not have existed.");
     }
   }
 
   /**
-   * Tests the ChadoIdSpace Class
+   * Tests the ChadoIdSpace Class.
    */
   public function testTripalIDSpaceClass() {
 
@@ -233,7 +240,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $this->assertTrue($GO->getURLPrefix() == $GO_urlprefix, "The ChadoIdSpace object did not return a correct URL prefix.");
     $this->assertTrue($GO->getDescription() == $GO_description, "The ChadoIdSpace object did not return a correct description.");
 
-    // Change the description and URL prefix and make sure it updates
+    // Change the description and URL prefix and make sure it updates.
     $GO->setDescription('Changed');
     $GO->setURLPrefix('Changed');
     $this->assertTrue($GO->getDescription() == 'Changed', "The ChadoIdSpace object did not update the description.");
@@ -256,7 +263,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests the ChadoVocab Class
+   * Tests the ChadoVocab Class.
    */
   public function testTripalVocabClass() {
 
@@ -295,11 +302,11 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     // Make sure the getter works.
     $this->assertTrue($cc->getLabel() == $GO_cc_label, "The ChadoVocabulary object did not return a correct label.");
 
-    // Simulate a change in the `cv` record from another source. The getters should pick up the change
+    // Simulate a change in the `cv` record from another source. The getters should pick up the change.
     $this->updateRecord('cv', $GO_cc_namespace, 'definition', 'Replace Me');
     $this->assertTrue($cc->getLabel() == 'Replace Me', "The ChadoVocabulary object did not pick up an update to the label from an external source.");
 
-    // Associate the IDSpace with the vocabulary,
+    // Associate the IDSpace with the vocabulary,.
     $GO = $this->idsmanager->createCollection($GO_idspace, "chado_id_space");
     $id_spaces = $cc->getIdSpaceNames();
     $this->assertFalse(in_array($GO_idspace, $id_spaces), 'ID spaces should not be set yet in the ChadoVocabulary');
@@ -344,7 +351,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
 
     //
     // Testing multiple ID spaces per Vocabulary
-    //
+    // .
     $EDAM_data_idspace = 'data';
     $EDAM_format_idspace = 'format';
     $EDAM_operation_idspace = 'operation';
@@ -401,7 +408,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $this->assertTrue($edam_operation->getURLPrefix() == $EDAM_urlprefix, "The EDAM operation ID space's URL PRefix space description was not correctly returned.");
     $this->assertTrue($edam_topic->getURLPrefix() == $EDAM_urlprefix, "The EDAM topic ID space's URL PRefix space description was not correctly returned.");
 
-    // Test removing an ID space
+    // Test removing an ID space.
     $edam->removeIdSpace($EDAM_format_idspace);
     $edam->removeIdSpace($EDAM_topic_idspace);
     $id_spaces = $edam->getIdSpaceNames();
@@ -413,7 +420,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests the TripalTerm Class
+   * Tests the TripalTerm Class.
    */
   public function testTripalTermClass() {
 
@@ -564,7 +571,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $is_a->setIdSpace('GO');
     $is_a->setVocabulary('biological_process');
     $is_a->setAccession('is_a');
-    $is_a->setIsRelationshipType(True);
+    $is_a->setIsRelationshipType(TRUE);
     $this->assertTrue($is_a->isRelationshipType(), 'The "is_a" TripalTerm failed to indicate it is a relationship term.');
 
     // Next create a child term and set its parent.
@@ -597,10 +604,10 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
       'definition' => 'A distinct period or stage in a biological process or cycle.',
       'accession' => '0044848',
       'properties' => [
-        [$comment, $child_comment]
+        [$comment, $child_comment],
       ],
       'parents' => [
-        [$parent, $is_a]
+        [$parent, $is_a],
       ],
     ]);
 
@@ -628,7 +635,6 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     //
     // Inserting (Saving) Terms to Chado.
     //
-
     // We need to save the comment term first s this is used
     // for a property in our new child term below.
     $rdfs_id->saveTerm($comment);
@@ -658,13 +664,13 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
         'behavioral response to stimulus',
         'behaviour',
         'behavioural response to stimulus',
-        'single-organism behavior'
+        'single-organism behavior',
       ],
       'properties' => [
         [$comment, $new_child_comment],
       ],
       'parents' => [
-        [$parent, $is_a]
+        [$parent, $is_a],
       ],
     ]);
     $GO->saveTerm($new_child);
@@ -680,7 +686,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $props = $new_child2->getProperties();
     $this->assertTrue(array_keys($props)[0] == 'rdfs:comment', 'The getTerm->getProperties function did not return properties in the correct format (keys).');
     $this->assertTrue(count($props['rdfs:comment'][0]) == 2, 'The getTerm->getProperties function did not return properties in the correct format (tuples).');
-    $this->assertTrue($props['rdfs:comment'][0][0]->getName() == 'comment',  'The getTerm->getProperties function did not return properties in the correct format (type).');
+    $this->assertTrue($props['rdfs:comment'][0][0]->getName() == 'comment', 'The getTerm->getProperties function did not return properties in the correct format (type).');
     $this->assertTrue($props['rdfs:comment'][0][1] == $new_child_comment, 'The getTerm->getProperties function did not return properties in the correct format (value).');
     $altIds = $new_child2->getAltIds();
     $this->assertTrue(in_array('GO:0044709', $altIds), 'The getTerm->getAltIds function did not return all of the term IDs (Test #1).');
@@ -693,13 +699,12 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $this->assertTrue(in_array('single-organism behavior', array_keys($synonyms)), 'The getTerm->getSynonysm function did not return all of the synonyms (Test #4).');
     $parents = $new_child2->getParents();
     $this->assertTrue(array_keys($parents)[0] == 'GO:0008150', 'The getTerm->getParents function did not return parents in the correct format (keys).');
-    $this->assertTrue($parents['GO:0008150'][0]->getName() == 'biological_process',  'The getTerm->getParents function did not return parents in the correct format (term).');
+    $this->assertTrue($parents['GO:0008150'][0]->getName() == 'biological_process', 'The getTerm->getParents function did not return parents in the correct format (term).');
     $this->assertTrue($parents['GO:0008150'][1]->getName() == 'is_a', 'The getTerm->getParents function did not return parents in the correct format (type).');
 
     //
     // Updating (Saving) Terms in Chado.
     //
-
     // Remove all optional attributes and save.
     $new_child2->removeAltId('GO', '0044709');
     $new_child2->removeAltId('GO', '0023032');
@@ -729,15 +734,15 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $this->assertTrue(count(array_keys($new_child4->getSynonyms())) == 1, 'Updates to a term are not adding synonyms correctly');
     $this->assertTrue(count(array_keys($new_child4->getParents())) == 1, 'Updates to a term are not adding parents correctly');
 
-    // Test updating of the boolean values
-    $new_child4->setIsObsolete(True);
-    $new_child4->setIsRelationshipType(True);
+    // Test updating of the boolean values.
+    $new_child4->setIsObsolete(TRUE);
+    $new_child4->setIsRelationshipType(TRUE);
     $GO->saveTerm($new_child4);
     $new_child5 = $GO->getTerm('0007610');
     $this->assertTrue($new_child5->isRelationshipType(), 'Updates to the relationship type did not get set when updating a term.');
     $this->assertTrue($new_child5->isObsolete(), 'Updates to the obsolete value did not get set when updating a term.');
-    $new_child5->setIsObsolete(False);
-    $new_child5->setIsRelationshipType(False);
+    $new_child5->setIsObsolete(FALSE);
+    $new_child5->setIsRelationshipType(FALSE);
     $GO->saveTerm($new_child5);
     $new_child6 = $GO->getTerm('0007610');
     $this->assertFalse($new_child6->isRelationshipType(), 'Updates to the relationship type did not get unset when updating a term.');
@@ -745,8 +750,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
 
     //
     // Finding Terms
-    //
-
+    // .
     // Restore the parent to its full state.
     $parent = new TripalTerm([
       'name' => 'biological_process',
@@ -788,13 +792,13 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
         'behavioral response to stimulus',
         'behaviour',
         'behavioural response to stimulus',
-        'single-organism behavior'
+        'single-organism behavior',
       ],
       'properties' => [
         [$comment, $new_child_comment],
       ],
       'parents' => [
-        [$parent, $is_a]
+        [$parent, $is_a],
       ],
     ]);
     $GO->saveTerm($new_child);
@@ -805,17 +809,16 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $this->assertTrue(in_array('behavioral response to stimulus', array_keys($terms)), 'Searching for a term did not return the matched synonym of a term (Test #1).');
     $this->assertTrue(in_array('behavioural response to stimulus', array_keys($terms)), 'Searching for a term did not return the matched synonym of a term  (Test #2).');
     $this->assertTrue(in_array('behaviour', array_keys($terms)), 'Searching for a term did not return the matched synonym of a term  (Test #3).');
-    $terms = $GO->getTerms('behav', ['exact' => True]);
+    $terms = $GO->getTerms('behav', ['exact' => TRUE]);
     $this->assertTrue(count(array_keys($terms)) == 0, 'Searching for an exact term that does not match anything did not return 0 matches.');
-    $terms = $GO->getTerms('behavioral response to stimulus', ['exact' => True]);
+    $terms = $GO->getTerms('behavioral response to stimulus', ['exact' => TRUE]);
     $this->assertTrue(count(array_keys($terms)) == 1, 'Searching for an exact term using the synonym did not return a match.');
     $terms = $GO->getTerms('biological');
     $this->assertTrue(count(array_keys($terms)) == 2, 'Searching for a non exact term that should match two terms did not.');
 
     //
     // Get Children
-    //
-
+    // .
     // Restore the child to its full state.
     $child = new TripalTerm([
       'name' => 'biological phase',
@@ -824,10 +827,10 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
       'definition' => 'A distinct period or stage in a biological process or cycle.',
       'accession' => '0044848',
       'properties' => [
-        [$comment, $child_comment]
+        [$comment, $child_comment],
       ],
       'parents' => [
-        [$parent, $is_a]
+        [$parent, $is_a],
       ],
     ]);
     $GO->saveTerm($child);
@@ -840,11 +843,9 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $rel_types = [$children[0][1]->getName(), $children[1][1]->getName()];
     $this->assertTrue(in_array('is_a', $rel_types), 'The list of children relationship types for the parent does not have the correct type.');
 
-
     //
     // Testing synonym types.
     //
-
     // Create a type for the synonyms.
     $syn_vocab = $this->vmanager->createCollection("synonym_type", "chado_vocabulary");
     $syn_id = $this->idsmanager->createCollection('synonym_type', "chado_id_space");
@@ -870,13 +871,13 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
         ['behavioral response to stimulus', $exact],
         ['behaviour', $exact],
         ['behavioural response to stimulus', $exact],
-        ['single-organism behavior', $exact]
+        ['single-organism behavior', $exact],
       ],
       'properties' => [
         [$comment, $new_child_comment],
       ],
       'parents' => [
-        [$parent, $is_a]
+        [$parent, $is_a],
       ],
     ]);
     $GO->saveTerm($new_child);
@@ -908,7 +909,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
         [$comment, $new_child_comment],
       ],
       'parents' => [
-        [$parent, $is_a]
+        [$parent, $is_a],
       ],
     ]);
     $GO->saveTerm($new_child);
@@ -927,7 +928,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
 
     //
     // Saving an invalid term
-    //
+    // .
     $dummy = new TripalTerm();
     // -- Test 1.
     $expected_message = 'ChadoIdSpace::saveTerm(). The term, ":" is not valid and cannot be saved.';
@@ -995,6 +996,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
 
   /**
    * Testing idSpace and Vocabulary collection with new db or cv.
+   *
    * Importers may create new ID spaces and vocabularies.
    * Test that these work (issue #2032).
    */
@@ -1017,7 +1019,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $imported_term = new TripalTerm();
     $this->assertIsObject($imported_term, "Failure to create an empty TripalTerm");
     $imported_term->setName('imported_term');
-    $expected_message = 'TripalTerm::setIdSpace(). The specified ID space, "imported_db", does not exist';
+    $expected_message = "TripalTerm::setIdSpace(). The specified ID space, 'imported_db', does not exist";
     ob_start();
     $imported_term->setIdSpace($db_name);
     $printed_output = ob_get_clean();
@@ -1026,7 +1028,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
       $printed_output,
       'Should not be able to set the IDspace because the plugin is not yet specified.'
     );
-    $expected_message = 'TripalTerm::setVocabulary(). The specified vocabulary, "imported_cv" does not exist.';
+    $expected_message = "TripalTerm::setVocabulary(). The specified vocabulary, 'imported_cv' does not exist.";
     ob_start();
     $imported_term->setVocabulary($cv_name);
     $printed_output = ob_get_clean();
@@ -1036,16 +1038,16 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
       'Should not be able to set the vocab because the plugin is not yet specified.'
     );
     $imported_term->setAccession('imported_term');
-    // Expect not valid because plugins are not yet specified
+    // Expect not valid because plugins are not yet specified.
     $is_valid = $imported_term->isValid();
     $this->assertFalse($is_valid, "Term is valid but should not be valid");
 
-    // Now specify the plugins and try again
+    // Now specify the plugins and try again.
     $imported_term->setIdSpacePlugin('chado_id_space');
     $imported_term->setVocabularyPlugin('chado_vocabulary');
     $imported_term->setIdSpace($db_name);
     $imported_term->setVocabulary($cv_name);
-    // Expect things to work now
+    // Expect things to work now.
     $id_space = $imported_term->getIdSpace();
     $this->assertEquals($db_name, $id_space, "ID space does not match DB name");
     $vocabulary = $imported_term->getVocabulary();
@@ -1126,4 +1128,5 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     );
 
   }
+
 }

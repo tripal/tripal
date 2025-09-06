@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
@@ -13,7 +13,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of default Tripal Array Design field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_array_design_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Array Design'),
