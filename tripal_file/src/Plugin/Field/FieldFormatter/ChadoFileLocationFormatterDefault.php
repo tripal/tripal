@@ -37,6 +37,7 @@ class ChadoFileLocationFormatterDefault extends ChadoFormatterBase {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
+    $elements['#attached']['library'][] = 'tripal_file/tripal_file.field.ChadoFileLocationFormatterDefault';
     $rows = [];
     $header = [
       $this->t('Download File Name'),
@@ -61,7 +62,8 @@ class ChadoFileLocationFormatterDefault extends ChadoFormatterBase {
         $values['filename'] = $uri;
       }
 
-      // The scheme will be NULL for an invalid URI.
+      // Create a link to the file source as indicated by the URI.
+      // The scheme here will be NULL for an invalid URI.
       $scheme = parse_url($uri, PHP_URL_SCHEME);
       $host = '';
       $link = $uri;
@@ -85,8 +87,7 @@ class ChadoFileLocationFormatterDefault extends ChadoFormatterBase {
       '#theme' => 'table',
       '#header' => $header,
       '#rows' => $rows,
-      // @todo testing here '#attributes' => ['class' => 'responsive-enabled'],  // no change.
-      '#wrapper_attributes' => ['class' => 'container'],
+      '#attributes' => ['class' => 'chado-file-location-table'],
     ];
 
     return $elements;
