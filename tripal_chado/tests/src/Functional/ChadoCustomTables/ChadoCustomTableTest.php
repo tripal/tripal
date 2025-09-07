@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
-use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -44,7 +43,7 @@ class ChadoCustomTableTest extends ChadoTestBrowserBase {
     $this->assertEmpty($custom_tables, 'We just created this test schema so the Custom Table manager should not be able to find any tables yet.');
 
     // Test manager create. This just creates the object.
-    $schema_array = unserialize($this->table_schema);
+    $schema_array = unserialize($this->table_schema, ['allowed_classes' => FALSE]);
     $table_name = $schema_array['table'];
     $custom_table_obj = $manager->create($table_name, $chado_schema_name);
     $this->assertIsObject($custom_table_obj, 'Unable to create a custom table object using the service manager.');
@@ -66,7 +65,12 @@ class ChadoCustomTableTest extends ChadoTestBrowserBase {
       0 => [],
       1 => ['not' => 'valid'],
       2 => ['table' => 'ShouldBeAllLowerCase'],
-      3 => ['table' => 'goodname', 'indexes' => ['indexnamemustbelessthan60characterslongthisislongerthanthatbyseveralcharacters' => 'test']],
+      3 => [
+        'table' => 'goodname',
+        'indexes' => [
+          'indexnamemustbelessthan60characterslongthisislongerthanthatbyseveralcharacters' => 'test',
+        ],
+      ],
     ];
     foreach ($invalid_schemas as $index => $invalid_schema) {
       $status = $custom_table_obj->setTableSchema($invalid_schema, FALSE);
@@ -84,7 +88,8 @@ class ChadoCustomTableTest extends ChadoTestBrowserBase {
     $this->assertIsInt($table_id, 'The table ID is not an integer.');
     $this->assertGreaterThan(0, $table_id, 'The table ID is not a positive value.');
 
-    // Test manager get list of chado custom tables again now that one has been added.
+    // Test manager get list of chado custom tables again now that
+    // one has been added.
     $custom_tables = $manager->getTables($chado_schema_name);
     $this->assertIsArray($custom_tables, 'The return value of Custom Table manager getTables is expected to be an array.');
     $this->assertContains($table_name, $custom_tables, 'The newly created custom table was not returned by the manager.');
