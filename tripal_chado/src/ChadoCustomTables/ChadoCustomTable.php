@@ -284,7 +284,8 @@ class ChadoCustomTable {
         if ($chado->schema()->tableExists($this->table_name)) {
           $chado->schema()->dropTable($this->table_name);
         }
-        $chado->schema()->createTable($table_schema['table'], $table_schema);
+        $this->table_name = $table_schema['table'];
+        $chado->schema()->createTable($this->table_name, $table_schema);
       }
 
       $update = $public->update('tripal_custom_tables');
@@ -331,6 +332,7 @@ class ChadoCustomTable {
       $message = "The schema array must have key named 'table'";
       $messages[] = $message;
       $logger->error($message);
+      return $messages;
     }
 
     if (preg_match('/[ABCDEFGHIJKLMNOPQRSTUVWXYZ]/', $table_schema['table'])) {
