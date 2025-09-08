@@ -2321,7 +2321,6 @@ class OBOImporter extends ChadoImporterBase {
       $line_num++;
       $size = mb_strlen($line);
       $num_read += $size;
-      $line = trim($line);
       $this->setItemsHandled($num_read);
 
       // remove newlines
@@ -2330,14 +2329,14 @@ class OBOImporter extends ChadoImporterBase {
       // remove any special characters that may be hiding
       $line = preg_replace('/[^(\x20-\x7F)]*/', '', $line);
 
-      // skip empty lines
-      if (strcmp($line, '') == 0) {
-        continue;
-      }
-
       // Remove comments from end of lines.
       $line = preg_replace('/^(.*?)\!.*$/', '\1', $line);
 
+      // skip empty lines
+      $line = trim($line);
+      if (strcmp($line, '') == 0) {
+        continue;
+      }
 
       // At the first stanza we're out of header.
       if (preg_match('/^\s*\[/', $line)) {
