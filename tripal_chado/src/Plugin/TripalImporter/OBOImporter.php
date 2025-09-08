@@ -1191,15 +1191,14 @@ class OBOImporter extends ChadoImporterBase {
       }
     }
 
-    // If we still don't have a namespace defined, use the one from the form
-    // in the "New Vocabulary Name" field
-    if (!$namespace and array_key_exists('run_args', $this->arguments)
-        and array_key_exists('obo_name', $this->arguments['run_args'])) {
-      $namespace = $this->arguments['run_args']['obo_name'];
+    // If we still don't have a namespace or short name defined, use the
+    // one from the form in the "New Vocabulary Name" field.
+    $run_name = $this->arguments['run_args']['obo_name'] ?? $this->arguments['run_args']['uobo_name'] ?? NULL;
+    if (!$namespace and $run_name) {
+      $namespace = $run_name;
     }
-    if (!$namespace and array_key_exists('run_args', $this->arguments)
-        and array_key_exists('uobo_name', $this->arguments['run_args'])) {
-      $namespace = $this->arguments['run_args']['uobo_name'];
+    if (!$short_name and $run_name) {
+      $short_name = $run_name;
     }
 
     // If we can't find the namespace or the short_name then bust.
