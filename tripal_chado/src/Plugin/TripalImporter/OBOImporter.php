@@ -1132,7 +1132,10 @@ class OBOImporter extends ChadoImporterBase {
     // Get the 'ontology' and 'default-namespace' headers.  Unfortunately,
     // not all OBO files contain these.
     if (array_key_exists('ontology', $header)) {
-      $short_name = strtoupper($header['ontology'][0]);
+      // If url instead of a name, e.g. 'http://edamontology.org', skip it.
+      if (!preg_match('/^http/i', $header['ontology'][0])) {
+        $short_name = strtoupper($header['ontology'][0]);
+      }
     }
     if (array_key_exists('default-namespace', $header)) {
       $namespace = $header['default-namespace'][0];
