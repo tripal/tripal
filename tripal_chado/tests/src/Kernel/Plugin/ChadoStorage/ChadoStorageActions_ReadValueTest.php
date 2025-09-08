@@ -23,12 +23,20 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test.
   /**
    * With fields specific to that test.
+   *
+   * Note: We will populate this variable at the start of each test.
+   *
+   * @var array
    */
   protected $fields = [];
 
+  /**
+   * The file describing the testing environment.
+   *
+   * @var string
+   */
   protected $yaml_file = __DIR__ . "/ChadoStorageActions-FieldDefinitions.yml";
 
   /**
@@ -111,7 +119,7 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
     $this->assertCount(1, $projects,
       "There should only be a single project inserted by these 3 fields");
 
-    // Check that the single project record has the name set by the `store` action.
+    // Check that the project record has the name set by the `store` action.
     $expected_name = $insert_values['other_field_store'][0]['name_store'];
     $retrieved_name = $projects[0]->name;
     $this->assertEquals($expected_name, $retrieved_name,
@@ -123,7 +131,8 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // First we want to reset all the chado storage arrays to ensure we are
     // doing a clean test. The values will purposefully remain in Chado but the
-    // Property Types, Property Values and Data Values will be built from scratch.
+    // Property Types, Property Values and Data Values will be built from
+    // scratch.
     $this->cleanChadoStorageValues();
 
     // For loading only the store id/pkey/link items should be populated.
@@ -202,7 +211,7 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
     $this->assertCount(1, $projects,
       "There should only be a single project affected by these 3 fields");
 
-    // Check that the single project record has the name set by the `store` action.
+    // Check that the project record has the name set by the `store` action.
     $expected_name = $update_values['other_field_store'][0]['name_store'];
     $retrieved_name = $projects[0]->name;
     $this->assertEquals($expected_name, $retrieved_name,
@@ -282,7 +291,7 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
    * Specically, testing that we can read the cvterm name for a stock record
    * through the stock > stock_cvterm > cvterm join path.
    *
-   * Again focusing on load since this action type does not impact insert/update.
+   * Again focusing on load since this action type doesn't impact insert/update.
    */
   public function testReadValueActionJoin() {
 
@@ -364,15 +373,16 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
    * Test read_value through a join where two fields access the same tables.
    *
    * Base Table: arraydesign
-   *     Columns: arraydesign_id*, manufacturer_id, platformtype_id*, substratetype_id*, name
+   * - Columns: arraydesign_id*, manufacturer_id, platformtype_id*,
+   *   substratetype_id*, name
    * Chado Table: dbxref
-   *     Columns: accession.
+   * - Columns: accession.
    *
-   * Specically, testing that we can read the database reference for an arraydesign
-   * record through the arraydesign > cvterm > dbxref path for two separate
-   * fields without their being data swap between them.
+   * Specically, testing that we can read the database reference for an
+   * arraydesign record through the arraydesign > cvterm > dbxref path for two
+   * separate fields without their being data swap between them.
    *
-   * Again focusing on load since this action type does not impact insert/update.
+   * Again focusing on load since this action type doesn't impact insert/update.
    */
   public function testReadValueActionJoinDouble() {
 
@@ -449,15 +459,16 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
    * Test read_value through a join where two fields access the same tables.
    *
    * Base Table: arraydesign
-   *     Columns: arraydesign_id*, manufacturer_id, platformtype_id*, substratetype_id*, name
+   * - Columns: arraydesign_id*, manufacturer_id, platformtype_id*,
+   *   substratetype_id*, name
    * Chado Table: dbxref
-   *     Columns: accession.
+   * - Columns: accession.
    *
-   * Specically, testing that we can read the database reference for an arraydesign
-   * record through the arraydesign > cvterm > dbxref path for two separate
-   * fields without their being data swap between them.
+   * Specically, testing that we can read the database reference for an
+   * arraydesign record through the arraydesign > cvterm > dbxref path for two
+   * separate fields without their being data swap between them.
    *
-   * Again focusing on load since this action type does not impact insert/update.
+   * Again focusing on load since this action type doesn't impact insert/update.
    */
   public function testReadValueActionJoinLoop() {
 
@@ -552,7 +563,7 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
    * Specifically testing that we can read the project name for an existing
    * project record when there is no store property for the project name.
    *
-   * Again focusing on load since this action type does not impact insert/update.
+   * Again focusing on load since this action type doesn't impact insert/update.
    */
   public function testReadValueActionNoStore() {
 

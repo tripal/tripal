@@ -9,17 +9,20 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
+ * Test chado storage.
+ *
  * Tests that ChadoStorage can handle fields for linker tables as we expect.
  * The array of fields/properties used for these tests are designed
  * to match those for a variety of linker tables as examples since the fields
  * are note yet developed. These are the specific cases tested:
- *   - synonymfield: feature > feature_synonym
- *   - analysisfield: feature > analysisfeature
- *   - contactfield: feature > feature_contact
- *   - relationshipfield: feature > feature_relationship
+ * - synonymfield: feature > feature_synonym.
+ * - analysisfield: feature > analysisfeature.
+ * - contactfield: feature > feature_contact.
+ * - relationshipfield: feature > feature_relationship.
  *
  * Note: testotherfeaturefield is added to ensure we meet the unique constraint
- * on the base table and also to ensure we are testing multi-field functionality.
+ * on the base table and also to ensure we are testing multi-field
+ * functionality.
  *
  * Note: We do not need to test invalid conditions for createValues() and
  * updateValues() as these are only called after the entity has validated
@@ -27,11 +30,11 @@ use PHPUnit\Framework\Attributes\Group;
  * are caught by validateValues().
  *
  * Specific test cases
- *  Test the following for both single and multiple property fields:
- *   - [SINGLE FIELD ONLY] Create Values in Chado using ChadoStorage when they don't yet exist.
- *   - [SINGLE FIELD ONLY] Load values in Chado using ChadoStorage after we just inserted them.
- *   - [SINGLE FIELD ONLY] Update values in Chado using ChadoStorage after we just inserted them.
- *   - [NOT IMPLEMENTED] Delete values in Chado using ChadoStorage.
+ * Test the following for both single and multiple property fields:
+ * - [SINGLE FIELD ONLY] Create Values in Chado when they don't yet exist.
+ * - [SINGLE FIELD ONLY] Load values in Chado after we just inserted them.
+ * - [SINGLE FIELD ONLY] Update values in Chado after we just inserted them.
+ * - [NOT IMPLEMENTED] Delete values in Chado using ChadoStorage.
  *
  * @group Tripal
  * @group Tripal Chado
@@ -46,16 +49,41 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test.
   /**
    * With fields specific to that test.
+   *
+   * Note: We will populate this variable at the start of each test.
+   *
+   * @var array
    */
   protected $fields = [];
 
+  /**
+   * The file describing the testing environment.
+   *
+   * @var string
+   */
   protected $yaml_file = __DIR__ . "/ChadoStorageLinkerFields-FieldDefinitions.yml";
 
+  /**
+   * Organism added in the testing environment.
+   *
+   * @var int
+   */
   protected int $organism_id;
+
+  /**
+   * Cvterm added in the testing environment.
+   *
+   * @var int
+   */
   protected int $cvterm_id;
+
+  /**
+   * Records added in the testing environment.
+   *
+   * @var array
+   */
   protected array $right_id;
 
   /**
@@ -190,25 +218,29 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
   /**
    * Testing ChadoStorage on linker fields.
    *
-   * @dataProvider provideTestCases
-   *
    * Test Cases:
-   *   - Create Values in Chado using ChadoStorage when they don't yet exist.
-   *   - Load values in Chado using ChadoStorage after we just inserted them.
-   *   - Update values in Chado using ChadoStorage after we just inserted them.
-   *   - [NOT IMPLEMENTED] Delete values in Chado using ChadoStorage.
-   *   - [NOT IMPLEMENTED] Ensure property field picks up records in Chado not added through field.
+   * - Create Values in Chado using ChadoStorage when they don't yet exist.
+   * - Load values in Chado using ChadoStorage after we just inserted them.
+   * - Update values in Chado using ChadoStorage after we just inserted them.
+   * - [NOT IMPLEMENTED] Delete values in Chado using ChadoStorage.
+   * - [NOT IMPLEMENTED] Ensure property field picks up records in Chado not
+   *   added through field.
    *
    * Parameters provided by provideTestCases().
-   * @params $linker_field_name
+   *
+   * @param string $linker_field_name
    *   The specific field in $fields to be used for the current test case.
-   * @param $linker_table_name
-   *   The name of the chado linker table we are testing in the field specified by $linker_field_name
-   * @param $right_table_id
+   * @param string $linker_table_name
+   *   The name of the chado linker table we are testing in the field specified
+   *   by $linker_field_name.
+   * @param string $right_table_id
    *   The primary key for the right table in the link.
-   * @param $extra_values
+   * @param array $extra_values
    *   The values for the extra fields specific to each linker table
-   *   where the key is the property key and the value is the value we should set it to.
+   *   where the key is the property key and the value is the value we should
+   *   set it to.
+   *
+   * @dataProvider provideTestCases
    */
   #[DataProvider('provideTestCases')]
   public function testLinkerTableField($linker_field_name, $linker_table_name, $right_table_id, $extra_values) {
@@ -242,7 +274,7 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
     $this->chadoStorageTestInsertValues($insert_values);
 
     // @debug $this->debugChadoStorageTestTraitArrays();
-    // Check that the base feature record was created in the database as expected.
+    // Check that the base feature record was created in the db as expected.
     // Note: makes some assumptions based on knowing the data provider for
     // better readability of the tests.
     $field_name = 'testotherfeaturefield';
@@ -273,9 +305,9 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
     $this->assertCount(2, $all_linker_records,
       "There were more records then we were expecting in the $linker_table_name table: " . print_r($all_linker_records, TRUE));
 
-    // Check that the linker table records were created in the database as expected.
-    // We use the unique key to select this particular value in order to
-    // ensure it is here and there is one one.
+    // Check that the linker table records were created in the database as
+    // expected. We use the unique key to select this particular value in order
+    // to ensure it is here and there is one one.
     foreach ($insert_values[$linker_field_name] as $delta => $expected) {
       $query = $this->chado_connection->select('1:' . $linker_table_name, 'linker')
         ->fields('linker')
@@ -293,7 +325,8 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // First we want to reset all the chado storage arrays to ensure we are
     // doing a clean test. The values will purposefully remain in Chado but the
-    // Property Types, Property Values and Data Values will be built from scratch.
+    // Property Types, Property Values and Data Values will be built from
+    // scratch.
     $this->cleanChadoStorageValues();
 
     // For loading only the store id/pkey/link items should be populated.
@@ -329,8 +362,9 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
         $retrieved['right_id']['value']->getValue(),
         "The $right_table_id for delta $delta did not match the one we retrieved from chado after insert."
       );
-      // These two should match for sure as we actually set the above in our load
-      // arrays but let's check anyway to make sure there isn't any funny business.
+      // These two should match for sure as we actually set the above in our
+      // load arrays but let's check anyway to make sure there isn't any funny
+      // business.
       $this->assertEquals(
         $expected->$linker_pkey,
         $retrieved['linker_id']['value']->getValue(),
@@ -385,9 +419,9 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
     $this->assertCount(3, $all_linker_records,
       "There were more records then we were expecting in the $linker_table_name table: " . print_r($all_linker_records, TRUE));
 
-    // Check that the linker table records were updated/created in the database as expected.
-    // We use the unique key to select this particular value in order to
-    // ensure it is here and there is one one.
+    // Check that the linker table records were updated/created in the database
+    // as expected. We use the unique key to select this particular value in
+    // order to ensure it is here and there is one one.
     foreach ($update_values[$linker_field_name] as $delta => $expected) {
       $query = $this->chado_connection->select('1:' . $linker_table_name, 'linker')
         ->fields('linker')

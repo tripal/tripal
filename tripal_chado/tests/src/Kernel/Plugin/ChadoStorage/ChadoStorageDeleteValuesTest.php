@@ -22,12 +22,20 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test.
   /**
    * With fields specific to that test.
+   *
+   * Note: We will populate this variable at the start of each test.
+   *
+   * @var array
    */
   protected $fields = [];
 
+  /**
+   * The file describing the testing environment.
+   *
+   * @var string
+   */
   protected $yaml_file = __DIR__ . "/ChadoStorageFindValuesTest-FieldDefinitions.yml";
 
   /**
@@ -101,7 +109,7 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
     // Add the types to chado storage.
     $this->addPropertyTypes2ChadoStorage($field_names, $expected_property_counts);
 
-    // Create the property values + format them for testing with *Values methods.
+    // Create property values + format them for testing with *Values methods.
     $this->createDataStoreValues($field_names, $values);
 
     // Set the values in the propertyValue objects.

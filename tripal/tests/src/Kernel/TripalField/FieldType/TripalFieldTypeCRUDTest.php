@@ -16,8 +16,19 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal-entity')]
 #[Group('tripal-field')]
 class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
+
+  /**
+   * The theme to use when testing.
+   *
+   * @var string
+   */
   protected $defaultTheme = 'stark';
 
+  /**
+   * The modules to install when testing.
+   *
+   * @var array
+   */
   protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'datetime', 'tripal'];
 
   use TripalEntityFieldTestTrait;
@@ -32,7 +43,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
   }
 
   /**
-   *
+   * Provides fields to test.
    */
   public static function provideFieldsToTest() {
     $senarios = [];

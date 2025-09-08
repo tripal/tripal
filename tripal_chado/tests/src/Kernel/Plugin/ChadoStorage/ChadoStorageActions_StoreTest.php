@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
 use PHPUnit\Framework\Attributes\Group;
@@ -10,12 +11,12 @@ use PHPUnit\Framework\Attributes\Group;
  * Tests that specific ChadoStorage actions perform as expected.
  *
  * NOTE: The store action is actually tested fairly well as part of the testing
- * for other actions. Specifically, pretty much every action test includes a store
- * property and the value of that property is checked alongside the other properties
- * as a way to confirm that the full record loaded properly. This was especially
- * necessary for the store_* actions since they are set before loading so checking
- * the store property is needed to ensure the record was actually loaded based
- * on the pre-set keys.
+ * for other actions. Specifically, pretty much every action test includes a
+ * store property and the value of that property is checked alongside the other
+ * properties as a way to confirm that the full record loaded properly. This
+ * was especially necessary for the store_* actions since they are set before
+ * loading so checking the store property is needed to ensure the record was
+ * actually loaded based on the pre-set keys.
  *
  * Anyway, as such, this class only focuses on testing edge cases like alias use
  * and the delete_if_empty setting.
@@ -33,12 +34,27 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test
-  // with fields specific to that test.
+  /**
+   * With fields specific to that test.
+   *
+   * Note: We will populate this variable at the start of each test.
+   *
+   * @var array
+   */
   protected $fields = [];
 
+  /**
+   * The file describing the testing environment.
+   *
+   * @var string
+   */
   protected $yaml_file = __DIR__ . "/ChadoStorageActions-FieldDefinitions.yml";
 
+  /**
+   * Features added in the testing environment.
+   *
+   * @var array
+   */
   protected int $feature_id;
 
   /**
@@ -52,16 +68,16 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
 
     // We need to mock the logger to test the progress reporting.
     $container = \Drupal::getContainer();
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['warning', 'error'])
       ->getMock();
     $mock_logger->method('warning')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
     $mock_logger->method('error')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
@@ -82,7 +98,7 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
     $this->feature_id = $this->chado_connection->insert('1:feature')
       ->fields([
         'organism_id' => $organism_id,
-        'type_id' => $this->getCvtermId('rdfs','type'),
+        'type_id' => $this->getCvtermId('rdfs', 'type'),
         'uniquename' => uniqid(),
       ])
       ->execute();
@@ -114,20 +130,20 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
     ];
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
-    // ---------------------------------------------------------
+    // ---------------------------------------------------------.
     $insert_values = [
       'test_store_alias' => [
         [
           'primary_key' => NULL,
           'fkey' => $this->feature_id,
           'type' => $types_used['test_store_alias'],
-          'rank' => 0
+          'rank' => 0,
         ],
         [
           'primary_key' => NULL,
           'fkey' => $this->feature_id,
           'type' => $types_used['test_store_alias'],
-          'rank' => 1
+          'rank' => 1,
         ],
       ],
       'test_store_other_alias' => [
@@ -135,13 +151,13 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
           'primary_key' => NULL,
           'fkey' => $this->feature_id,
           'type' => $types_used['test_store_other_alias'],
-          'rank' => 0
+          'rank' => 0,
         ],
         [
           'primary_key' => NULL,
           'fkey' => $this->feature_id,
           'type' => $types_used['test_store_other_alias'],
-          'rank' => 3
+          'rank' => 3,
         ],
       ],
     ];
@@ -175,7 +191,8 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // First we want to reset all the chado storage arrays to ensure we are
     // doing a clean test. The values will purposefully remain in Chado but the
-    // Property Types, Property Values and Data Values will be built from scratch.
+    // Property Types, Property Values and Data Values will be built from
+    // scratch.
     $this->cleanChadoStorageValues();
 
     // For loading only the store id/pkey/link items should be populated.
@@ -199,10 +216,11 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
     ];
     $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
 
-    // Check that the store values in our fields have been loaded as they were inserted.
+    // Check that the store values in our fields have been loaded as they were
+    // inserted.
     foreach ($insert_values as $field_name => $delta_records) {
       foreach ($delta_records as $delta => $expected_values) {
-        foreach(['fkey', 'type', 'rank'] as $property) {
+        foreach (['fkey', 'type', 'rank'] as $property) {
           $retrieved = $retrieved_values[$field_name][$delta][$property]['value']->getValue();
           $expected = $expected_values[$property];
           $this->assertEquals($expected, $retrieved,
@@ -238,14 +256,14 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
     /** This is not an easy check since ChadoStorage deletes all these records
      *  and recreates them... hense the primary keys are incremented and do not
      * remain constant.
-    print_r($records);
-    $query = $this->chado_connection->select('1:featureprop', 'prop')
-      ->fields('prop', ['rank'])
-      ->condition('prop.featureprop_id', $test_store_other_alias_pkeys[1], '=')
-      ->execute();
-    $ret_rank = $query->fetchField();
-    $this->assertEquals(1, $ret_rank,
-      "The rank does not seem to have been updated as we expected.");
+     * print_r($records);
+     * $query = $this->chado_connection->select('1:featureprop', 'prop')
+     * ->fields('prop', ['rank'])
+     * ->condition('prop.featureprop_id', $test_store_other_alias_pkeys[1], '=')
+     * ->execute();
+     * $ret_rank = $query->fetchField();
+     * $this->assertEquals(1, $ret_rank,
+     * "The rank does not seem to have been updated as we expected.");
      */
 
   }
@@ -272,29 +290,30 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
     ];
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
-    // ---------------------------------------------------------
+    // ---------------------------------------------------------.
     $insert_values = [
       'test_store_alias' => [
         [
           'primary_key' => NULL,
           'fkey' => $this->feature_id,
           'type' => $types_used['test_store_alias'],
-          'value' => '', // Should NOT be inserted since delete_if_empty: TRUE
-          'rank' => 0
+    // Should NOT be inserted since delete_if_empty: TRUE.
+          'value' => '',
+          'rank' => 0,
         ],
         [
           'primary_key' => NULL,
           'fkey' => $this->feature_id,
           'type' => $types_used['test_store_alias'],
           'value' => 'pippin',
-          'rank' => 1
+          'rank' => 1,
         ],
         [
           'primary_key' => NULL,
           'fkey' => $this->feature_id,
           'type' => $types_used['test_store_alias'],
           'value' => 'samwise',
-          'rank' => 2
+          'rank' => 2,
         ],
       ],
       'test_store_other_alias' => [
@@ -303,14 +322,15 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
           'fkey' => $this->feature_id,
           'type' => $types_used['test_store_other_alias'],
           'value' => 'merry',
-          'rank' => 0
+          'rank' => 0,
         ],
         [
           'primary_key' => NULL,
           'fkey' => $this->feature_id,
           'type' => $types_used['test_store_other_alias'],
-          'value' => '', // SHOULD be inserted as delete_if_empty: FALSE
-          'rank' => 3
+        // SHOULD be inserted as delete_if_empty: FALSE.
+          'value' => '',
+          'rank' => 3,
         ],
       ],
     ];
@@ -381,4 +401,5 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
         "We did not get the number of records in the featureprop table for $field_name that we excepted after insert.");
     }
   }
+
 }

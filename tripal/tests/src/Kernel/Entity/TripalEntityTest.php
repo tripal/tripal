@@ -25,11 +25,18 @@ class TripalEntityTest extends TripalTestKernelBase {
    */
   protected static $modules = ['system', 'field', 'user', 'path', 'path_alias', 'tripal'];
 
+  /**
+   * The name of the bundle to use when testing.
+   *
+   * @var string
+   */
   protected string $bundle_name = 'fake_organism_bundle_028519';
 
   use UserCreationTrait;
 
   /**
+   * The token parser service.
+   *
    * @var \Drupal\tripal\Services\TripalTokenParser
    */
   protected ?object $token_parser = NULL;

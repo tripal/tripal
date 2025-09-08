@@ -7,6 +7,8 @@ use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
+ * Tests Chadostorage.
+ *
  * Tests that ChadoStorage can handle property fields as we expect.
  * The array of fields/properties used for these tests are designed
  * to match those in the ChadoContactDefault field with values filled
@@ -17,12 +19,12 @@ use PHPUnit\Framework\Attributes\Group;
  * contact table.
  *
  *  Specific test cases:
- *   - [STUDY] Create Values in Chado using ChadoStorage when they don't yet exist.
- *   - [STUDY] Load values in Chado using ChadoStorage after we just inserted them.
- *   - [STUDY] Update values in Chado using ChadoStorage after we just inserted them.
- *   - [ARRAYDESIGN] Create Values in Chado using ChadoStorage when they don't yet exist.
- *   - [ARRAYDESIGN] Load values in Chado using ChadoStorage after we just inserted them.
- *   - [ARRAYDESIGN] Update values in Chado using ChadoStorage after we just inserted them.
+ *   - [STUDY] Create Values in Chado when they don't yet exist.
+ *   - [STUDY] Load values in Chado after we just inserted them.
+ *   - [STUDY] Update values in Chado after we just inserted them.
+ *   - [ARRAYDESIGN] Create Values in Chado when they don't yet exist.
+ *   - [ARRAYDESIGN] Load values in Chado after we just inserted them.
+ *   - [ARRAYDESIGN] Update values in Chado after we just inserted them.
  *
  * @group Tripal
  * @group Tripal Chado
@@ -37,14 +39,27 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test.
   /**
    * With fields specific to that test.
+   *
+   * Note: We will populate this variable at the start of each test.
+   *
+   * @var array
    */
   protected $fields = [];
 
+  /**
+   * The file describing the testing environment.
+   *
+   * @var string
+   */
   protected $yaml_file = __DIR__ . "/ChadoContactDefault-FieldDefinitions.yml";
 
+  /**
+   * Contacts added in the testing environment.
+   *
+   * @var array
+   */
   protected array $contact_id;
 
   /**
@@ -69,14 +84,14 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Testing ChadoStorage with the ChadoContactDefault field on a study content type.
+   * Testing ChadoStorage: ChadoContactDefault field on a study content type.
    *
    * Test Cases:
    *   - Create Values in Chado using ChadoStorage when they don't yet exist.
    *   - Load values in Chado using ChadoStorage after we just inserted them.
    *   - Update values in Chado using ChadoStorage after we just inserted them.
    */
-  public function testStudyBaseTableFieldCRUD() {
+  public function testStudyBaseTableFieldCrud() {
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
     // ---------------------------------------------------------.
@@ -120,7 +135,8 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // First we want to reset all the chado storage arrays to ensure we are
     // doing a clean test. The values will purposefully remain in Chado but the
-    // Property Types, Property Values and Data Values will be built from scratch.
+    // Property Types, Property Values and Data Values will be built from
+    // scratch.
     $this->cleanChadoStorageValues();
 
     // For loading only the store id/pkey/link items should be populated.
@@ -199,17 +215,17 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Testing ChadoStorage with the ChadoContactDefault field on an arraydesign content type.
+   * Testing ChadoStorage: ChadoContactDefault on an arraydesign content type.
    *
    * Test Cases:
    *   - Create Values in Chado using ChadoStorage when they don't yet exist.
    *   - Load values in Chado using ChadoStorage after we just inserted them.
    *   - Update values in Chado using ChadoStorage after we just inserted them.
    */
-  public function testArrayDesignBaseTableFieldCRUD() {
+  public function testArrayDesignBaseTableFieldCrud() {
 
-    // ArrayDesign requires a platformtype_id, however it has no impact on our field.
-    // As such, we will just use the "null" CV term (cvterm_id = 1).
+    // ArrayDesign requires a platformtype_id, however it has no impact on our
+    // field. As such, we will just use the "null" CV term (cvterm_id = 1).
     $null_platformtype_id = 1;
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
@@ -255,7 +271,8 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // First we want to reset all the chado storage arrays to ensure we are
     // doing a clean test. The values will purposefully remain in Chado but the
-    // Property Types, Property Values and Data Values will be built from scratch.
+    // Property Types, Property Values and Data Values will be built from
+    // scratch.
     $this->cleanChadoStorageValues();
 
     // For loading only the store id/pkey/link items should be populated.

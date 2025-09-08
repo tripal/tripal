@@ -23,12 +23,20 @@ class ChadoStorageActions_StoreIdTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test.
   /**
    * With fields specific to that test.
+   *
+   * Note: We will populate this variable at the start of each test.
+   *
+   * @var array
    */
   protected $fields = [];
 
+  /**
+   * The file describing the testing environment.
+   *
+   * @var string
+   */
   protected $yaml_file = __DIR__ . "/ChadoStorageActions-FieldDefinitions.yml";
 
   /**
@@ -108,11 +116,13 @@ class ChadoStorageActions_StoreIdTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // First we want to reset all the chado storage arrays to ensure we are
     // doing a clean test. The values will purposefully remain in Chado but the
-    // Property Types, Property Values and Data Values will be built from scratch.
+    // Property Types, Property Values and Data Values will be built from
+    // scratch.
     $this->cleanChadoStorageValues();
 
     // For loading only the store id/pkey/link items should be populated.
-    // Since the id is passed in we're just checking it was set to the value property.
+    // Since the id is passed in we're just checking it was set to the value
+    // property.
     $load_values = [
       $field_name => [
         [

@@ -23,12 +23,20 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test.
   /**
    * With fields specific to that test.
+   *
+   * Note: We will populate this variable at the start of each test.
+   *
+   * @var array
    */
   protected $fields = [];
 
+  /**
+   * The file describing the testing environment.
+   *
+   * @var string
+   */
   protected $yaml_file = __DIR__ . "/ChadoStorageFindValuesTest-FieldDefinitions.yml";
 
   /**
@@ -105,7 +113,7 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
     // Add the types to chado storage.
     $this->addPropertyTypes2ChadoStorage($field_names, $expected_property_counts);
 
-    // Create the property values + format them for testing with *Values methods.
+    // Create property values + format them for testing with *Values methods.
     $this->createDataStoreValues($field_names, $values);
 
     // Set the values in the propertyValue objects.
@@ -121,7 +129,17 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
     // Now we want to check a specific record
     // and make sure all the properties are set as we expect.
     $found = $found_list[0];
-    $fields_working = ['gene_name', 'gene_uniquename', 'gene_type', 'gene_organism', 'gene_is_obsolete', 'gene_is_analysis', 'gene_sequence', 'gene_length', 'gene_sequence_md5_checksum'];
+    $fields_working = [
+      'gene_name',
+      'gene_uniquename',
+      'gene_type',
+      'gene_organism',
+      'gene_is_obsolete',
+      'gene_is_analysis',
+      'gene_sequence',
+      'gene_length',
+      'gene_sequence_md5_checksum',
+    ];
     foreach ($fields_working as $field_name) {
       $this->assertArrayHasKey($field_name, $found,
         "The field was not in the found values array but it definitely should be.");
@@ -139,7 +157,6 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
 
     // NOTE: Fields not fully working are:
     // gene_synonym, gene_contact and field_multi_value_chado_property.
-
     /** Debugging information for the found list *
      * foreach ($found as $k1 => $lvl2) {
      * print "   $k1 =>\n";

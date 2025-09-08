@@ -130,12 +130,12 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
   /**
    * Tests that TripalEntity::save() handles URL alias' with substitutions.
    *
-   * @dataProvider provideScenarios
-   *
    * @param int $current_scenario_key
    *   The key of the scenario in the YAML.
    * @param string $current_scenario_label
    *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
    */
   #[DataProvider('provideScenarios')]
   public function testTripalEntitySaveTitleUrlBasic(int $current_scenario_key, string $current_scenario_label) {
