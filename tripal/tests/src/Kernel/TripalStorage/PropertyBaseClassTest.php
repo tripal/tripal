@@ -99,6 +99,7 @@ class PropertyBaseClassTest extends TripalTestKernelBase {
     // Test passing in a badly formatted term.
     $exception_message = NULL;
     $bad_term = 'NoColonDelimiter';
+    $property = NULL;
     try {
       $property = new StoragePropertyBase($entityType, $fieldType, $key, $bad_term);
     }
