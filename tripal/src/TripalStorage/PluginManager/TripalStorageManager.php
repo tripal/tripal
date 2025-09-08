@@ -17,25 +17,23 @@ class TripalStorageManager extends DefaultPluginManager {
    * @param \Traversable $namespaces
    *   An object that implements \Traversable which contains the root paths
    *   keyed by the corresponding namespace to look for plugin implementations.
+   * @param Drupal\Core\Cache\CacheBackendInterface $cache_backend
+   *   The backend to use when caching this plugin type.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
-   * @param string $plugin_interface
-   *   The interface each plugin should implement.
-   * @param string $plugin_definition_annotation_name
-   *   The name of the annotation that contains the plugin definition.
    */
   public function __construct(
-      \Traversable $namespaces
-      ,CacheBackendInterface $cache_backend
-      ,ModuleHandlerInterface $module_handler
+    \Traversable $namespaces,
+    CacheBackendInterface $cache_backend,
+    ModuleHandlerInterface $module_handler,
   ) {
     parent::__construct(
-        "Plugin/TripalStorage"
-        ,$namespaces
-        ,$module_handler
-        ,'Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface'
-        ,'Drupal\tripal\TripalStorage\Attribute\TripalStorage'
-        ,'Drupal\tripal\TripalStorage\Annotation\TripalStorage'
+        "Plugin/TripalStorage",
+        $namespaces,
+        $module_handler,
+        'Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface',
+        'Drupal\tripal\TripalStorage\Attribute\TripalStorage',
+        'Drupal\tripal\TripalStorage\Annotation\TripalStorage'
     );
     $this->alterInfo("tripal_storage_info");
     $this->setCacheBackend($cache_backend, "tripal_storage_plugins");
@@ -50,14 +48,14 @@ class TripalStorageManager extends DefaultPluginManager {
   }
 
   /**
-   * Checks if a datastore has been registered properly and exists
-   * according to the storage manager.
+   * Checks if a datastore has been registered properly and exists.
    *
-   * @param string
+   * @param string $plugin_id
    *   The plugin ID of the datastore you want to check.
    *   This is the 'id' in the annotation block.
+   *
    * @return bool
-   *  True if the datastore exists and false otherwise.
+   *   True if the datastore exists and false otherwise.
    */
   public function datastoreExists($plugin_id) {
     $definitions = $this->getDefinitions();
@@ -68,4 +66,5 @@ class TripalStorageManager extends DefaultPluginManager {
       return FALSE;
     }
   }
+
 }
