@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group TripalField
  */
-#[Group('TripalField')]
+#[Group('tripal-field')]
 class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 

@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -37,16 +38,18 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoStorage
  * @group ChadoStorage Fields
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('ChadoStorage')]
-#[Group('ChadoStorage Fields')]
+#[Group('chado-storage')]
+#[Group('storage-property')]
+#[Group('tripal-entity')]
+#[Group('tripal-storage')]
 class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test
-  // with fields specific to that test.
+  // We will populate this variable at the start of each test.
+  /**
+   * With fields specific to that test.
+   */
   protected $fields = [];
 
   protected $yaml_file = __DIR__ . "/ChadoStorageLinkerFields-FieldDefinitions.yml";
@@ -63,11 +66,11 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
 
     // We need to mock the logger to test the progress reporting.
     $container = \Drupal::getContainer();
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['warning'])
       ->getMock();
     $mock_logger->method('warning')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
@@ -88,13 +91,13 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
       'abbreviation' => 'T. databasica',
       'infraspecific_name' => 'postgresql',
       'type_id' => $infra_type_id,
-      'comment' => 'This is fake organism specifically for testing purposes.'
+      'comment' => 'This is fake organism specifically for testing purposes.',
     ]);
     $this->organism_id = $query->execute();
 
     $this->cvterm_id = $this->getCvtermID('rdfs', 'type');
 
-    // Pub
+    // Pub.
     $query = $this->chado_connection->insert('1:pub');
     $query->fields([
       'uniquename' => 'test' . uniqid() . 'PUB',
@@ -103,10 +106,9 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
     $query->execute();
     // Don't need to save as it will be 1 since the table is empty.
     // We just need it to exist.
-
     // Synonym.
     $this->right_id['synonymfield'] = [];
-    foreach([1,2,3,4,5] as $delta) {
+    foreach ([1, 2, 3, 4, 5] as $delta) {
       $query = $this->chado_connection->insert('1:synonym');
       $query->fields([
         'name' => 'test' . uniqid() . '-' . $delta,
@@ -118,7 +120,7 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
 
     // Analysis.
     $this->right_id['analysisfield'] = [];
-    foreach([1,2,3,4,5] as $delta) {
+    foreach ([1, 2, 3, 4, 5] as $delta) {
       $query = $this->chado_connection->insert('1:analysis');
       $query->fields([
         'program' => 'test' . uniqid() . '-' . $delta,
@@ -129,7 +131,7 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
 
     // Contact.
     $this->right_id['contactfield'] = [];
-    foreach([1,2,3,4,5] as $delta) {
+    foreach ([1, 2, 3, 4, 5] as $delta) {
       $query = $this->chado_connection->insert('1:contact');
       $query->fields([
         'name' => 'test' . uniqid() . '-' . $delta,
@@ -144,7 +146,7 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
    */
   public static function provideTestCases() {
     return [
-      // synonymfield: feature > feature_synonym
+      // synonymfield: feature > feature_synonym.
       [
         'synonymfield',
         'feature_synonym',
@@ -153,23 +155,23 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
           'pub_id' => 1,
           'is_current' => TRUE,
           'is_internal' => TRUE,
-        ]
+        ],
       ],
-      // analysisfield: feature > analysisfeature
+      // analysisfield: feature > analysisfeature.
       [
         'analysisfield',
         'analysisfeature',
         'analysis_id',
-        []
+        [],
       ],
-      // contactfield: feature > feature_contact
+      // contactfield: feature > feature_contact.
       [
         'contactfield',
         'feature_contact',
         'contact_id',
-        []
+        [],
       ],
-      // relationshipfield: feature > feature_relationship
+      // relationshipfield: feature > feature_relationship.
       /*
       [
         'relationshipfield',
@@ -181,7 +183,7 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
           'is_internal' => TRUE,
         ]
       ],
-      */
+       */
     ];
   }
 
@@ -213,7 +215,7 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
     $linker_pkey = $linker_table_name . '_id';
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
-    // ---------------------------------------------------------
+    // ---------------------------------------------------------.
     $insert_values = [
       $linker_field_name => [
         [
@@ -234,13 +236,12 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
           'feature_type' => $this->cvterm_id,
           'feature_organism' => $this->organism_id,
           'feature_uname' => 'testGene4' . $linker_field_name . 'Test',
-        ]
+        ],
       ],
     ];
     $this->chadoStorageTestInsertValues($insert_values);
 
     // @debug $this->debugChadoStorageTestTraitArrays();
-
     // Check that the base feature record was created in the database as expected.
     // Note: makes some assumptions based on knowing the data provider for
     // better readability of the tests.
@@ -266,8 +267,8 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
     // Also check that there are only the expected number of records
     // in the linker table.
     $query = $this->chado_connection->select('1:' . $linker_table_name, 'linker')
-        ->fields('linker')
-        ->execute();
+      ->fields('linker')
+      ->execute();
     $all_linker_records = $query->fetchAll();
     $this->assertCount(2, $all_linker_records,
       "There were more records then we were expecting in the $linker_table_name table: " . print_r($all_linker_records, TRUE));
@@ -312,14 +313,14 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
       'testotherfeaturefield' => [
         [
           'record_id' => $feature_id,
-        ]
+        ],
       ],
     ];
     $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
 
     // Now test that the additional values have been loaded.
     // @debug $this->debugChadoStorageTestTraitArrays();
-    foreach([0,1] as $delta) {
+    foreach ([0, 1] as $delta) {
       $retrieved = $retrieved_values[$linker_field_name][$delta];
       $varname = 'link' . $delta;
       $expected = $$varname;
@@ -346,7 +347,7 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // When updating we need all the store id/pkey/link records
     // and all values of the other properties.
-    // array_merge alone seems not to be sufficient
+    // array_merge alone seems not to be sufficient.
     $update_values = $insert_values;
     foreach ($load_values as $field_name => $tmp) {
       foreach ($tmp as $delta => $id_values) {
@@ -358,7 +359,7 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
     // We also want to add the right_id in for each delta
     // which we didn't include in the load to ensure we had something
     // new to check ;-).
-    foreach($update_values[$linker_field_name] as $delta => $values) {
+    foreach ($update_values[$linker_field_name] as $delta => $values) {
       $cur_link_record = 'link' . $delta;
       $update_values[$linker_field_name][$delta]['right_id'] = $$cur_link_record->$right_table_id;
     }
@@ -378,8 +379,8 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
     // Now we check chado to see if these values were changed...
     // Still the expected number of records in the featureprop table?
     $query = $this->chado_connection->select('1:' . $linker_table_name, 'linker')
-        ->fields('linker')
-        ->execute();
+      ->fields('linker')
+      ->execute();
     $all_linker_records = $query->fetchAll();
     $this->assertCount(3, $all_linker_records,
       "There were more records then we were expecting in the $linker_table_name table: " . print_r($all_linker_records, TRUE));
@@ -398,8 +399,8 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
     }
 
     // Test Case: Delete values in Chado using ChadoStorage.
-    // ---------------------------------------------------------
-
+    // ---------------------------------------------------------.
     // NOT YET IMPLEMENTED IN CHADOSTORAGE.
   }
+
 }

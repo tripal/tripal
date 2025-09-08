@@ -13,7 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group TripalField
  */
-#[Group('TripalField')]
+#[Group('tripal-entity')]
+#[Group('tripal-field')]
 class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 
@@ -30,10 +31,13 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
     $this->setupEntityFieldTestEnvironment();
   }
 
+  /**
+   *
+   */
   public static function provideFieldsToTest() {
-    $senarios =  [];
+    $senarios = [];
 
-    // BOOLEAN
+    // BOOLEAN.
     $senarios[] = [
       'field_type' => [
         'id' => 'tripal_boolean_type',
@@ -50,7 +54,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
       'expectations' => [],
     ];
 
-    // INTEGER
+    // INTEGER.
     $senarios[] = [
       'field_type' => [
         'id' => 'tripal_integer_type',
@@ -67,7 +71,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
       'expectations' => [],
     ];
 
-    // STRING
+    // STRING.
     $senarios[] = [
       'field_type' => [
         'id' => 'tripal_string_type',
@@ -84,9 +88,9 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
       'expectations' => [],
     ];
 
-    // TEXT
+    // TEXT.
     $senarios[] = [
-      'field_type' =>[
+      'field_type' => [
         'id' => 'tripal_text_type',
         'class' => 'Drupal\tripal\Plugin\Field\FieldType\TripalTextTypeItem',
       ],
@@ -128,7 +132,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
     // -- use the sample value generating to get a value for this field.
     $field_value = $field_type['class']::generateSampleValue($fieldConfig);
     $this->assertIsArray($field_value,
-      "The ".$field_type['class']."::generateSampleValue() method for this field type did not return a valid value.");
+      "The " . $field_type['class'] . "::generateSampleValue() method for this field type did not return a valid value.");
     // -- create the entity with that value set
     $entity = TripalEntity::create([
       'title' => $this->randomString(),
@@ -142,4 +146,5 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
         "The value of the property $property_key was not what we expected for this field.");
     }
   }
+
 }

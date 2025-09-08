@@ -16,8 +16,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal
  * @group TripalStorage
  */
-#[Group('Tripal')]
-#[Group('TripalStorage')]
+#[Group('tripal-entity')]
+#[Group('tripal-storage')]
 class DrupalSqlStorageTest extends TripalTestKernelBase {
 
   /**

@@ -15,8 +15,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal
  * @group TripalStorage
  */
-#[Group('Tripal')]
-#[Group('TripalStorage')]
+#[Group('storage-property')]
+#[Group('tripal-storage')]
 class PropertyBaseClassTest extends TripalTestKernelBase {
 
   /**

@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -34,16 +35,18 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoStorage
  * @group ChadoStorage Fields
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('ChadoStorage')]
-#[Group('ChadoStorage Fields')]
+#[Group('chado-storage')]
+#[Group('storage-property')]
+#[Group('tripal-entity')]
+#[Group('tripal-storage')]
 class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test
-  // with fields specific to that test.
+  // We will populate this variable at the start of each test.
+  /**
+   * With fields specific to that test.
+   */
   protected $fields = [];
 
   protected $yaml_file = __DIR__ . "/ChadoPropertyDefault-FieldDefinitions.yml";
@@ -58,11 +61,11 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
 
     // We need to mock the logger to test the progress reporting.
     $container = \Drupal::getContainer();
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['warning'])
       ->getMock();
     $mock_logger->method('warning')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
@@ -83,7 +86,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
       'abbreviation' => 'T. databasica',
       'infraspecific_name' => 'postgresql',
       'type_id' => $infrtype_id,
-      'comment' => 'This is fake organism specifically for testing purposes.'
+      'comment' => 'This is fake organism specifically for testing purposes.',
     ]);
     $this->organism_id = $query->execute();
   }
@@ -93,7 +96,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
    */
   public static function provideSinglePropFieldNames() {
     return [
-      ['testpropertyfieldA']
+      ['testpropertyfieldA'],
     ];
   }
 
@@ -117,7 +120,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     $subspecies_cvtermID = $this->getCvtermID('SO', '0000704');
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
-    // ---------------------------------------------------------
+    // ---------------------------------------------------------.
     $insert_values = [
       $prop_field_name => [
         [
@@ -143,14 +146,14 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
           'type_id' => $rdfs_comment_cvtermID,
           'value' => 'Note 3',
           'rank' => 2,
-        ]
+        ],
       ],
       'testotherfeaturefield' => [
         [
           'feature_type' => $gene_cvtermID,
           'feature_organism' => $this->organism_id,
           'feature_uname' => 'testGene4PropTableTest',
-        ]
+        ],
       ],
     ];
     ob_start();
@@ -159,7 +162,6 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     $this->assertEmpty($printed_output, "There should not be any messages logged.");
 
     // @debug $this->debugChadoStorageTestTraitArrays();
-
     // Check that the base feature record was created in the database as expected.
     // Note: makes some assumptions based on knowing the data provider for
     // better readability of the tests.
@@ -185,8 +187,8 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // Also check that there are only the expected number of records
     // in the featureprop table.
     $query = $this->chado_connection->select('1:featureprop', 'prop')
-        ->fields('prop', ['feature_id', 'type_id', 'value', 'rank'])
-        ->execute();
+      ->fields('prop', ['feature_id', 'type_id', 'value', 'rank'])
+      ->execute();
     $all_featureprop_records = $query->fetchAll();
     $this->assertCount(3, $all_featureprop_records,
       "There were more records then we were expecting in the featureprop table: " . print_r($all_featureprop_records, TRUE));
@@ -208,7 +210,6 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
       $varname = 'prop' . $delta;
       $$varname = $records[0];
     }
-
 
     // Test Case: Load values existing in Chado.
     // ---------------------------------------------------------
@@ -234,12 +235,12 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
           'record_id' => $feature_id,
           'prop_id' => $prop2->featureprop_id,
           'linker_id' => $feature_id,
-        ]
+        ],
       ],
       'testotherfeaturefield' => [
         [
           'record_id' => $feature_id,
-        ]
+        ],
       ],
     ];
     ob_start();
@@ -247,10 +248,9 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     $printed_output = ob_get_clean();
     $this->assertEmpty($printed_output, "There should not be any messages logged.");
 
-
     // Now test that the additional values have been loaded.
     // @debug $this->debugChadoStorageTestTraitArrays();
-    foreach([0,1,2] as $delta) {
+    foreach ([0, 1, 2] as $delta) {
       $retrieved = $retrieved_values[$prop_field_name][$delta];
       $varname = 'prop' . $delta;
       $expected = $$varname;
@@ -275,7 +275,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // When updating we need all the store id/pkey/link records
     // and all values of the other properties.
-    // array_merge alone seems not to be sufficient
+    // array_merge alone seems not to be sufficient.
     $update_values = $insert_values;
     foreach ($load_values as $field_name => $tmp) {
       foreach ($tmp as $delta => $id_values) {
@@ -296,8 +296,8 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // Now we check chado to see if these values were changed...
     // Still the expected number of records in the featureprop table?
     $query = $this->chado_connection->select('1:featureprop', 'prop')
-        ->fields('prop', ['feature_id', 'type_id', 'value', 'rank'])
-        ->execute();
+      ->fields('prop', ['feature_id', 'type_id', 'value', 'rank'])
+      ->execute();
     $all_featureprop_records = $query->fetchAll();
     $this->assertCount(3, $all_featureprop_records,
       "There were more records then we were expecting in the featureprop table: " . print_r($all_featureprop_records, TRUE));
@@ -318,10 +318,8 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     }
 
     // Test Case: Delete values in Chado using ChadoStorage.
-    // ---------------------------------------------------------
-
+    // ---------------------------------------------------------.
     // NOT YET IMPLEMENTED IN CHADOSTORAGE.
-
   }
 
   /**
@@ -362,7 +360,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
 
     $prop_fields = array_keys($prop_field_settings);
 
-    // Get Terms
+    // Get Terms.
     foreach ($prop_field_settings as $field_name => $settings) {
       $prop_field_settings[$field_name]['type_id'] = $this->getCvtermID($settings['type'][0], $settings['type'][1]);
       $this->assertIsNumeric($prop_field_settings[$field_name]['type_id'],
@@ -379,14 +377,14 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
           'feature_type' => $gene_cvtermID,
           'feature_organism' => $this->organism_id,
           'feature_uname' => 'testGene4PropTableTest',
-        ]
+        ],
       ],
     ];
     // Now use the settings to generate values for the property fields.
     $max_delta = 4;
     foreach ($prop_field_settings as $field_name => $settings) {
       // We want multiple values for each field.
-      foreach([0,1,2,3] as $delta) {
+      foreach ([0, 1, 2, 3] as $delta) {
         $insert_values[$field_name][$delta] = [
           'record_id' => NULL,
           'prop_id' => NULL,
@@ -425,14 +423,13 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // Also check that there are only the expected number of records
     // in the featureprop table.
     $query = $this->chado_connection->select('1:featureprop', 'prop')
-        ->fields('prop', ['featureprop_id', 'feature_id', 'type_id', 'value', 'rank'])
-        ->execute();
+      ->fields('prop', ['featureprop_id', 'feature_id', 'type_id', 'value', 'rank'])
+      ->execute();
     $all_featureprop_records = $query->fetchAll();
     $this->assertCount(8, $all_featureprop_records,
       "There were not the number of records in the featureprop table that we were expected. These are the records found in the database: " . print_r($all_featureprop_records, TRUE));
 
     // @debug print_r($all_featureprop_records);
-
     // Check that the featureprop records were created in the database as expected.
     // We use the unique key to select this particular value in order to
     // ensure it is here and there is one one.
@@ -453,7 +450,6 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
       }
     }
 
-
     // Test Case: Load values existing in Chado.
     // ---------------------------------------------------------
     // First we want to reset all the chado storage arrays to ensure we are
@@ -466,11 +462,11 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
       'testotherfeaturefield' => [
         [
           'record_id' => $feature_id,
-        ]
+        ],
       ],
     ];
     foreach ($prop_field_settings as $prop_field_name => $settings) {
-      foreach([0,1,2,3] as $delta) {
+      foreach ([0, 1, 2, 3] as $delta) {
         $varname = 'prop_' . $prop_field_name . $delta;
         $load_values[$prop_field_name][$delta] = [
           'record_id' => $feature_id,
@@ -484,7 +480,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // Now test that the additional values have been loaded.
     // @debug $this->debugChadoStorageTestTraitArrays();
     foreach ($prop_fields as $prop_field_name) {
-      foreach([0,1,2,3] as $delta) {
+      foreach ([0, 1, 2, 3] as $delta) {
         $retrieved = $retrieved_values[$prop_field_name][$delta];
         $varname = 'prop_' . $prop_field_name . $delta;
         $expected = $$varname;
@@ -506,12 +502,11 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
       }
     }
 
-
     // Test Case: Update values in Chado using ChadoStorage.
     // ---------------------------------------------------------
     // When updating we need all the store id/pkey/link records
     // and all values of the other properties.
-    // array_merge alone seems not to be sufficient
+    // array_merge alone seems not to be sufficient.
     $update_values = $insert_values;
     foreach ($load_values as $field_name => $tmp) {
       foreach ($tmp as $delta => $id_values) {
@@ -530,8 +525,8 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // Now we check chado to see if these values were changed...
     // Still the expected number of records in the featureprop table?
     $query = $this->chado_connection->select('1:featureprop', 'prop')
-        ->fields('prop', ['feature_id', 'type_id', 'value', 'rank'])
-        ->execute();
+      ->fields('prop', ['feature_id', 'type_id', 'value', 'rank'])
+      ->execute();
     $all_featureprop_records = $query->fetchAll();
     $this->assertCount(8, $all_featureprop_records,
       "There were more records then we were expecting in the featureprop table: " . print_r($all_featureprop_records, TRUE));
@@ -557,8 +552,8 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     }
 
     // Test Case: Delete values in Chado using ChadoStorage.
-    // ---------------------------------------------------------
-
+    // ---------------------------------------------------------.
     // NOT YET IMPLEMENTED IN CHADOSTORAGE.
   }
+
 }

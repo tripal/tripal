@@ -29,16 +29,18 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoStorage
  * @group ChadoStorage Fields
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('ChadoStorage')]
-#[Group('ChadoStorage Fields')]
+#[Group('chado-storage')]
+#[Group('storage-property')]
+#[Group('tripal-entity')]
+#[Group('tripal-storage')]
 class ChadoContactDefaultTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test
-  // with fields specific to that test.
+  // We will populate this variable at the start of each test.
+  /**
+   * With fields specific to that test.
+   */
   protected $fields = [];
 
   protected $yaml_file = __DIR__ . "/ChadoContactDefault-FieldDefinitions.yml";
@@ -66,8 +68,6 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
     }
   }
 
-
-
   /**
    * Testing ChadoStorage with the ChadoContactDefault field on a study content type.
    *
@@ -79,7 +79,7 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
   public function testStudyBaseTableFieldCRUD() {
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
-    // ---------------------------------------------------------
+    // ---------------------------------------------------------.
     $insert_values = [
       'testContactFieldStudy' => [
         [
@@ -95,10 +95,9 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
     // for chado storage are being formed as we expect. This is very
     // useful for debugging.
     // @debug $this->debugChadoStorageTestTraitArrays();
-
     // Check that the Study record was created as expected.
     $query = $this->chado_connection->select('1:study', 'base')
-        ->fields('base', ['study_id', 'name', 'contact_id']);
+      ->fields('base', ['study_id', 'name', 'contact_id']);
     $query->join('1:contact', 'linked', 'base.contact_id = linked.contact_id');
     $query->addField('linked', 'name', 'linked_name');
     $base_records = $query->execute()->fetchAll();
@@ -136,7 +135,6 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
 
     // @debug Uncomment the following line if the asserts below fail.
     // @debug $this->debugChadoStorageTestTraitArrays();
-
     // Now test that the values have been loaded.
     // We want to test only our field
     // and retrieved values will be keyed by field name + delta.
@@ -161,14 +159,14 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // When updating we need all the store id/pkey/link records
     // and all values of the other properties.
-    // array_merge alone seems not to be sufficient
-
+    // array_merge alone seems not to be sufficient.
     $update_values = [
       'testContactFieldStudy' => [
         [
           'record_id' => $base_id,
           'name' => 'ChadoContactDefaultTest study #1',
-          'contact_id' => $this->contact_id[1], // This is the change!
+    // This is the change!
+          'contact_id' => $this->contact_id[1],
         ],
       ],
     ];
@@ -176,7 +174,7 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
 
     // Now we check chado to see if these values were changed...
     $query = $this->chado_connection->select('1:study', 'base')
-        ->fields('base', ['study_id', 'name', 'contact_id']);
+      ->fields('base', ['study_id', 'name', 'contact_id']);
     $query->join('1:contact', 'linked', 'base.contact_id = linked.contact_id');
     $query->addField('linked', 'name', 'linked_name');
     $base_records = $query->execute()->fetchAll();
@@ -200,8 +198,6 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
       "Failing the extra more readable check that the updated contact is the one we expect.");
   }
 
-
-
   /**
    * Testing ChadoStorage with the ChadoContactDefault field on an arraydesign content type.
    *
@@ -217,7 +213,7 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
     $null_platformtype_id = 1;
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
-    // ---------------------------------------------------------
+    // ---------------------------------------------------------.
     $insert_values = [
       'testContactFieldArrayDesign' => [
         [
@@ -234,10 +230,9 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
     // for chado storage are being formed as we expect. This is very
     // useful for debugging.
     // @debug $this->debugChadoStorageTestTraitArrays();
-
     // Check that the arraydesign record was created as expected.
     $query = $this->chado_connection->select('1:arraydesign', 'base')
-        ->fields('base', ['arraydesign_id', 'platformtype_id', 'manufacturer_id']);
+      ->fields('base', ['arraydesign_id', 'platformtype_id', 'manufacturer_id']);
     $query->join('1:contact', 'linked', 'base.manufacturer_id = linked.contact_id');
     $query->addField('linked', 'name', 'linked_name');
     $records = $query->execute()->fetchAll();
@@ -275,7 +270,6 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
 
     // @debug Uncomment the following line if the asserts below fail.
     // @debug $this->debugChadoStorageTestTraitArrays();
-
     // Now test that the values have been loaded.
     // We want to test only our field
     // and retrieved values will be keyed by field name + delta.
@@ -300,14 +294,14 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // When updating we need all the store id/pkey/link records
     // and all values of the other properties.
-    // array_merge alone seems not to be sufficient
-
+    // array_merge alone seems not to be sufficient.
     $update_values = [
       'testContactFieldArrayDesign' => [
         [
           'record_id' => $base_id,
           'name' => 'ChadoContactDefaultTest arraydesign #1',
-          'manufacturer_id' => $this->contact_id[1], // This is the change!
+    // This is the change!
+          'manufacturer_id' => $this->contact_id[1],
           'platformtype_id' => $null_platformtype_id,
         ],
       ],
@@ -316,7 +310,7 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
 
     // Now we check chado to see if these values were changed...
     $query = $this->chado_connection->select('1:arraydesign', 'base')
-        ->fields('base', ['arraydesign_id', 'platformtype_id', 'manufacturer_id']);
+      ->fields('base', ['arraydesign_id', 'platformtype_id', 'manufacturer_id']);
     $query->join('1:contact', 'linked', 'base.manufacturer_id = linked.contact_id');
     $query->addField('linked', 'name', 'linked_name');
     $records = $query->execute()->fetchAll();
@@ -338,4 +332,5 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
       $base_dbrecord->linked_name,
       "Failing the extra more readable check that the updated manufacturer is the one we expect.");
   }
+
 }

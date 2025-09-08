@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
 use PHPUnit\Framework\Attributes\Group;
@@ -14,16 +15,18 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoStorage
  * @group ChadoStorage Actions
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('ChadoStorage')]
-#[Group('ChadoStorage Actions')]
+#[Group('chado-storage')]
+#[Group('storage-property')]
+#[Group('tripal-entity')]
+#[Group('tripal-storage')]
 class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test
-  // with fields specific to that test.
+  // We will populate this variable at the start of each test.
+  /**
+   * With fields specific to that test.
+   */
   protected $fields = [];
 
   protected $yaml_file = __DIR__ . "/ChadoStorageActions-FieldDefinitions.yml";
@@ -39,11 +42,11 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
 
     // We need to mock the logger to test the progress reporting.
     $container = \Drupal::getContainer();
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['warning'])
       ->getMock();
     $mock_logger->method('warning')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
@@ -56,7 +59,7 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
    * Test the read_value action.
    *
    * Chado Table: project
-   *     Columns: project_id*, name*, description
+   *     Columns: project_id*, name*, description.
    *
    * Specifically,
    *  - Ensure that a property with the read_value action has the value set
@@ -72,7 +75,7 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
     $this->cleanChadoStorageValues();
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
-    // ---------------------------------------------------------
+    // ---------------------------------------------------------.
     $insert_values = [
       'test_read' => [
         [
@@ -206,12 +209,11 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
       "The name was not updated to match the other_field_store:name_store property.");
   }
 
-
   /**
    * Test the read_value action works with table alias.
    *
    * Chado Table: project
-   *     Columns: project_id*, name*, description
+   *     Columns: project_id*, name*, description.
    *
    * Specifically, ensure that a property with the read_value action
    *  - Can be used with a table alias.
@@ -275,7 +277,7 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
    * Base Table: Stock
    *     Columns: stock_id
    * Chado Table: cvterm
-   *     Columns: name
+   *     Columns: name.
    *
    * Specically, testing that we can read the cvterm name for a stock record
    * through the stock > stock_cvterm > cvterm join path.
@@ -364,7 +366,7 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
    * Base Table: arraydesign
    *     Columns: arraydesign_id*, manufacturer_id, platformtype_id*, substratetype_id*, name
    * Chado Table: dbxref
-   *     Columns: accession
+   *     Columns: accession.
    *
    * Specically, testing that we can read the database reference for an arraydesign
    * record through the arraydesign > cvterm > dbxref path for two separate
@@ -390,10 +392,10 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
     $platform_accession = 'comment';
     $substrate_accession = 'type';
     $arraydesign_expected = [
-        'manufacturer_id' => $contact_id,
-        'platformtype_id' => $this->getCvtermId('rdfs', $platform_accession),
-        'substratetype_id' => $this->getCvtermId('rdfs', $substrate_accession),
-        'name' => uniqid(),
+      'manufacturer_id' => $contact_id,
+      'platformtype_id' => $this->getCvtermId('rdfs', $platform_accession),
+      'substratetype_id' => $this->getCvtermId('rdfs', $substrate_accession),
+      'name' => uniqid(),
     ];
     $arraydesign_id = $this->chado_connection->insert('1:arraydesign')
       ->fields($arraydesign_expected)
@@ -443,14 +445,13 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
       "The type_id retrieved should match the one we inserted into chado for substratetype_id.");
   }
 
-
   /**
    * Test read_value through a join where two fields access the same tables.
    *
    * Base Table: arraydesign
    *     Columns: arraydesign_id*, manufacturer_id, platformtype_id*, substratetype_id*, name
    * Chado Table: dbxref
-   *     Columns: accession
+   *     Columns: accession.
    *
    * Specically, testing that we can read the database reference for an arraydesign
    * record through the arraydesign > cvterm > dbxref path for two separate
@@ -474,7 +475,7 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
       'abbreviation' => 'T. databasica',
       'infraspecific_name' => 'postgresql',
       'type_id' => $infra_type_id,
-      'comment' => 'This is fake organism specifically for testing purposes.'
+      'comment' => 'This is fake organism specifically for testing purposes.',
     ]);
     $organism_id = $query->execute();
 
@@ -507,10 +508,9 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
       'fmin' => 100,
       'fmax' => 200,
       'strand' => 1,
-      'phase' => 0
+      'phase' => 0,
     ]);
     $featureloc_id = $query->execute();
-
 
     // For loading only the store id/pkey/link items should be populated.
     $load_values = [
@@ -547,7 +547,7 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
    * Test read_value works when there is no store on the same column.
    *
    * Chado Table: project
-   *     Columns: project_id*, name*, description
+   *     Columns: project_id*, name*, description.
    *
    * Specifically testing that we can read the project name for an existing
    * project record when there is no store property for the project name.
@@ -594,4 +594,5 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
     $this->assertEquals($project_id, $ret_id,
       "The project_id retrieved should match the one we inserted into chado.");
   }
+
 }

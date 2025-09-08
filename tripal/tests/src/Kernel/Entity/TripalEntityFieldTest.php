@@ -14,8 +14,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group TripalEntity
  * @group TripalTokenParser
  */
-#[Group('TripalEntity')]
-#[Group('TripalTokenParser')]
+#[Group('tripal-entity')]
+#[Group('tripal-field')]
+#[Group('tripal-token-parser')]
 class TripalEntityFieldTest extends TripalTestKernelBase {
 
   use TripalEntityFieldTestTrait;
@@ -115,7 +116,7 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
 
     $scenarios[] = [
       1,
-      "Use format for title + URL with HTML included"
+      "Use format for title + URL with HTML included",
     ];
 
     $scenarios[] = [
@@ -184,4 +185,5 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
     $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['edit']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
   }
+
 }

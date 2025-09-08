@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
 use PHPUnit\Framework\Attributes\Group;
@@ -13,20 +14,24 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group ChadoStorage
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('ChadoStorage')]
+#[Group('chado-storage')]
+#[Group('storage-property')]
+#[Group('tripal-entity')]
+#[Group('tripal-publish')]
+#[Group('tripal-storage')]
 class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test
-  // with fields specific to that test.
+  // We will populate this variable at the start of each test.
+  /**
+   * With fields specific to that test.
+   */
   protected $fields = [];
 
   protected $yaml_file = __DIR__ . "/ChadoStorageFindValuesTest-FieldDefinitions.yml";
 
-    /**
+  /**
    * {@inheritdoc}
    */
   protected function setUp() :void {
@@ -34,16 +39,16 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
 
     // We need to mock the logger to test the progress reporting.
     $container = \Drupal::getContainer();
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['warning', 'error'])
       ->getMock();
     $mock_logger->method('warning')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
     $mock_logger->method('error')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
@@ -63,10 +68,10 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
    */
   public function testFindValues() {
 
-    // Setup an empty values array based on $this->fields
+    // Setup an empty values array based on $this->fields.
     $values = [];
-    foreach($this->fields as $field_name => $parts) {
-      $values[$field_name] = [ 0 => []];
+    foreach ($this->fields as $field_name => $parts) {
+      $values[$field_name] = [0 => []];
       foreach ($parts['properties'] as $propery_key => $storage_deets) {
         $values[$field_name][0][$propery_key] = NULL;
       }
@@ -77,8 +82,7 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
     $values['gene_type'][0]['id_space'] = 'SO';
     $values['gene_type'][0]['accession'] = '0000704';
     // And indicate the type of property.
-    //$values['field_multi_value_chado_property'][0]['type_id'] = 3151;
-
+    // $values['field_multi_value_chado_property'][0]['type_id'] = 3151;.
     $field_names = array_keys($this->fields);
     // Count total number of properties expected for the fields in the
     // values array we are testing.
@@ -108,7 +112,6 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
     $this->setExpectedValues($field_names, $values);
 
     // $this->debugChadoStorageTestTraitArrays();
-
     // Now finally call findValues()
     $found_list = $this->chadoStorage->findValues($this->dataStoreValues);
     $this->assertIsArray($found_list, 'We were not able to call the findValues method without error.');
@@ -119,7 +122,7 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
     // and make sure all the properties are set as we expect.
     $found = $found_list[0];
     $fields_working = ['gene_name', 'gene_uniquename', 'gene_type', 'gene_organism', 'gene_is_obsolete', 'gene_is_analysis', 'gene_sequence', 'gene_length', 'gene_sequence_md5_checksum'];
-    foreach($fields_working as $field_name) {
+    foreach ($fields_working as $field_name) {
       $this->assertArrayHasKey($field_name, $found,
         "The field was not in the found values array but it definitely should be.");
       foreach ($found[$field_name] as $delta => $found_values) {
@@ -135,18 +138,19 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
     }
 
     // NOTE: Fields not fully working are:
-    // gene_synonym, gene_contact and field_multi_value_chado_property
+    // gene_synonym, gene_contact and field_multi_value_chado_property.
 
     /** Debugging information for the found list *
-    foreach ($found as $k1 => $lvl2) {
-      print "   $k1 =>\n";
-      foreach ($lvl2 as $k2 => $lvl3) {
-        print "       $k2 =>\n";
-        foreach ($lvl3 as $k3 => $lvl4) {
-          print "           $k3 => " . $lvl4['value']->getValue() . "\n";
-        }
-      }
-    }
+     * foreach ($found as $k1 => $lvl2) {
+     * print "   $k1 =>\n";
+     * foreach ($lvl2 as $k2 => $lvl3) {
+     * print "       $k2 =>\n";
+     * foreach ($lvl3 as $k3 => $lvl4) {
+     * print "           $k3 => " . $lvl4['value']->getValue() . "\n";
+     * }
+     * }
+     * }
     */
   }
+
 }

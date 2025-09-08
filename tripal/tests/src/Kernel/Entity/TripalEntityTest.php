@@ -2,10 +2,11 @@
 
 namespace Drupal\Tests\tripal\Kernel\Entity;
 
+use Drupal\user\Entity\User;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\Entity\TripalEntityType;
-use \Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\Tests\user\Traits\UserCreationTrait;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -14,8 +15,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group TripalEntity
  * @group TripalTokenParser
  */
-#[Group('TripalEntity')]
-#[Group('TripalTokenParser')]
+#[Group('tripal-entity')]
+#[Group('tripal-field')]
+#[Group('tripal-token-parser')]
 class TripalEntityTest extends TripalTestKernelBase {
 
   /**
@@ -28,7 +30,7 @@ class TripalEntityTest extends TripalTestKernelBase {
   use UserCreationTrait;
 
   /**
-   * @var \Drupal\tripal\Services\TripalTokenParser $token_parser
+   * @var \Drupal\tripal\Services\TripalTokenParser
    */
   protected ?object $token_parser = NULL;
 
@@ -41,18 +43,18 @@ class TripalEntityTest extends TripalTestKernelBase {
     // Add any schema needed for the functionality I am testing.
     $this->prepareEnvironment(['TripalEntity', 'TripalTerm']);
 
-    // Get the token parser service
+    // Get the token parser service.
     $this->token_parser = \Drupal::service('tripal.token_parser');
 
-    // Create a term to use for the entity
+    // Create a term to use for the entity.
     $term_values = [
       'id_space_name' => 'FAKE',
       'term' => [
         'accession' => 'ORGANISM',
-        'name' => 'Organism'
+        'name' => 'Organism',
       ],
     ];
-    // @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term //
+    /** @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term // */
     $term = $this->createTripalTerm($term_values, 'tripal_default_id_space', 'tripal_default_vocabulary');
     $this->assertIsObject($term,
       'We were unable to create a tripal term during test setup');
@@ -121,7 +123,7 @@ class TripalEntityTest extends TripalTestKernelBase {
       "The type should be set to what we passed in on creation.");
     // -- bundle cache.
     $entity->setBundleCache($ret_type, NULL);
-    $ret_bundle =  $entity->getBundle();
+    $ret_bundle = $entity->getBundle();
     $this->assertEquals($this->bundle_name, $ret_bundle->id(),
       "The bundle returned after clearing the cache should match the type returned."
     );
@@ -183,7 +185,7 @@ class TripalEntityTest extends TripalTestKernelBase {
     $ret_owner = $entity->getOwner();
     $this->assertIsObject($ret_owner,
       "We were unable to retrieve the owner object for this entity.");
-    $this->assertInstanceOf(\Drupal\user\Entity\User::class, $ret_owner,
+    $this->assertInstanceOf(User::class, $ret_owner,
       "The owner returned should be a Drupal User object.");
     $this->assertEquals($user->id(), $ret_owner->id(),
       "The owner returned should be the current user.");
@@ -203,7 +205,7 @@ class TripalEntityTest extends TripalTestKernelBase {
       "We were unable to retrieve the owner object for this entity after setting it by object."
     );
     $this->assertInstanceOf(
-      \Drupal\user\Entity\User::class,
+      User::class,
       $ret_owner_set,
       "The owner returned after setting should be a Drupal User object."
     );
@@ -214,7 +216,7 @@ class TripalEntityTest extends TripalTestKernelBase {
     );
 
     // allNull Helper method.
-    $ret_all_null = TripalEntity::allNull([NULL,NULL,NULL,NULL]);
+    $ret_all_null = TripalEntity::allNull([NULL, NULL, NULL, NULL]);
     $this->assertTrue($ret_all_null, "We passed in an array of NULL therefore, the helper method should have confirmed that they were all null.");
     $ret_all_null = TripalEntity::allNull([NULL, NULL, NULL, NULL, 5, NULL]);
     $this->assertFalse($ret_all_null, "We passed in an array with one integer near the end therefore, the helper method should have confirmed that they were NOT all null.");

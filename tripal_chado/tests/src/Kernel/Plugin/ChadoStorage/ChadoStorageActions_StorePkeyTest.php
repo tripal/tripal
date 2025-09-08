@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -15,16 +16,18 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoStorage
  * @group ChadoStorage Actions
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('ChadoStorage')]
-#[Group('ChadoStorage Actions')]
+#[Group('chado-storage')]
+#[Group('storage-property')]
+#[Group('tripal-entity')]
+#[Group('tripal-storage')]
 class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test
-  // with fields specific to that test.
+  // We will populate this variable at the start of each test.
+  /**
+   * With fields specific to that test.
+   */
   protected $fields = [];
 
   protected $yaml_file = __DIR__ . "/ChadoStorageActions-FieldDefinitions.yml";
@@ -40,16 +43,16 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
 
     // We need to mock the logger to test the progress reporting.
     $container = \Drupal::getContainer();
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['warning', 'error'])
       ->getMock();
     $mock_logger->method('warning')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
     $mock_logger->method('error')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
@@ -69,7 +72,7 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
     return [
       [
         'testStorePKeyAction',
-        'test_field'
+        'test_field',
       ],
       // NOTE: We can test an alias on the pkey action here
       // because the action is not on the base table for the field
@@ -77,8 +80,8 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
       // table the store_pkey is on.
       [
         'testStorePKeyActionTableAlias',
-        'test_chado_alias'
-      ]
+        'test_chado_alias',
+      ],
     ];
   }
 
@@ -103,7 +106,7 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
     $this->cleanChadoStorageValues();
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
-    // ---------------------------------------------------------
+    // ---------------------------------------------------------.
     $insert_values = [
       $field_name => [
         [
@@ -184,4 +187,5 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
     $this->assertCount(1, $records,
       "There should only be a single db with this name");
   }
+
 }
