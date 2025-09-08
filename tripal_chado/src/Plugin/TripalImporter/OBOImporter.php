@@ -1140,6 +1140,15 @@ class OBOImporter extends ChadoImporterBase {
     if (array_key_exists('default-namespace', $header)) {
       $namespace = $header['default-namespace'][0];
     }
+    // Alternate header key that works at least for EDAM.
+    if (array_key_exists('default-relationship-id-prefix', $header)) {
+      if (!$short_name) {
+        $short_name = strtoupper($header['default-relationship-id-prefix'][0]);
+      }
+      if (!$namespace) {
+        $namespace = strtoupper($header['default-relationship-id-prefix'][0]);
+      }
+    }
     if (array_key_exists('idspace', $header)) {
       $matches = [];
       foreach ($header['idspace'] as $idspace) {
