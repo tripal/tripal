@@ -779,26 +779,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     foreach ($fields as $field_name => $items) {
       foreach ($items as $item) {
 
-        // If it is not a TripalField then skip it.
-        if (!$item instanceof TripalFieldItemInterface) {
+        $storage = self::getFieldItemBackendStorage($field_name, $item);
+        if ($storage === FALSE) {
           continue;
         }
-
-        $delta = $item->getName();
-        $tsid = $item->tripalStorageId();
-
-        // If the Tripal Storage Backend is not set on a Tripal-based field,
-        // we will log an error and not support the field. If developers want
-        // to use Drupal storage for a Tripal-based field then they need to
-        // indicate that by using our Drupal SQL Storage option OR by not
-        // creating a Tripal-based field at all depending on their needs.
-        if (empty($tsid)) {
-          \Drupal::logger('tripal')->error('The Tripal-based field :field on
-            this content type must indicate a TripalStorage backend and currently does not.',
-            [':field' => $field_name]
-          );
-          continue;
-        }
+        [$delta, $tsid] = $storage;
 
         // Create instance of the storage plugin so we can add the properties
         // to it as we go.
@@ -881,7 +866,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @see TripalEntityHooks::tripalEntityStorageLoad()
    */
   public static function saveValuesArray(TripalEntity &$entity, array &$values, array &$tripal_storages, bool $do_save = FALSE) {
-    $bundle = $entity->bundle();
     $context = [
       'empty_items' => [],
     ];
@@ -905,7 +889,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         foreach ($values[$tsid][$field_name][$delta] as $key => $info) {
 
           // Get the specific prop type and it's corresponding value.
-          $prop_type = $tripal_storages[$tsid]->getPropertyType($bundle, $field_name, $key);
+          $prop_type = $tripal_storages[$tsid]->getPropertyType($field_name, $key);
           $prop_value = $info['value'];
 
           // Store the values of any properties with a "store" action.
@@ -964,7 +948,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   - storage: an instance of this items tripalstorage backend.
    */
   public static function getFieldItemBackendStorage(string $field_name, FieldItemInterface $item): bool|array {
-    $info = [];
 
     // This must be a TripalField item.
     if (!$item instanceof TripalFieldItemInterface) {
