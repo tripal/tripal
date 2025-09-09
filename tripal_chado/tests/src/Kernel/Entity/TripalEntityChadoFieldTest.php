@@ -205,4 +205,57 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
     $this->assertEquals($current_scenario['edit']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
   }
 
+  /**
+   * Tests TripalEntity::isEmptyFieldItem() via saveValuesArray().
+   */
+  public function testIsEmptyFieldItem() {
+
+    // Create an entity with no values for testing.
+    $submitted_title = $this->randomString();
+    $entity = TripalEntity::create([
+      'title' => $submitted_title,
+      'type' => $this->bundle_name,
+    ]);
+    $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our empty fields scenario.");
+    $entity->save();
+
+    // Add a number of different types of empty values.
+    // - not empty.
+    $entity->set('project_name', ['record_id' => 1, 'value' => 'GARY']);
+    // - delta 0 empty since value is empty.
+    $entity->set('metaphysical_props', ['record_id' => 1, 'value' => '']);
+    $entity->set('gemologist', [
+      // Delta 0 empty since the contact_id is NULL.
+      [
+        'record_id' => 1,
+        'linker_id' => 1,
+        'link' => 1,
+        'contact_id' => 0,
+      ],
+      // Not empty.
+      [
+        'record_id' => 1,
+        'linker_id' => 1,
+        'link' => 1,
+        'contact_id' => 2,
+      ],
+      // Delta 2 empty since all values are empty.
+      [
+        'record_id' => 0,
+        'linker_id' => 0,
+        'link' => 0,
+        'contact_id' => 0,
+      ],
+    ]);
+
+    // Setup the entity to test saveValuesArray directly.
+    [$values, $tripal_storages] = TripalEntity::getValuesArray($entity, TRUE);
+    $context = TripalEntity::saveValuesArray($entity, $values, $tripal_storages, FALSE);
+
+    // Check our expectations.
+    $this->assertArrayHasKey('empty_items', $context, "TripalEntity::saveValuesArray should return empty items.");
+    $this->assertCount(1, $context['empty_items']['metaphysical_props'], "There should be one empty delta for the metaphysical_props field.");
+    $this->assertCount(2, $context['empty_items']['gemologist'], "There should be two empty delta for the gemologist field.");
+  }
+
 }
