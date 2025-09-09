@@ -277,13 +277,6 @@ function tripal_file_load_EDAM_obo() {
   else {
     $obo_importer->submitJob();
   }
-
-  // The EDAM ontology has several ID spaces. When we load the obo,
-  // the parent ID space is set to EDAM in cvterm_relationship.
-  // Create a Tripal term for this if one does not exist.
-  /** @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager $idsmanager */
-  $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-  $edam_idspace = $idsmanager->loadCollection('EDAM', 'chado_id_space');
 }
 
 /**
