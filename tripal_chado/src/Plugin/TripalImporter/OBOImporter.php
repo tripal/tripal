@@ -1228,6 +1228,8 @@ class OBOImporter extends ChadoImporterBase {
     // Add a new database for each idspace.
     foreach ($idspaces as $shortname => $idspace) {
       $this->insertChadoDb($shortname, $idspace['url'], $idspace['description']);
+      // This registers it with the Tripal idSpace collection.
+      $this->getIdSpace($shortname);
     }
   }
 
