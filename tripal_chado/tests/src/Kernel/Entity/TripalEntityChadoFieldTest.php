@@ -225,7 +225,7 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
     // - delta 0 empty since value is empty.
     $entity->set('metaphysical_props', ['record_id' => 1, 'value' => '']);
     $entity->set('gemologist', [
-      // Delta 0 empty since the contact_id is NULL.
+      // Delta 0 empty since the contact_id is empty.
       [
         'record_id' => 1,
         'linker_id' => 1,
@@ -239,12 +239,12 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
         'link' => 1,
         'contact_id' => 2,
       ],
-      // Delta 2 empty since all values are empty.
+      // Delta 2 empty since all values are null.
       [
-        'record_id' => 0,
-        'linker_id' => 0,
-        'link' => 0,
-        'contact_id' => 0,
+        'record_id' => NULL,
+        'linker_id' => NULL,
+        'link' => NULL,
+        'contact_id' => NULL,
       ],
     ]);
 
