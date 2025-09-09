@@ -1047,17 +1047,28 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * Helper function: Confirm array contains all null elements.
    *
    * @param array $array_to_check
-   *   The array to check for null values. It is expected to be a flat array.
+   *   The array to check for null values. It is expected to be a flat array
+   *   where the value is either a simple value OR a PropertyValue object.
    *
    * @return bool
-   *   True if all elements are null; False if even one element is not null.
+   *   TRUE if all elements are null; FALSE if even one element is not null.
    */
   public static function allNull(array $array_to_check) : bool {
+
     foreach ($array_to_check as $value) {
+
+      // If we were given an object then get the value from it first.
+      if (is_object($value)) {
+        $value = $value->getValue();
+      }
+
+      // Check if the value is defined and not null.
       if (isset($value)) {
         return FALSE;
       }
     }
+
+    // If we get here then all values are null.
     return TRUE;
   }
 
