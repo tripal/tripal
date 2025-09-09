@@ -211,13 +211,15 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
   public function testIsEmptyFieldItem() {
 
     // Create an entity with no values for testing.
+    $current_scenario = $this->scenarios[0];
     $submitted_title = $this->randomString();
     $entity = TripalEntity::create([
       'title' => $submitted_title,
       'type' => $this->bundle_name,
-    ]);
+    ] + $current_scenario['create']['user_input']);
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our empty fields scenario.");
     $entity->save();
+    $entity = TripalEntity::load($entity->id());
 
     // Add a number of different types of empty values.
     // - not empty.
@@ -228,14 +230,14 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
       // Delta 0 empty since the contact_id is empty.
       [
         'record_id' => 1,
-        'linker_id' => 1,
+        'linker_id' => 0,
         'link' => 1,
         'contact_id' => 0,
       ],
       // Not empty.
       [
         'record_id' => 1,
-        'linker_id' => 1,
+        'linker_id' => 0,
         'link' => 1,
         'contact_id' => 2,
       ],
@@ -255,7 +257,15 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
     // Check our expectations.
     $this->assertArrayHasKey('empty_items', $context, "TripalEntity::saveValuesArray should return empty items.");
     $this->assertCount(1, $context['empty_items']['metaphysical_props'], "There should be one empty delta for the metaphysical_props field.");
+    // @debug print_r($context['empty_items']['gemologist']);
     $this->assertCount(2, $context['empty_items']['gemologist'], "There should be two empty delta for the gemologist field.");
+
+    // Now we want to save the entity and make sure the correct items are
+    // removed and that save occurs without error.
+    $entity->save();
+    $gemologist_values = $entity->get('gemologist')->getValue();
+    // @debug print_r($gemologist_values);
+    $this->assertCount(1, $gemologist_values, "There should only be one gemologist value after save as the other 2 were empty and should have been removed.");
   }
 
 }
