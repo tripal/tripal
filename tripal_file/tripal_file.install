@@ -61,6 +61,10 @@ function tripal_file_install() {
   // Insert standard license types.
   tripal_file_show_message('Adding and publishing standard license types');
   tripal_file_add_default_licenses($chado);
+
+  // Install the full EDAM ontology.
+  tripal_file_show_message('Installing the EDAM ontology');
+  tripal_file_load_EDAM_obo();
 }
 
 /**
@@ -224,6 +228,62 @@ function tripal_file_add_default_licenses($chado): void {
     ];
     $published_entities = $chado_publish_instance->publish($publish_options);
   }
+}
+
+/**
+ * Installs the EDAM ontology.
+ */
+function tripal_file_load_EDAM_obo() {
+  $public = \Drupal::database();
+
+  // If not already present, insert a record into the
+  // "tripal_cv_obo" table defining the vocabulary to load.
+  $query = $public->select('tripal_cv_obo', 'O');
+  $query->condition('O.name', 'EDAM', '=');
+  $query->addField('O', 'obo_id', 'obo_id');
+  $results = $query->execute()->fetchAll();
+  $obo_id = 0;
+  if (count($results) > 0) {
+    $obo_id = $results[0]->obo_id;
+  }
+  if (!$obo_id) {
+    $insert = $public->insert('tripal_cv_obo');
+    $insert->fields([
+      'name' => 'EDAM',
+      'path' => 'https://edamontology.org/EDAM.obo',
+    ]);
+    $obo_id = $insert->execute();
+  }
+
+  $importer_manager = \Drupal::service('tripal.importer');
+  $obo_importer = $importer_manager->createInstance('chado_obo_loader');
+  $default_schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  $obo_importer->createImportJob([
+    'obo_id' => $obo_id,
+    'schema_name' => $default_schema_name,
+  ]);
+
+  // Submit the import job. This takes enough time that it needs to be
+  // detached from the install as a separate job so that there is no
+  // chance of causing a timeout.
+  // @todo If we can detect that module install is being run from drush
+  // rather than from the UI, we can execute immediately rather than
+  // submit a job.
+  $from_drush = TRUE;
+  if ($from_drush) {
+    $obo_importer->run();
+    $obo_importer->postRun();
+  }
+  else {
+    $obo_importer->submitJob();
+  }
+
+  // The EDAM ontology has several ID spaces. When we load the obo,
+  // the parent ID space is set to EDAM in cvterm_relationship.
+  // Create a Tripal term for this if one does not exist.
+  /** @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager $idsmanager */
+  $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+  $edam_idspace = $idsmanager->loadCollection('EDAM', 'chado_id_space');
 }
 
 /**
