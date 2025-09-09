@@ -1105,72 +1105,56 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
-    // Create a values array appropriate for `loadValues()`
-    [$values, $tripal_storages] = TripalEntity::getValuesArray($this);
+    // Set a string to be used in messages if this process fails.
+    $mode_string = ($this->isDefaultRevision() and $this->isNewRevision()) ? 'create' : 'update';
 
-    // Perform the Insert or Update of the submitted values to the
-    // underlying data store.
-    foreach ($values as $tsid => $tsid_values) {
+    try {
 
-      // Do an insert.
-      if ($this->isDefaultRevision() and $this->isNewRevision()) {
-        try {
+      // Create a values array appropriate for `loadValues()`
+      [$values, $tripal_storages] = TripalEntity::getValuesArray($this);
+
+      // Perform the Insert or Update of the submitted values to the
+      // underlying data store.
+      foreach ($values as $tsid => $tsid_values) {
+
+        // Do an insert.
+        if ($this->isDefaultRevision() and $this->isNewRevision()) {
           $tripal_storages[$tsid]->insertValues($tsid_values);
+          $values[$tsid] = $tsid_values;
         }
-        catch (\Exception $e) {
-          \Drupal::logger('tripal')->error($e->getMessage());
-          \Drupal::messenger()->addError('Cannot insert this entity. See the recent ' .
-              'logs for more details or contact the site administrator if you ' .
-              'cannot view the logs.');
-          // We cannot safely continue after such error.
-          return;
-        }
-        $values[$tsid] = $tsid_values;
-      }
 
-      // Do an Update.
-      else {
-        try {
+        // Do an Update.
+        else {
           $tripal_storages[$tsid]->updateValues($tsid_values);
+          $values[$tsid] = $tsid_values;
         }
-        catch (\Exception $e) {
-          \Drupal::logger('tripal')->error($e->getMessage());
-          \Drupal::messenger()->addError('Cannot update this entity. See the recent ' .
-              'logs for more details or contact the site administrator if you cannot ' .
-              'view the logs.');
-          // We cannot safely continue after such error.
-          return;
-        }
+
+        // Right now the assumption that only key values will be saved is baked
+        // into ChadoStorage insert/update. That means, the non-key properties
+        // do not have a value after saving because ChadoStorage didn't bother
+        // to set them... if it did, then the following loadValues would not be
+        // needed since the values would already be set.
+        // @todo look into fixing insert/update to return all values.
+        // NOTE: We use FALSE here so the values are loaded from the database.
+        $tripal_storages[$tsid]->loadValues($tsid_values, FALSE);
       }
 
-      // Right now the assumption that only key values will be saved is baked
-      // into ChadoStorage insert/update. That means, the non-key properties
-      // do not have a value after saving because ChadoStorage didn't bother
-      // to set them... if it did, then the following loadValues would not be
-      // needed since the values would already be set.
-      // @todo look into fixing insert/update to return all values.
-      // NOTE: We use FALSE here so the values are loaded from the database.
-      $tripal_storages[$tsid]->loadValues($tsid_values, FALSE);
-    }
+      // Set the property values that should be saved in Drupal, everything
+      // else will stay in the underlying data store (e.g. Chado).
+      $context = self::saveValuesArray($this, $values, $tripal_storages, TRUE);
+      $delta_remove = $context['empty_items'];
 
-    // Set the property values that should be saved in Drupal, everything
-    // else will stay in the underlying data store (e.g. Chado).
-    $context = self::saveValuesArray($this, $values, $tripal_storages, TRUE);
-    $delta_remove = $context['empty_items'];
-
-    // Now remove any values that shouldn't be there.
-    foreach ($delta_remove as $field_name => $deltas) {
-      foreach (array_reverse($deltas) as $delta) {
-        try {
+      // Now remove any values that shouldn't be there.
+      foreach ($delta_remove as $field_name => $deltas) {
+        foreach ($deltas as $delta) {
+          // @debug print "Removing $field_name [ $delta ]...\n";
           $this->get($field_name)->removeItem($delta);
         }
-        catch (\Exception $e) {
-          \Drupal::logger('tripal')->error($e->getMessage());
-          \Drupal::messenger()->addError('Cannot insert this entity. See the recent ' .
-              'logs for more details or contact the site administrator if you ' .
-              'cannot view the logs.');
-        }
       }
+    }
+    catch (\Exception $e) {
+      \Drupal::logger('tripal')->error($e->getMessage());
+      \Drupal::messenger()->addError("Cannot $mode_string this entity. See the recent logs for more details or contact the site administrator if you cannot view the logs.");
     }
   }
 
