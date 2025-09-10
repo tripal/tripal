@@ -265,11 +265,11 @@ function tripal_file_load_EDAM_obo() {
 
   // Submit the import job. This takes enough time that it needs to be
   // detached from the install as a separate job so that there is no
-  // chance of causing a timeout.
-  // @todo If we can detect that module install is being run from drush
-  // rather than from the UI, we can execute immediately rather than
-  // submit a job.
-  $from_drush = TRUE;
+  // chance of causing a page timeout.
+  // If we detect that module install is being run from drush rather
+  // than from the UI, we can execute immediately rather than submit
+  // a job.
+  $from_drush = function_exists('drush_main');
   if ($from_drush) {
     $obo_importer->run();
     $obo_importer->postRun();
