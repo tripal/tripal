@@ -6,16 +6,18 @@ dependencies:
     - field.storage.tripal_entity.file_license
     - field.storage.tripal_entity.file_name
     - field.storage.tripal_entity.file_type
-    - system.menu.data_search
+    - system.menu.data-search
     - tripal.content_type.tripal_file
   module:
     - tripal
     - tripal_chado
     - tripal_file
+_core:
+  default_config_hash: ZRcaBb3UV5yyahXdQLfK1wH_tNXBpb9f_ecD5I6TqGg
 id: tripal_file
 label: 'Tripal Files'
 module: views
-description: 'View and sort file content'
+description: 'View and sort tripal file content'
 tag: ''
 base_table: tripal_entity
 base_field: id
@@ -26,8 +28,61 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: 'Tripal Files'
+      title: 'Tripal File'
       fields:
+        view_tripal_entity:
+          id: view_tripal_entity
+          table: tripal_entity
+          field: view_tripal_entity
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: tripal_entity
+          plugin_id: entity_link
+          label: 'Link to Tripal Content'
+          exclude: true
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          text: view
+          output_url_as_text: true
+          absolute: false
         file_name:
           id: file_name
           table: tripal_entity__file_name
@@ -41,8 +96,8 @@ display:
           alter:
             alter_text: false
             text: ''
-            make_link: false
-            path: ''
+            make_link: true
+            path: '{{ view_tripal_entity }}'
             absolute: false
             external: false
             replace_spaces: false
@@ -246,14 +301,14 @@ display:
             suffix: ''
             target: ''
             nl2br: false
-            max_length: 0
+            max_length: 800
             word_boundary: true
             ellipsis: true
             more_link: false
             more_link_text: ''
             more_link_path: ''
             strip_tags: false
-            trim: false
+            trim: true
             preserve_tags: ''
             html: false
           element_type: ''
@@ -342,7 +397,7 @@ display:
         options:
           offset: 0
           pagination_heading_level: h4
-          items_per_page: 25
+          items_per_page: 50
           total_pages: null
           id: 0
           tags:
@@ -492,7 +547,7 @@ display:
             file_license: file_license
             file_description: file_description
             operations: operations
-          default: '-1'
+          default: file_name
           info:
             file_name:
               sortable: true
@@ -567,11 +622,12 @@ display:
     position: 1
     display_options:
       display_extenders: {  }
-      path: data_search/file
+      path: data-search/tripal-file
       menu:
         type: normal
         title: 'Tripal Files'
-        menu_name: data_search
+        weight: -50
+        menu_name: data-search
         parent: ''
     cache_metadata:
       max-age: -1
