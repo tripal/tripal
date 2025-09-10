@@ -159,6 +159,19 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   protected $bundle_cache = [];
 
   /**
+   * Keeps track of information about Tripal fields + their property types.
+   *
+   * This is set during getValuesArray() and reused in saveValuesArray() as well
+   * as other places.
+   *
+   * @var array
+   *   This is an associative array keyed by the field_name. For each field,
+   *   the value is an array with the following supported keys:
+   *   - store_properties: the keys of property types with action = store.
+   */
+  protected array $tripalfield_info = [];
+
+  /**
    * {@inheritdoc}
    */
   public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
@@ -795,7 +808,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // Get the empty property values for this field item and the
         // property type objects.
         $prop_values = $item->tripalValuesTemplate($item->getFieldDefinition());
-        $prop_types = get_class($item)::tripalTypes($item->getFieldDefinition());
+        $prop_types = $this->getFieldPropertyTypes($field_name);
 
         // Ensure that only the properties that should be are cleared.
         // Note: is_cached will only be true for this field if all properties
@@ -929,6 +942,51 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
 
     return $context;
+  }
+
+  /**
+   * Retrieves the TripalStorage property types for a given field.
+   *
+   * @param string $field_name
+   *   The name of the field we want property types for.
+   * @param bool $use_cache
+   *   Indicates if we should use the cache when it's availabe. When set to
+   *   FALSE, the property types will be updated even when cached.
+   *
+   * @return array
+   *   An array of property type objects for this field.
+   */
+  protected function getFieldPropertyTypes(string $field_name, bool $use_cache = TRUE): array {
+    $field_defn = $this->getFieldDefinition($field_name);
+
+    // Check if this fields info is cached at all... if not then add it.
+    if (!array_key_exists($field_name, $this->tripalfield_info)) {
+      $field_class = $field_defn->getClass();
+
+      $this->tripalfield_info[$field_name] = [
+        'class' => $field_class,
+      ];
+    }
+
+    // Check if the property types have been cached and look them up if not.
+    if (!array_key_exists('property_types', $this->tripalfield_info) OR !$use_cache) {
+      $field_class ??= $this->tripalfield_info[$field_name]['class'];
+      $field_defn ??= $this->getFieldDefinition($field_name);
+      $prop_types = $field_class::tripalTypes($field_defn);
+
+      $this->tripalfield_info[$field_name]['property_types'] = $prop_types;
+
+      // We also want to take advantage of the moment these are cached to index
+      // some information about them for faster use later.
+      foreach ($prop_types as $key => $prop_type) {
+
+        // Index based on their actions.
+        $action = $prop_type->getStorageSettings()['action'] ?? 'MISSING_ACTION';
+        $this->tripalfield_info[$field_name][$action . '-properties'][$key] = $key;
+      }
+    }
+
+    return $this->tripalfield_info[$field_name]['property_types'];
   }
 
   /**
@@ -1128,6 +1186,20 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $tripal_storages[$tsid]->updateValues($tsid_values);
           $values[$tsid] = $tsid_values;
         }
+
+        // Note: We do not want to load empty fields!
+        // There are some cases where empty fields sneak through to this point.
+        // For example, if an empty element wasn't properly removed, it can get
+        // through to here :see_no_evil: and if it does, chado storage will
+        // helpfully do the best it can with limited filter criteria :cower:
+        // often duplicating a single chado record into 2 drupal field records!
+        // Rather then assume this will never happen, lets filter them out here
+        // to reduce the impact if erroneous empty fields do get through.
+
+        // @todo FILTER THEM
+        // @see isEmptyFieldItem()??
+        // @see $this->tripalfield_info[$field_name]['store-properties']
+
 
         // Right now the assumption that only key values will be saved is baked
         // into ChadoStorage insert/update. That means, the non-key properties
