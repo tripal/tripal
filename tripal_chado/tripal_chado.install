@@ -9,7 +9,6 @@ use \Drupal\Core\Database\Database;
 use \Drupal\Core\Utility\UpdateException;
 use \Drupal\Component\Serialization\Yaml;
 use \Drupal\field\Entity\FieldConfig;
-use Drupal\field\Entity\FieldStorageConfig;
 use \Drupal\tripal_chado\Entity\ChadoTermMapping;
 use \Drupal\tripal\TripalVocabTerms\TripalTerm;
 
