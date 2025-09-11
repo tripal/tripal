@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
@@ -12,7 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 /**
  * Plugin implementation of the 'text' field type for Chado.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_text_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Text Field Type'),
