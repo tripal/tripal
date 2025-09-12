@@ -959,10 +959,11 @@ class ChadoRecords {
   protected function addEmptyTableItem(string $base_table, string $table_alias) {
     $items = $this->getTableItems($base_table, $table_alias);
     $num_items = count($items);
-    $this->records[$base_table]['tables'][$table_alias]['items'][$num_items] = $items[0];
+    $template_item = current($items);
+    $this->records[$base_table]['tables'][$table_alias]['items'][$num_items] = $template_item;
 
     // Clear the values for this new item.
-    foreach (array_keys($items[0]['values']) as $column_alias) {
+    foreach (array_keys($template_item['values']) as $column_alias) {
       $this->records[$base_table]['tables'][$table_alias]['items'][$num_items]['values'][$column_alias] = NULL;
     }
   }
