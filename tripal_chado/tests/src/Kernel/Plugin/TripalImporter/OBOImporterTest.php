@@ -101,7 +101,6 @@ class OBOImporterTest extends ChadoTestKernelBase {
 
     // The Tripal importers need a user.
     $permissions = [
-      'administer tripal',
       'allow tripal import',
     ];
     $this->user = $this->setUpCurrentUser($permissions);
