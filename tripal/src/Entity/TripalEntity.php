@@ -808,7 +808,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // Get the empty property values for this field item and the
         // property type objects.
         $prop_values = $item->tripalValuesTemplate($item->getFieldDefinition());
-        $prop_types = $this->getFieldPropertyTypes($field_name);
+        $prop_types = $entity->getFieldPropertyTypes($field_name);
 
         // Ensure that only the properties that should be are cleared.
         // Note: is_cached will only be true for this field if all properties
@@ -961,7 +961,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // Check if this fields info is cached at all... if not then add it.
     if (!array_key_exists($field_name, $this->tripalfield_info)) {
-      $field_class = $field_defn->getClass();
+      $field_class = $field_defn->getItemDefinition()->getClass();
 
       $this->tripalfield_info[$field_name] = [
         'class' => $field_class,
@@ -969,7 +969,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
 
     // Check if the property types have been cached and look them up if not.
-    if (!array_key_exists('property_types', $this->tripalfield_info) OR !$use_cache) {
+    if (!array_key_exists('property_types', $this->tripalfield_info) or !$use_cache) {
       $field_class ??= $this->tripalfield_info[$field_name]['class'];
       $field_defn ??= $this->getFieldDefinition($field_name);
       $prop_types = $field_class::tripalTypes($field_defn);

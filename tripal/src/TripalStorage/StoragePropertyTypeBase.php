@@ -2,10 +2,14 @@
 
 namespace Drupal\tripal\TripalStorage;
 
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+
 /**
  * Base class for a Tripal storage property type.
  */
 class StoragePropertyTypeBase extends StoragePropertyBase {
+
+  use DependencySerializationTrait;
 
   /**
    * Indicate if this property should be stored in the Drupal field tables.
@@ -275,7 +279,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @var string
    */
-  private $id;
+  protected $id;
 
   /**
    * The cardinality of this storage property type base.
@@ -286,7 +290,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @var bool
    */
-  private $cardinality;
+  protected $cardinality;
 
   /**
    * The searchability of this storage property type base.
@@ -297,7 +301,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @var bool
    */
-  private $searchability;
+  protected $searchability;
 
   /**
    * The supported operations of this storage property type base.
@@ -308,7 +312,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @var array
    */
-  private $operations;
+  protected $operations;
 
   /**
    * The sortable property of this storage property type base.
@@ -319,7 +323,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @var bool
    */
-  private $sortable;
+  protected $sortable;
 
   /**
    * The read only property of this storage property type base.
@@ -330,7 +334,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @var bool
    */
-  private $readOnly_;
+  protected $readOnly_;
 
   /**
    * The required of this storage property type base.
@@ -341,13 +345,13 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @var bool
    */
-  private $required;
+  protected $required;
 
   /**
    * An array of elements required for this property by the storage backend.
    *
    * @var array
    */
-  private $storage_settings;
+  protected $storage_settings;
 
 }

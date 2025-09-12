@@ -2,10 +2,14 @@
 
 namespace Drupal\tripal\TripalStorage;
 
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+
 /**
  * Defines the Tripal storage property value.
  */
 class StoragePropertyValue extends StoragePropertyBase {
+
+  use DependencySerializationTrait;
 
   /**
    * Constructs a new tripal storage property value.

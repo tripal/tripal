@@ -2,10 +2,14 @@
 
 namespace Drupal\tripal\TripalStorage;
 
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+
 /**
  * Base class for a Tripal storage property type or value.
  */
 class StoragePropertyBase {
+
+  use DependencySerializationTrait;
 
   /**
    * The ID Space Plugin manager service.
