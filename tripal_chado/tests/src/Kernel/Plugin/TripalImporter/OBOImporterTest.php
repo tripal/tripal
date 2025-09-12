@@ -4,12 +4,13 @@ namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use Drupal\tripal\Services\TripalLogger;
 use Symfony\Component\Yaml\Yaml;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Tests for the ChadoCVTerm classes
+ * Tests for the OBO ontology importer.
  *
  * @group TripalImporter
  * @group ChadoImporter
@@ -49,9 +50,9 @@ class OBOImporterTest extends ChadoTestKernelBase {
   protected object $chado_connection;
 
   /**
-   * The messages from the mocked tripal logger.
+   * Messages from the mocked tripal logger.
    *
-   * @var string $mock_messages
+   * @var array
    */
   protected array $mock_messages = [];
 
@@ -105,15 +106,15 @@ class OBOImporterTest extends ChadoTestKernelBase {
     ];
     $this->user = $this->setUpCurrentUser($permissions);
 
-    // Create a mocked logger so we can access error messages from the Tripal logger.
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    // Create a mocked logger to access error messages from the Tripal logger.
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['warning'])
       ->getMock();
     $mock_logger->method('warning')
-      ->willReturnCallback(function($message, $context, $options) {
-          $this->mock_messages[] = str_replace(array_keys($context), $context, $message);
-          return NULL;
-        });
+      ->willReturnCallback(function ($message, $context, $options) {
+        $this->mock_messages[] = str_replace(array_keys($context), $context, $message);
+        return NULL;
+      });
     $this->container->set('tripal.logger', $mock_logger);
 
     // The Drupal connection will be created in the parent. This is used
@@ -145,7 +146,7 @@ class OBOImporterTest extends ChadoTestKernelBase {
       'tripal_cv_obo',
       'tripal_mviews',
     ]);
-//    $this->populateMviewSql(); //@todo
+    // @todo not working yet $this->populateMviewSql();.
   }
 
   /**
@@ -202,7 +203,7 @@ class OBOImporterTest extends ChadoTestKernelBase {
    * tripal_chado/tests/fixtures/fill_public_test_prepare.sql.
    */
   protected function populateMviewSql() {
-//@todo this does not work
+    // @todo this does not work!
     $sql = "INSERT INTO [tripal_mviews] VALUES (6, 10, 'db2cv_mview', '
       SELECT DISTINCT CV.cv_id, CV.name as cvname, DB.db_id, DB.name as dbname,
         COUNT(CVT.cvterm_id) as num_terms
@@ -238,7 +239,7 @@ class OBOImporterTest extends ChadoTestKernelBase {
    * @dataProvider provideScenarios
    */
   #[DataProvider('provideScenarios')]
-  public function testOBOImporter(int $current_scenario_key, string $current_scenario_label) {
+  public function testOboImporter(int $current_scenario_key, string $current_scenario_label) {
 
     $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
 
@@ -256,14 +257,14 @@ class OBOImporterTest extends ChadoTestKernelBase {
     // Create an instance of the OBO importer.
     $importer_manager = \Drupal::service('tripal.importer');
     $this->assertIsObject($importer_manager, 'Importer manager not created');
-    /* @var \Drupal\tripal_chado\Plugin\TripalImporter\OBOImporter $obo_importer */
+    /** @var \Drupal\tripal_chado\Plugin\TripalImporter\OBOImporter $obo_importer */
     $obo_importer = $importer_manager->createInstance('chado_obo_loader');
     $this->assertIsObject($obo_importer, 'OBO Importer instance not created');
 
     // Create the import job.
     $obo_importer->createImportJob([
       'obo_id' => $obo_id,
-      'schema_name' => $this->chado_connection->getSchemaName()
+      'schema_name' => $this->chado_connection->getSchemaName(),
     ]);
 
     // Test that expected counts before import are one less.
@@ -292,7 +293,7 @@ class OBOImporterTest extends ChadoTestKernelBase {
     // @todo Doesn't run currently because the mviews don't exist
     // in the test environment.
     // $obo_importer->postRun();
-
+    // .
     // Test that expected database records have been created.
     foreach ($current_scenario['expect'] as $expect) {
       $expected_count = $expect['count'] ?? 1;
