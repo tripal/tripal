@@ -33,7 +33,7 @@ class OBOImporterTest extends ChadoTestKernelBase {
    *
    * @var string
    */
-  protected string $yaml_info_file = __DIR__ . '/OBOImporter-TestInfo.yml';
+  protected string $yaml_info_file = __DIR__ . '/OboImporter-TestInfo.yml';
 
   /**
    * The test drupal connection. It is also set in the container.
