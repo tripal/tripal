@@ -116,19 +116,16 @@ class OBOImporterTest extends ChadoTestKernelBase {
       });
     $this->container->set('tripal.logger', $mock_logger);
 
-    // The Drupal connection will be created in the parent. This is used
-    // when checking Drupal tables.
+    // The Drupal connection will be created in the parent.
     $this->drupal_connection = $this->container->get('database');
 
-    // First retrieve info from the YAML file for this particular test.
+    // First retrieve info from the YAML file for each test.
     $yaml_data = Yaml::parse(file_get_contents($this->yaml_info_file));
     $this->system_under_test = $yaml_data['system-under-test'];
     $this->scenarios = $yaml_data['scenarios'];
 
     // Create the test Chado installation we will be using.
-    if (!array_key_exists('chado_version', $this->system_under_test)) {
-      $this->system_under_test['chado_version'] = '1.3';
-    }
+    $this->system_under_test['chado_version'] ??= '1.3';
     $this->chado_connection = $this->getTestSchema(
       ChadoTestKernelBase::PREPARE_TEST_CHADO,
       $this->system_under_test['chado_version']
@@ -145,7 +142,10 @@ class OBOImporterTest extends ChadoTestKernelBase {
       'tripal_cv_obo',
       'tripal_mviews',
     ]);
-    // @todo not working yet $this->populateMviewSql();.
+
+    // Inserts records with the SQL to generate needed materialized views.
+    $this->populateMviewSql();
+
   }
 
   /**
@@ -196,35 +196,45 @@ class OBOImporterTest extends ChadoTestKernelBase {
   /**
    * Sets up the two materialized views needed for the importer.
    *
-   * Rather than load the whole test SQL, we can just define these
-   * two records to minimize resources needed for the test.
-   * This is extracted from
-   * tripal_chado/tests/fixtures/fill_public_test_prepare.sql.
+   * The mviews are populated when the importer postRun() is called.
    */
   protected function populateMviewSql() {
-    // @todo this does not work!
-    $sql = "INSERT INTO [tripal_mviews] VALUES (6, 10, 'db2cv_mview', '
-      SELECT DISTINCT CV.cv_id, CV.name as cvname, DB.db_id, DB.name as dbname,
-        COUNT(CVT.cvterm_id) as num_terms
-      FROM cv CV
-        INNER JOIN cvterm CVT on CVT.cv_id = CV.cv_id
-        INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
-        INNER JOIN db DB on DB.db_id = DBX.db_id
-      WHERE CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
-      GROUP BY CV.cv_id, CV.name, DB.db_id, DB.name
-      ORDER BY DB.name
-    ', 1667003601, 'Populated with 41 rows', 'A table for quick lookup of the vocabularies and the databases they are associated with.')";
-    $this->drupal_connection->query($sql)->execute();
-    $sql = "INSERT INTO [tripal_mviews] VALUES (5, 9, 'cv_root_mview', '
-      SELECT DISTINCT CVT.name, CVT.cvterm_id, CV.cv_id, CV.name
-      FROM cvterm CVT
-        LEFT JOIN cvterm_relationship CVTR ON CVT.cvterm_id = CVTR.subject_id
-        INNER JOIN cvterm_relationship CVTR2 ON CVT.cvterm_id = CVTR2.object_id
-      INNER JOIN cv CV on CV.cv_id = CVT.cv_id
-      WHERE CVTR.subject_id is NULL and
-        CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
-    ', 1667003601, 'Populated with 9 rows', 'A list of the root terms for all controlled vocabularies. This is needed for viewing CV trees')";
-    $this->drupal_connection->query($sql)->execute();
+    $records = [
+      0 => [
+        'mview_id' => 1,
+        'table_id' => 1,
+        'name' => 'cv_root_mview',
+        'query' => 'SELECT DISTINCT CVT.name, CVT.cvterm_id, CV.cv_id, CV.name FROM cvterm CVT
+  LEFT JOIN cvterm_relationship CVTR ON CVT.cvterm_id = CVTR.subject_id
+  INNER JOIN cvterm_relationship CVTR2 ON CVT.cvterm_id = CVTR2.object_id
+  INNER JOIN cv CV on CV.cv_id = CVT.cv_id
+  WHERE CVTR.subject_id is NULL and CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0',
+        'last_update' => 1234567890,
+        'status' => 'test',
+        'comment' => 'test',
+      ],
+      1 => [
+        'mview_id' => 2,
+        'table_id' => 2,
+        'name' => 'db2cv_mview',
+        'query' => 'SELECT DISTINCT CV.cv_id, CV.name as cvname, DB.db_id, DB.name as dbname, COUNT(CVT.cvterm_id) as num_terms FROM cv CV
+  INNER JOIN cvterm CVT on CVT.cv_id = CV.cv_id
+  INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
+  INNER JOIN db DB on DB.db_id = DBX.db_id
+  WHERE CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
+  GROUP BY CV.cv_id, CV.name, DB.db_id, DB.name ORDER BY DB.name',
+        'last_update' => 1234567890,
+        'status' => 'test',
+        'comment' => 'test',
+      ],
+    ];
+
+    foreach ($records as $record) {
+      $query = $this->drupal_connection->insert('tripal_mviews');
+      $query->fields($record);
+      $mview_id = $query->execute();
+      $this->assertEquals($record['mview_id'], $mview_id, 'Prepared MView record not added.');
+    }
   }
 
   /**
@@ -288,11 +298,6 @@ class OBOImporterTest extends ChadoTestKernelBase {
       $this->assertCount(0, $this->mock_messages, 'A message was generated but none was expected: ' . implode('; ', $this->mock_messages));
     }
 
-    // Postrun populates some materialized views.
-    // @todo Doesn't run currently because the mviews don't exist
-    // in the test environment.
-    // $obo_importer->postRun();
-    // .
     // Test that expected database records have been created.
     foreach ($current_scenario['expect'] as $expect) {
       $expected_count = $expect['count'] ?? 1;
@@ -302,6 +307,21 @@ class OBOImporterTest extends ChadoTestKernelBase {
       $count = $query->countQuery()->execute()->fetchField();
       $this->assertEquals($expected_count, $count, 'Did not create a ' . $expect['table'] . '.' . $expect['column'] . ' record with the expected value');
     }
+
+    // Postrun of the obo importer populates materialized views.
+    $obo_importer->postRun();
+
+    // Test that the materialized views have been populated.
+    $query = $this->chado_connection->select('1:db2cv_mview', 't');
+    $query->fields('t', ['cv_id', 'cvname', 'db_id', 'dbname', 'num_terms']);
+    $count = $query->countQuery()->execute()->fetchField();
+    $this->assertEquals($current_scenario['expect_db2cv_count'], $count, 'Expected number of records in db2cv_mview not found');
+
+    $query = $this->chado_connection->select('1:cv_root_mview', 't');
+    $query->fields('t', ['name', 'cvterm_id', 'cv_id', 'name']);
+    $count = $query->countQuery()->execute()->fetchField();
+    $this->assertEquals($current_scenario['expect_cv_root_count'], $count, 'Expected number of records in cv_root_mview not found');
+
   }
 
 }

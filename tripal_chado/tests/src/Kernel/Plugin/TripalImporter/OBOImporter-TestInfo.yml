@@ -7,6 +7,8 @@ scenarios:
       name: 'TO'
       path: '{tripal_chado}/tests/fixtures/obo_loader/test_to.obo'
     expect_message: 'a lookup will be performed with the EBI Ontology Lookup Service'
+    expect_db2cv_count: 31
+    expect_cv_root_count: 10
     expect:
       - table: 'db'
         column: 'name'
@@ -49,6 +51,8 @@ scenarios:
     tripal_cv_obo:
       name: 'EDAM'
       path: '{tripal_chado}/tests/fixtures/obo_loader/test_EDAM.obo'
+    expect_db2cv_count: 31
+    expect_cv_root_count: 9
     expect:
       - table: 'cvterm'
         column: 'name'
