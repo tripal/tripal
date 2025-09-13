@@ -19,7 +19,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('TripalImporter')]
 #[Group('ChadoImporter')]
 #[Group('OntologyImporter')]
-class OBOImporterTest extends ChadoTestKernelBase {
+class OboImporterTest extends ChadoTestKernelBase {
 
   use UserCreationTrait;
 
