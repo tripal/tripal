@@ -95,6 +95,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     $results = $plugin->retrieve($search_array, 1, 0);
     if ($results === NULL) {
       $this->markTestSkipped('Skipping PubMed test due to being unable to access service.');
+      return;
     }
     $this->assertEquals('30000852', $results['pubs'][0]['Publication Dbxref'], 'This should have returned the PMID');
     $this->assertEquals('National Institute of Child Health and Human Development', $results['pubs'][0]['Publisher'], 'This should have returned the Title');
