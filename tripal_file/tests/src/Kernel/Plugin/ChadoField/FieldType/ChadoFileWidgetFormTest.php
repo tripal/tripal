@@ -71,7 +71,7 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
    *
    * @var string
    */
-  protected string $yaml_info_file = __DIR__ . '/ChadoPropertyWidgetForm-TestInfo.yml';
+  protected string $yaml_info_file = __DIR__ . '/ChadoFileWidgetForm-TestInfo.yml';
 
   /**
    * Describes the environment to setup for this test.
@@ -120,6 +120,7 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+    $this->markTestSkipped('not even started yet'); // @todo
     parent::setUp();
 
     // The Drupal connection will be created in the parent. This is used
