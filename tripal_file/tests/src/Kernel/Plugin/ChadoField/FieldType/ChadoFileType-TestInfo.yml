@@ -62,7 +62,8 @@ system-under-test:
       storage_plugin_id: 'chado_storage'
       storage_plugin_settings:
           base_table: 'file'
-          base_column: 'license_id'
+          linker_table: 'file_license'
+          linker_fkey_column: 'license_id'
   - name: 'file_location'
     type: 'chado_file_location_type_default'
     type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoFileLocationTypeTypeDefault'
@@ -70,7 +71,7 @@ system-under-test:
     formatter: 'chado_file_location_formatter_default'
     termIdSpace: 'schema'
     termAccession: 'itemLocation'
-    cardinality: 1
+    cardinality: -1
     settings:
       storage_plugin_id: 'chado_storage'
       storage_plugin_settings:
@@ -96,10 +97,24 @@ scenarios:
           accession: ''
         file_license:
         - record_id: 0
-          license_id: 999
+          linker_id: 0
+          license_id: 9999
         file_location:
         - record_id: 0
-          file_uri: 'https://zombo.com'
+          linker_id: 0
+          fileloc_id: 0
+          fileloc_uri: 'https://zombo.com'
+          fileloc_size: 8192
+          fileloc_filename: 'zombo.txt'
+          fileloc_md5checksum: null
+          fileloc_rank: 5
+        - record_id: 0
+          linker_id: 0
+          fileloc_id: 0
+          fileloc_uri: 'ftp://google.com/the.internet'
+          fileloc_size: 4096
+          fileloc_md5checksum: '0123456789ABCDEF0123456789abcdef'
+          fileloc_rank: -5
       expected:
         file_name:
         - record_id: 1
@@ -113,24 +128,48 @@ scenarios:
           term_name: 'Image'
           id_space: 'data'
           accession: '2968'
+        file_license:
+        - record_id: 1
+          linker_id: 1
+          license_id: 9999
+        file_location:
+        - record_id: 1
+          fileloc_id: 1
+          fileloc_uri: 'https://zombo.com'
+          fileloc_size: 8192
+          fileloc_filename: 'zombo.txt'
+          fileloc_md5checksum: null
+          fileloc_rank: 5
+        - record_id: 1
+          fileloc_id: 2
+          fileloc_uri: 'ftp://google.com/the.internet'
+          fileloc_size: 4096
+          fileloc_md5checksum: '0123456789ABCDEF0123456789abcdef'
+          fileloc_rank: -5
     edit:
       user_input:
         file_name:
         - record_id: 1
-          value: 'An Image File Still'
+          value: 'Changed to a genetic map after edit'
         file_description:
           record_id: 1
           value: 'This is a test of the edited file content type'
+        file_type:
+        - record_id: 0
+          type_id: 17
+          term_name: ''
+          id_space: ''
+          accession: ''
       expected:
         file_name:
         - record_id: 1
-          value: 'Simple file Still'
+          value: 'Changed to a genetic map after edit'
         file_description:
         - record_id: 1
-          value: "This is a very simple file. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
+          value: 'This is a test of the edited file content type'
         file_type:
         - record_id: 1
-          type_id: 165
-          term_name: 'file'
-          id_space: 'NCIT'
-          accession: 'C47885'
+          type_id: 17
+          term_name: 'Genetic map'
+          id_space: 'data'
+          accession: '1278'

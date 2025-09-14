@@ -66,9 +66,9 @@ class ChadoFileTypeCRUDTest extends ChadoTestKernelBase {
   protected string $yaml_info_file = __DIR__ . '/ChadoFileType-TestInfo.yml';
 
   /**
-   * A license record ID created for testin.
+   * License record ID created for testing.
    *
-   * @var int
+   * @var array
    */
   protected int $license_id;
 
@@ -119,7 +119,6 @@ class ChadoFileTypeCRUDTest extends ChadoTestKernelBase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
-print "CP03 setUp()\n";// @@@
     parent::setUp();
 
     // The Drupal connection will be created in the parent. This is used
@@ -161,13 +160,12 @@ print "CP03 setUp()\n";// @@@
     // according to the system under test.
     $this->setupChadoEntityFieldSystemUnderTest($this->system_under_test);
 
-    // Create a license record for testing.
+    // Create license record in chado for testing (not published).
     $this->license_id = $this->chado_connection
       ->insert('1:license')
       ->fields(['name' => 'Public Domain', 'summary' => 'You can do anything at zombo com', 'uri' => 'https://zombo.com'])
       ->execute();
-print "CP03.5 license_id=$this->license_id\n";// @@@
-print "CP04 setUp() complete\n";// @@@
+    $this->assertNotEmpty($this->license_id, 'Did not create license');
   }
 
   /**
@@ -178,7 +176,6 @@ print "CP04 setUp() complete\n";// @@@
    *   associated YAML scenarios.
    */
   public static function provideScenarios() {
-print "CP01 provideScenarios()\n";// @@@
     $scenarios = [];
 
     $scenarios[] = [
@@ -195,8 +192,6 @@ print "CP01 provideScenarios()\n";// @@@
 #      2,
 #      "Property Reorder",
 #    ];
-
-print "CP02 provideScenarios() complete\n";// @@@
     return $scenarios;
   }
 
@@ -214,7 +209,6 @@ print "CP02 provideScenarios() complete\n";// @@@
    *   The scenario to be tested as defined in the YAML.
    */
   public function retrieveCurrentScenario(int $current_scenario_key, string $current_scenario_label) {
-print "CP05 retrieveCurrentScenario()\n";// @@@
 
     // Retrieve the correct scenario.
     $current_scenario = $this->scenarios[$current_scenario_key];
@@ -225,7 +219,6 @@ print "CP05 retrieveCurrentScenario()\n";// @@@
     $current_scenario['create']['expected']['file_license'][0]['license_id'] = $this->license_id;
     $current_scenario['edit']['expected']['file_license'][0]['license_id'] = $this->license_id;
 
-print "CP06 retrieveCurrentScenario() complete\n";// @@@
     return $current_scenario;
   }
 
@@ -242,48 +235,31 @@ print "CP06 retrieveCurrentScenario() complete\n";// @@@
   #[DataProvider('provideScenarios')]
   public function testChadoFileTypeEntityCrud(int $current_scenario_key, string $current_scenario_label) {
     $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
-print "CP07a testChadoFileTypeEntityCrud()\n";// @@@
-#var_dump($current_scenario);
 
     // 1. Create the entity with that value set.
-#$x = [
-#  'type' => $this->bundle_name,
-#] + $current_scenario['create']['user_input'];// @@@
-#print "CP89123 ";var_dump($x);
     $entity = TripalEntity::create([
       'type' => $this->bundle_name,
       'title' => $this->randomString(),
-#      'file_name' => $current_scenario['create']['user_input']['file_name'][0]['value'],
-#      'file_description' => $current_scenario['create']['user_input']['file_description'][0]['value'],
     ] + $current_scenario['create']['user_input']);
-print "CP07b testChadoFileTypeEntityCrud()\n";// @@@
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
     $status = $entity->save();
-print "CP07c testChadoFileTypeEntityCrud()\n";// @@@
     $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
-    $entity_id = $entity->id();
-    $this->assertNotEmpty($entity_id, 'The saved entity has no ID');
-
-#$x = $entity; print "CP07cc ";var_dump($x);//@@@
     // @debug print_r($entity->toArray());
+
     // 2. Load the entity we just created so we can check the values.
     $created_entity = TripalEntity::load($entity->id());
-print "CP07d testChadoFileTypeEntityCrud() entity_id=$entity_id\n";// @@@
     $this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, $current_scenario['label'] . ' CREATE ');
 
     // 3. Make changes and then save again.
     foreach ($current_scenario['edit']['user_input'] as $field_name => $new_values) {
       $created_entity->set($field_name, $new_values);
-print "CP07e testChadoFileTypeEntityCrud()\n";// @@@
     }
     // @debug print_r($created_entity->toArray());
     $status = $created_entity->save();
-print "CP07f testChadoFileTypeEntityCrud()\n";// @@@
     $this->assertEquals(SAVED_UPDATED, $status, "We expected to have updated the existing entity for our " . $current_scenario['label'] . " scenario.");
 
     // 4. Load the entity we just updated so we can check the values.
     $updated_entity = TripalEntity::load($created_entity->id());
-print "CP07g testChadoFileTypeEntityCrud()\n";// @@@
     // @debug print_r($updated_entity->toArray());
     $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, $current_scenario['label'] . ' EDIT ');
   }
