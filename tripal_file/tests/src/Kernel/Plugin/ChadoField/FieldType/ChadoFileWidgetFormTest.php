@@ -228,6 +228,7 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
    */
   #[DataProvider('provideScenarios')]
   public function testChadoPropertyWidgetUpdate(int $current_scenario_key, string $current_scenario_label) {
+    $this->markTestSkipped('not even started yet'); // @todo
 
     // Retrieve the full details of the current scenario.
     $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
