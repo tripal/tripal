@@ -1,0 +1,136 @@
+system-under-test:
+  chado_version: '1.3.3.013'
+  termIdSpace:
+  - 'NCIT'
+  bundle:
+    label: 'File'
+    termIdSpace: 'SIO'
+    termAccession: '000396'
+    id: 'test_file'
+    settings:
+      chado_base_table: 'file'
+  fields:
+  - name: 'file_name'
+    type: 'chado_text_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
+    widget: 'chado_text_type_widget'
+    formatter: 'chado_text_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'name'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'file'
+          base_column: 'name'
+  - name: 'file_description'
+    type: 'chado_text_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
+    widget: 'chado_text_type_widget'
+    formatter: 'chado_text_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'description'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'file'
+          base_column: 'description'
+  - name: 'file_type'
+    type: 'chado_additional_type_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAdditionalTypeTypeDefault'
+    widget: 'chado_additional_type_widget_default'
+    formatter: 'chado_additional_type_formatter_default'
+    termIdSpace: 'schema'
+    termAccession: 'additionalType'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'file'
+          type_table: 'file'
+          type_column: 'type_id'
+  - name: 'file_license'
+    type: 'chado_license_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoLicenseTypeTypeDefault'
+    widget: 'chado_license_widget_default'
+    formatter: 'chado_license_formatter_default'
+    termIdSpace: 'schema'
+    termAccession: 'license'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'file'
+          base_column: 'license_id'
+  - name: 'file_location'
+    type: 'chado_file_location_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoFileLocationTypeTypeDefault'
+    widget: 'chado_file_location_widget_default'
+    formatter: 'chado_file_location_formatter_default'
+    termIdSpace: 'schema'
+    termAccession: 'itemLocation'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'file'
+          linker_table: 'fileloc'
+          linker_fkey_column: 'file_id'
+scenarios:
+  - label: 'Base Fields Only'
+    description: 'Create a file entity'
+    create:
+      user_input:
+        file_name:
+        - record_id: 0
+          value: 'An Image File'
+        file_description:
+        - record_id: 0
+          value: 'This is a test of the file content type'
+        file_type:
+        - record_id: 0
+          type_id: 15
+          term_name: ''
+          id_space: ''
+          accession: ''
+        file_license:
+        - record_id: 0
+          license_id: 999
+        file_location:
+        - record_id: 0
+          file_uri: 'https://zombo.com'
+      expected:
+        file_name:
+        - record_id: 1
+          value: 'An Image File'
+        file_description:
+        - record_id: 1
+          value: 'This is a test of the file content type'
+        file_type:
+        - record_id: 1
+          type_id: 15
+          term_name: 'Image'
+          id_space: 'data'
+          accession: '2968'
+    edit:
+      user_input:
+        file_name:
+        - record_id: 1
+          value: 'An Image File Still'
+        file_description:
+          record_id: 1
+          value: 'This is a test of the edited file content type'
+      expected:
+        file_name:
+        - record_id: 1
+          value: 'Simple file Still'
+        file_description:
+        - record_id: 1
+          value: "This is a very simple file. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
+        file_type:
+        - record_id: 1
+          type_id: 165
+          term_name: 'file'
+          id_space: 'NCIT'
+          accession: 'C47885'
