@@ -1198,7 +1198,6 @@ class ChadoRecords {
    * Allows the caller to copy the records from another ChadoRecords object.
    *
    * @param ChadoRecords $records
-   *
    *   The ChadoRecords object whose records should be copied.
    */
   public function copyRecords(ChadoRecords $records) {
