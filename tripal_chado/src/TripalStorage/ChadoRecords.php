@@ -17,8 +17,45 @@ class ChadoRecords {
    * Data records.
    *
    * @var array
-   * An associative array that holds the information needed to
-   * perform a variety of queries for the ChadoStorage plugin
+   *   An associative array describing the records to be managed.
+   *   Specifically, it follows this structure:
+   *   - 1st level: keyed by base table name
+   *   - 2nd level:
+   *     - record_id: the primary key for this base table.
+   *     - tables: all ancillary tables associated with this base table with
+   *       each value (3rd level) describing the records for this table.
+   *   - 3rd level (tables): keyed by table alias where each value has a
+   *     - chado_table: the un-aliased name of this table.
+   *     - items: keyed by delta with the value (4th level) being the records
+   *       for this table.
+   *   - 4th level (items):
+   *     - columns (array): a simple list of columns for this table that
+   *       should be included in the record.
+   *     - field_columns (array): an array mapping which Tripal fields want
+   *       which Chado column values. The key is the column alias and the value
+   *       is an array, one entry for each field/property that uses the value.
+   *     - conditions (array): conditions for this table when performing a
+   *       query. See addCondition() for more details.
+   *     - joins (array): joins that should be made with this table. The keys in
+   *       this array is the full join point from the root table. It will
+   *       contain two sub keys: 'on' (providing details about how to do the
+   *       join) and 'columns' with information about which columns from the
+   *       join to include in the final values set.
+   *     - delete_if_empty (array): helps indicate if a record should be
+   *       removed if it's empty. This only applies to ancillary tables.
+   *     - link_columns (array): indicates the list of columns that store the
+   *       base table record_id.
+   *     - column_aliases (array): aliases for columns. This is indexed by the
+   *       column alias. The value is a set of key value pairs indicating the
+   *       chado_table, table_alias, and chado column names.
+   *     - values (array): combine all of the columns from the table, and any
+   *       columns from joined tables.  There is no guarnatee that fields won't
+   *       give the same name to the same fields in the same tables so these
+   *       values will be indexed by the field and key they belong to.
+   *     - has_values (boolean): Indicates if any values have been set. We can't
+   *       rely on checking if all values are empty because it could be possible
+   *       that all values are meant to be empty. This value will get set when
+   *       a query is successful for the table and values have been set.
    */
   protected array $records = [];
 
@@ -110,7 +147,7 @@ class ChadoRecords {
    *
    * @throws \Exception
    *
-   * @return book:
+   * @return bool
    *   TRUE if the table and delta were initalized. FALSE otherwise. The
    *   base table can only be initialized once. This function will
    *   return FALSE if there is an attempt to initalize it with a delta
@@ -1150,6 +1187,8 @@ class ChadoRecords {
    *
    * @return array
    *   An array representation of this ChadoRecords object.
+   *
+   * @see self::records
    */
   public function getRecordsArray() : array {
     return $this->records;
