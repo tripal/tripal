@@ -47,7 +47,7 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
   use ChadoStorageTestTrait;
 
   /**
-   * With fields specific to that test.
+   * Fields specific to a test.
    *
    * Note: We will populate this variable at the start of each test.
    *

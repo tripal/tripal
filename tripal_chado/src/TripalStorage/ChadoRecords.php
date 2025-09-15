@@ -168,7 +168,7 @@ class ChadoRecords {
       ];
     }
 
-    // If the table has not been initialized then do so.  The tables
+    // If the table has not been initialized then do so. The tables
     // are indexed using their alias. The top-level keys are the true
     // table name and it's list of items.
     if (!array_key_exists($table_alias, $this->records[$base_table]['tables'])) {
@@ -213,7 +213,7 @@ class ChadoRecords {
         'link_columns' => [],
 
         // Aliases for columns. This is indexed by the column alias. The value
-        // is a set of key value pairs indicating the chado_table, table_alias
+        // is a set of key value pairs indicating the chado_table, table_alias,
         // and chado column names.
         'column_aliases' => [],
 
@@ -1016,7 +1016,7 @@ class ChadoRecords {
    *
    * @return array
    *   An array containing all of the alias mappings for fields in the table
-   *   whose column namthces the $chado_column provided.
+   *   whose column name matches the $chado_column provided.
    */
   public function getColumnFieldAliases(string $base_table, string $table_alias, int $delta, string $chado_column) {
 
@@ -1137,7 +1137,7 @@ class ChadoRecords {
       return NULL;
     }
 
-    // If the values were set then return it, otherwise return NULL;.
+    // If the values were set then return it, otherwise return NULL.
     if ($items[$delta]['has_values'] === TRUE) {
       return $items[$delta]['values'][$column_alias];
     }

@@ -60,7 +60,7 @@ class TripalEntityTest extends TripalTestKernelBase {
         'name' => 'Organism',
       ],
     ];
-    /** @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term // */
+    /** @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term */
     $term = $this->createTripalTerm($term_values, 'tripal_default_id_space', 'tripal_default_vocabulary');
     $this->assertIsObject($term,
       'We were unable to create a tripal term during test setup');

@@ -665,7 +665,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   An array of field values.
    *
    * @return bool
-   *   returns TRUE if the field has all necessary elements for inserting
+   *   Returns TRUE if the field has all necessary elements for inserting
    *   into the Drupal tables for publishing. FALSE otherwise.
    */
   protected function isFieldValid($field_name, $delta, $main_property_name, $values) {
@@ -1157,7 +1157,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // If the path is a string then split it.
     $path_arr = [];
     if (is_string($path)) {
-      // For sanity sake, remove any trailing semicolons that might be there
+      // For sanity's sake, remove any trailing semicolons that might be there
       // by accident.
       $trimmed_path = trim($path, ';');
       $path_arr = explode(";", $trimmed_path);
@@ -1512,7 +1512,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $prop_storage_settings = $context['prop_type']->getStorageSettings();
     $fkey = $prop_storage_settings['fkey'] ?? NULL;
     if (!$fkey) {
-      // Maybe throw an exception so developers know they forgot the 'fkey'.
+      // @todo Throw an exception so developers know they forgot the 'fkey'.
       return -1;
     }
 
