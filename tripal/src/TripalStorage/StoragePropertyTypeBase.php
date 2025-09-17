@@ -2,36 +2,35 @@
 
 namespace Drupal\tripal\TripalStorage;
 
-use Drupal\tripal\TripalStorage\StoragePropertyBase;
-
 /**
  * Base class for a Tripal storage property type.
  */
 class StoragePropertyTypeBase extends StoragePropertyBase {
 
   /**
-   * TRUE if this property should be saved in the Drupal field table, and
-   * FALSE otherwise.
+   * Indicate if this property should be stored in the Drupal field tables.
    *
    * @var bool
+   *   TRUE if this property should be saved in the Drupal field table, and
+   *   FALSE otherwise.
    */
   public bool $cache_status;
 
   /**
    * Constructs a new tripal storage property type base.
    *
-   * @param string entityType
+   * @param string $entityType
    *   The entity type associated with this storage property type base.
-   * @param string fieldType
+   * @param string $fieldType
    *   The field type associated with this storage property type base.
-   * @param string key
+   * @param string $key
    *   The key associated with this storage property type base.
-   * @param string term_id
+   * @param string $term_id
    *   The controlled vocabulary term asssociated with this property. It must be
    *   in the form of "IdSpace:Accession" (e.g. "rdfs:label" or "OBI:0100026")
-   * @param string id
+   * @param string $id
    *   The id of this storage property type base.
-   * @param array storage_settings
+   * @param array $storage_settings
    *   An array of settings required for this property by the storage backend.
    * @param string $idspace_plugin_id
    *   The plugin_id associated with the term. This is optional but if provided
@@ -42,8 +41,9 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
     $this->id = $id;
     $this->cardinality = 1;
     $this->searchability = TRUE;
-    $this->operations = array('=','<>','>','>=','<','<=','STARTS_WITH','CONTAINS',
-      'ENDS_WITH','IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN');
+    $this->operations = ['=', '<>', '>', '>=', '<', '<=', 'STARTS_WITH', 'CONTAINS',
+      'ENDS_WITH', 'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN',
+    ];
     $this->sortable = TRUE;
     $this->readOnly_ = FALSE;
     $this->required = FALSE;
@@ -125,7 +125,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * Valid operations are (eq,ne,contains,starts).
    *
-   * @param bool $searchability
+   * @param bool $operations
    *   The operations.
    */
   public function setOperations($operations) {
@@ -254,14 +254,17 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    * Gets the storage settings for this property type.
    *
    * @return array
+   *   An associative array of the storage settings for this property type.
    */
   public function getStorageSettings() {
     return $this->storage_settings;
   }
 
   /**
+   * Gets the storage settings for this property type.
    *
    * @param array $storage_settings
+   *   An associative array of the storage settings for this property type.
    */
   public function setStorageSettings($storage_settings) {
     $this->storage_settings = $storage_settings;
