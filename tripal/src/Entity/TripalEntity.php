@@ -978,7 +978,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   Array of TripalStorage objects.
    * @param bool $do_save
    *   TRUE indicates this is being called within the save workflow and
-   *   when FALSE if is being called in the load workflow.
+   *   FALSE when it is being called in the load workflow.
    *
    * @see TripalEntityHooks::tripalEntityStorageLoad()
    */
@@ -1005,7 +1005,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $prop_types = [];
         foreach ($values[$tsid][$field_name][$delta] as $key => $info) {
 
-          // Get the specific prop type and it's corresponding value.
+          // Get the specific prop type and its corresponding value.
           $prop_type = $tripal_storages[$tsid]->getPropertyType($field_name, $key);
           $prop_value = $info['value'];
 
@@ -1062,7 +1062,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   TripalStorage plugin. Otherwise, an associative array describing the
    *   backend storage for this item. Specifically,
    *   - delta: the delta of this item in the fielditemlist it came from.
-   *   - tsid: the tripalstorage id for it's storage backend.
+   *   - tsid: the tripalstorage id for its storage backend.
    *   - storage: an instance of this items tripalstorage backend.
    */
   public static function getFieldItemBackendStorage(string $field_name, FieldItemInterface $item): bool|array {

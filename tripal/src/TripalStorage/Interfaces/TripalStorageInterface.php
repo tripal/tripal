@@ -33,7 +33,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   /**
    * Returns a list of all property types added to this storage plugin type.
    *
-   * WARING! This could be a very expensive call!
+   * WARNING! This could be a very expensive call!
    *
    * @return array
    *   Array of all \Drupal\tripal\Base\StoragePropertyTypeBase objects that

@@ -28,7 +28,7 @@ class TripalStorageManager extends DefaultPluginManager {
     ModuleHandlerInterface $module_handler,
   ) {
     parent::__construct(
-        "Plugin/TripalStorage",
+        'Plugin/TripalStorage',
         $namespaces,
         $module_handler,
         'Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface',

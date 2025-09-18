@@ -61,7 +61,7 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
    * {@inheritDoc}
    */
   public function findValues($values) {
-    /** @todo impelment this function properly **/
+    /** @todo implement this function properly **/
     return $values;
   }
 
