@@ -17,11 +17,28 @@ use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\tripal\Entity\TripalEntityType;
+use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 
 /**
  * Defines the Tripal field item base class.
  */
 abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldItemInterface {
+
+  /**
+   * The TripalStorage property types for this field item.
+   *
+   * @var Drupal\tripal\TripalStorage\StoragePropertyType[]
+   *   A list of property types keyed by their StorageProperty::getKey().
+   */
+  protected array $tripalstorage_property_types = [];
+
+  /**
+   * The TripalStorage property values for this field item.
+   *
+   * @var Drupal\tripal\TripalStorage\StoragePropertyValue[]
+   *   A list of property types keyed by their StorageProperty::getKey().
+   */
+  protected array $tripalstorage_property_values = [];
 
   /**
    * {@inheritdoc}
@@ -762,6 +779,123 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     }
 
     return $max_delta;
+  }
+
+  /**
+   * Retrieves all the property types for this field item.
+   *
+   * @param bool $use_cache
+   *   Indicates if we should use the local cache.
+   *
+   * @return Drupal\tripal\TripalStorage\StoragePropertyType[]
+   *   A list of property types keyed by their StorageProperty::getKey().
+   */
+  public function getTripalStoragePropertyTypes(bool $use_cache = TRUE): array {
+
+    if (empty($this->tripalstorage_property_types) or !$use_cache) {
+      $prop_types = static::tripalTypes($this->getFieldDefinition());
+
+      // $prop_types is not keyed by StorageProperty::getKey() so let's do that.
+      $keyed_proptypes = [];
+      foreach ($prop_types as $prop_type) {
+        $prop_key = $prop_type->getKey();
+        $keyed_proptypes[$prop_key] = $prop_type;
+      }
+
+      // Now lets locally cache this for later use.
+      $this->tripalstorage_property_types = $keyed_proptypes;
+    }
+
+    return $this->tripalstorage_property_types;
+  }
+
+  /**
+   * Retrieve the TripalStorage property type with the specified key.
+   *
+   * @param string $key
+   *   The StorageProperty key for the property type you want.
+   * @param bool $use_cache
+   *   Indicates if we should use the local cache.
+   *
+   * @throws \Exception
+   *   If a property type with key is not returned by self::tripalTypes().
+   *
+   * @return \Drupal\tripal\TripalStorage\StoragePropertyTypeBase
+   *   The property type you requested.
+   */
+  public function getTripalStoragePropertyType(string $key, bool $use_cache = TRUE): StoragePropertyTypeBase {
+    $keyed_proptypes = $this->getTripalStoragePropertyTypes($use_cache);
+
+    if (!array_key_exists($key, $keyed_proptypes)) {
+      $field_name = $this->getName();
+      $class = get_class();
+      throw \Exception("Cannot access the '$key' property type for '$field_name' field as it is not defined by its $class::tripalTypes method.");
+    }
+
+    return $keyed_proptypes[$key];
+  }
+
+  /**
+   * Retrieves all the property values for this field item.
+   *
+   * @param bool $use_cache
+   *   Indicates if we should use the local cache.
+   *
+   * @return Drupal\tripal\TripalStorage\StoragePropertyValue[]
+   *   A list of property values keyed by their StorageProperty::getKey().
+   */
+  public function getTripalStoragePropertyValues(bool $use_cache = TRUE): array {
+
+    if (empty($this->tripalstorage_property_values) or !$use_cache) {
+
+      // Parent Tripal Entity.
+      // We use this to get the bundle and id for the entity.
+      if ($this->getParent()) {
+        $entity = $this->getEntity();
+        $entity_type_id = $entity->getEntityTypeId();
+        $entity_id = $entity->id();
+      }
+
+      // Get a list of StoragePropertyType objects.
+      $prop_types = $this->getTripalStoragePropertyTypes();
+
+      // Get the current field items values (keyed by property name).
+      $field_values = $this->getValue();
+
+      // Now use the property type to initialize the value object.
+      foreach ($prop_types as $prop_key => $prop_type) {
+        $prop_value = new StoragePropertyValue($entity_type_id, static::$id,
+          $prop_key, $prop_type->getTerm()->getTermId(), $entity_id);
+        $prop_value->setValue($field_values[$prop_key]);
+
+        $this->tripalstorage_property_values[$prop_key] = $prop_value;
+      }
+    }
+
+    return $this->tripalstorage_property_values;
+  }
+
+  /**
+   * Retrieve the TripalStorage property value with the specified key.
+   *
+   * @param string $key
+   *   The StorageProperty key for the property value you want.
+   * @param bool $use_cache
+   *   Indicates if we should use the local cache.
+   *
+   * @return \Drupal\tripal\TripalStorage\StoragePropertyTypeBase
+   *   The property value you requested.
+   */
+  public function getTripalStoragePropertyValue(string $key, bool $use_cache = TRUE): StoragePropertyValue {
+    $keyed_propvalues = $this->getTripalStoragePropertyValues($use_cache);
+
+    if (!array_key_exists($key, $keyed_propvalues)) {
+      $field_name = $this->getName();
+      $class = get_class();
+      throw \Exception("Cannot access the '$key' property type for '$field_name' field as it is not defined by its $class::tripalTypes method.");
+    }
+
+    return $keyed_propvalues[$key];
   }
 
 }
