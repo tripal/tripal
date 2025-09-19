@@ -132,12 +132,41 @@ class TripalFieldTypeStorageTest extends TripalTestKernelBase {
         $this->assertEquals($expected_values['value'], $value_prop_value->getValue(), "We did not get the value we expected from the $field_name 'value' property value object.");
       }
     }
+
+    // 3. Try to get property type + value objects for keys which do not exist.
+    $field_item = $entity->get('gemstone_name')[0];
+    // Property Type.
+    $exception_caught = FALSE;
+    $exception_msg = uniqid();
+    try {
+      $field_item->getTripalStoragePropertyType('NON-EXISTING-PROPERTY');
+    }
+    catch (\Exception $e) {
+      $exception_caught = TRUE;
+      $exception_msg = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, "We should have gotten an exception when trying to access a property type that doesn't exist.");
+    $this->assertEquals(
+      "Cannot access the 'NON-EXISTING-PROPERTY' property type for 'gemstone_name' field as it is not defined by its Drupal\\tripal\Plugin\Field\FieldType\TripalStringTypeItem::tripalTypes method.",
+      $exception_msg,
+      "We did not get the exception message we expected.",
+    );
+    // Property Value.
+    $exception_caught = FALSE;
+    $exception_msg = uniqid();
+    try {
+      $field_item->getTripalStoragePropertyValue('NON-EXISTING-PROPERTY');
+    }
+    catch (\Exception $e) {
+      $exception_caught = TRUE;
+      $exception_msg = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, "We should have gotten an exception when trying to access a property value that doesn't exist.");
+    $this->assertEquals(
+      "Cannot access the 'NON-EXISTING-PROPERTY' property value for 'gemstone_name' field.",
+      $exception_msg,
+      "We did not get the exception message we expected.",
+    );
   }
-
-  // 3. Try to get property type and value objects for keys which do not exist.
-  // @todo implement this check.
-
-  // 4. Confirm that this new method is equivalent to getValuesArray().
-  // @todo implement this.
 
 }

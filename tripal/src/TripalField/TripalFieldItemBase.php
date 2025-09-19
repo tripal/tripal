@@ -827,9 +827,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $keyed_proptypes = $this->getTripalStoragePropertyTypes($use_cache);
 
     if (!array_key_exists($key, $keyed_proptypes)) {
-      $field_name = $this->getName();
-      $class = get_class();
-      throw \Exception("Cannot access the '$key' property type for '$field_name' field as it is not defined by its $class::tripalTypes method.");
+      $field_name = $this->getParent()->getName();
+      $class = get_class($this);
+      throw new \Exception("Cannot access the '$key' property type for '$field_name' field as it is not defined by its $class::tripalTypes method.");
     }
 
     return $keyed_proptypes[$key];
@@ -866,7 +866,11 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       foreach ($prop_types as $prop_key => $prop_type) {
         $prop_value = new StoragePropertyValue($entity_type_id, static::$id,
           $prop_key, $prop_type->getTerm()->getTermId(), $entity_id);
-        $prop_value->setValue($field_values[$prop_key]);
+
+        // Set the value if it is set in the field.
+        if (array_key_exists($prop_key, $field_values)) {
+          $prop_value->setValue($field_values[$prop_key]);
+        }
 
         $this->tripalstorage_property_values[$prop_key] = $prop_value;
       }
@@ -890,12 +894,34 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $keyed_propvalues = $this->getTripalStoragePropertyValues($use_cache);
 
     if (!array_key_exists($key, $keyed_propvalues)) {
-      $field_name = $this->getName();
-      $class = get_class();
-      throw \Exception("Cannot access the '$key' property type for '$field_name' field as it is not defined by its $class::tripalTypes method.");
+      $field_name = $this->getParent()->getName();
+      throw new \Exception("Cannot access the '$key' property value for '$field_name' field.");
     }
 
     return $keyed_propvalues[$key];
+  }
+
+  /**
+   * Update the TripalStorage property values to match the field item values.
+   *
+   * @return Drupal\tripal\TripalStorage\StoragePropertyValue[]
+   *   A list of property values keyed by their StorageProperty::getKey().
+   */
+  public function syncTripalStoragePropertyValues(): array {
+    $prop_values = $this->getTripalStoragePropertyValues();
+
+    // Get the current field items values (keyed by property name).
+    $field_values = $this->getValue();
+
+    // Now update each property value with the associated field value.
+    foreach (array_keys($prop_values) as $prop_key) {
+      // Set the value if it is set in the field.
+      if (array_key_exists($prop_key, $field_values)) {
+        $this->tripalstorage_property_values[$prop_key]->setValue($field_values[$prop_key]);
+      }
+    }
+
+    return $this->tripalstorage_property_values;
   }
 
 }
