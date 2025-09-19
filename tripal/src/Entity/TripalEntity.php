@@ -159,19 +159,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   protected $bundle_cache = [];
 
   /**
-   * Keeps track of information about Tripal fields + their property types.
-   *
-   * This is set during getValuesArray() and reused in saveValuesArray() as well
-   * as other places.
-   *
-   * @var array
-   *   This is an associative array keyed by the field_name. For each field,
-   *   the value is an array with the following supported keys:
-   *   - store_properties: the keys of property types with action = store.
-   */
-  protected array $tripalfield_info = [];
-
-  /**
    * {@inheritdoc}
    */
   public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
@@ -522,66 +509,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
-   * Retrieve info about a specific field.
-   *
-   * Note: This method allows us to cache often used information.
-   *
-   * @param string $field_name
-   *   The name of the field you are interested in.
-   * @param string $info_name
-   *   The type of information you want. Specifically, the following are
-   *   supported:
-   *   - class: The class implementing this field type (e.g. ).
-   *   - property_types: array of property types as returned by tripalTypes().
-   *   - ACTION_properties: an array of the property types with the ACTION
-   *     specified in the info_name. For example, the info_name
-   *     `store_properties` would provide a list of all the property types for
-   *      this field with the 'store' action type.
-   * @param bool $use_cache
-   *   When TRUE the info will be pulled from the local cache; when FALSE the
-   *   local cache will be refreshed before returning the value.
-   *
-   * @return mixed
-   *   The value of the TripalField info cache for that info_name. See the
-   *   $info_name param above for the type of data returned for each key.
-   */
-  public function getTripalFieldInfo(string $field_name, string $info_name, bool $use_cache = TRUE): mixed {
-
-    $field_defn = $this->getFieldDefinition($field_name);
-
-    // Check if this fields info is cached at all... if not then add it.
-    if (!array_key_exists($field_name, $this->tripalfield_info)) {
-      $field_class = $field_defn->getItemDefinition()->getClass();
-
-      $this->tripalfield_info[$field_name] = [
-        'class' => $field_class,
-      ];
-    }
-
-    // Check if the property types have been cached and look them up if not.
-    if (!array_key_exists('property_types', $this->tripalfield_info[$field_name]) or !$use_cache) {
-      $field_class ??= $this->tripalfield_info[$field_name]['class'];
-      $field_defn ??= $this->getFieldDefinition($field_name);
-      $prop_types = $field_class::tripalTypes($field_defn);
-
-      $this->tripalfield_info[$field_name]['property_types'] = $prop_types;
-
-      // We also want to take advantage of the moment these are cached to index
-      // some information about them for faster use later.
-      foreach ($prop_types as $prop_type) {
-        $key = $prop_type->getKey();
-        $storage_settings = $prop_type->getStorageSettings();
-
-        // Index based on their actions.
-        $action = $storage_settings['action'] ?? 'MISSING_ACTION';
-        $this->tripalfield_info[$field_name][$action . '-properties'][$key] = $key;
-      }
-    }
-
-    return $this->tripalfield_info[$field_name][$info_name] ?? [];
-  }
-
-  /**
    * Stores token replacement values for the current entity.
    *
    * @param array $extra_values
@@ -867,8 +794,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
         // Get the empty property values for this field item and the
         // property type objects.
-        $prop_values = $item->tripalValuesTemplate($item->getFieldDefinition());
-        $prop_types = $entity->getFieldPropertyTypes($field_name);
+        $prop_values = $item->syncTripalStoragePropertyValues();
+        $prop_types = $item->getTripalStoragePropertyTypes();
 
         // Ensure that only the properties that should be are cleared.
         // Note: is_cached will only be true for this field if all properties
@@ -884,7 +811,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
           // Sets the values from the entity on both the property and in entity.
           // Despite the function name, no values are saved to the database.
-          $item->tripalSave($item, $field_name, $prop_types, $prop_values, $entity);
+          // $item->tripalSave($item, $field_name, $prop_types, $prop_values, $entity);
 
           // Clears the values from the entity (does not clear them from the
           // property).
@@ -912,56 +839,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
-   * Removes empty values from TripalStorage values array and entity fields.
-   *
-   * @param TripalEntity $entity
-   *   The entity to remove empty values from its associated field items.
-   * @param string $tsid
-   *   The id of the tripalstorage plugin instance we want to remove empty
-   *   items for.
-   * @param array $values
-   *   The values array generated via getValuesArray() that map to the field
-   *   items. This should include all storage backends but we will only filter
-   *   those within $tsid.
-   *
-   * @return void
-   *   No need to return anything as it is changed in place.
-   */
-  protected static function filterEmptyValues(TripalEntity &$entity, string $tsid, array &$values) {
-
-    foreach ($values[$tsid] as $field_name => $value_subset) {
-      $field_items = $entity->get($field_name);
-
-      // This was set by TripalEntity::getValuesArray().
-      $store_properties = $entity->getTripalFieldInfo($field_name, 'store-properties');
-
-      // Go through the field value subset and pull out the property and store
-      // values for each property in order to check if this delta is empty.
-      $store_values = [];
-      $field_values = [];
-      foreach ($value_subset as $delta => $properties) {
-        // Compile the property values for this field delta.
-        foreach ($properties as $key => $info) {
-          $field_values[] = $info['value'];
-          if (array_key_exists($key, $store_properties)) {
-            $store_values[$key] = $info['value']->getValue();
-          }
-        }
-
-        // Check if this field delta is empty.
-        $is_empty = $field_items[$delta]->isEmpty();
-
-        // If it is, then remove it? but don't remove the last item!
-        if ($is_empty) {
-          print "\nREMOVING $field_name [ $delta ].\n";
-          unset($values[$tsid][$field_name][$delta]);
-          $entity->get($field_name)->removeItem($delta);
-        }
-      }
-    }
-  }
-
-  /**
    * Updates the fields in the entity with the values from Tripal Storage.
    *
    * This method is expected to be called as part of the TripalStorage backend
@@ -980,9 +857,18 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   TRUE indicates this is being called within the save workflow and
    *   FALSE when it is being called in the load workflow.
    *
+   * @return array
+   *   This method returns context that may be used in the calling method.
+   *   Current context:
+   *   - empty_items: a nested array of [field_name][delta] = delta for each
+   *     field item which is determined to be empty via isEmptyFieldItem().
+   *
    * @see TripalEntityHooks::tripalEntityStorageLoad()
    */
   public static function saveValuesArray(TripalEntity &$entity, array &$values, array &$tripal_storages, bool $do_save = FALSE) {
+    $context = [
+      'empty_items' => [],
+    ];
 
     // Update the entity values with the values returned by loadValues().
     $field_items = $entity->getFields();
@@ -1003,11 +889,19 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // Create a new properties array for this field item.
         $prop_values = [];
         $prop_types = [];
+        $store_values = [];
         foreach ($values[$tsid][$field_name][$delta] as $key => $info) {
 
           // Get the specific prop type and its corresponding value.
           $prop_type = $tripal_storages[$tsid]->getPropertyType($field_name, $key);
           $prop_value = $info['value'];
+
+          // Store the values of any properties with a "store" action.
+          // There will usually only be one, exceptions are dbxref,
+          // relationship.
+          if (self::isStorePropType($prop_type)) {
+            $store_values[$key] = $prop_value->getValue();
+          }
 
           // We do some extra work here when saving
           // related to conditionally saving field values.
@@ -1025,28 +919,20 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // Now set the entity values for this field.
         if (count($prop_values) > 0) {
           $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $entity);
+
+          // Keep track of empty field items in case the calling method needs
+          // this information.
+          if (self::isEmptyFieldItem($field_name, $items, $prop_values, $store_values) === TRUE) {
+            $context['empty_items'][$field_name][$delta] = $delta;
+          }
         }
 
         // Set the item back to the list.
         $items->set($k, $item);
       }
     }
-  }
 
-  /**
-   * Retrieves the TripalStorage property types for a given field.
-   *
-   * @param string $field_name
-   *   The name of the field we want property types for.
-   * @param bool $use_cache
-   *   Indicates if we should use the cache when it's availabe. When set to
-   *   FALSE, the property types will be updated even when cached.
-   *
-   * @return array
-   *   An array of property type objects for this field.
-   */
-  protected function getFieldPropertyTypes(string $field_name, bool $use_cache = TRUE): array {
-    return $this->getTripalFieldInfo($field_name, 'property_types', $use_cache);
+    return $context;
   }
 
   /**
@@ -1247,16 +1133,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $values[$tsid] = $tsid_values;
         }
 
-        // Note: We do not want to load empty fields!
-        // There are some cases where empty fields sneak through to this point.
-        // For example, if an empty element wasn't properly removed, it can get
-        // through to here :see_no_evil: and if it does, chado storage will
-        // helpfully do the best it can with limited filter criteria :cower:
-        // often duplicating a single chado record into 2 drupal field records!
-        // Rather then assume this will never happen, lets filter them out here
-        // to reduce the impact if erroneous empty fields do get through.
-        self::filterEmptyValues($this, $tsid, $values);
-
         // Right now the assumption that only key values will be saved is baked
         // into ChadoStorage insert/update. That means, the non-key properties
         // do not have a value after saving because ChadoStorage didn't bother
@@ -1269,7 +1145,15 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
       // Set the property values that should be saved in Drupal, everything
       // else will stay in the underlying data store (e.g. Chado).
-      self::saveValuesArray($this, $values, $tripal_storages, TRUE);
+      $context = self::saveValuesArray($this, $values, $tripal_storages, TRUE);
+      $delta_remove = $context['empty_items'];
+
+      // Now remove any values that shouldn't be there.
+      foreach ($delta_remove as $field_name => $deltas) {
+        foreach (array_reverse($deltas) as $delta) {
+          $this->get($field_name)->removeItem($delta);
+        }
+      }
     }
     catch (\Exception $e) {
       \Drupal::logger('tripal')->error($e->getMessage());
