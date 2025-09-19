@@ -17,8 +17,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group TripalField
  * @group ChadoField
  */
-#[Group('TripalField')]
-#[Group('ChadoField')]
+#[Group('tripal-entity')]
+#[Group('tripal-field')]
+#[Group('chado-field')]
 class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;
