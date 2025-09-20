@@ -1,0 +1,102 @@
+format-version: 1.2
+data-version: releases/2025-05-20
+saved-by: cooperl
+subsetdef: Allium_porrum "Terms_used_for_leek"
+subsetdef: Cucurbita "Terms_used_for_squash"
+subsetdef: Glycine_max "Terms_used_for_soybean"
+subsetdef: Hordeum_vulgare "Term_used_for_barley"
+subsetdef: Saccharum "Terms_used_for_sugarcane"
+subsetdef: Solanaceae_spp "Terms_used_for_the_Solanaceae"
+subsetdef: Triticum_aestivum "Terms_used_for_wheat"
+subsetdef: Zea_mays "Terms_used_for_maize_or_corn"
+default-namespace: plant_trait_ontology
+idspace: dc http://purl.org/dc/elements/1.1/
+idspace: obo http://www.geneontology.org/formats/oboInOwl#http://purl.obolibrary.org/obo/
+idspace: oboInOwl http://www.geneontology.org/formats/oboInOwl#
+idspace: swrla http://swrl.stanford.edu/ontologies/3.3/swrla.owl#
+idspace: terms http://purl.org/dc/terms/
+import: http://purl.obolibrary.org/obo/po.owl
+import: http://purl.obolibrary.org/obo/to/imports/chebi_import.owl
+import: http://purl.obolibrary.org/obo/to/imports/envo_import.owl
+import: http://purl.obolibrary.org/obo/to/imports/go_import.owl
+import: http://purl.obolibrary.org/obo/to/imports/ncbitaxon_import.owl
+import: http://purl.obolibrary.org/obo/to/imports/pato_import.owl
+import: http://purl.obolibrary.org/obo/to/imports/peco_import.owl
+import: http://purl.obolibrary.org/obo/to/patterns/merge_patterns.owl
+ontology: to
+property_value: terms:description "An ontology that describes phenotypic traits in plants. Each trait is a distinguishable feature, characteristic, quality or phenotypic feature of a developing or mature plant." xsd:string
+property_value: terms:license http://creativecommons.org/licenses/by/4.0/
+property_value: terms:title "Plant Trait Ontology" xsd:string
+
+! This will test looking up a term that belongs to another ontology
+[Term]
+id: BFO:0000002 ! continuant
+is_a: BFO:0000001 ! entity
+
+[Term]
+id: TO:0000277
+name: biochemical trait
+def: "A plant trait (TO:0000387) which is a quality of a chemical entity (CHEBI:24431), a plant metabolite (CHEBI:76924), or a molecular function (GO:0003674), whic  16021 h occurs in a cellular component (GO:0005575), plant anatomical entity (PO:0025131) or during a plant structure development stage (PO:0009012)." [Gramene:pankaj_jai  16021 swal, TO:Laurel_Cooper]
+is_a: TO:0000387 ! plant trait
+
+[Term]
+id: TO:0000387
+name: plant trait
+def: "A measurable or observable characteristic of a cellular component (GO:0005575), biological process (GO:0008150) or molecular function (GO:0003674) that is par  16987 t of, or has participant a plant anatomical entity (PO:0025131) and/or a plant structure development stage (PO:0009012)." [GO:0003674, GO:0005575, GO:0008150, Grame  16987 ne:pankaj_jaiswal, PO:0009012, PO:0025131, TO:Laurel_Cooper]
+comment: This includes physiological, molecular and biochemical traits as well.
+synonym: "plant phenotype (related)" RELATED []
+synonym: "plant quality (related)" RELATED []
+xref: TO_GIT:52
+created_by: jaiswalp
+
+[Term]
+id: TO:0000465
+name: mineral and ion content trait
+def: "A biochemical trait (TO:0000277) that is the amount of a particular mineral or ion constituent occurring in a plant anatomical entity (PO:0025131)." [Gramene:  17619 pankaj_jaiswal]
+comment: May be measured in a dry mass or in a fresh tissue.
+is_a: TO:0000277 ! biochemical trait
+created_by: jaiswalp
+
+[Term]
+id: TO:0001048
+name: silicon content trait
+def: "A mineral and ion content trait (TO:0000465) which is the silicon cation (CHEBI:30584) composition in a plant structure (PO:0009011)." [TO:Laurel_Cooper]
+synonym: "Si content (exact)" EXACT []
+xref: TO_GIT:412
+is_a: TO:0000465 ! mineral and ion content trait
+
+[Term]
+id: TO:0001050
+name: strontium content trait
+def: "A mineral and ion content trait (TO:0000465) which is the strontium ion (CHEBI:39130) composition in a plant structure (PO:0009011)." [TO:Laurel_Cooper]
+synonym: "Sr content (exact)" EXACT []
+xref: TO_GIT:412
+is_a: TO:0000465 ! mineral and ion content trait
+
+[Term]
+id: TO:1000071
+name: shoot system silicon content
+def: "A silicon content trait (TO:0001048) which is the  silicon cation (CHEBI:30584) composition in a shoot system (PO:0009006)." [https://search.proquest.com/docview/1426182399, TO:Laurel_Cooper]
+synonym: "shoot Si content (related)" RELATED []
+xref: TO_GIT:412
+is_a: TO:0001048 ! silicon content trait
+
+[Term]
+id: TO:1000072
+name: shoot system strontium content
+def: "A strontium content trait (TO:0001050) which is the strontium ion (CHEBI:39130) composition in a shoot system (PO:0009006)." [https://search.proquest.com/docview/1426182399, TO:Laurel_Cooper]
+synonym: "shoot Sr content (related)" RELATED []
+xref: TO_GIT:412
+is_a: TO:0001050 ! strontium content trait
+
+[Typedef]
+id: evaluation_location
+name: evaluation location
+
+[Typedef]
+id: from_country
+name: from country
+
+[Typedef]
+id: has_absolute_phenotype
+name: has absolute phenotype
