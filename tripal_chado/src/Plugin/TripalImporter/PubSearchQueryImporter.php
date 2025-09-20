@@ -517,7 +517,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         $uniquename = $publication['Citation']
           ?? trim(str_replace(',', ';', $publication['Authors'] ?? '') . ' ' . $title . ' ' . $series_name . '; ' . $pyear);
 
-        $type_id = $this->getPublicationTypeId($publication);
+        $type_id = $this->getPublicationTypeId($publications, $index);
         if ($type_id) {
           $insert = $this->chado->insert('1:pub');
           $insert->fields([
@@ -546,24 +546,29 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   /**
    * Get the cvterm_id for the publication type
    *
-   * @param array $publication
-   *   One publication record returned by the external database
+   * @param array &$publications
+   *   Array of publication records returned by the external database.
+   * @param int $index
+   *   Array key for the publication of interest.
    * @return int
    *   The corresponding cvterm_id value
    * @throw \Exception
    *   If type is not defined in the publication, or if the type is not available in the tripal_pub ontology
    */
-  protected function getPublicationTypeId(array $publication): int {
+  protected function getPublicationTypeId(array &$publications, int $index): int {
     $type_id = 0;
     // In the event that the publication has no type, e.g. 39755038,
     // then assign a generic 'Publication' type.
-    $type = $publication['Publication Type'] ?? 'Publication';
-    $accession = $publication['Publication Dbxref'] ?? 'accession_unknown';
+    $type = $publications[$index]['Publication Type'] ?? 'Publication';
+    $accession = $publications[$index]['Publication Dbxref'] ?? 'accession_unknown';
     if ($type) {
       if (is_array($type)) {
         // A publication can have more than one type. We can't support
-        // that in the pub table, so just return the first one.
+        // that in the pub table, so just return the first one. The other
+        // types will be stored as properties, so to avoid duplication
+        // with the first property, remove it.
         $type = $type[array_key_first($type)];
+        array_shift($publications[$index]['Publication Type']);
       }
       $type_id = $this->cvterm_lookups[$type] ?? 0;
       if (!$type_id) {
