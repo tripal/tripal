@@ -248,10 +248,8 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
   /**
    * Performs tasks after the importer has completed.
    *
-   * Publish task:
-   * Bundles that are candidates for publishing are specified in
-   * the importer annotation. They then show up in the importer
-   * form with a standard prefix.
+   * If the importer form specified one or more bundles to be published,
+   * these will be listed under the 'publish' key in the run arguments.
    *
    * @return void
    *   No return value.
@@ -261,35 +259,16 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
 
     // Only publish if a publish manager has been set by a child class.
     if ($this->publish_manager) {
-
       $arguments = $this->getArguments();
-      $run_args = $arguments['run_args'];
-      $bundles_to_publish = [];
-
-      // Find if there are any bundles to be published.
-      foreach ($run_args as $key => $value) {
-        if (preg_match('/^publish_(.+)$/', $key, $matches)) {
-          $bundle = $matches[1];
-          if ($value) {
-            // If checkbox is set, then publish this bundle.
-            $bundles_to_publish[] = $bundle;
-          }
-        }
-      }
-
-      // If there are bundles to publish, then publish any newly
-      // imported records.
-      if ($bundles_to_publish) {
-        $instance = $this->publish_manager->createInstance('chado_storage', []);
-        foreach ($bundles_to_publish as $bundle) {
-          $publish_options = [
-            'bundle' => $bundle,
-            'datastore' => 'chado_storage',
-            'schema_name' => $run_args['schema_name'],
-            'republish' => FALSE,
-          ];
-          $instance->publish($publish_options);
-        }
+      $bundles = $arguments['run_args']['publish'] ?? [];
+      if ($bundles) {
+        $publish_options = [
+          'chado_storage' => [
+            'schema_name' => $arguments['run_args']['schema_name'],
+            'bundles' => $bundles,
+          ],
+        ];
+        $this->publish_manager->publishBundles($publish_options);
       }
     }
   }
