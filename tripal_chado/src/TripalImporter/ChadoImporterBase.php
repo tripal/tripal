@@ -4,7 +4,6 @@ namespace Drupal\tripal_chado\TripalImporter;
 
 use Drupal\tripal\TripalImporter\TripalImporterBase;
 use Drupal\tripal_chado\Database\ChadoConnection;
-use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -34,13 +33,6 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
    * @var Drupal\tripal_chado\Database\ChadoConnection
    */
   protected $connection;
-
-  /**
-   * An instance of the Tripal publish service
-   *
-   * @var Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager
-   */
-  protected $publish_manager = NULL;
 
   /**
    * The type_id for the bundle(s)
@@ -121,16 +113,6 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
     $chado->useTripalDbxSchemaFor(self::class);
 
     return $chado;
-  }
-
-  /**
-   * Sets a publish service for a child importer class wanting to publish.
-   *
-   * @param Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager $publish_manager
-   *   An instance of the publish manager service.
-   */
-  public function setPublishManager(TripalBackendPublishManager $publish_manager) {
-    $this->publish_manager = $publish_manager;
   }
 
   /**

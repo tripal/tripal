@@ -2,11 +2,12 @@
 
 namespace Drupal\tripal\TripalImporter;
 
-use Drupal\tripal\TripalImporter\Interfaces\TripalImporterInterface;
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\file\Entity\File;
 use Drupal\user\Entity\User;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
+use Drupal\tripal\TripalImporter\Interfaces\TripalImporterInterface;
 
 /**
  * Defines an interface for tripal impoerter plugins.
@@ -127,6 +128,13 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   protected $plugin_definition;
 
   /**
+   * An instance of the Tripal publish service.
+   *
+   * @var Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager
+   */
+  protected $publish_manager = NULL;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
@@ -157,6 +165,16 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
     // Initialize file retrieval service.
     $this->fileretriever = \Drupal::service('tripal.fileretriever');
+  }
+
+  /**
+   * Sets a publish service for a child importer class wanting to publish.
+   *
+   * @param Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager $publish_manager
+   *   An instance of the publish manager service.
+   */
+  public function setPublishManager(TripalBackendPublishManager $publish_manager) {
+    $this->publish_manager = $publish_manager;
   }
 
   /**
