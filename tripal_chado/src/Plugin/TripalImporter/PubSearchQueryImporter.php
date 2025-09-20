@@ -26,7 +26,9 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_local: false,
   file_required: false,
   publish: [
-    'pub',
+    'bundle' => [
+      'pub',
+    ],
   ],
   hidden: true,
 )]

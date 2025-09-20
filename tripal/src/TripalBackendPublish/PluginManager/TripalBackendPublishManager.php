@@ -132,7 +132,7 @@ class TripalBackendPublishManager extends DefaultPluginManager {
    * @return void
    *   No return value.
    */
-  public function publishBundles (array $storages): void {
+  public function publishBundles(array $storages): void {
     foreach ($storages as $storage => $options) {
       $bundles = $options['bundles'] ?? [];
       if ($bundles) {

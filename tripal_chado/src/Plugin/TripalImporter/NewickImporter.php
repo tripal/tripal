@@ -27,8 +27,10 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_remote: false,
   file_required: false,
   publish: [
-    'phylotree',
-    'speciestree',
+    'bundle' => [
+      'phylotree',
+      'speciestree',
+    ],
   ],
 )]
 class NewickImporter extends ChadoImporterBase {

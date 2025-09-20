@@ -21,7 +21,9 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_local: false,
   file_required: false,
   publish: [
-    'speciestree',
+    'bundle' => [
+      'speciestree',
+    ],
   ],
 )]
 class TreeGenerator extends ChadoImporterBase {

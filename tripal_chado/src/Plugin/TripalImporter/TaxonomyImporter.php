@@ -28,7 +28,9 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_local: false,
   file_required: false,
   publish: [
-    'organism',
+    'bundle' => [
+      'organism',
+    ],
   ],
 )]
 class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPluginInterface {

@@ -56,7 +56,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
       'file_remote' => FALSE,
       'file_required' => FALSE,
       'cardinality' => 1,
-      'publish' => ['project', 'contact'],
+      'publish' => ['bundle' => ['project', 'contact']],
     ],
   ];
 
