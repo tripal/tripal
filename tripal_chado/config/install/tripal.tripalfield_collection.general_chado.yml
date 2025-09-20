@@ -1516,9 +1516,9 @@ fields:
 
     -   name: 'pub_publication_type'
         content_type: 'pub'
-        label: 'Additional Publication Type'
+        label: 'Additional Publication Type(s)'
         type: 'chado_property_type_default'
-        description: 'Additional descriptors indicating the type of publication'
+        description: 'Additional terms further describing the type of publication. This should not include the primary term which is indicated in the "Publication Type" field.'
         cardinality: -1
         required: false
         storage_settings:
