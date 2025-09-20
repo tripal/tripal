@@ -992,7 +992,7 @@ class OBOImporter extends ChadoImporterBase {
 
     // first download the OBO
     $temp = tempnam(sys_get_temp_dir(), 'obo_');
-    $this->logger->notice("Downloading URL $url, saving to $temp");
+    $this->logger->notice('Downloading URL "@url", saving to "@temp"', ['@url' => $url, '@temp' => $temp]);
     $status = $this->fileretriever->downloadFile($url, $temp);
     if (!$status) {
       throw new \Exception("Unable to download the remote OBO file at $url. " .
@@ -1029,26 +1029,26 @@ class OBOImporter extends ChadoImporterBase {
     // Empty the temp table.
     $this->clearTermStanzaCache();
 
-    $this->logger->notice("Importing into schema: " . $this->chado_schema_main);
+    $this->logger->notice('Importing into schema "@schema"', ['@schema' => $this->chado_schema_main]);
 
     // Parse the obo file.
-    $this->logger->notice("Step 1: Preloading File $file...");
+    $this->logger->notice('Step 1: Preloading File "@file"...', ['@file' => $file]);
     $this->parse($file, $header);
 
     // Cache the relationships of terms.
-    $this->logger->notice("Step 2: Examining relationships...");
+    $this->logger->notice('Step 2: Examining relationships...');
     $this->cacheRelationships();
 
     // Add any typedefs to the vocabulary first.
-    $this->logger->notice("Step 3: Loading type defs...");
+    $this->logger->notice('Step 3: Loading type defs...');
     $this->processTypeDefs();
 
     // Next add terms to the vocabulary.
-    $this->logger->notice("Step 4: Loading terms...");
+    $this->logger->notice('Step 4: Loading terms...');
     $this->processTerms();
 
     // Empty the term cache.
-    $this->logger->notice("Step 5: Cleanup...");
+    $this->logger->notice('Step 5: Cleanup...');
     $this->clearTermStanzaCache();
   }
 
@@ -1132,10 +1132,22 @@ class OBOImporter extends ChadoImporterBase {
     // Get the 'ontology' and 'default-namespace' headers.  Unfortunately,
     // not all OBO files contain these.
     if (array_key_exists('ontology', $header)) {
-      $short_name = strtoupper($header['ontology'][0]);
+      // If url instead of a name, e.g. 'http://edamontology.org', skip it.
+      if (!preg_match('/^http/i', $header['ontology'][0])) {
+        $short_name = strtoupper($header['ontology'][0]);
+      }
     }
     if (array_key_exists('default-namespace', $header)) {
       $namespace = $header['default-namespace'][0];
+    }
+    // Alternate header key that works at least for EDAM.
+    if (array_key_exists('default-relationship-id-prefix', $header)) {
+      if (!$short_name) {
+        $short_name = strtoupper($header['default-relationship-id-prefix'][0]);
+      }
+      if (!$namespace) {
+        $namespace = strtoupper($header['default-relationship-id-prefix'][0]);
+      }
     }
     if (array_key_exists('idspace', $header)) {
       $matches = [];
@@ -1188,15 +1200,14 @@ class OBOImporter extends ChadoImporterBase {
       }
     }
 
-    // If we still don't have a namespace defined, use the one from the form
-    // in the "New Vocabulary Name" field
-    if (!$namespace and array_key_exists('run_args', $this->arguments)
-        and array_key_exists('obo_name', $this->arguments['run_args'])) {
-      $namespace = $this->arguments['run_args']['obo_name'];
+    // If we still don't have a namespace or short name defined, use the
+    // one from the form in the "New Vocabulary Name" field.
+    $run_name = $this->arguments['run_args']['obo_name'] ?? $this->arguments['run_args']['uobo_name'] ?? NULL;
+    if (!$namespace and $run_name) {
+      $namespace = $run_name;
     }
-    if (!$namespace and array_key_exists('run_args', $this->arguments)
-        and array_key_exists('uobo_name', $this->arguments['run_args'])) {
-      $namespace = $this->arguments['run_args']['uobo_name'];
+    if (!$short_name and $run_name) {
+      $short_name = $run_name;
     }
 
     // If we can't find the namespace or the short_name then bust.
@@ -1217,6 +1228,8 @@ class OBOImporter extends ChadoImporterBase {
     // Add a new database for each idspace.
     foreach ($idspaces as $shortname => $idspace) {
       $this->insertChadoDb($shortname, $idspace['url'], $idspace['description']);
+      // This registers it with the Tripal idSpace collection.
+      $this->getIdSpace($shortname);
     }
   }
 
@@ -1437,14 +1450,14 @@ class OBOImporter extends ChadoImporterBase {
     if (array_key_exists('term_replaced_by', $results) and isset($results['term_replaced_by'])) {
       $replaced_by = $results['term_replaced_by'];
       $replaced_by = preg_replace('/_/', ':', $replaced_by);
-      $this->logger->notice(t("The term, @term, is replaced by, @replaced",
-        ['@term' => $id, '@replaced' => $replaced_by]));
+      $this->logger->notice('The term "@term" is replaced by "@replaced"',
+        ['@term' => $id, '@replaced' => $replaced_by]);
 
       // Before we try to look for the replacement term, let's try to find it.
       // in our list of cached terms.
       if (array_key_exists($replaced_by, $this->termStanzaCache['ids'])) {
-        $this->logger->notice(t("Found term, @replaced in the term cache.",
-          ['@replaced' => $replaced_by]));
+        $this->logger->notice('Found term "@replaced" in the term cache.',
+          ['@replaced' => $replaced_by]);
         return $this->termStanzaCache['ids'][$id];
       }
 
@@ -1452,8 +1465,8 @@ class OBOImporter extends ChadoImporterBase {
       $rpair = explode(":", $replaced_by, 2);
       $found = $this->lookupTerm($rpair[0], $rpair[1]);
       if ($found) {
-        $this->logger->notice(t("Found term, @replaced in the local data store.",
-          ['@replaced' => $replaced_by]));
+        $this->logger->notice('Found term "@replaced" in the local data store.',
+          ['@replaced' => $replaced_by]);
         return $found;
       }
 
@@ -2274,7 +2287,7 @@ class OBOImporter extends ChadoImporterBase {
     if (!$syn_type) {
       $syn_type = 'exact';
     }
-    $syn_type_term = $this->syn_types[$syn_type];
+    $syn_type_term = $this->syn_types[$syn_type] ?? NULL;
     if (!$syn_type_term) {
       throw new \Exception("Cannot find synonym type: $syn_type");
     }
@@ -2285,7 +2298,7 @@ class OBOImporter extends ChadoImporterBase {
       $def = substr($def, 0, 252) . "...";
     }
 
-    $this->insertChadoCvtermSynonym($cvterm_id, $def);
+    $this->insertChadoCvtermSynonym($cvterm_id, $def, $syn_type_term->cvterm_id);
   }
 
   /**
@@ -2321,7 +2334,6 @@ class OBOImporter extends ChadoImporterBase {
       $line_num++;
       $size = mb_strlen($line);
       $num_read += $size;
-      $line = trim($line);
       $this->setItemsHandled($num_read);
 
       // remove newlines
@@ -2330,14 +2342,14 @@ class OBOImporter extends ChadoImporterBase {
       // remove any special characters that may be hiding
       $line = preg_replace('/[^(\x20-\x7F)]*/', '', $line);
 
-      // skip empty lines
-      if (strcmp($line, '') == 0) {
-        continue;
-      }
-
       // Remove comments from end of lines.
       $line = preg_replace('/^(.*?)\!.*$/', '\1', $line);
 
+      // skip empty lines
+      $line = trim($line);
+      if (strcmp($line, '') == 0) {
+        continue;
+      }
 
       // At the first stanza we're out of header.
       if (preg_match('/^\s*\[/', $line)) {
@@ -2647,18 +2659,41 @@ class OBOImporter extends ChadoImporterBase {
    *   The ID of the cvterm.
    * @param string $synonym
    *   The synonym.
+   * @param int $syn_type_id
+   *   The cvterm_id of the type of synonym.
+   *
    * @return object
    *   The newly inserted cvtermsynonym object.
    */
-  private function insertChadoCvtermSynonym($cvterm_id, $synonym) {
+  private function insertChadoCvtermSynonym($cvterm_id, $synonym, $syn_type_id) {
     $chado = $this->getChadoConnection();
 
-    $query = $chado->insert('1:cvtermsynonym');
-    $query->fields([
-      'cvterm_id' => $cvterm_id,
-      'synonym' => $synonym,
-    ]);
-    $success = $query->execute();
+    // The unique constraint only allows one combination of
+    // cvterm_id + synonym, so if we try to add the same
+    // synonym but of a different syn_type_id, the insert will fail.
+    // To prevent this, if it already exists, then skip the insert.
+    $query = $chado->select('1:cvtermsynonym', 'S');
+    $query->condition('S.cvterm_id', $cvterm_id, '=');
+    $query->condition('S.synonym', $synonym, '=');
+    $query->fields('S', ['cvtermsynonym_id', 'cvterm_id', 'synonym', 'type_id']);
+    $records = $query->execute()->fetchAll();
+
+    $success = TRUE;
+    if (count($records)) {
+      if ($records[0]->type_id != $syn_type_id) {
+        $this->logger->notice('Skipping addition of synonym "@synonym" because it already exists under a different synonym type',
+          ['@synonym' => $synonym]);
+      }
+    }
+    else {
+      $query = $chado->insert('1:cvtermsynonym');
+      $query->fields([
+        'cvterm_id' => $cvterm_id,
+        'synonym' => $synonym,
+        'type_id' => $syn_type_id,
+      ]);
+      $success = $query->execute();
+    }
     if (!$success) {
       throw new \Exception('Could not add cvtermsynonym: ' . $synonym);
     }
@@ -2762,14 +2797,14 @@ class OBOImporter extends ChadoImporterBase {
   }
 
   /**
-   * Adds an alternative ID
+   * Adds an alternative ID.
    *
    * @param string $id
    *   The Term ID (e.g. SO:0000704).
    * @param int $cvterm_id
    *   The cvterm_id of the term to which the synonym will be added.
    * @param int $alt_id
-   *   The cross reference.  It should be of the form from the OBO specification
+   *   The cross reference. It should be of the form from the OBO specification.
    *
    * @ingroup tripal_obo_loader
    */
@@ -2784,7 +2819,7 @@ class OBOImporter extends ChadoImporterBase {
     }
 
     if (!$accession) {
-      $this->logMessage("Cannot add an Alt ID without an accession: '@alt_id'", ['@alt_id' => $alt_id]);
+      $this->logger->notice('Cannot add Alt ID "@alt_id" without an accession', ['@alt_id' => $alt_id]);
       return;
     }
 

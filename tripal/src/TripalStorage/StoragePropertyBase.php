@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal\TripalStorage;
 
-
 /**
  * Base class for a Tripal storage property type or value.
  */
@@ -10,6 +9,7 @@ class StoragePropertyBase {
 
   /**
    * The ID Space Plugin manager service.
+   *
    * Note: Used to confirm the term passed in exists and to retrieve it.
    *
    * @var Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager
@@ -19,13 +19,13 @@ class StoragePropertyBase {
   /**
    * Constructs a new Tripal storage property base object.
    *
-   * @param string entityType
+   * @param string $entityType
    *   The entity type associated with this storage property base object.
-   * @param string fieldType
+   * @param string $fieldType
    *   The field type associated with this storage property base object.
-   * @param string key
+   * @param string $key
    *   The key associated with this storage property base object.
-   * @param string term_id
+   * @param string $term_id
    *   The controlled vocabulary term asssociated with this property. It must be
    *   in the form of "IdSpace:Accession" (e.g. "rdfs:label" or "OBI:0100026")
    * @param string $idspace_plugin_id
@@ -38,9 +38,9 @@ class StoragePropertyBase {
 
     // Ideally we would use dependency injection to retrieve the idspace service
     // but that is not available in a custom class like this one. Alternatively,
-    // we could pass the service into the constructor but as this class is inherited
-    // by many other classes and the constructor is used directly in fields,
-    // that would be a lot of work.
+    // we could pass the service into the constructor but as this class is
+    // inherited by many other classes and the constructor is used directly
+    // in fields, that would be a lot of work.
     // Our approach: Manage the drupal container ourselves in this constructor.
     // Try to get the current container... It should exist within a bootstrapped
     // site (test or otherwise) and kernel tests.
@@ -102,8 +102,7 @@ class StoragePropertyBase {
   }
 
   /**
-   * Returns the entity type associated with this storage property base
-   * object.
+   * Returns the entity type associated with this storage property object.
    *
    * @return string
    *   The entity type.
@@ -113,7 +112,7 @@ class StoragePropertyBase {
   }
 
   /**
-   * Returns the field type associated with this storage property base object.
+   * Returns the field type associated with this storage property object.
    *
    * @return string
    *   The field type.
@@ -123,7 +122,7 @@ class StoragePropertyBase {
   }
 
   /**
-   * Returns the key associated with this storage property base object.
+   * Returns the key associated with this storage property object.
    *
    * @return string
    *   The key.
@@ -197,4 +196,5 @@ class StoragePropertyBase {
    * @var string
    */
   private $termAccession;
+
 }

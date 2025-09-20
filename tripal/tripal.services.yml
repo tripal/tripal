@@ -68,3 +68,7 @@ services:
     arguments:
      - '@entity_type.manager'
      - '@database'
+
+  tripal.entity_hooks:
+    class: 'Drupal\tripal\Hook\TripalEntityHooks'
+    autowire: TRUE
