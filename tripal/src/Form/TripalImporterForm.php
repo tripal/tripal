@@ -208,6 +208,18 @@ class TripalImporterForm implements FormInterface {
       return;
     }
 
+    // Provide a list of any bundles that should be published.
+    $run_args['publish'] = [];
+    foreach ($run_args as $key => $value) {
+      if (preg_match('/^publish_(.+)$/', $key, $matches)) {
+        $bundle = $matches[1];
+        if ($value) {
+          // If checkbox is set ($value is TRUE), then add bundle to list.
+          $run_args['publish'][] = $bundle;
+        }
+      }
+    }
+
     // Remove the file_local and file_upload args. We'll add in a new
     // full file path and the fid instead.
     unset($run_args['file_local']);
