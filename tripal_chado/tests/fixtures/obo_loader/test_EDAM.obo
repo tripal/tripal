@@ -1,0 +1,120 @@
+format-version: 1.2
+ontology: http://edamontology.org
+subsetdef: bioinformatics "Bioinformatics"
+subsetdef: concept_properties "EDAM concept properties"
+subsetdef: data "EDAM types of data"
+subsetdef: edam "EDAM"
+subsetdef: formats "EDAM data formats"
+subsetdef: identifiers "EDAM types of identifiers"
+subsetdef: operations "EDAM operations"
+subsetdef: relations "EDAM relations"
+subsetdef: topics "EDAM topics"
+data-version: 1.2
+date: 13:12:2012 00:00
+default-relationship-id-prefix: EDAM
+idspace: EDAM http://edamontology.org/ "EDAM relations and concept properties"
+idspace: EDAM_data http://edamontology.org/data_ "EDAM types of data"
+idspace: EDAM_format http://edamontology.org/format_ "EDAM data formats"
+idspace: EDAM_operation http://edamontology.org/operation_ "EDAM operations"
+idspace: EDAM_topic http://edamontology.org/topic_ "EDAM topics"
+remark: EDAM (EMBRACE Data And Methods) is an ontology of bioinformatics operations (tool, application, or workflow functions), types of data, topics (application domains), and data formats. The applications of EDAM are within organising tools and data, finding suitable tools in catalogues, and integrating them into complex applications or workflows. Semantic annotations with EDAM are applicable to diverse entities such as for example Web services, databases, programmatic libraries, standalone tools and toolkits, interactive applications, data schemas, data sets, or publications within bioinformatics. Annotation with EDAM may also contribute to data provenance, and EDAM terms and synonyms can be used in text mining. EDAM - and in particular the EDAM Data sub-ontology - serves also as a markup vocabulary for bioinformatics data on the Semantic Web.
+remark: EDAM editors: Jon Ison and Matus Kalas. Co-authors: Inge Jonassen, Dan Bolser, Hamish McWilliam, Mahmut Uludag, James Malone, Rodrigo Lopez, Steve Pettifer, and Peter Rice. Funding: No funding targetted exclusively the development of EDAM; contibutions from these projects: EMBRACE (FP6, EU), EMBOSS (BBSRC, UK), eSysbio and FUGE Bioinformatics Platform (both Research Council of Norway). See http://edamontology.org for documentation and licence.
+page: http://edamontology.org/page
+definedBy: EDAM_1.2.owl
+next_id: 3263
+saved-by: Jon Ison, Matus Kalas
+
+![Term]
+!id: ObsoleteClass
+!name: Obsolete concept (EDAM)
+!comment: Needed for conversion to the OBO format.
+!created_in: "1.2 / http://www.geneontology.org/formats/oboInOwl"
+!def: "An obsolete concept (redefined in EDAM)." [http://edamontology.org]
+!is_a: ObsoleteClass ! Obsolete concept (EDAM)
+!is_a: owl:DeprecatedClass
+!is_obsolete: true
+
+[Term]
+id: EDAM_data:0005
+name: Resource type
+subset: bioinformatics
+subset: data
+subset: edam
+created_in: "beta12orEarlier"
+def: "A type of computational resource used in bioinformatics." [http://edamontology.org]
+namespace: data
+obsolete_since: "beta12orEarlier"
+!is_a: ObsoleteClass ! Obsolete concept (EDAM)
+is_obsolete: true
+
+[Term]
+id: EDAM_data:0006
+name: Data
+subset: bioinformatics
+subset: data
+subset: edam
+synonym: "Continuant" BROAD []
+synonym: "Data record" EXACT []
+synonym: "Data set" NARROW []
+synonym: "WSIO_data:002" EXACT []
+synonym: "Datum" NARROW []
+synonym: "DigitalEntity" RELATED []
+synonym: "IAO:0000027" RELATED []
+synonym: "IAO:0000030" RELATED []
+synonym: "Perpetuant" RELATED []
+synonym: "SIO:000069" RELATED []
+synonym: "SIO:000088" RELATED []
+created_in: "beta12orEarlier"
+def: "Information, represented in an information artefact (data record) that is 'understandable' by dedicated computational tools that can use the data as input or produce it as output." [http://edamontology.org]
+namespace: data
+disjoint_from: EDAM_format:1915 ! Format
+disjoint_from: EDAM_operation:0004 ! Operation
+disjoint_from: EDAM_topic:0003 ! Topic
+
+[Term]
+id: EDAM_format:1915
+name: Format
+comment: The main focus in EDAM lies on formats as means of structuring data exchanged between different tools or resources. The serialisation, compression, or encoding of concrete data formats/models is not in scope of EDAM. Format 'is format of' Data.
+subset: bioinformatics
+subset: edam
+subset: formats
+synonym: "WSIO_compression:004" RELATED []
+synonym: "Continuant" BROAD []
+synonym: "Data format" EXACT []
+synonym: "Data model" BROAD []
+synonym: "Exchange format" EXACT []
+synonym: "File format" NARROW []
+synonym: "File:format" RELATED []
+synonym: "http://en.wikipedia.org/wiki/List_of_file_formats" RELATED []
+synonym: "http://purl.org/dc/elements/1.1/format" BROAD []
+synonym: "IAO:0000098" RELATED []
+synonym: "MachineLanguage" RELATED []
+synonym: "Perpetuant" RELATED []
+synonym: "Quality" BROAD []
+synonym: "Quality" RELATED []
+synonym: "quality" RELATED []
+synonym: "SIO:000612" RELATED []
+synonym: "SIO:000618" RELATED []
+synonym: "Symbol_structure" RELATED []
+created_in: "beta12orEarlier"
+def: "A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere." [http://edamontology.org]
+namespace: format
+disjoint_from: EDAM_operation:0004 ! Operation
+disjoint_from: EDAM_topic:0003 ! Topic
+
+[Term]
+id: EDAM_topic:0203
+name: Transcriptomics
+alt_id: topic_0197
+comment: This includes microarray data, northern blots, gene-indexed expression profiles and any annotation on genetic information that is used in the synthesis of a protein.
+subset: bioinformatics
+subset: edam
+subset: topics
+synonym: "Expression profiling" EXACT []
+synonym: "Gene expression analysis" EXACT []
+synonym: "Gene expression profiling" EXACT []
+synonym: "Gene expression resources" EXACT []
+synonym: "http://purl.bioontology.org/ontology/MSH/D015870" RELATED []
+created_in: "beta12orEarlier"
+def: "Topic concerning primarily raw or processed gene (mRNA) expression (typically microarray) data, including the analysis of gene expression levels, by identifying, quantifying or comparing mRNA transcripts and the interpretation (in functional terms) of gene expression data." [http://edamontology.org]
+namespace: topic
