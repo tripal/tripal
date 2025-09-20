@@ -585,8 +585,15 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
 
   /**
    * {@inheritdoc}
+   *
+   * @deprecated in tripal:4.0.0 and is removed from tripal:4.1.0.
+   *   Instead, you should use syncTripalStoragePropertyValues() which
+   *   acts on the current TripalFieldItem instance.
+   * @see https://github.com/tripal/tripal/pull/2281
    */
   public function tripalSave($field_item, $field_name, $prop_types, $prop_values, $entity) {
+    @trigger_error(__METHOD__ . '() is deprecated in tripal:4.0.0 and is removed from tripal:4.1.0. Instead, you should use syncTripalStoragePropertyValues() which acts on the current TripalFieldItem instance. See https://github.com/tripal/tripal/pull/2281', E_USER_DEPRECATED);
+
     $delta = $field_item->getName();
     foreach ($prop_values as $property) {
       $prop_key = $property->getKey();
@@ -597,8 +604,15 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
 
   /**
    * {@inheritdoc}
+   *
+   * @deprecated in tripal:4.0.0 and is removed from tripal:4.1.0.
+   *   Instead, you should use syncFieldValuesWithTripalStorage() which
+   *   acts on the current TripalFieldItem instance.
+   * @see https://github.com/tripal/tripal/pull/2281
    */
   public function tripalLoad($field_item, $field_name, $prop_types, $prop_values, $entity) {
+    // @trigger_error(__METHOD__ . '() is deprecated in tripal:4.0.0 and is removed from tripal:4.1.0. Instead, you should use syncFieldValuesWithTripalStorage() which acts on the current TripalFieldItem instance. See https://github.com/tripal/tripal/pull/2281', E_USER_DEPRECATED);
+
     $delta = $field_item->getName();
     foreach ($prop_values as $property) {
       $prop_key = $property->getKey();
@@ -608,8 +622,15 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
 
   /**
    * {@inheritdoc}
+   *
+   * @deprecated in tripal:4.0.0 and is removed from tripal:4.1.0.
+   *   Instead, you should use clearFieldValuesForTripalStorage() which acts
+   *   on the current TripalFieldItem instance.
+   * @see https://github.com/tripal/tripal/pull/2281
    */
   public function tripalClear($field_item, $field_name, $prop_types, $prop_values, $entity) {
+    // @trigger_error(__METHOD__ . '() is deprecated in tripal:4.0.0 and is removed from tripal:4.1.0. Instead, you should use clearFieldValuesForTripalStorage() which acts on the current TripalFieldItem instance. See https://github.com/tripal/tripal/pull/2281', E_USER_DEPRECATED);
+
     $delta = $field_item->getName();
 
     foreach ($prop_values as $prop_value) {
@@ -871,6 +892,10 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
         if (array_key_exists($prop_key, $field_values)) {
           $prop_value->setValue($field_values[$prop_key]);
         }
+        // Otherwise set a default value based on the property type.
+        else {
+          $prop_value->setDefaultValue($prop_type->getDefaultValue());
+        }
 
         $this->tripalstorage_property_values[$prop_key] = $prop_value;
       }
@@ -887,7 +912,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * @param bool $use_cache
    *   Indicates if we should use the local cache.
    *
-   * @return \Drupal\tripal\TripalStorage\StoragePropertyTypeBase
+   * @return \Drupal\tripal\TripalStorage\StoragePropertyValue
    *   The property value you requested.
    */
   public function getTripalStoragePropertyValue(string $key, bool $use_cache = TRUE): StoragePropertyValue {
@@ -899,6 +924,50 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     }
 
     return $keyed_propvalues[$key];
+  }
+
+  /**
+   * Retrieve the values of all TripalStorage Property Values for this field.
+   *
+   * @return array
+   *   A plan array where each element maps to the key and value of a
+   *   TripalStorage Property. The value is the result of
+   *   StoragePropertyValue->getValue().
+   */
+  public function exportTripalStoragePropertyValues() {
+    $export = [];
+    $keyed_propvalues = $this->getTripalStoragePropertyValues();
+
+    foreach ($keyed_propvalues as $prop_key => $prop_value) {
+      $export[$prop_key] = $prop_value->getValue();
+    }
+
+    return $export;
+  }
+
+  /**
+   * Allows TripalStorage to update the property values of this field item.
+   *
+   * @param array $new_values
+   *   An array of the values to be set on each StoragePropertyValue object.
+   *   This should be keyed by the StoragePropertyValue::getKey().
+   *
+   * @return Drupal\tripal\TripalStorage\StoragePropertyValue[]
+   *   The updated property values keyed by their StorageProperty::getKey().
+   */
+  public function updateTripalStoragePropertyValues(array $new_values): array {
+
+    // Call the getter to ensure all the StoragePropertyValue objects exist.
+    $this->getTripalStoragePropertyValues();
+
+    // For each new value passed in, we update the corresponding property value.
+    foreach ($new_values as $prop_key => $prop_value) {
+      if (array_key_exists($prop_key, $this->tripalstorage_property_values)) {
+        $this->tripalstorage_property_values[$prop_key]->setValue($prop_value);
+      }
+    }
+
+    return $this->tripalstorage_property_values;
   }
 
   /**
@@ -922,6 +991,59 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     }
 
     return $this->tripalstorage_property_values;
+  }
+
+  /**
+   * Update field values to match those in the TripalStorage property values.
+   *
+   * @return array
+   *   The field values after being updated. This is an array keyed by the
+   *   property name where the value is the new value of that field property.
+   */
+  public function syncFieldValuesWithTripalStorage(): array {
+    $prop_values = $this->getTripalStoragePropertyValues();
+
+    // Now update each field with the associated property value.
+    foreach (array_keys($prop_values) as $prop_key) {
+      // Get the value of this TripalStorage property.
+      $prop_value = $prop_values[$prop_key]->getValue();
+      // Set the field value with the same property name.
+      $this->set($prop_key, $prop_value);
+    }
+
+    return $this->getValue();
+  }
+
+  /**
+   * Clears all field values from the given entity.
+   *
+   * This is to prevent Drupal from storing field values when they are
+   * being stored in the TripalStorage backend.
+   *
+   * Note: by clearing the values we mean to set them to their default based
+   * on the property type they represent in TripalStorage.
+   *
+   * @return void
+   *   We do not need to return anything as this updates the current field item.
+   */
+  public function clearFieldValuesForTripalStorage(): void {
+    $keyed_proptypes = $this->getTripalStoragePropertyTypes();
+
+    foreach ($keyed_proptypes as $prop_key => $prop_type) {
+
+      // Determine whether this property should be saved to the Drupal field
+      // tables based on its TripalStorage property type settings.
+      $cache = $prop_type->getCacheStatus();
+
+      // Get the default value for this property based on its TripalStorage
+      // propert type object.
+      $default_value = $prop_type->getDefaultValue();
+
+      // Clear properties that should not be saved in the Drupal field tables.
+      if ($cache === FALSE) {
+        $this->set($prop_key, $default_value);
+      }
+    }
   }
 
 }

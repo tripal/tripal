@@ -18,7 +18,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *   TRUE if this property should be saved in the Drupal field table, and
    *   FALSE otherwise.
    */
-  public bool $cache_status;
+  public bool $cache_status = FALSE;
 
   /**
    * Constructs a new tripal storage property type base.
@@ -272,6 +272,17 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    */
   public function setStorageSettings($storage_settings) {
     $this->storage_settings = $storage_settings;
+  }
+
+  /**
+   * Returns the default value of this storage property type.
+   *
+   * @return mixed
+   *   The default value.
+   */
+  public function getDefaultValue() {
+    $class_name = get_class($this);
+    throw new \Exception("$class_name::getDefaultValue() was not implemented; thus this exception was thrown by the parent class. Please implement this method and return a default value of the correct primitive type for this property type.");
   }
 
   /**

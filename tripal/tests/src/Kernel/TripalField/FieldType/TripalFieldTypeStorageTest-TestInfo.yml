@@ -56,7 +56,7 @@ scenarios:
         gemstone_description:
         - value: 'soothing, calming, healing from grief'
         gemstone_hardness:
-        - value: 6
+        - value: 7
         is_precious:
         - value: FALSE
       expected:
@@ -65,6 +65,35 @@ scenarios:
         gemstone_description:
         - value: 'soothing, calming, healing from grief'
         gemstone_hardness:
+        - value: 7
+        is_precious:
+        - value: FALSE
+    syncValues:
+      user_input:
+        gemstone_name:
+        - value: 'Amazonite'
+        gemstone_description:
+        - value: 'Amazonite is an attractive gemstone known for its distinctive blue and green color. It is a variety of potassium feldspar called microcline. Its chemical formula is KAlSi3O8, indicating it is composed of the elements potassium, aluminum, silicon, and oxygen.'
+        gemstone_hardness:
         - value: 6
+        is_precious:
+        - value: TRUE
+      expected:
+        gemstone_name:
+        - value: 'Amazonite'
+        gemstone_description:
+        - value: 'Amazonite is an attractive gemstone known for its distinctive blue and green color. It is a variety of potassium feldspar called microcline. Its chemical formula is KAlSi3O8, indicating it is composed of the elements potassium, aluminum, silicon, and oxygen.'
+        gemstone_hardness:
+        - value: 6
+        is_precious:
+        - value: TRUE
+    clearValues:
+      expected:
+        gemstone_name:
+        - value: ''
+        gemstone_description:
+        - value: ''
+        gemstone_hardness:
+        - value: 0
         is_precious:
         - value: FALSE

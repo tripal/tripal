@@ -147,9 +147,9 @@ class TripalFieldTypeStorageTest extends TripalTestKernelBase {
     }
     $this->assertTrue($exception_caught, "We should have gotten an exception when trying to access a property type that doesn't exist.");
     $this->assertEquals(
-      "Cannot access the 'NON-EXISTING-PROPERTY' property type for 'gemstone_name' field as it is not defined by its Drupal\\tripal\Plugin\Field\FieldType\TripalStringTypeItem::tripalTypes method.",
-      $exception_msg,
-      "We did not get the exception message we expected.",
+    "Cannot access the 'NON-EXISTING-PROPERTY' property type for 'gemstone_name' field as it is not defined by its Drupal\\tripal\Plugin\Field\FieldType\TripalStringTypeItem::tripalTypes method.",
+    $exception_msg,
+    "We did not get the exception message we expected.",
     );
     // Property Value.
     $exception_caught = FALSE;
@@ -163,10 +163,143 @@ class TripalFieldTypeStorageTest extends TripalTestKernelBase {
     }
     $this->assertTrue($exception_caught, "We should have gotten an exception when trying to access a property value that doesn't exist.");
     $this->assertEquals(
-      "Cannot access the 'NON-EXISTING-PROPERTY' property value for 'gemstone_name' field.",
-      $exception_msg,
-      "We did not get the exception message we expected.",
+    "Cannot access the 'NON-EXISTING-PROPERTY' property value for 'gemstone_name' field.",
+    $exception_msg,
+    "We did not get the exception message we expected.",
     );
+  }
+
+  /**
+   * This method tests that we can sync field values with property values.
+   */
+  public function testTripalFieldPropertyFieldSync() {
+
+    $field_value_scenario = $this->scenarios[0];
+    $fields_under_test = array_keys($field_value_scenario['create']['user_input']);
+
+    // 1. Create the entity with the values set.
+    $entity = TripalEntity::create([
+      'title' => $this->randomString(),
+      'type' => $this->bundle_name,
+    ] + $field_value_scenario['create']['user_input']);
+    $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content.");
+    // - Ensure the property values are initialized.
+    foreach ($fields_under_test as $field_name) {
+      foreach ($entity->get($field_name) as $delta => $field_item) {
+        $field_item->getTripalStoragePropertyValues();
+      }
+    }
+
+    // 2. Test that property values are correctly updated to match field values.
+    // - Change some field values to no longer match the property values.
+    $new_field_values = $field_value_scenario['syncValues']['user_input'];
+    $original_values = $field_value_scenario['create']['expected'];
+    $expected_values = $field_value_scenario['syncValues']['expected'];
+    foreach ($new_field_values as $field_name => $new_vals) {
+      $entity->set($field_name, $new_vals);
+    }
+
+    foreach ($fields_under_test as $field_name) {
+      foreach ($entity->get($field_name) as $delta => $field_item) {
+
+        // Confirm field value matches what we just set it to.
+        $this->assertEquals(
+          $new_field_values[$field_name][$delta],
+          $field_item->getValue(),
+          "The field values for $field_name did not match what we just set them to."
+        );
+
+        // Confirm the property value still matches its original value.
+        $this->assertEquals(
+          $original_values[$field_name][$delta],
+          $field_item->exportTripalStoragePropertyValues(),
+          "We expected the property values for $field_name not to have changed when we set the field values."
+        );
+        $this->assertNotEquals(
+          $new_field_values[$field_name][$delta],
+          $field_item->exportTripalStoragePropertyValues(),
+          "We expect the new values to not match the original values for the purpose of this test."
+        );
+
+        // - Now sync the property values and confirm they have been updated.
+        $field_item->syncTripalStoragePropertyValues();
+        $this->assertEquals(
+          $expected_values[$field_name][$delta],
+          $field_item->exportTripalStoragePropertyValues(),
+          "The updated property values after $field_name syncTripalStoragePropertyValues() did not match what we expected."
+        );
+      }
+    }
+
+    // 3. Test that field values are correctly updated to match property values.
+    // - Refresh the created entity back to the defaults.
+    $entity = TripalEntity::create([
+      'title' => $this->randomString(),
+      'type' => $this->bundle_name,
+    ] + $field_value_scenario['create']['user_input']);
+    $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to refresh the entity back to a clean slate.");
+    // - Change some property values to no longer match the field values.
+    $new_property_values = $field_value_scenario['syncValues']['user_input'];
+    $original_values = $field_value_scenario['create']['expected'];
+    $expected_values = $field_value_scenario['syncValues']['expected'];
+    foreach ($new_property_values as $field_name => $new_vals) {
+      foreach ($new_vals as $delta => $new_prop_vals) {
+        $field_item = $entity->get($field_name)->get($delta);
+        $field_item->updateTripalStoragePropertyValues($new_prop_vals);
+      }
+    }
+
+    foreach ($fields_under_test as $field_name) {
+      foreach ($entity->get($field_name) as $delta => $field_item) {
+
+        // Confirm field value still matches its original value.
+        $this->assertEquals(
+          $original_values[$field_name][$delta],
+          $field_item->getValue(),
+          "We expected the field values for $field_name not to have changed when we set the property values."
+        );
+        // Confirm the property value have been updated.
+        $this->assertEquals(
+          $new_property_values[$field_name][$delta],
+          $field_item->exportTripalStoragePropertyValues(),
+          "The property values for $field_name were not updated as we expected."
+        );
+
+        // - Now sync the field values.
+        $field_item->syncFieldValuesWithTripalStorage();
+        $this->assertEquals(
+          $expected_values[$field_name][$delta],
+          $field_item->getValue(),
+          "The updated field values after $field_name syncFieldValuesWithTripalStorage() did not match what we expected."
+        );
+      }
+    }
+
+    // 4. Test that field values are reset to defaults of the correct type.
+    // Note: We will only do this for the first field item for each field.
+    $expected_values = $field_value_scenario['clearValues']['expected'];
+    foreach ($fields_under_test as $field_name) {
+      $field_item = $entity->get($field_name)->first();
+
+      $field_item->clearFieldValuesForTripalStorage();
+      $field_values = $field_item->getValue();
+      foreach ($field_values as $property_key => $field_val) {
+        $expected_prop_value = $expected_values[$field_name][0][$property_key];
+        $expected_propval_type = gettype($expected_prop_value);
+
+        $this->assertEquals(
+          $expected_prop_value,
+          $field_val,
+          "The field value for $field_name [0] [$property_key] was not what we expected (i.e. was not the correct default value for the property value)."
+        );
+
+        $this->assertEquals(
+          $expected_propval_type,
+          gettype($field_val),
+          "The primitive type of the cleared field value for $field_name [0] [$property_key] was not what we expected."
+        );
+      }
+    }
   }
 
 }

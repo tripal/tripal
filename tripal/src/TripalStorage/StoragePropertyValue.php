@@ -52,7 +52,12 @@ class StoragePropertyValue extends StoragePropertyBase {
    *   The value.
    */
   public function getValue() {
-    return $this->value;
+    if (is_null($this->value)) {
+      return $this->default_value;
+    }
+    else {
+      return $this->value;
+    }
   }
 
   /**
@@ -63,16 +68,6 @@ class StoragePropertyValue extends StoragePropertyBase {
    */
   public function setValue($value) {
     $this->value = $value;
-  }
-
-  /**
-   * Returns the default value of this storage property value.
-   *
-   * @return mixed
-   *   The default value.
-   */
-  public function getDefaultValue() {
-    return $this->default_value;
   }
 
   /**
