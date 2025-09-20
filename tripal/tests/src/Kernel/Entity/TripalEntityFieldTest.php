@@ -115,7 +115,7 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
 
     $scenarios[] = [
       1,
-      "Use format for title + URL with HTML included"
+      "Use format for title + URL with HTML included",
     ];
 
     $scenarios[] = [
@@ -129,12 +129,12 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
   /**
    * Tests that TripalEntity::save() handles URL alias' with substitutions.
    *
-   * @dataProvider provideScenarios
-   *
    * @param int $current_scenario_key
    *   The key of the scenario in the YAML.
    * @param string $current_scenario_label
    *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
    */
   #[DataProvider('provideScenarios')]
   public function testTripalEntitySaveTitleUrlBasic(int $current_scenario_key, string $current_scenario_label) {
@@ -184,4 +184,5 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
     $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['edit']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
   }
+
 }
