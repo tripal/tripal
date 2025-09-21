@@ -80,7 +80,6 @@ class ChadoFileWidgetDefault extends ChadoWidgetBase {
 
     // If there is a rank and it is not already set,
     // then we want to use 0 as the default.
-    // Only file_pub does not have a rank column.
     if (array_key_exists('linker_rank', $property_definitions)) {
       $default_value = $item_vals['linker_rank'] ?? 0;
       $elements['linker_rank'] = [
