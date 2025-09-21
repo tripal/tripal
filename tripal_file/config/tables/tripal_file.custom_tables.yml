@@ -222,6 +222,9 @@ analysis_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -232,6 +235,7 @@ analysis_file:
         analysis_file_c1:
             - file_id
             - analysis_id
+            - type_id
     indexes:
         analysis_file_idx1:
             - file_id
@@ -261,6 +265,9 @@ assay_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -271,6 +278,7 @@ assay_file:
         assay_file_c1:
             - file_id
             - assay_id
+            - type_id
     indexes:
         assay_file_idx1:
             - file_id
@@ -300,6 +308,9 @@ biomaterial_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -310,6 +321,7 @@ biomaterial_file:
         biomaterial_file_c1:
             - file_id
             - biomaterial_id
+            - type_id
     indexes:
         biomaterial_file_idx1:
             - file_id
@@ -336,6 +348,9 @@ file_contact:
             'not null': true
         contact_id:
             type: int
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -346,6 +361,7 @@ file_contact:
         file_contact_c1:
             - file_id
             - contact_id
+            - type_id
     indexes:
         file_contact_idx1:
             - file_id
@@ -375,6 +391,9 @@ cv_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -385,6 +404,7 @@ cv_file:
         cv_file_c1:
             - file_id
             - cv_id
+            - type_id
     indexes:
         cv_file_idx1:
             - file_id
@@ -414,6 +434,9 @@ eimage_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -424,6 +447,7 @@ eimage_file:
         eimage_file_c1:
             - file_id
             - eimage_id
+            - type_id
     indexes:
         eimage_file_idx1:
             - file_id
@@ -453,6 +477,9 @@ feature_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -463,6 +490,7 @@ feature_file:
         feature_file_c1:
             - file_id
             - feature_id
+            - type_id
     indexes:
         feature_file_idx1:
             - file_id
@@ -492,6 +520,9 @@ featuremap_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -502,6 +533,7 @@ featuremap_file:
         featuremap_file_c1:
             - file_id
             - featuremap_id
+            - type_id
     indexes:
         featuremap_file_idx1:
             - file_id
@@ -531,6 +563,9 @@ library_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -541,6 +576,7 @@ library_file:
         library_file_c1:
             - file_id
             - library_id
+            - type_id
     indexes:
         library_file_idx1:
             - file_id
@@ -570,6 +606,9 @@ nd_protocol_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -580,6 +619,7 @@ nd_protocol_file:
         nd_protocol_file_c1:
             - file_id
             - nd_protocol_id
+            - type_id
     indexes:
         nd_protocol_file_idx1:
             - file_id
@@ -609,6 +649,9 @@ organism_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -619,6 +662,7 @@ organism_file:
         organism_file_c1:
             - file_id
             - organism_id
+            - type_id
     indexes:
         organism_file_idx1:
             - file_id
@@ -648,6 +692,9 @@ phylotree_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -658,6 +705,7 @@ phylotree_file:
         phylotree_file_c1:
             - file_id
             - phylotree_id
+            - type_id
     indexes:
         phylotree_file_idx1:
             - file_id
@@ -687,6 +735,9 @@ project_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -697,6 +748,7 @@ project_file:
         project_file_c1:
             - file_id
             - project_id
+            - type_id
     indexes:
         project_file_idx1:
             - file_id
@@ -726,6 +778,9 @@ file_pub:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -736,6 +791,7 @@ file_pub:
         file_pub_c1:
             - file_id
             - pub_id
+            - type_id
     indexes:
         file_pub_idx1:
             - file_id
@@ -765,6 +821,9 @@ stock_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -775,6 +834,7 @@ stock_file:
         stock_file_c1:
             - file_id
             - stock_id
+            - type_id
     indexes:
         stock_file_idx1:
             - file_id
@@ -804,6 +864,9 @@ stockcollection_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -814,6 +877,7 @@ stockcollection_file:
         stockcollection_file_c1:
             - file_id
             - stockcollection_id
+            - type_id
     indexes:
         stockcollection_file_idx1:
             - file_id
@@ -843,6 +907,9 @@ study_file:
             size: big
             type: int
             'not null': true
+        type_id:
+            size: big
+            type: int
         rank:
             type: int
             'not null': true
@@ -853,6 +920,7 @@ study_file:
         study_file_c1:
             - file_id
             - study_id
+            - type_id
     indexes:
         study_file_idx1:
             - file_id
