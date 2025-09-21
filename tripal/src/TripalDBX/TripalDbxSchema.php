@@ -1099,7 +1099,14 @@ EOD;
     }
 
     foreach ($statements as $statement) {
-      $this->executeDdlStatement($statement);
+      if (method_exists($this, 'executeDdlStatement')) {
+        // For Drupal >=11.2.
+        $this->executeDdlStatement($statement);
+      }
+      else {
+        // For Drupal <=11.1.
+        $this->connection->query($statement);
+      }
     }
   }
 
