@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal\TripalDBX;
 
+use Drupal\Core\Database\SchemaObjectExistsException;
 use Drupal\pgsql\Driver\Database\pgsql\Schema as PgSchema;
 use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
 
@@ -1064,6 +1065,42 @@ EOD;
       $db_dependencies[$cache_key] = $referencing_tables;
     }
     return $db_dependencies[$cache_key];
+  }
+
+ /**
+   * Create a new table from a Drupal table definition.
+   *
+   * This overrides the parent createTable() function because we want to
+   * support using postgresql UNIQUE NULLS NOT DISTINCT, because otherwise
+   * you can insert duplicate records if one column is NULL.
+   * This is only available for Postgresql versions 15 and above.
+   * @see https://github.com/GMOD/Chado/issues/139
+   *
+   * @param string $name
+   *   The name of the table to create.
+   * @param array $table
+   *   A Schema API table definition array.
+   *
+   * @throws \Drupal\Core\Database\SchemaObjectExistsException
+   *   If the specified table already exists.
+   * @throws \BadMethodCallException
+   *   When ::createTableSql() is not implemented in the concrete driver class.
+   */
+  public function createTable($name, $table) {
+    if ($this->tableExists($name)) {
+      throw new SchemaObjectExistsException("Table '$name' already exists.");
+    }
+    $statements = $this->createTableSql($name, $table);
+
+    // Update the unique constraint if the version allows.
+    $client_version = $this->connection->clientVersion();
+    if (version_compare($client_version, '15.0') >= 0) {
+      $statements[0] = preg_replace('/ UNIQUE \(/', ' UNIQUE NULLS NOT DISTINCT (', $statements[0]);
+    }
+
+    foreach ($statements as $statement) {
+      $this->executeDdlStatement($statement);
+    }
   }
 
   /**
