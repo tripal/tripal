@@ -1092,9 +1092,11 @@ EOD;
     }
     $statements = $this->createTableSql($name, $table);
 
-    // Update the unique constraint if the version allows.
-    $client_version = $this->connection->clientVersion();
-    if (version_compare($client_version, '15.0') >= 0) {
+    // Update the unique constraint if the postgresql version allows.
+    $psql_version = $this->connection->version();
+    // Remove distro info, e.g. "13.22 (Debian 13.22-1.pgdg12+1)" -> "13.22".
+    $psql_version = preg_replace('/[^\d\.].*$/', '', $psql_version);
+    if (version_compare($psql_version, '15.0') >= 0) {
       $statements[0] = preg_replace('/ UNIQUE \(/', ' UNIQUE NULLS NOT DISTINCT (', $statements[0]);
     }
 
