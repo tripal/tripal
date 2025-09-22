@@ -186,46 +186,4 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
     $this->assertEquals($current_scenario['edit']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
   }
 
-  /**
-   * Tests TripalEntity::getFieldItemBackendStorage().
-   */
-  public function testGetFieldItemBackendStorage() {
-
-    // Grab the first scenario as we just need an entity and the specifics
-    // dom't matter as much.
-    $current_scenario = $this->scenarios[0];
-
-    // Create the entity with that value set.
-    $submitted_title = $this->randomString();
-    $entity = TripalEntity::create([
-      'title' => $submitted_title,
-      'type' => $this->bundle_name,
-    ] + $current_scenario['create']['user_input']);
-    $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
-    $status = $entity->save();
-    $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
-
-    $entity->set('missingstorage', ['value' => 'FRED']);
-
-    // 1. Confirm that an exising item from this entity returns the values
-    // that we expect.
-    $field_lists = $entity->getFields();
-
-    // CHECK:  uid is not a TripalField and thus should return FALSE.
-    $info = TripalEntity::getFieldItemBackendStorage('uid', $field_lists['uid']->first());
-    $this->assertFalse($info, "The 'uid' field is not a TripalField so we should not have been able to retrieve storage info.");
-
-    // CHECK: metaphysical_props is a tripalfield.
-    $tripalfield_item = $field_lists['metaphysical_props']->first();
-    $info = TripalEntity::getFieldItemBackendStorage('metaphysical_props', $tripalfield_item);
-    $this->assertIsArray($info, "The 'metaphysical_props' field is a TripalField so we should have been able to retrieve storage info.");
-    $this->assertEquals(0, $info[0], "The first piece of info retrieved should have been the delta.");
-    $this->assertEquals('drupal_sql_storage', $info[1], "The second piece of info retrieved should be the storage backend.");
-
-    // CHECK: missingstorage is a tripalfield that has no tsid set.
-    $missingstorage_item = $field_lists['missingstorage']->first();
-    $info = TripalEntity::getFieldItemBackendStorage('missingstorage', $missingstorage_item);
-    $this->assertFalse($info, "MissingStorage field has no tsid set so we should not be able to retrieve the storage info.");
-  }
-
 }
