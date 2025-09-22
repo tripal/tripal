@@ -335,6 +335,8 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
     }
 
     $this->cached_fields[$field_name] = $all_cached;
+
+    return $all_cached;
   }
 
   /**

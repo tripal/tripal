@@ -302,4 +302,37 @@ class TripalFieldTypeStorageTest extends TripalTestKernelBase {
     }
   }
 
+  /**
+   * Tests methods in TripalEntity related to managing fields and their storage.
+   */
+  public function testTripalEntityFieldStorageInteractions() {
+
+    $field_value_scenario = $this->scenarios[0];
+
+    // 1. Create the entity with the values set.
+    $entity = TripalEntity::create([
+      'title' => $this->randomString(),
+      'type' => $this->bundle_name,
+    ] + $field_value_scenario['create']['user_input']);
+    $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content.");
+
+    // Retrieve the TripalFields only.
+    $items = $entity->getFields();
+    $tripal_items = $entity->getTripalFieldItems();
+    $this->assertCount(4, $tripal_items, "We did not get the number of TripalFields we expected.");
+    $this->assertGreaterThan(4, count($items), "There should have been more items that were not Tripal-specific.");
+
+    // For the gemstone_name field, lets confirm we can access the information
+    // that is supported.
+    $this->assertEquals('value', $entity->getTripalFieldInfo('gemstone_name', 'main_property_name'), "We were not able to retrieve the main property name for the gemstone_name field.");
+    $this->assertEquals(TRUE, $entity->getTripalFieldInfo('gemstone_name', 'fully_cached'), "We were not able to retrieve the Tripal cache status of the gemstone_name field.");
+
+    // @todo confirm that getTripalFieldInfo() throws an exception if you
+    // ask for info about a non-Tripal field.
+    // @todo confirm that getTripalFieldInfo() throws an exception if you
+    // ask for info about a non-existing field.
+    // @todo confirm that getTripalFieldInfo() throws an exception if you
+    // ask for an unsupported request key.
+  }
+
 }

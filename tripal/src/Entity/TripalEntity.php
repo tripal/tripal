@@ -856,22 +856,54 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   The information you want. Specifically, the following are supported:
    *   - fully_cached (bool): indicates whether all properties of this field
    *     will be saved both in the storage backend and the Drupal field tables.
+   *   - main_property_name (string): the key name for the main property in this
+   *     field. This is set by TripalFieldItem::mainPropertyName().
    *
    * @return mixed
    *   The information indicated by $request_key for the field indicated. See
    *   The $request_key param for the return value to expect for a specific
    *   request key.
    *
+   * @throws \Exception
+   *   An exception is thrown in the following cases:
+   *   - the field is not cached after populating it. This happens if the field
+   *     is not a valid Tripal Field.
+   *   - the request key is not supported. See supported keys above.
+   *
    * @group tripal-storage
    */
   public function getTripalFieldInfo(string $field_name, string $request_key): mixed {
+
+    // Note: This requires TripalStorage to have been setup since that is
+    // where the TripalField information cache is built. If it has not been
+    // setup then lets do that now.
+    if (empty($this->tripalfield_info)) {
+      $this->setupTripalStorageBackends();
+    }
+
+    if (!array_key_exists($field_name, $this->tripalfield_info)) {
+      throw new \Exception("You requested information for a field that is either not attached to this entity or not a valid TripalField.");
+    }
+
+    if (!array_key_exists($request_key, $this->tripalfield_info[$field_name])) {
+      throw new \Exception("The Request key '$request_key' is not supported by TripalEntity::getTripalFieldInfo(). This error was encountered when information was requested for $field_name field.");
+    }
+
+    // Now we can use that TripalField information cache to retrieve the
+    // requested information.
     return $this->tripalfield_info[$field_name][$request_key];
   }
 
   /**
    * Gets an array of field item lists including only TripalField instances.
    *
-   * Note: This is a filtered version of ContentEntityBase::getFields().
+   * This is a filtered version of ContentEntityBase::getFields(). We use it in
+   * cases where we need to only act on TripalFields using backend storage.
+   * This saves us from checking the interface and the tsid every single time.
+   *
+   * NOTE: This requires TripalStorage to have been setup for the current
+   * entity instance. If it has not yet been then, this function will do that
+   * first.
    *
    * @return \Drupal\Core\Field\FieldItemListInterface[]
    *   An array of field item lists for only TripalFields, keyed by field name.
@@ -879,6 +911,16 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public function getTripalFieldItems() {
     $tripalfield_items = [];
 
+    // Note: This requires TripalStorage to have been setup since that is
+    // where the TripalField information cache is built. If it has not been
+    // setup then lets do that now.
+    if (empty($this->tripalfield_info)) {
+      $this->setupTripalStorageBackends();
+    }
+
+    // Now we can use that TripalField information cache to get a list of
+    // fields that have implemented the TripalFieldItemInterface and indicated
+    // a Tripal Storage backend.
     foreach (array_keys($this->tripalfield_info) as $field_name) {
       $tripalfield_items[$field_name] = $this->get($field_name);
     }

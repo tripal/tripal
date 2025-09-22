@@ -14,7 +14,7 @@ system-under-test:
     termAccession: 'name'
     cardinality: 1
     settings:
-      storage_plugin_id: 'drupal_storage'
+      storage_plugin_id: 'drupal_sql_storage'
       max_length: 255
   - name: 'gemstone_description'
     type: 'tripal_text_type'
@@ -25,7 +25,7 @@ system-under-test:
     termAccession: 'description'
     cardinality: 1
     settings:
-      storage_plugin_id: 'drupal_storage'
+      storage_plugin_id: 'drupal_sql_storage'
   - name: 'gemstone_hardness'
     type: 'tripal_integer_type'
     type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\TripalIntegerTypeItem'
@@ -35,7 +35,7 @@ system-under-test:
     termAccession: 'property'
     cardinality: 1
     settings:
-      storage_plugin_id: 'drupal_storage'
+      storage_plugin_id: 'drupal_sql_storage'
   - name: 'is_precious'
     type: 'tripal_boolean_type'
     type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\TripalBooleanTypeItem'
@@ -45,7 +45,7 @@ system-under-test:
     termAccession: '0001686'
     cardinality: 1
     settings:
-      storage_plugin_id: 'drupal_storage'
+      storage_plugin_id: 'drupal_sql_storage'
 scenarios:
   - label: 'Value for all fields'
     description: 'Create a page where every field has one value.'
