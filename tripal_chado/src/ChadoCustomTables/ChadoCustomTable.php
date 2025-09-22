@@ -241,13 +241,17 @@ class ChadoCustomTable {
         return False;
       }
 
+      // For postgresql >=15 we can specify that nulls are not distinct
+      // values in a unique constraint.
+      $nulls_not_distinct = $schema['nulls not distinct'] ?? FALSE;
+
       // If the table name is the same and the user isn't forcing any changes then
       // create the table if it doesn't exist. If it does exist then leave the
       // table as is and the function will later update the saved schema.
       if ($force == False and $this->table_name == $table_schema['table']) {
         $table_exists = $chado->schema()->tableExists($this->table_name);
         if (!$table_exists) {
-          $chado->schema()->createTable($this->table_name, $table_schema);
+          $chado->schema()->createTable($this->table_name, $table_schema, $nulls_not_distinct);
         }
       }
 
@@ -258,7 +262,7 @@ class ChadoCustomTable {
         if ($chado->schema()->tableExists($this->table_name)) {
           $chado->schema()->dropTable($this->table_name);
         }
-        $chado->schema()->createTable($this->table_name, $table_schema);
+        $chado->schema()->createTable($this->table_name, $table_schema, $nulls_not_distinct);
       }
 
       // If the table name is different in the provided schema but the user is not
@@ -284,7 +288,7 @@ class ChadoCustomTable {
         if ($chado->schema()->tableExists($this->table_name)) {
           $chado->schema()->dropTable($this->table_name);
         }
-        $chado->schema()->createTable($table_schema['table'], $table_schema);
+        $chado->schema()->createTable($table_schema['table'], $table_schema, $nulls_not_distinct);
       }
 
       $update = $public->update('tripal_custom_tables');

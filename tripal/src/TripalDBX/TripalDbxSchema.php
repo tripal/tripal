@@ -1080,24 +1080,28 @@ EOD;
    *   The name of the table to create.
    * @param array $table
    *   A Schema API table definition array.
+   * @param bool $nulls_not_distinct
+   *   When TRUE, null values will not be distinct in a unique constraint.
    *
    * @throws \Drupal\Core\Database\SchemaObjectExistsException
    *   If the specified table already exists.
    * @throws \BadMethodCallException
    *   When ::createTableSql() is not implemented in the concrete driver class.
    */
-  public function createTable($name, $table) {
+  public function createTable($name, $table, $nulls_not_distinct = FALSE) {
     if ($this->tableExists($name)) {
       throw new SchemaObjectExistsException("Table '$name' already exists.");
     }
     $statements = $this->createTableSql($name, $table);
 
     // Update the unique constraint if the postgresql version allows.
-    $psql_version = $this->connection->version();
-    // Remove distro info, e.g. "13.22 (Debian 13.22-1.pgdg12+1)" -> "13.22".
-    $psql_version = preg_replace('/[^\d\.].*$/', '', $psql_version);
-    if (version_compare($psql_version, '15.0') >= 0) {
-      $statements[0] = preg_replace('/ UNIQUE \(/', ' UNIQUE NULLS NOT DISTINCT (', $statements[0]);
+    if ($nulls_not_distinct) {
+      $psql_version = $this->connection->version();
+      // Remove distro info, e.g. "13.22 (Debian 13.22-1.pgdg12+1)" -> "13.22".
+      $psql_version = preg_replace('/[^\d\.].*$/', '', $psql_version);
+      if (version_compare($psql_version, '15.0') >= 0) {
+        $statements[0] = preg_replace('/ UNIQUE \(/', ' UNIQUE NULLS NOT DISTINCT (', $statements[0]);
+      }
     }
 
     foreach ($statements as $statement) {
