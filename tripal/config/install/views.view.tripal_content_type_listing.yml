@@ -7,7 +7,7 @@ dependencies:
 _core:
   default_config_hash: MFwmxO1-UgyEec22hL2SmulHUG_sl8LvW2_nX5MybdQ
 id: tripal_content_type_listing
-label: 'Tripal Content Type Listing'
+label: 'Tripal Content Listing'
 module: views
 description: ''
 tag: ''
@@ -20,7 +20,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: 'Tripal Content Type Listing'
+      title: 'Tripal Content Listing'
       fields:
         id:
           id: id
