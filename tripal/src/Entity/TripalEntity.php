@@ -1033,6 +1033,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
         // Now we can update the internal property values for this field.
         $item->updateTripalStoragePropertyValues($new_values);
+        $item->syncFieldValuesWithTripalStorage();
 
         // Keep track of empty field items in case the calling method needs
         // this information.
