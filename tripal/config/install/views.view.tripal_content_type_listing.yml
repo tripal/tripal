@@ -4,8 +4,6 @@ dependencies:
   module:
     - tripal
     - user
-_core:
-  default_config_hash: s-6ATtYbs4GHRx0XznnXsOq2eRXya_r8OO-teVY1SVc
 id: tripal_content_type_listing
 label: 'Tripal Content Listing'
 module: views

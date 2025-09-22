@@ -6,8 +6,6 @@ dependencies:
   module:
     - tripal
     - user
-_core:
-  default_config_hash: T7aIocvufAlH4EFvZ4NgQNHvs3aN6rNF5hlDFn8Zirk
 id: manage_pub_search_queries
 label: 'Manage Publication Search Queries'
 module: views
