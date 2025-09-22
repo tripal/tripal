@@ -13,7 +13,6 @@ use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Component\Utility\Xss;
-use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\user\UserInterface;
 use Drupal\tripal\Access\TripalEntityAccessControlHandler;
@@ -687,6 +686,95 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+    $fields = parent::baseFieldDefinitions($entity_type);
+
+    $fields['uid'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Authored by'))
+      ->setDescription(t('The username of the content author.'))
+      ->setRevisionable(TRUE)
+      ->setSetting('target_type', 'user')
+      ->setSetting('handler', 'default')
+      ->setTranslatable(TRUE)
+      ->setDisplayOptions('view', [
+        'region' => 'hidden',
+        'label' => 'above',
+        'type' => 'author',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'entity_reference_autocomplete',
+        'weight' => 5,
+        'settings' => [
+          'match_operator' => 'CONTAINS',
+          'size' => '60',
+          'autocomplete_type' => 'tags',
+          'placeholder' => '',
+        ],
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['title'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Title'))
+      ->setDescription(t('The title of this specific piece of Tripal Content. This will be automatically updated based on the title format defined by administrators.'))
+      ->setSettings([
+        'max_length' => 1024,
+        'text_processing' => 0,
+      ])
+      ->setDefaultValue('')
+      ->setDisplayOptions('view', [
+        'region' => 'hidden',
+        'label' => 'above',
+        'type' => 'string',
+        'weight' => -4,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => -4,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['path'] = BaseFieldDefinition::create('path')
+      ->setLabel(t('URL alias'))
+      ->setDisplayOptions('form', [
+        'type' => 'path',
+        'weight' => 100,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setComputed(TRUE);
+
+    $fields['status'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Publishing status'))
+      ->setDescription(t('A boolean indicating whether the Tripal Content is published.'))
+      ->setDefaultValue(TRUE);
+
+    $fields['created'] = BaseFieldDefinition::create('created')
+      ->setLabel(t('Authored on'))
+      ->setDescription(t('The date and time that this Tripal Content was created.'))
+      ->setTranslatable(TRUE)
+      ->setDisplayOptions('view', [
+        'region' => 'hidden',
+        'label' => 'hidden',
+        'type' => 'timestamp',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'datetime_timestamp',
+        'weight' => 10,
+      ])
+      ->setDisplayConfigurable('form', TRUE);
+
+    $fields['changed'] = BaseFieldDefinition::create('changed')
+      ->setLabel(t('Changed'))
+      ->setDescription(t('The date and time that this Tripal Content was last edited.'));
+
+    return $fields;
+  }
+
+  /**
    * Initialize the Tripal storage backends.
    *
    * @return array
@@ -778,6 +866,24 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function getTripalFieldInfo(string $field_name, string $request_key): mixed {
     return $this->tripalfield_info[$field_name][$request_key];
+  }
+
+  /**
+   * Gets an array of field item lists including only TripalField instances.
+   *
+   * Note: This is a filtered version of ContentEntityBase::getFields().
+   *
+   * @return \Drupal\Core\Field\FieldItemListInterface[]
+   *   An array of field item lists for only TripalFields, keyed by field name.
+   */
+  public function getTripalFieldItems() {
+    $tripalfield_items = [];
+
+    foreach (array_keys($this->tripalfield_info) as $field_name) {
+      $tripalfield_items[$field_name] = $this->get($field_name);
+    }
+
+    return $tripalfield_items;
   }
 
   /**
@@ -878,66 +984,61 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public static function saveValuesArray(TripalEntity &$entity, array &$values, array &$tripal_storages, bool $do_save = FALSE) {
     $context = [
+      // @todo remove this once we handle this using the field::isEmpty().
       'empty_items' => [],
     ];
 
     // Update the entity values with the values returned by loadValues().
-    $field_items = $entity->getFields();
-    foreach ($field_items as $field_name => $items) {
-      $context['empty_items'][$field_name] ??= [];
+    foreach ($entity->getTripalFieldItems() as $field_name => $items) {
       foreach ($items as $k => $item) {
 
-        // Only process TriplFields.
-        if (!$item instanceof TripalFieldItemInterface) {
-          continue;
-        }
+        // This is a simple key => value array which will be given to the
+        // field to update it's internal StoragePropertyValues.
+        $new_values = [];
 
         $delta = $item->getName();
         $tsid = $item->tripalStorageId();
 
-        if (!array_key_exists($tsid, $values) or !array_key_exists($delta, $values[$tsid][$field_name])) {
-          continue;
-        }
-
-        // Create a new properties array for this field item.
+        // @todo remove this once we handle this using the field::isEmpty().
+        $context['empty_items'][$field_name] ??= [];
         $prop_values = [];
-        $prop_types = [];
         $store_values = [];
-        foreach ($values[$tsid][$field_name][$delta] as $key => $info) {
 
-          // Get the specific prop type and its corresponding value.
-          $prop_type = $tripal_storages[$tsid]->getPropertyType($field_name, $key);
-          $prop_value = $info['value'];
+        // Compile all the new property values now that TripalStorage has
+        // acted on the value array.
+        foreach ($values[$tsid][$field_name][$delta] as $property_key => $info) {
+
+          // Get the new value for this property.
+          $new_property_value = $info['value']->getValue();
+          $new_values[$property_key] = $new_property_value;
+
+          // If we are doing a save, then we do not want to save the new value
+          // of any properties which are not meant to be stored in the Drupal
+          // field tables.
+          $store_in_drupal = $tripal_storages[$tsid]->isDrupalStoreByFieldNameKey($field_name, $property_key);
+          if ($do_save && $store_in_drupal === FALSE) {
+            $new_values[$property_key] = $info['value']->getDefaultValue();
+          }
 
           // Store the values of any properties with a "store" action.
           // There will usually only be one, exceptions are dbxref,
           // relationship.
+          // @todo remove this once we handle this using the field::isEmpty().
+          $prop_type = $tripal_storages[$tsid]->getPropertyType($field_name, $property_key);
           if (self::isStorePropType($prop_type)) {
-            $store_values[$key] = $prop_value->getValue();
+            $store_values[$property_key] = $new_property_value;
           }
-
-          // We do some extra work here when saving
-          // related to conditionally saving field values.
-          if ($do_save && $tripal_storages[$tsid]->isDrupalStoreByFieldNameKey($field_name, $key)) {
-            $prop_values[] = $prop_value;
-            $prop_types[] = $prop_type;
-          }
-          // When loading we add all property types/fields.
-          elseif ($do_save === FALSE) {
-            $prop_values[] = $prop_value;
-            $prop_types[] = $prop_type;
-          }
+          $prop_values[] = $info['value'];
         }
 
-        // Now set the entity values for this field.
-        if (count($prop_values) > 0) {
-          $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $entity);
+        // Now we can update the internal property values for this field.
+        $item->updateTripalStoragePropertyValues($new_values);
 
-          // Keep track of empty field items in case the calling method needs
-          // this information.
-          if (self::isEmptyFieldItem($field_name, $items, $prop_values, $store_values) === TRUE) {
-            $context['empty_items'][$field_name][$delta] = $delta;
-          }
+        // Keep track of empty field items in case the calling method needs
+        // this information.
+        // @todo remove this once we handle this using the field::isEmpty().
+        if (self::isEmptyFieldItem($field_name, $items, $prop_values, $store_values) === TRUE) {
+          $context['empty_items'][$field_name][$delta] = $delta;
         }
 
         // Set the item back to the list.
@@ -982,7 +1083,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // $store_values may not be empty, e.g. type_id for a property.
     // Chado storage has already done its work, so now remove this
     // delta so that Drupal doesn't make a blank field table entry.
-    $main_property_name = $items->first()->mainPropertyName();
+    $main_property_name = self::getMainPropertyName($field_name, $items);
     foreach ($store_values as $key => $value) {
       if ($value === 0) {
         return TRUE;
@@ -1048,6 +1149,33 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // If we get here then all values are null.
     return TRUE;
+  }
+
+  /**
+   * Returns the name of the main property for a field.
+   *
+   * The main property name defaults to 'value', but a field can define
+   * a function mainPropertyName() to indicate a different name.
+   *
+   * @param string $field_name
+   *   The machine name of the field.
+   * @param Drupal\Core\Field\FieldItemList $items
+   *   The current items for this field that match with the values.
+   *
+   * @return string
+   *   The main property name for this field.
+   */
+  public static function getMainPropertyName(string $field_name, FieldItemList $items): string {
+    $main_property_name = 'value';
+
+    foreach ($items as $item) {
+      if (method_exists($item, 'mainPropertyName')) {
+        $main_property_name = $item->mainPropertyName();
+      }
+      // We only need to examine the first item.
+      break;
+    }
+    return $main_property_name;
   }
 
   /**
@@ -1258,92 +1386,4 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    $fields = parent::baseFieldDefinitions($entity_type);
-
-    $fields['uid'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Authored by'))
-      ->setDescription(t('The username of the content author.'))
-      ->setRevisionable(TRUE)
-      ->setSetting('target_type', 'user')
-      ->setSetting('handler', 'default')
-      ->setTranslatable(TRUE)
-      ->setDisplayOptions('view', [
-        'region' => 'hidden',
-        'label' => 'above',
-        'type' => 'author',
-        'weight' => 0,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'entity_reference_autocomplete',
-        'weight' => 5,
-        'settings' => [
-          'match_operator' => 'CONTAINS',
-          'size' => '60',
-          'autocomplete_type' => 'tags',
-          'placeholder' => '',
-        ],
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
-
-    $fields['title'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Title'))
-      ->setDescription(t('The title of this specific piece of Tripal Content. This will be automatically updated based on the title format defined by administrators.'))
-      ->setSettings([
-        'max_length' => 1024,
-        'text_processing' => 0,
-      ])
-      ->setDefaultValue('')
-      ->setDisplayOptions('view', [
-        'region' => 'hidden',
-        'label' => 'above',
-        'type' => 'string',
-        'weight' => -4,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => -4,
-      ])
-      ->setDisplayConfigurable('view', TRUE);
-
-    $fields['path'] = BaseFieldDefinition::create('path')
-      ->setLabel(t('URL alias'))
-      ->setDisplayOptions('form', [
-        'type' => 'path',
-        'weight' => 100,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setComputed(TRUE);
-
-    $fields['status'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Publishing status'))
-      ->setDescription(t('A boolean indicating whether the Tripal Content is published.'))
-      ->setDefaultValue(TRUE);
-
-    $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Authored on'))
-      ->setDescription(t('The date and time that this Tripal Content was created.'))
-      ->setTranslatable(TRUE)
-      ->setDisplayOptions('view', [
-        'region' => 'hidden',
-        'label' => 'hidden',
-        'type' => 'timestamp',
-        'weight' => 0,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'datetime_timestamp',
-        'weight' => 10,
-      ])
-      ->setDisplayConfigurable('form', TRUE);
-
-    $fields['changed'] = BaseFieldDefinition::create('changed')
-      ->setLabel(t('Changed'))
-      ->setDescription(t('The date and time that this Tripal Content was last edited.'));
-
-    return $fields;
-  }
 }
