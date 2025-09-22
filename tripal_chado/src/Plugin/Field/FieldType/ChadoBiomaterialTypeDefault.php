@@ -80,12 +80,11 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
 
     // Object table
     $object_table = self::$object_table;
-    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_schema_def = self::getChadoTableDef($schema, $object_table);
     $object_pkey_col = $object_schema_def['primary key'];
     $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
     $description_term = self::getColumnTermId($object_table, 'description', 'schema:description');
@@ -93,13 +92,13 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
     // Columns from linked tables
     $dbxref_term = self::getColumnTermId('dbxref', 'accession', 'data:2091');
     $db_term = self::getColumnTermId('db', 'name', 'ERO:0001716');
-    $contact_schema_def = $schema->getTableDef('contact', ['format' => 'Drupal']);
+    $contact_schema_def = self::getChadoTableDef($schema, 'contact');
     $biosourceprovider_term = self::getColumnTermId('contact', 'name', 'NCIT:C47954');
     $biosourceprovider_len = $contact_schema_def['fields']['name']['size'];
-    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $cvterm_schema_def = self::getChadoTableDef($schema, 'cvterm');
     $infraspecific_type_term = self::getColumnTermId('cvterm', 'name', 'local:infraspecific_type');
     $infraspecific_type_len = $cvterm_schema_def['fields']['name']['size'];
-    $organism_schema_def = $schema->getTableDef('organism', ['format' => 'Drupal']);
+    $organism_schema_def = self::getChadoTableDef($schema, 'organism');
     $genus_term = self::getColumnTermId('organism', 'genus', 'TAXRANK:0000005');
     $genus_len = $organism_schema_def['fields']['genus']['size'];
     $species_term = self::getColumnTermId('organism', 'species', 'TAXRANK:0000006');
@@ -116,7 +115,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_schema_def = self::getChadoTableDef($schema, $linker_table);
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];

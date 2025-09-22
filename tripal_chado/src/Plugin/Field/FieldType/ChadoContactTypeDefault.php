@@ -79,12 +79,11 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
 
     // Object table
     $object_table = self::$object_table;
-    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_schema_def = self::getChadoTableDef($schema, $object_table);
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Columns specific to the object table
@@ -94,7 +93,7 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     $description_len = $object_schema_def['fields']['description']['size'];
 
     // Cvterm table, to retrieve the name for the contact type
-    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $cvterm_schema_def = self::getChadoTableDef($schema, 'cvterm');
     $contact_type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $contact_type_len = $cvterm_schema_def['fields']['name']['size'];
 
@@ -103,7 +102,7 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_schema_def = self::getChadoTableDef($schema, $linker_table);
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
