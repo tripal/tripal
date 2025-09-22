@@ -129,7 +129,7 @@ class ChadoCustomTableManager {
    *   schema is specified then the default schema is used.
    *
    * @return array
-   *  An associatve array of custom tables with the key being the id and
+   *  An associative array of custom tables with the key being the id and
    *  the value the table name.
    */
   public function getTables(string $chado_schema = NULL) {

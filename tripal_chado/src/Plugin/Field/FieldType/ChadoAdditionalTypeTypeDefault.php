@@ -90,8 +90,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // base table will be different.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_table_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
 
     // Create variables to store the terms for the properties. We can use terms
     // from Chado tables if appropriate.

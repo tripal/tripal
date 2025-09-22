@@ -53,11 +53,10 @@ class ChadoBooleanTypeDefault extends ChadoFieldItemBase {
     }
 
     // Get the base table columns needed for this field.
-    $base_column = $settings['base_column'];
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
+    $base_column = $settings['base_column'];
 
     // Get the property terms by using the Chado table columns they map to.
     $value_term = self::getColumnTermId($base_table, $base_column, 'NCIT:C25712');

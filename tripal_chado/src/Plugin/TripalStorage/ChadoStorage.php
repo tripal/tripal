@@ -905,8 +905,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
 
     // Now determine the primary key for the chado table.
-    $chado_table_def = $this->connection->schema()->getTableDef($elements['chado_table'], ['format' => 'drupal']);
-    $chado_table_pkey = $chado_table_def['primary key'];
+    $chado_table_pkey = $this->records->getPrimaryKey($this->connection->schema(), $base_table);
+
     if ($elements['chado_column'] !== $chado_table_pkey) {
       $this->logger->error($this->t('The @field.@key property type uses the store_id action and the column specified in the "path" settings is not the primary key for base table.',
           ['@field' => $context['field_name'], '@key' => $context['property_key']]));
@@ -1253,6 +1253,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     elseif (preg_match('/\./', $curr_path)) {
 
       // Get the table/column at the end.
+      if (is_array($path)) {
+        $path = $path[array_key_first($path)];
+      }
       [$table_alias, $value_column] = explode(".", $path);
       $chado_table = $table_alias;
       if (array_key_exists($table_alias, $aliases)) {
@@ -1438,6 +1441,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function findAllRecordIds(string $bundle_id) {
     $records = [];
+    $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
 
     // Retrieve relevant information from the bundle.
     $entity_type_manager = \Drupal::entityTypeManager();
@@ -1453,8 +1457,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // Get the name of the primary key column.
     $schema = $this->connection->schema();
-    $table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
-    $pkey_column = $table_def['primary key'];
+    $pkey_column = $this->records->getPrimaryKey($schema, $base_table);
 
     // Set up the query.
     $query = $this->connection->select('1:' . $base_table, 'BT', []);
