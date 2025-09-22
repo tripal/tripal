@@ -369,6 +369,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $subject_column = '';
     $object_column = '';
     // The subject and object columns will be among the foreign keys to the base table
+    $schema = $chado->schema();
     $table_schema_def = self::getChadoTableDef($schema, $relationship_table);
     if ($table_schema_def['foreign keys'][$base_table]['columns'] ?? NULL) {
       foreach (array_keys($table_schema_def['foreign keys'][$base_table]['columns']) as $relationship_column) {
