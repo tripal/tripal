@@ -109,7 +109,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $linker_type_term = self::getColumnTermId($linker_table, $linker_type_col, 'schema:additionalType');
 
     // Columns from linked tables to specify the relationship type
-    $cvterm_schema_def =  self::getChadoTableDef($schema, 'cvterm');
+    $cvterm_schema_def = self::getChadoTableDef($schema, 'cvterm');
     $type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $type_len = $cvterm_schema_def['fields']['name']['size'];
 
