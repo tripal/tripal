@@ -180,6 +180,195 @@ fields:
                     region: 'content'
                     weight: 60
 
+    -   name: 'file_dbxref'
+        content_type: 'tripal_file'
+        label: 'Database References'
+        type: 'chado_dbxref_type_default'
+        description: 'The IDs where this file may be available in other external online databases.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                linker_table: 'file_dbxref'
+                linker_fkey_column: 'file_id'
+        settings:
+            termIdSpace: 'SBO'
+            termAccession: '0000552'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 70
+          form:
+            default:
+              region: 'content'
+              weight: 70
+
+    -   name: 'analysis_file'
+        content_type: 'tripal_file'
+        label: 'Analysis'
+        type: 'chado_analysis_type_default'
+        description: 'An analysis referencing this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: file
+                linker_table: analysis_file
+                linker_fkey_column: analysis_id
+        settings:
+            termIdSpace: 'operation'
+            termAccession: '2945'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 80
+          form:
+            default:
+              region: 'content'
+              weight: 80
+
+    -   name: 'file_contact'
+        content_type: 'tripal_file'
+        label: 'Contact'
+        type: 'chado_contact_type_default'
+        description: 'A contact referencing this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: file
+                linker_table: file_contact
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: 'NCIT'
+            termAccession: 'C47954'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 81
+          form:
+            default:
+              region: 'content'
+              weight: 81
+
+    -   name: 'organism_file'
+        content_type: 'tripal_file'
+        label: 'Organism'
+        type: 'chado_organism_type_default'
+        description: 'An organism referencing this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: file
+                linker_table: organism_file
+                linker_fkey_column: organism_id
+        settings:
+            termIdSpace: 'TAXRANK'
+            termAccession: '0000005'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 82
+          form:
+            default:
+              region: 'content'
+              weight: 82
+
+    -   name: 'project_file'
+        content_type: 'tripal_file'
+        label: 'Project'
+        type: 'chado_project_type_default'
+        description: 'A project referencing this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: file
+                linker_table: project_file
+                linker_fkey_column: project_id
+        settings:
+            termIdSpace: 'NCIT'
+            termAccession: 'C47885'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 83
+          form:
+            default:
+              region: 'content'
+              weight: 83
+
+    -   name: 'file_pub'
+        content_type: 'tripal_file'
+        label: 'Publication'
+        type: 'chado_pub_type_default'
+        description: 'A publication referencing this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: file
+                linker_table: file_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'publication'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 84
+          form:
+            default:
+              region: 'content'
+              weight: 84
+
+    -   name: 'study_file'
+        content_type: 'tripal_file'
+        label: 'Study'
+        type: 'chado_study_type_default'
+        description: 'A study referencing this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: file
+                linker_table: study_file
+                linker_fkey_column: study_id
+        settings:
+            termIdSpace: 'SIO'
+            termAccession: '001066'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 85
+          form:
+            default:
+              region: 'content'
+              weight: 85
+
     -   name: 'license_name'
         content_type: 'tripal_license'
         label: 'Name'

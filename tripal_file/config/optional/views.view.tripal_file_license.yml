@@ -9,7 +9,7 @@ dependencies:
   module:
     - tripal
     - tripal_chado
-id: licenses
+id: tripal_file_license
 label: Licenses
 module: views
 description: ''

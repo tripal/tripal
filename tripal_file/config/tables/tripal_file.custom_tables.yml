@@ -47,8 +47,6 @@ license:
     'unique keys':
         license_c1:
             - name
-        license_c2:
-            - uri
     indexes:
         license_idx1:
             - name
@@ -175,6 +173,45 @@ file_relationship:
             table: cvterm
             columns:
                 type_id: cvterm_id
+file_dbxref:
+    table: 'file_dbxref'
+    fields:
+        file_dbxref_id:
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        dbxref_id:
+            size: big
+            type: int
+            'not null': true
+        is_current:
+            size: tiny
+            type: int
+            'not null': true
+            default: true
+    'primary key':
+        - file_dbxref_id
+    'unique keys':
+        file_dbxref_c1:
+            - file_id
+            - dbxref_id
+    indexes:
+        file_dbxref_idx1:
+            - file_id
+        file_dbxref_idx2:
+            - dbxref_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        dbxref:
+            table: dbxref
+            columns:
+                dbxref_id: dbxref_id
 file_license:
     table: 'file_license'
     fields:

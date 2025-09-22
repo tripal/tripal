@@ -14,7 +14,7 @@ dependencies:
     - tripal_file
 _core:
   default_config_hash: ZRcaBb3UV5yyahXdQLfK1wH_tNXBpb9f_ecD5I6TqGg
-id: tripal_file
+id: tripal_file_tripal_file
 label: 'Tripal Files'
 module: views
 description: 'View and sort tripal file content'
