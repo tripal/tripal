@@ -611,7 +611,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
   }
 
-    /**
+  /**
    * Updates the percent interval when the job progress is updated.
    *
    * Updating the job progress incurrs a database write which takes time

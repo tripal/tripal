@@ -258,18 +258,16 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
     parent::PostRun();
 
     // Only publish if a publish manager has been set by a child class.
-    if ($this->publish_manager) {
-      $arguments = $this->getArguments();
-      $bundles = $arguments['run_args']['publish'] ?? [];
-      if ($bundles) {
-        $publish_options = [
-          'chado_storage' => [
-            'schema_name' => $arguments['run_args']['schema_name'],
-            'bundles' => $bundles,
-          ],
-        ];
-        $this->publish_manager->publishBundles($publish_options);
-      }
+    $arguments = $this->getArguments();
+    $bundles = $arguments['run_args']['publish'] ?? [];
+    if ($this->publish_manager and !empty($bundles)) {
+      $publish_options = [
+        'chado_storage' => [
+          'schema_name' => $arguments['run_args']['schema_name'],
+          'bundles' => $bundles,
+        ],
+      ];
+      $this->publish_manager->publishBundles($publish_options);
     }
   }
 

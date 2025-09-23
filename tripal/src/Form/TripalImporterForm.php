@@ -132,6 +132,7 @@ class TripalImporterForm implements FormInterface {
       $form['publish'] = [
         '#type' => 'fieldset',
         '#title' => $this->t('Specify publishing behavior after importing'),
+        '#weight' => 8,
       ];
       foreach ($bundles as $bundle) {
         $form['publish']['publish_' . $bundle] = [

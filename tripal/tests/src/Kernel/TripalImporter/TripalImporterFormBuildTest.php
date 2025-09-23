@@ -201,7 +201,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     // a submit button.
     $this->assertArrayHasKey('button', $form,
       "The form should have a submit button since we indicated a specific importer.");
-    // Do not publish checkboxes.
+    // Publish checkboxes.
     $this->assertArrayHasKey('publish', $form,
       "The form should include a pubish form element.");
     $this->assertArrayHasKey('publish_project', $form['publish'],

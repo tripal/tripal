@@ -71,7 +71,10 @@ class TripalImporter extends Plugin {
    *   loader keeps track of previous files and makes those available for
    *   selection.
    * @param array|null $publish
-   *   An array containing a list of content types to be published after import.
+   *   An associative array indicating what Tripal Content should be published
+   *   after import. It is keyed by the list type and the value indicates what
+   *   to publish using that approach. List Types supported:
+   *   - bundle (array): a list of bundle machine names to publish.
    * @param bool|null $hidden
    *   Indicates if the importer will not appear in the importer menu.
    *   This is used by the publication importer because it is more complicated
