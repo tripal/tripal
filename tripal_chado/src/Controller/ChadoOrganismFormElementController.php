@@ -250,6 +250,13 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
       $default_id = $default;
       $default_value = '';
       if ($default_id) {
+        // Construct a query
+        // A single wildcard indicates that all records are to be returned.
+        $string = '%';
+        // Add one to select limit so we know if it is exceeded.
+        $count_options = $options;
+        $count_options['match_limit'] = $options['select_limit'] + 1;
+        $query = self::getQuery($string, $count_options);
         // We can reuse the existing query since only one change is needed.
         $query->condition('organism_id', $default_id, '=');
         $result = $query->execute()->fetchObject();
