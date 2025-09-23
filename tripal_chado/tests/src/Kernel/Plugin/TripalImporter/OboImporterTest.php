@@ -308,19 +308,22 @@ class OboImporterTest extends ChadoTestKernelBase {
       $this->assertEquals($expected_count, $count, 'Did not create a ' . $expect['table'] . '.' . $expect['column'] . ' record with the expected value');
     }
 
+    $db_query = $this->chado_connection->select('1:db2cv_mview', 't');
+    $db_query->fields('t', ['cv_id', 'cvname', 'db_id', 'dbname', 'num_terms']);
+    $db_initial_count = $db_query->countQuery()->execute()->fetchField();
+    $cv_query = $this->chado_connection->select('1:cv_root_mview', 't');
+    $cv_query->fields('t', ['name', 'cvterm_id', 'cv_id', 'name']);
+    $cv_initial_count = $cv_query->countQuery()->execute()->fetchField();
+
     // Postrun of the obo importer populates materialized views.
     $obo_importer->postRun();
 
     // Test that the materialized views have been populated.
-    $query = $this->chado_connection->select('1:db2cv_mview', 't');
-    $query->fields('t', ['cv_id', 'cvname', 'db_id', 'dbname', 'num_terms']);
-    $count = $query->countQuery()->execute()->fetchField();
-    $this->assertEquals($current_scenario['expect_db2cv_count'], $count, 'Expected number of records in db2cv_mview not found');
+    $db_num_added = $db_query->countQuery()->execute()->fetchField() - $db_initial_count;
+    $this->assertEquals($current_scenario['expect_db2cv_count'], $db_num_added, 'Expected number of records in db2cv_mview not found');
 
-    $query = $this->chado_connection->select('1:cv_root_mview', 't');
-    $query->fields('t', ['name', 'cvterm_id', 'cv_id', 'name']);
-    $count = $query->countQuery()->execute()->fetchField();
-    $this->assertEquals($current_scenario['expect_cv_root_count'], $count, 'Expected number of records in cv_root_mview not found');
+    $cv_num_added = $cv_query->countQuery()->execute()->fetchField() - $cv_initial_count;
+    $this->assertEquals($current_scenario['expect_cv_root_count'], $cv_num_added, 'Expected number of records in cv_root_mview not found');
 
   }
 

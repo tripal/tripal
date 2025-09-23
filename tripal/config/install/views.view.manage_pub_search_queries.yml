@@ -1,4 +1,3 @@
-uuid: 5d06b3e7-c7d0-4eda-a312-cf2dc8be0936
 langcode: en
 status: true
 dependencies:
@@ -7,8 +6,6 @@ dependencies:
   module:
     - tripal
     - user
-_core:
-  default_config_hash: T7aIocvufAlH4EFvZ4NgQNHvs3aN6rNF5hlDFn8Zirk
 id: manage_pub_search_queries
 label: 'Manage Publication Search Queries'
 module: views
