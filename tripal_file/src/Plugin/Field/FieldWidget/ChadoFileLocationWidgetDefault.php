@@ -72,7 +72,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       '#type' => 'textfield',
       '#default_value' => $uri,
       '#description' => $this->t('Enter a web URL or a local URI to a file on this site. This value is required.'),
-      // It is required, but check this in validation.
+      // This element is required, but check this in validation.
       '#required' => FALSE,
       '#element_validate' => [[static::class, 'validateFilelocUri']],
     ];
@@ -83,14 +83,6 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       '#description' => $this->t('Enter an optional alternative name to display if there is no file name included in the URL.'),
       '#required' => FALSE,
     ];
-    $elements['fileloc_md5checksum'] = [
-      '#title' => $this->t('MD5 Checksum'),
-      '#type' => 'textfield',
-      '#default_value' => trim($md5checksum),
-      '#description' => $this->t('If the file is local, this will be determined automatically.'),
-      '#required' => FALSE,
-      '#element_validate' => [[static::class, 'validateMd5checksum']],
-    ];
     $elements['fileloc_size'] = [
       '#title' => $this->t('File Size'),
       '#type' => 'number',
@@ -98,6 +90,14 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       '#min' => 0,
       '#description' => $this->t('If the file is local, this will be determined automatically.'),
       '#required' => FALSE,
+    ];
+    $elements['fileloc_md5checksum'] = [
+      '#title' => $this->t('MD5 Checksum'),
+      '#type' => 'textfield',
+      '#default_value' => trim($md5checksum),
+      '#description' => $this->t('If the file is local, this will be determined automatically.'),
+      '#required' => FALSE,
+      '#element_validate' => [[static::class, 'validateMd5checksum']],
     ];
     // Mirror the delta as the rank value.
     $elements['fileloc_rank'] = [
@@ -116,15 +116,6 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
 
-    // Remove any empty values that don't have a uri. Because of
-    // validation, if this is empty, then other values are empty too.
-    // @todo test that this is even needed.
-    foreach ($values as $delta => $item) {
-      if (trim($item['fileloc_uri']) == '') {
-        // unset($values[$delta]);?
-      }
-    }
-
     $values = $this->genericSelectMassageFormValues('fileloc_id', $values);
     $values = $this->massagePropertyFormValues('fileloc_uri', $values, $form_state, NULL, 'fileloc_id');
 
@@ -132,8 +123,6 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       // Use the Drupal delta value as the chado rank.
       if ($item['fileloc_uri'] ?? '') {
         $values[$delta]['fileloc_rank'] = $delta;
-        // @todo test if _weight is even needed.
-        // $values[$delta]['_weight'] = $delta;?
       }
     }
 
@@ -154,6 +143,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
         }
       }
     }
+
     return $values;
   }
 
