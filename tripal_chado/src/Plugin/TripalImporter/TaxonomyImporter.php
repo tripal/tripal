@@ -3,10 +3,13 @@
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\Core\Link;
+use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal\Services\TripalFileRetriever;
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
@@ -84,14 +87,19 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    * We are injecting an additional dependency here, the
    * ChadoBuddyPluginManager.
    *
-   * Since we have implemented the ContainerFactoryPluginInterface this static function
-   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the constructor.
+   * Since we have implemented the ContainerFactoryPluginInterface this static
+   * function will be called behind the scenes when a Plugin Manager uses
+   * createInstance(). Specifically this method is used to determine the
+   * parameters to pass to the constructor.
    *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container.
    * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
    * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
+   *   The plugin implementation definition.
    *
    * @return static
    */
@@ -100,20 +108,39 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       $configuration,
       $plugin_id,
       $plugin_definition,
+      $container->get('tripal_chado.chado_buddy'),
       $container->get('tripal_chado.database'),
+      $container->get('messenger'),
+      $container->get('tripal.logger'),
+      $container->get('tripal.fileretriever'),
       $container->get('tripal.backend_publish'),
-      $container->get('tripal_chado.chado_buddy')
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition,
-                              ChadoConnection $connection, TripalBackendPublishManager $publish_manager,
-                              ChadoBuddyPluginManager $buddy_manager) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $connection, $publish_manager);
-    $this->setPublishManager($publish_manager);
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ChadoBuddyPluginManager $buddy_manager,
+    ChadoConnection $connection,
+    Messenger $messenger,
+    TripalLogger $logger,
+    TripalFileRetriever $fileretriever,
+    TripalBackendPublishManager $publish_manager,
+  ) {
+    parent::__construct(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $connection,
+      $messenger,
+      $logger,
+      $fileretriever,
+      $publish_manager,
+    );
     $this->buddy_manager = $buddy_manager;
     $this->dbxref_buddy = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
     $this->property_buddy = $this->buddy_manager->createInstance('chado_property_buddy', []);

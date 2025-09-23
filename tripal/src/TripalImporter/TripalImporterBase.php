@@ -6,6 +6,10 @@ use Drupal\Component\Plugin\PluginBase;
 use Drupal\file\Entity\File;
 use Drupal\user\Entity\User;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+use Drupal\Core\Messenger\Messenger;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal\Services\TripalFileRetriever;
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\tripal\TripalImporter\Interfaces\TripalImporterInterface;
 
@@ -32,6 +36,34 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    * in the Drupal forums or code that this trait will be removed at any point.
    */
   use DependencySerializationTrait;
+
+  /**
+   * An instance of the Drupal messenger.
+   *
+   * @var Drupal\Core\Messenger\Messenger
+   */
+  protected $messenger = NULL;
+
+  /**
+   * The drupal logger for tripal, allowing importers to log messages.
+   *
+   * @var Drupal\tripal\Services\TripalLogger
+   */
+  protected $logger = NULL;
+
+  /**
+   * An instance of the Tripal file retriever service
+   *
+   * @var Drupal\tripal\Services\TripalFileRetriever
+   */
+  protected $fileretriever = NULL;
+
+  /**
+   * An instance of the Tripal publish service.
+   *
+   * @var Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager
+   */
+  protected $publish_manager = NULL;
 
   /**
    * The number of items that this importer needs to process. A progress
@@ -68,12 +100,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   protected $job;
 
   /**
-   * The drupal logger for tripal. This allows any of the importers to
-   * send log messages.
-   */
-  protected $logger;
-
-  /**
    * The arguments needed for the importer. This is a list of key/value
    * pairs in an associative array.
    */
@@ -91,20 +117,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    * running.
    */
   protected $is_prepared;
-
-  /**
-   * An instance of the Drupal messenger.
-   *
-   * @var object \Drupal\Core\Messenger\Messenger
-   */
-  protected $messenger = NULL;
-
-  /**
-   * An instance of the Tripal file retriever service
-   *
-   * @var object \Drupal\tripal\Services\TripalFileRetriever
-   */
-  protected $fileretriever = NULL;
 
   /**
    * Stores the last percentage that progress was reported.
@@ -128,23 +140,70 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   protected $plugin_definition;
 
   /**
-   * An instance of the Tripal publish service.
+   * Implements ContainerFactoryPluginInterface->create().
    *
-   * @var Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager
+   * @param Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container.
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   *
+   * @return static
    */
-  protected $publish_manager = NULL;
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+  ) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('messenger'),
+      $container->get('tripal.logger'),
+      $container->get('tripal.fileretriever'),
+      $container->get('tripal.backend_publish')
+    );
+  }
 
   /**
-   * {@inheritdoc}
+   * Constructs a TripalImporterBase object.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param ?Drupal\Core\Messenger\Messenger
+   *   The Drupal messenger service.
+   * @param ?Drupal\tripal\Services\TripalLogger
+   *   The Tripal logger service.
+   * @param ?Drupal\tripal\Services\TripalFileRetriever
+   *   The Tripal file retrieval service.
+   * @param ?Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager
+   *   The Tripal publish manager service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ?Messenger $messenger = NULL,
+    ?TripalLogger $logger = NULL,
+    ?TripalFileRetriever $fileretriever = NULL,
+    ?TripalBackendPublishManager $publish_manager = NULL,
+  ) {
     parent::__construct(
       $configuration,
       $plugin_id,
       $plugin_definition
     );
 
-    // Intialize the private member variables.
+    // Initialize the private member variables.
     $this->plugin_id = $plugin_id;
     $this->plugin_definition = $plugin_definition;
     $this->is_prepared = FALSE;
@@ -157,14 +216,33 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     $this->prev_update = 0;
     $this->reported = 0;
 
-    // Initialize the logger.
-    $this->logger = \Drupal::service('tripal.logger');
+    // Initialize the Drupal messenger
+    if ($messenger === NULL) {
+      @trigger_error('Calling ' . __METHOD__ . '() without the $messenger argument is deprecated in tripal 4.0.0 and it will be required in tripal:4.1.0. To resolve this, make sure the create() method in your importer grabs the Drupal\Core\Messenger\Messenger from the container and supplies it to the parent in the constructor.', E_USER_DEPRECATED);
+      $messenger = \Drupal::messenger();
+    }
+    $this->messenger = $messenger;
 
-    // Initialize messenger
-    $this->messenger = \Drupal::messenger();
+    // Initialize the Tripal logger.
+    if ($logger === NULL) {
+      @trigger_error('Calling ' . __METHOD__ . '() without the $logger argument is deprecated in tripal 4.0.0 and it will be required in tripal:4.1.0. To resolve this, make sure the create() method in your importer grabs the Drupal\tripal\Services\TripalLogger from the container and supplies it to the parent in the constructor.', E_USER_DEPRECATED);
+      $logger = \Drupal::service('tripal.logger');
+    }
+    $this->logger = $logger;
 
     // Initialize file retrieval service.
-    $this->fileretriever = \Drupal::service('tripal.fileretriever');
+    if ($fileretriever === NULL) {
+      @trigger_error('Calling ' . __METHOD__ . '() without the $fileretriever argument is deprecated in tripal 4.0.0 and it will be required in tripal:4.1.0. To resolve this, make sure the create() method in your importer grabs the Drupal\tripal\Services\TripalFileRetriever from the container and supplies it to the parent in the constructor.', E_USER_DEPRECATED);
+      $fileretriever = \Drupal::service('tripal.fileretriever');
+    }
+    $this->fileretriever = $fileretriever;
+
+    // Initialize the publish manager.
+    if ($publish_manager === NULL) {
+      @trigger_error('Calling ' . __METHOD__ . '() without the $publish_manager argument is deprecated in tripal 4.0.0 and it will be required in tripal:4.1.0. To resolve this, make sure the create() method in your importer grabs the Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager from the container and supplies it to the parent in the constructor.', E_USER_DEPRECATED);
+      $publish_manager = \Drupal::service('tripal.backend_publish');
+    }
+    $this->publish_manager = $publish_manager;
   }
 
   /**

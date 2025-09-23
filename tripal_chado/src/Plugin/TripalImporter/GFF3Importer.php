@@ -2,15 +2,18 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
+use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal\Services\TripalFileRetriever;
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
-use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
-use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
-use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
+use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
 /**
  * GFF3 Importer implementation of the TripalImporterBase.
@@ -318,21 +321,25 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
    */
   private $proteins = [];
 
-
   /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * We are injecting an additional dependency here, the
    * ChadoBuddyPluginManager.
    *
-   * Since we have implemented the ContainerFactoryPluginInterface this static function
-   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the constructor.
+   * Since we have implemented the ContainerFactoryPluginInterface this static
+   * function will be called behind the scenes when a Plugin Manager uses
+   * createInstance(). Specifically this method is used to determine the
+   * parameters to pass to the constructor.
    *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container.
    * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
    * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
+   *   The plugin implementation definition.
    *
    * @return static
    */
@@ -341,9 +348,12 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       $configuration,
       $plugin_id,
       $plugin_definition,
+      $container->get('tripal_chado.chado_buddy'),
       $container->get('tripal_chado.database'),
+      $container->get('messenger'),
+      $container->get('tripal.logger'),
+      $container->get('tripal.fileretriever'),
       $container->get('tripal.backend_publish'),
-      $container->get('tripal_chado.chado_buddy')
     );
   }
 
@@ -354,12 +364,23 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    ChadoConnection $connection,
-    TripalBackendPublishManager $publish_manager,
     ChadoBuddyPluginManager $buddy_manager,
+    ChadoConnection $connection,
+    Messenger $messenger,
+    TripalLogger $logger,
+    TripalFileRetriever $fileretriever,
+    TripalBackendPublishManager $publish_manager,
   ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $connection, $publish_manager);
-    $this->setPublishManager($publish_manager);
+    parent::__construct(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $connection,
+      $messenger,
+      $logger,
+      $fileretriever,
+      $publish_manager,
+    );
     $this->buddy_manager = $buddy_manager;
     $this->dbxref_buddy = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
     $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
