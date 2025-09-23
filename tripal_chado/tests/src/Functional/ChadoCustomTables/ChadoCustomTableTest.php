@@ -22,7 +22,7 @@ class ChadoCustomTableTest extends ChadoTestBrowserBase {
    *
    * @var string
    */
-  private string $table_schema = 'a:6:{s:5:"table";s:4:"file";s:6:"fields";a:4:{s:7:"file_id";a:3:{s:4:"size";s:3:"big";s:4:"type";s:6:"serial";s:8:"not null";b:1;}s:4:"name";a:2:{s:4:"type";s:4:"text";s:8:"not null";b:1;}s:7:"type_id";a:2:{s:4:"type";s:3:"int";s:8:"not null";b:1;}s:11:"description";a:1:{s:4:"type";s:4:"text";}}s:11:"primary key";a:1:{i:0;s:7:"file_id";}s:11:"unique keys";a:1:{s:7:"file_c1";a:1:{i:0;s:4:"name";}}s:7:"indexes";a:2:{s:9:"file_idx1";a:1:{i:0;s:4:"name";}s:9:"file_idx2";a:1:{i:0;s:7:"type_id";}}s:12:"foreign keys";a:1:{s:6:"cvterm";a:2:{s:5:"table";s:6:"cvterm";s:7:"columns";a:1:{s:7:"type_id";s:9:"cvterm_id";}}}}';
+  private string $table_schema = 'a:6:{s:5:"table";s:4:"file";s:6:"fields";a:4:{s:7:"file_id";a:3:{s:4:"size";s:3:"big";s:4:"type";s:6:"serial";s:8:"not null";b:1;}s:4:"name";a:2:{s:4:"type";s:4:"text";s:8:"not null";b:0;}s:7:"type_id";a:2:{s:4:"type";s:3:"int";s:8:"not null";b:1;}s:11:"description";a:1:{s:4:"type";s:4:"text";}}s:11:"primary key";a:1:{i:0;s:7:"file_id";}s:11:"unique keys";a:1:{s:7:"file_c1";a:1:{i:0;s:4:"name";}}s:7:"indexes";a:2:{s:9:"file_idx1";a:1:{i:0;s:4:"name";}s:9:"file_idx2";a:1:{i:0;s:7:"type_id";}}s:12:"foreign keys";a:1:{s:6:"cvterm";a:2:{s:5:"table";s:6:"cvterm";s:7:"columns";a:1:{s:7:"type_id";s:9:"cvterm_id";}}}}';
 
   /**
    * Tests focusing on Chado Custom Tables.
@@ -244,6 +244,37 @@ class ChadoCustomTableTest extends ChadoTestBrowserBase {
     $status = $custom_table_obj->setTableSchema($schema_array, FALSE);
     $this->assertFalse($status, 'We should not have been able to set the schema on a fully deleted table object.');
 
+    // Test NULLS NOT DISTINCT.
+    $schema_array4 = $schema_array;
+    $table_name4 = 'file4';
+    $schema_array4['table'] = $table_name4;
+    $schema_array4['nulls not distinct'] = TRUE;
+    $table_name = $schema_array4['table'];
+    $custom_table_obj4 = $manager->create($table_name, $chado_schema_name);
+    $this->assertIsObject($custom_table_obj4, 'Unable to create a custom table object using the service manager.');
+    $status = $custom_table_obj4->setTableSchema($schema_array4, FALSE);
+    $this->assertTrue($status, 'We were not able to set the table schema with a nulls not distinct schema.');
+    $existing_schema = $custom_table_obj4->getTableSchema();
+    $this->assertEquals($schema_array4, $existing_schema, 'Custom table schema is not as expected.');
+    $sql = "SELECT EXISTS (SELECT 1 FROM information_schema.tables
+      WHERE table_schema = '$chado_schema_name'
+      AND table_name = '$table_name4')";
+    $exists = $chado->query($sql)->fetchField();
+    $this->assertEquals(1, $exists, 'The custom table was not created in the database.');
+
+    // The 'name' column is set up with a unique constraint, but it is
+    // nullable. With this test we should not be able to insert two null
+    // records because we added 'nulls not distinct'.
+    $sql = "INSERT INTO $table_name4 (name, type_id, description) VALUES (NULL, 1, 'Dup')";
+    $result1 = $chado->query($sql);
+    $caught = FALSE;
+    try {
+      $result2 = $chado->query($sql);
+    }
+    catch (\Exception $e) {
+      $caught = TRUE;
+    }
+    $this->assertTrue($caught, 'There should have been an exception adding a second null record');
   }
 
 }
