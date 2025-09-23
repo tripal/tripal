@@ -109,7 +109,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $linker_type_term = self::getColumnTermId($linker_table, $linker_type_col, 'schema:additionalType');
 
     // Columns from linked tables to specify the relationship type
-    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $cvterm_schema_def = self::getChadoTableDef($schema, 'cvterm');
     $type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $type_len = $cvterm_schema_def['fields']['name']['size'];
 
@@ -369,7 +369,8 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $subject_column = '';
     $object_column = '';
     // The subject and object columns will be among the foreign keys to the base table
-    $table_schema_def = $chado->schema()->getTableDef($relationship_table, ['format' => 'Drupal']);
+    $schema = $chado->schema();
+    $table_schema_def = self::getChadoTableDef($schema, $relationship_table);
     if ($table_schema_def['foreign keys'][$base_table]['columns'] ?? NULL) {
       foreach (array_keys($table_schema_def['foreign keys'][$base_table]['columns']) as $relationship_column) {
         if (preg_match('/subject/', $relationship_column)) {
