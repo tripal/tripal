@@ -350,9 +350,14 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition,
-                              ChadoConnection $connection, TripalBackendPublishManager $publish_manager,
-                              ChadoBuddyPluginManager $buddy_manager) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ChadoConnection $connection,
+    TripalBackendPublishManager $publish_manager,
+    ChadoBuddyPluginManager $buddy_manager,
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $connection, $publish_manager);
     $this->setPublishManager($publish_manager);
     $this->buddy_manager = $buddy_manager;
