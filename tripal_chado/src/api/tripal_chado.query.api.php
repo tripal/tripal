@@ -278,7 +278,11 @@ function chado_get_table_max_rank($tablename, $where_options, $chado_schema_name
   }
   $sql .= implode($where_clauses, ' AND ');
 
-  $result = chado_query($sql, $where_args, $chado_schema_name)->fetchObject();
+  $chado_connection = \Drupal::service('tripal_chado.database');
+  $chado_connection->setSchemaName($chado_schema_name);
+  $result = $chado_connection->query($sql, $where_args)
+
+    ->fetchObject();
   if ($result->count > 0) {
     return $result->max_rank;
   }
@@ -400,7 +404,7 @@ function chado_set_active($dbname = 'default', $chado_schema_name = NULL) {
   // Set PostgreSQL search_path.
   $connection = \Drupal::database();
   $query = $connection->query('SET search_path TO ' . $search_path);
-  $query->execute();
+  $query;
 
   return $previous_db;
 }
@@ -470,6 +474,8 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
 
   @trigger_error(__FUNCTION__ . '() deprecated in tripal:4.0.0-alpha3 and is removed from tripal:4.1.0. Use the Tripal DBX query API instead. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_query_api.html', E_USER_DEPRECATED);
 
+  $chado_connection = \Drupal::service('tripal_chado.database');
+  $chado_connection->setSchemaName($chado_schema_name);
   $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
 
   if (!is_array($values)) {
@@ -678,15 +684,15 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
   }
 
   // Create the SQL.
-  $sql = 'INSERT INTO {' . $table . '} (' . implode(", ", $ifields) . ") VALUES (" . implode(", ", $itypes) . ")";
-  $result = chado_query($sql, $ivalues, [], $chado_schema_name);
+  $sql = 'INSERT INTO {1:' . $table . '} (' . implode(", ", $ifields) . ") VALUES (" . implode(", ", $itypes) . ")";
+  $result = $chado_connection->query($sql, $ivalues);
 
   // If we have a result then add primary keys to return array.
   if ($options['return_record'] == TRUE and $result) {
     if (array_key_exists('primary key', $table_desc) and is_array($table_desc['primary key'])) {
       foreach ($table_desc['primary key'] as $field) {
-        $sql = "SELECT CURRVAL('{" . $table . "}_" . $field . "_seq')";
-        $results = chado_query($sql, [], [], $chado_schema_name);
+        $sql = "SELECT CURRVAL('" . $table . "_" . $field . "_seq')";
+        $results = $chado_connection->query($sql, []);
         $value = $results->fetchField();
         if (!$value) {
           tripal_report_error('tripal_chado', TRIPAL_ERROR,
@@ -796,6 +802,9 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
 function chado_update_record($table, $match, $values, $options = NULL, $chado_schema_name = NULL) {
 
   @trigger_error(__FUNCTION__ . '() deprecated in tripal:4.0.0-alpha3 and is removed from tripal:4.1.0. Use the Tripal DBX query API instead. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_query_api.html', E_USER_DEPRECATED);
+
+  $chado_connection = \Drupal::service('tripal_chado.database');
+  $chado_connection->setSchemaName($chado_schema_name);
 
   $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
 
@@ -940,7 +949,7 @@ function chado_update_record($table, $match, $values, $options = NULL, $chado_sc
   }
 
   // Now build the SQL statement.
-  $sql = 'UPDATE {' . $table . '} SET ';
+  $sql = 'UPDATE {1:' . $table . '} SET ';
   // Arguments passed to chado_query.
   $args = [];
   foreach ($update_values as $field => $value) {
@@ -968,7 +977,7 @@ function chado_update_record($table, $match, $values, $options = NULL, $chado_sc
   // Get rid of the trailing 'AND'.
   $sql = mb_substr($sql, 0, -4);
 
-  $result = chado_query($sql, $args, [], $chado_schema_name);
+  $result = $chado_connection->query($sql, $args);
 
   // If we have a result then add primary keys to return array.
   if ($options['return_record'] == TRUE and $result) {
@@ -1071,6 +1080,9 @@ function chado_delete_record($table, $match, $options = NULL, $chado_schema_name
 
   @trigger_error(__FUNCTION__ . '() deprecated in tripal:4.0.0-alpha3 and is removed from tripal:4.1.0. Use the Tripal DBX query API instead. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_query_api.html', E_USER_DEPRECATED);
 
+  $chado_connection = \Drupal::service('tripal_chado.database');
+  $chado_connection->setSchemaName($chado_schema_name);
+
   $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
 
   if (!is_array($match)) {
@@ -1134,7 +1146,7 @@ function chado_delete_record($table, $match, $options = NULL, $chado_schema_name
   }
 
   // Now build the SQL statement.
-  $sql = 'DELETE FROM {' . $table . '} WHERE ';
+  $sql = 'DELETE FROM {1:' . $table . '} WHERE ';
   $args = [];
   foreach ($delete_matches as $field => $value) {
     // If we have an array values then this is an "IN" clasue.
@@ -1165,7 +1177,7 @@ function chado_delete_record($table, $match, $options = NULL, $chado_schema_name
 
   // Finally perform the delete.  If successful, return the updated record.
   // RISH [8/27/2023] - I think the above comment is incorrect, it returns status only ie. TRUE OR FALSE.
-  $result = chado_query($sql, $args, [], $chado_schema_name);
+  $result = $chado_connection->query($sql, $args);
   if ($result) {
     return TRUE;
   }
@@ -1318,9 +1330,12 @@ function chado_delete_record($table, $match, $options = NULL, $chado_schema_name
  *
  * @ingroup tripal_chado_query_api
  */
-function chado_select_record($table, $columns, $values, $options = NULL, $chado_schema_name = NULL) {
+function chado_select_record($table, $columns, $values, $options = NULL, $chado_schema_name = 'chado') {
 
   @trigger_error(__FUNCTION__ . '() deprecated in tripal:4.0.0-alpha3 and is removed from tripal:4.1.0. Use the Tripal DBX query API instead. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_query_api.html', E_USER_DEPRECATED);
+
+  $chado_connection = \Drupal::service('tripal_chado.database');
+  $chado_connection->setSchemaName($chado_schema_name);
 
   // Set defaults for options. If we don't set defaults then
   // we get memory leaks when we try to access the elements.
@@ -1618,11 +1633,11 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
   if (empty($where)) {
     // Sometimes want to select everything.
     $sql = "SELECT " . implode(', ', $columns) . " ";
-    $sql .= 'FROM {' . $table . '} ';
+    $sql .= 'FROM {1:' . $table . '} ';
   }
   else {
     $sql = "SELECT " . implode(', ', $columns) . " ";
-    $sql .= 'FROM {' . $table . '} ';
+    $sql .= 'FROM {1:' . $table . '} ';
 
     // If $values is empty then we want all results so no where clause.
     if (!empty($values)) {
@@ -1696,7 +1711,7 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
     $resource = chado_pager_query($sql, $args, $pager['limit'], $pager['element'], NULL, $total_records, $chado_schema_name);
   }
   else {
-    $resource = chado_query($sql, $args, [], $chado_schema_name);
+    $resource = $chado_connection->query($sql, $args);
   }
 
   // Format results into an array.
@@ -2031,6 +2046,10 @@ function hook_chado_query_alter(&$sql, &$args, $chado_schema_name = NULL) {
  * @ingroup tripal_chado_query_api
  */
 function chado_pager_query($query, $args, $limit, $element, $count_query = '', $chado_schema_name = NULL) {
+
+  $chado_connection = \Drupal::service('tripal_chado.database');
+  $chado_connection->setSchemaName($chado_schema_name);
+
   // Get the page and offset for the pager.
   $page_arg = $_GET['page'] ?? '0';
   $pages = explode(',', $page_arg);
@@ -2048,7 +2067,7 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '', $
   }
 
   // We calculate the total of pages as ceil(items / limit).
-  $results = chado_query($count_query, $args);
+  $results = $chado_connection->query($count_query, $args);
   if (!$results) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
       "chado_pager_query(): Query failed: %cq", ['%cq' => $count_query]);
@@ -2062,7 +2081,7 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '', $
   pager_default_initialize($total_records, $limit, $element);
 
   $query .= ' LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset;
-  $results = chado_query($query, $args);
+  $results = $chado_connection->query($query, $args);
   return $results;
 }
 
