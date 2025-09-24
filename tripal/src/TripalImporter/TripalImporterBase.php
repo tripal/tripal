@@ -246,16 +246,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   }
 
   /**
-   * Sets a publish service for a child importer class wanting to publish.
-   *
-   * @param Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager $publish_manager
-   *   An instance of the publish manager service.
-   */
-  public function setPublishManager(TripalBackendPublishManager $publish_manager) {
-    $this->publish_manager = $publish_manager;
-  }
-
-  /**
    * Provide more informative description than is ideal in the annotation alone.
    *
    * NOTE: Supports full HTML.
