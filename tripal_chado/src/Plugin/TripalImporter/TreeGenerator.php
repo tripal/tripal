@@ -290,9 +290,12 @@ class TreeGenerator extends ChadoImporterBase {
    * Used when tree generation is cancelled due to lack of any valid organisms.
    */
   protected function removeTree($tree_name) {
-    $phylotree = chado_select_record('phylotree', ['*'], ['name' => $tree_name], NULL, $this->chado_schema_main);
-    if ($phylotree) {
-      chado_delete_phylotree($phylotree[0]->phylotree_id, $this->chado_schema_main);
+    $query = $this->connection->select('1:phylotree', 't');
+    $query->condition('t.name', $tree_name, '=');
+    $query->addField('t', 'phylotree_id', 'phylotree_id');
+    $phylotree_id = $query->execute()->fetchField();
+    if ($phylotree_id) {
+      chado_delete_phylotree($phylotree_id, $this->chado_schema_main);
     }
   }
 
@@ -457,12 +460,11 @@ class TreeGenerator extends ChadoImporterBase {
       }
     }
     else {
-      $node_values = [
-        'phylotree_id' => $phylotree_id,
-        'label' => $node_name,
-      ];
-      $columns = ['*'];
-      $phylonode = chado_select_record('phylonode', $columns, $node_values, NULL, $this->chado_schema_main);
+      $query = $this->connection->select('1:phylonode', 'n');
+      $query->condition('n.phylotree_id', $phylotree_id, '=');
+      $query->condition('n.label', $node_name, '=');
+      $query->fields('n');
+      $phylonode = $query->execute()->fetchAll();
       if (count($phylonode) == 0) {
         $lineage_nodes[$node_name] = NULL;
         $lineage_good = FALSE;
@@ -471,12 +473,12 @@ class TreeGenerator extends ChadoImporterBase {
         $phylonode = $phylonode[0];
         $lineage_nodes[$node_name] = $phylonode;
 
-        $prop_values = [
-          'phylonode_id' => $phylonode->phylonode_id,
-          'type_id' => $this->rank_cvterm_id,
-        ];
-        $columns = ['*'];
-        $phylonodeprop = chado_select_record('phylonodeprop', $columns, $prop_values, NULL, $this->chado_schema_main);
+        $query = $this->connection->select('1:phylonodeprop', 'np');
+        $query->condition('np.phylonode_id', $phylonode->phylonode_id, '=');
+        $query->condition('np.type_id', $this->rank_cvterm_id, '=');
+        $query->fields('np');
+        $phylonodeprop = $query->execute()->fetchAll();
+
         return $phylonodeprop;
       }
     }

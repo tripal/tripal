@@ -489,10 +489,11 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       $full_infra = $matches[3];
 
       // Get the CV term for the rank.
-      $type = chado_get_cvterm([
-        'name' => preg_replace('/ /', '_', $rank),
-        'cv_id' => ['name' => 'taxonomic_rank'],
-      ], [], $this->chado_schema_main);
+      $query = $this->connection->select('1:cvterm', 't');
+      $query->join('1:cv', 'cv', '"t".cv_id = "cv".cv_id');
+      $query->condition('t.name', preg_replace('/ /', '_', $rank), '=');
+      $query->condition('cv.name', 'taxonomic_rank', '=');
+      $cvterm_id = $query->execute()->fetchField();
 
       // Remove the rank from the infraspecific name.
       $abbrev = chado_abbreviate_infraspecific_rank($rank);
@@ -503,7 +504,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         'genus' => $genus,
         'species' => $species,
         'abbreviation' => $genus[0] . '. ' . $species . ' ' . $full_infra,
-        'type_id' => $type->cvterm_id,
+        'type_id' => $cvterm_id,
         'infraspecific_name' => $infra,
       ];
       $organism_id = $this->connection->insert('1:organism')
@@ -678,9 +679,10 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
             case 'CommonName':
               // If we had to add the organism then include the common name too.
               if ($adds_organism) {
-                $organism->common_name = $name;
-                $values = ['organism_id' => $organism->id];
-                chado_update_record('organism', $values, $organism, NULL, $this->chado_schema_main);
+                $query = $this->connection->update('1:organism');
+                $query->condition('organism_id', $organism->id, '=');
+                $query->fields(['common_name' => $name]);
+                $query->execute();
               }
             case 'Includes':
               $this->addProperty($organism->organism_id, 'other_name', $name, $name_ranks[$type]);
