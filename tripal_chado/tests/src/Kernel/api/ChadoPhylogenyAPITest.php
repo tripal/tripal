@@ -68,9 +68,11 @@ class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
     $this->schemaName = $this->chado_connection->getSchemaName();
 
     // Lookup cvterm_id for 'subspecies'
-    $cvterm = chado_get_cvterm(['name' => 'subspecies'], [], $this->schemaName);
-    $this->assertNotNull($cvterm, 'Unable to retrieve cvterm for "subspecies" using chado_get_cvterm()');
-    $subspecies_id = $cvterm->cvterm_id;
+    $query = $this->chado_connection->select('1:cvterm', 't');
+    $query->condition('name', 'subspecies', '=');
+    $query->addField('t', 'cvterm_id', 'cvterm_id');
+    $subspecies_id = $query->execute()->fetchField();
+    $this->assertNotNull($subspecies_id, 'Unable to retrieve cvterm_id for "subspecies"');
 
     // Create two test organisms of the same genus and species
     $species = 'bogusii' . uniqid();
@@ -83,15 +85,19 @@ class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
             'common_name' => 'False Tripal',
             'abbreviation' => 'T. ' . $species . ' subsp. sativus',
            ];
-    $dbq = chado_insert_record('organism', $org, [], $this->schemaName);
-    $this->assertNotNull($dbq, 'Unable to insert test organism 1.');
-    $organism_ids[0] = $dbq['organism_id'];
+    $query = $this->chado_connection->insert('1:organism');
+    $organism_id = $query->fields($org);
+    $organism_id = $query->execute();
+    $this->assertEquals('1', $organism_id, 'Unable to insert test organism 1.');
+    $organism_ids[0] = $organism_id;
 
     $org['infraspecific_name'] = 'selvaticus';
     $org['abbreviation'] = 'T. ' . $species . ' subsp. selvaticus';
-    $dbq = chado_insert_record('organism', $org, [], $this->schemaName);
-    $this->assertNotNull($dbq, 'Unable to insert test organism 2.');
-    $organism_ids[1] = $dbq['organism_id'];
+    $query = $this->chado_connection->insert('1:organism');
+    $organism_id = $query->fields($org);
+    $organism_id = $query->execute();
+    $this->assertEquals('2', $organism_id, 'Unable to insert test organism 2.');
+    $organism_ids[1] = $organism_id;
 
     // Test chado_phylogeny_lookup_organism_by_name().
     // This function is expected to return an organism_id. It returns FALSE if
@@ -109,7 +115,7 @@ class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
     // Test chado_phylogeny_get_node_types_vocab().
     // This function is expected to return an array with three terms.
     // It returns FALSE on error.
-    $vocab = chado_phylogeny_get_node_types_vocab([], $this->schemaName);
+    $vocab = chado_phylogeny_get_node_types_vocab($this->chado_connection, [], $this->schemaName);
     $this->assertIsArray($vocab, 'Did not return an array from chado_phylogeny_get_node_types_vocab()');
     $this->assertEquals(count($vocab), 3, 'Did not return the expected three node types from chado_phylogeny_get_node_types_vocab()');
   }
