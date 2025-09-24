@@ -520,8 +520,8 @@ function chado_delete_property($record, $property, $schema_name = 'chado') {
   $table_desc = chado_get_schema($base_table . 'prop', $schema_name);
   $fkcol = key($table_desc['foreign keys'][$base_table]['columns']);
 
-  // If we have the unique property_id, make sure to use it in the match to 
-  // ensure we get the exact record. Doesn't rely on there only being one 
+  // If we have the unique property_id, make sure to use it in the match to
+  // ensure we get the exact record. Doesn't rely on there only being one
   // property of that type.
   if ($prop_id) {
     $property_pkey = $table_desc['primary key'][0];
@@ -640,7 +640,7 @@ function chado_get_record_with_property($record, $property, $options = [], $sche
     $values[$foreignkey_name] = $base_records;
   }
 
-  // Now select the ids of the base table that have the properties we want that 
+  // Now select the ids of the base table that have the properties we want that
   // match.
   $select = chado_select_record($property_table, [$foreignkey_name], $values, NULL, $schema_name);
 
@@ -670,13 +670,15 @@ function chado_get_record_with_property($record, $property, $options = [], $sche
  * @ingroup tripal_chado_prop_api
  */
 function chado_get_table_property_types($prop_table, $schema_name = 'chado') {
+  $chado_connection = \Drupal::service('tripal_chado.database');
+  $chado_connection->setSchemaName($schema_name);
 
   // Make sure this is a prop table.
   if (!preg_match('/prop$/', $prop_table)) {
     throw new Exception('Please provide a valid Chado property table');
   }
-  $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
-  $results = chado_query($sql, [], [], $schema_name);
+  $sql = 'SELECT DISTINCT type_id FROM {1:' . $prop_table . '}';
+  $results = $chado_connection->query($sql, [])->execute();
   $types = [];
   foreach ($results as $result) {
     $types[] = chado_generate_var('cvterm', ['cvterm_id' => $result->type_id], [], $schema_name);
