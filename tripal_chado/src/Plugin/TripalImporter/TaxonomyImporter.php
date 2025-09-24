@@ -150,7 +150,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-    $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
@@ -270,7 +269,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         LEFT JOIN {1:cvterm} CVT ON CVT.cvterm_id = O.type_id
       ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
     ";
-    $results = $chado->query($sql);
+    $results = $this->connection->query($sql);
 
     while ($item = $results->fetchObject()) {
       $this->all_orgs[] = $item;
@@ -512,10 +511,10 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         'type_id' => $type->cvterm_id,
         'infraspecific_name' => $infra,
       ];
-      $organism_id = $chado->insert('1:organism')
+      $organism_id = $this->connection->insert('1:organism')
         ->fields($values)
         ->execute();
-      $organism = $chado->select('1:organism', 'o')
+      $organism = $this->connection->select('1:organism', 'o')
         ->fields('o')
         ->condition('organism_id', $organism_id)
         ->execute()
@@ -535,10 +534,10 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         ];
         // $organism = chado_insert_record('organism', $values);
         // $organism = (object) $organism;
-        $organism_id = $chado->insert('1:organism')
+        $organism_id = $this->connection->insert('1:organism')
         ->fields($values)
         ->execute();
-        $organism = $chado->select('1:organism', 'o')
+        $organism = $this->connection->select('1:organism', 'o')
         ->fields('o')
         ->condition('organism_id', $organism_id)
         ->execute()

@@ -9,6 +9,7 @@ use Drupal\Core\Link;
 use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
+use Drupal\pgsql\Driver\Database\pgsql\Connection;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\tripal\Services\TripalFileRetriever;
@@ -43,17 +44,18 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 class PubSearchQueryImporter extends ChadoImporterBase {
 
   /**
-   * Connection to the Chado schema
-   * @var \Drupal\pgsql\Driver\Database\pgsql\Connection $chado
+   * Connection to the Public schema.
+   *
+   * @var \Drupal\pgsql\Driver\Database\pgsql\Connection
    */
-  protected $chado = NULL;
+  protected $public = NULL;
 
   /**
    * Publication library manager service.
    *
-   * @var ?Drupal\tripal\TripalPubLibrary\PluginManagers\TripalPubLibraryManager $pub_library_manager
+   * @var Drupal\tripal\TripalPubLibrary\PluginManagers\TripalPubLibraryManager
    */
-  protected ?TripalPubLibraryManager $pub_library_manager = NULL;
+  protected $pub_library_manager = NULL;
 
   /**
    * db_id value from the chado.db table for the external database
@@ -126,6 +128,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $plugin_id,
       $plugin_definition,
       $container->get('tripal.pub_library'),
+      $container->get('database'),
       $container->get('tripal_chado.database'),
       $container->get('messenger'),
       $container->get('tripal.logger'),
@@ -142,6 +145,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $plugin_id,
     $plugin_definition,
     TripalPubLibraryManager $pub_library_manager,
+    Connection $public,
     ChadoConnection $connection,
     Messenger $messenger,
     TripalLogger $logger,
@@ -159,6 +163,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $publish_manager,
     );
     $this->pub_library_manager = $pub_library_manager;
+    $this->public = $public;
   }
 
   /**
@@ -190,8 +195,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
     // If the query id is set, display the data
     if (!is_null($build_args['args'][1])) {
-      $public = \Drupal::service('database');
-      $row = $public->select('tripal_pub_library_query', 'tpi')
+      $row = $this->public->select('tripal_pub_library_query', 'tpi')
         ->fields('tpi')
         ->condition('pub_library_query_id', $query_id, '=')
         ->execute()->fetchObject();
@@ -314,7 +318,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         ];
 
         $public = \Drupal::database();
-        $query = $public->select('tripal_pub_library_query','tpi')
+        $query = $this->public->select('tripal_pub_library_query','tpi')
           ->fields('tpi')
           ->condition('pub_library_query_id', $query_id, '=');
         $results = $query->execute();
