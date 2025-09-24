@@ -71,7 +71,7 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $this->importer = $this->getMockForAbstractClass(
       '\Drupal\tripal_chado\TripalImporter\ChadoImporterBase',
-      [$configuration, $plugin_id, $plugin_defn, $this->connection]
+      [$configuration, $plugin_id, $plugin_defn, $this->connection, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
     $import_id = $this->importer->createImportJob(['schema_name' => $this->connection->getSchemaName()]);
     $this->assertIsNumeric($import_id, "We were unable to create a tripal import record during setup.");
