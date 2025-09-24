@@ -432,38 +432,33 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
 
     // First check the taxid to see if it's present and associated with an
     // organism already.
-    $values = [
-      'db_id' => [
-        'name' => 'NCBITaxon',
-      ],
-      'accession' => $taxid,
-    ];
-    $columns = ['dbxref_id'];
-    $dbxref = chado_select_record('dbxref', $columns, $values, NULL, $this->chado_schema_main);
-    if (count($dbxref) > 0) {
-      $columns = ['organism_id'];
-      $values = ['dbxref_id' => $dbxref[0]->dbxref_id];
-      $organism_dbxref = chado_select_record('organism_dbxref', $columns, $values, NULL, $this->chado_schema_main);
-      if (count($organism_dbxref) > 0) {
-        $organism_id = $organism_dbxref[0]->organism_id;
-        $columns = ['*'];
-        $values = ['organism_id' => $organism_id];
-        $organism = chado_select_record('organism', $columns, $values, NULL, $this->chado_schema_main);
-        if (count($organism) > 0) {
-          $organism = $organism[0];
-        }
-      }
+    $query = $this->connection->select('1:dbxref', 'x');
+    $query->join('1:db', 'db', '"x".db_id = "db".db_id');
+    $query->join('1:organism_dbxref', 'ox', '"x".dbxref_id = "ox".dbxref_id');
+    $query->join('1:organism', 'o', '"ox".organism_id = "o".organism_id');
+    $query->condition('db.name', 'NCBITaxon', '=');
+    $query->condition('x.accession', $taxid, '=');
+    $query->fields('o');
+    $results = $query->execute()->fetchAll();
+    if (count($results) > 0) {
+      $organism = $results[0];
     }
 
     // If the caller did not provide an organism then we want to try and
     // add one. But, it only makes sense to add one if this record
     // is of rank species.
     if (!$organism) {
-      // We do the lookup in two steps so that there is no error message for
-      // missing (new) organisms from chado_get_organism().
+      // We do the lookup in two steps so that there is no error if
+      // we don't retrieve an organism_id.
       $organism_ids = chado_get_organism_id_from_scientific_name($sci_name, []);
       if ($organism_ids) {
-        $organism = chado_get_organism(['organism_id' => $organism_ids[0]], [], $this->chado_schema_main);
+        $query = $this->connection->select('1:organism', 'o');
+        $query->condition('o.organism_id', $organism_ids[0], '=');
+        $query->fields('o');
+        $results = $query->execute()->fetchAll();
+        if (count($results) > 0) {
+          $organism = $results[0];
+        }
       }
     }
     return $organism;
