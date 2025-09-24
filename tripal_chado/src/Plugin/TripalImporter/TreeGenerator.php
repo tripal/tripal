@@ -156,7 +156,9 @@ class TreeGenerator extends ChadoImporterBase {
     $this->tree = $this->rebuildTree($root_taxon);
 
     // Clean out the phylonodes for this tree in the event this is a reload.
-    chado_delete_record('phylonode', ['phylotree_id' => $this->phylotree->phylotree_id], NULL, $this->chado_schema_main);
+    $query = $chado->delete('1:phylonode');
+    $query->condition('phylotree_id', $this->phylotree->phylotree_id, '=');
+    $query->execute();
 
     // Set the number of items to handle.
     $this->setTotalItems(count($this->all_orgs));
@@ -255,7 +257,10 @@ class TreeGenerator extends ChadoImporterBase {
   protected function initTree($tree_name) {
     // Add the taxonomy tree record into the phylotree table. If the tree
     // already exists then don't insert it again.
-    $phylotree = chado_select_record('phylotree', ['*'], ['name' => $tree_name], NULL, $this->chado_schema_main);
+    $query = $this->connection->select('1:phylotree', 't');
+    $query->fields('t');
+    $query->condition('t.name', $tree_name, '=');
+    $phylotree = $query->execute()->fetchAll();
     if (count($phylotree) == 0) {
       // Add the taxonomic tree.
       $phylotree = [
