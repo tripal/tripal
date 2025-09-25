@@ -5,7 +5,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\Api;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\Group;
-
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 
 /**
  * Tests for API functions dealing with organisms.
