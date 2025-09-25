@@ -27,6 +27,12 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_local: true,
   file_remote: true,
   file_required: true,
+  publish: [
+    'bundle' => [
+      'phylotree',
+      'speciestree',
+    ],
+  ],
 )]
 class NewickImporter extends ChadoImporterBase {
 
@@ -266,13 +272,6 @@ class NewickImporter extends ChadoImporterBase {
     $errors = [];
     $warnings = [];
     chado_insert_phylotree($options, $errors, $warnings, $chado->getSchemaName());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postRun() {
-
   }
 
   /**
