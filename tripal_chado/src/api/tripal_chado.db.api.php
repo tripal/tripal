@@ -666,7 +666,7 @@ function chado_autocomplete_dbxref($db_id, $string = '') {
   $results = \Drupal::service('tripal_chado.database')->query($sql, [
     ':db_id' => $db_id,
     ':accession' => $string . '%',
-  ])->execute();
+  ]);
   $items = [];
   foreach ($results as $ref) {
     $items[$ref->accession] = $ref->accession;
