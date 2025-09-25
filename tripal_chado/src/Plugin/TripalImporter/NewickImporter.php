@@ -24,8 +24,9 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   require_analysis: true,
   button_text: new TranslatableMarkup('Import Newick Tree file'),
   file_upload: true,
-  file_remote: false,
-  file_required: false,
+  file_local: true,
+  file_remote: true,
+  file_required: true,
 )]
 class NewickImporter extends ChadoImporterBase {
 
