@@ -21,6 +21,34 @@ abstract class TripalTestKernelBase extends KernelTestBase {
   protected static $modules = ['tripal'];
 
   /**
+   * An instance of the Drupal messenger.
+   *
+   * @var ?Drupal\Core\Messenger\Messenger
+   */
+  protected $messenger = NULL;
+
+  /**
+   * The drupal logger for tripal, allowing importers to log messages.
+   *
+   * @var ?Drupal\tripal\Services\TripalLogger
+   */
+  protected $logger = NULL;
+
+  /**
+   * An instance of the Tripal file retriever service
+   *
+   * @var ?Drupal\tripal\Services\TripalFileRetriever
+   */
+  protected $fileretriever = NULL;
+
+  /**
+   * An instance of the Tripal publish service.
+   *
+   * @var ?Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager
+   */
+  protected $publish_manager = NULL;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() :void {
@@ -79,6 +107,11 @@ abstract class TripalTestKernelBase extends KernelTestBase {
       $this->installEntitySchema('file');
       $this->installSchema('file', ['file_usage']);
       $this->installSchema('tripal', ['tripal_import', 'tripal_jobs']);
+      // Get services used by importers.
+      $this->messenger = \Drupal::messenger();
+      $this->logger = \Drupal::service('tripal.logger');
+      $this->fileretriever = \Drupal::service('tripal.fileretriever');
+      $this->publish_manager = \Drupal::service('tripal.backend_publish');
     }
   }
 }

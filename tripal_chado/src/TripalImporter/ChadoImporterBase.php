@@ -2,10 +2,14 @@
 
 namespace Drupal\tripal_chado\TripalImporter;
 
-use Drupal\tripal\TripalImporter\TripalImporterBase;
-use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal\Services\TripalFileRetriever;
+use Drupal\tripal\Services\TripalLogger;
+use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
+use Drupal\tripal\TripalImporter\TripalImporterBase;
+use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
  * Defines an interface for tripal importer plugins.
@@ -44,41 +48,74 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
   /**
    * Implements ContainerFactoryPluginInterface->create().
    *
-   * Since we have implemented the ContainerFactoryPluginInterface this static function
-   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the constructor.
-   *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container.
    * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
    * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
+   *   The plugin implementation definition.
    *
    * @return static
    */
-   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+  ) {
     return new static(
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('tripal_chado.database')
+      $container->get('tripal_chado.database'),
+      $container->get('messenger'),
+      $container->get('tripal.logger'),
+      $container->get('tripal.fileretriever'),
+      $container->get('tripal.backend_publish'),
     );
   }
 
   /**
-   * Implements __construct().
-   *
-   * Since we have implemented the ContainerFactoryPluginInterface, the constructor
-   * will be passed additional parameters added by the create() function. This allows
-   * our plugin to use dependency injection without our plugin manager service needing
-   * to worry about it.
+   * Constructs a TripalImporterBase object.
    *
    * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
    * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
+   *   The plugin implementation definition.
    * @param Drupal\tripal_chado\Database\ChadoConnection $connection
+   *   A connection to the Chado database.
+   * @param Drupal\Core\Messenger\Messenger $messenger
+   *   The Drupal messenger service.
+   * @param Drupal\tripal\Services\TripalLogger $logger
+   *   The Tripal logger service.
+   * @param Drupal\tripal\Services\TripalFileRetriever $fileretriever
+   *   The Tripal file retrieval service.
+   * @param Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager $publish_manager
+   *   The Tripal publish manager service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ChadoConnection $connection) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ChadoConnection $connection,
+    ?Messenger $messenger = NULL,
+    ?TripalLogger $logger = NULL,
+    ?TripalFileRetriever $fileretriever = NULL,
+    ?TripalBackendPublishManager $publish_manager = NULL,
+  ) {
+    parent::__construct(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $messenger,
+      $logger,
+      $fileretriever,
+      $publish_manager,
+    );
 
     $this->connection = $connection;
   }
@@ -244,4 +281,31 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
 
     return $element;
   }
+
+  /**
+   * Performs tasks after the importer has completed.
+   *
+   * If the importer form specified one or more bundles to be published,
+   * these will be listed under the 'publish' key in the run arguments.
+   *
+   * @return void
+   *   No return value.
+   */
+  public function postRun() {
+    parent::PostRun();
+
+    // Only publish if a publish manager has been set by a child class.
+    $arguments = $this->getArguments();
+    $bundles = $arguments['run_args']['publish'] ?? [];
+    if ($this->publish_manager and !empty($bundles)) {
+      $publish_options = [
+        'chado_storage' => [
+          'schema_name' => $arguments['run_args']['schema_name'],
+          'bundles' => $bundles,
+        ],
+      ];
+      $this->publish_manager->publishBundles($publish_options);
+    }
+  }
+
 }
