@@ -112,7 +112,7 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
     // Adds contact which will be referred to by linker field in some scenarios.
     $values = [
       'name' => 'Zhanna Beissekova',
-      'description' => 'Enjoys grading and is fascinated by how each stone is different, even within the same species'
+      'description' => 'Enjoys grading and is fascinated by how each stone is different, even within the same species',
     ];
     $this->chado_connection->insert('1:contact')
       ->fields($values)
@@ -148,12 +148,12 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
   /**
    * Tests that TripalEntity::save() handles URL alias' with substitutions.
    *
-   * @dataProvider provideScenarios
-   *
    * @param int $current_scenario_key
    *   The key of the scenario in the YAML.
    * @param string $current_scenario_label
    *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
    */
   #[DataProvider('provideScenarios')]
   public function testTripalChadoEntitySaveUrlAlias(int $current_scenario_key, string $current_scenario_label) {
@@ -203,4 +203,5 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
     $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['edit']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
   }
+
 }

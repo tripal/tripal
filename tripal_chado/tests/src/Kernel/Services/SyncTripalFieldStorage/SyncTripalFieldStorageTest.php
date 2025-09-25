@@ -28,12 +28,22 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
    *
    * @var array
    */
-  protected static $modules = ['system', 'user', 'path', 'path_alias', 'tripal', 'tripal_chado', 'views', 'field', 'field_ui'];
+  protected static $modules = [
+    'system',
+    'user',
+    'path',
+    'path_alias',
+    'tripal',
+    'tripal_chado',
+    'views',
+    'field',
+    'field_ui',
+  ];
 
   /**
    * Connection to the test chado instance.
    *
-   * @var \Drupal\tripal_chado\Database\ChadoConnection;
+   * @var \Drupal\tripal_chado\Database\ChadoConnection
    */
   protected ChadoConnection $chado_connection;
 
@@ -45,8 +55,10 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
   protected Connection $drupal_connection;
 
   /**
-   * Provides information about specific versions of Chado to test for
-   * discrepancies against field installed on Chado 1.3.
+   * Provides information about specific versions of Chado to test.
+   *
+   * Note: specifically aimed at testing for discrepancies against field
+   * installed on Chado 1.3.
    *
    * @return array
    *   Each entry in this array is a specific scenario to be tested.
@@ -123,11 +135,42 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
     // @todo update the createContentType method to add terms needed!
     // Create the terms for the field property storage types.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    foreach (['local', 'SIO', 'schema', 'data', 'NCIT', 'operation', 'OBCS', 'SWO', 'IAO', 'TPUB', 'SBO', 'sep', 'ERO', 'EFO'] as $termIdSpace) {
+    $idspace_names = [
+      'local',
+      'SIO',
+      'schema',
+      'data',
+      'NCIT',
+      'operation',
+      'OBCS',
+      'SWO',
+      'IAO',
+      'TPUB',
+      'SBO',
+      'sep',
+      'ERO',
+      'EFO',
+    ];
+    foreach ($idspace_names as $termIdSpace) {
       $idsmanager->createCollection($termIdSpace, "chado_id_space");
     }
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    foreach (['local', 'SIO', 'schema', 'EDAM', 'ncit', 'OBCS', 'swo', 'IAO', 'tripal_pub', 'sbo', 'sep', 'ero', 'efo'] as $termVocab) {
+    $vocab_names = [
+      'local',
+      'SIO',
+      'schema',
+      'EDAM',
+      'ncit',
+      'OBCS',
+      'swo',
+      'IAO',
+      'tripal_pub',
+      'sbo',
+      'sep',
+      'ero',
+      'efo',
+    ];
+    foreach ($vocab_names as $termVocab) {
       $vmanager->createCollection($termVocab, "chado_vocabulary");
     }
 
@@ -135,8 +178,6 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
 
   /**
    * Tests detectDifferences() + resolveDetectedDifferences().
-   *
-   * @dataProvider provideChadoVersionsToTest
    *
    * @param string $chado_verison_under_test
    *   The version of chado we want to test for differences from Chado 1.3.
@@ -151,6 +192,8 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
    *    - num_fields: the number of fields with detected differences.
    *    - differences: the keys are field names with differences and the value
    *      for each is a list of property names with differences for that field.
+   *
+   * @dataProvider provideChadoVersionsToTest
    */
   #[DataProvider('provideChadoVersionsToTest')]
   public function testDetectDifferences(string $chado_verison_under_test, array $bundles_to_create, string|null $bundle_under_test, array $expectations) {
@@ -216,8 +259,6 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
   /**
    * Tests detectDifferences() + resolveDetectedDifferences().
    *
-   * @dataProvider provideChadoVersionsToTest
-   *
    * @param string $chado_verison_under_test
    *   The version of chado we want to test for differences from Chado 1.3.
    * @param array $bundles_to_create
@@ -231,6 +272,8 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
    *    - num_fields: the number of fields with detected differences.
    *    - differences: the keys are field names with differences and the value
    *      for each is a list of property names with differences for that field.
+   *
+   * @dataProvider provideChadoVersionsToTest
    */
   #[DataProvider('provideChadoVersionsToTest')]
   public function testResolveDifferences(string $chado_verison_under_test, array $bundles_to_create, string|null $bundle_under_test, array $expectations) {
@@ -275,4 +318,5 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
       }
     }
   }
+
 }

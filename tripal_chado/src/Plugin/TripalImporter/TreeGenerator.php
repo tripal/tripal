@@ -20,6 +20,11 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_remote: false,
   file_local: false,
   file_required: false,
+  publish: [
+    'bundle' => [
+      'speciestree',
+    ],
+  ],
 )]
 class TreeGenerator extends ChadoImporterBase {
 
@@ -57,9 +62,10 @@ class TreeGenerator extends ChadoImporterBase {
       '#type' => 'fieldset',
       '#title' => 'INSTRUCTIONS',
       '#description' => t('This form is used to generate a phylogenetic
-        tree for organisms at exist on this site. The organisms need to
+        tree for organisms that exist on this site. The organisms need to
         have been previously prepared using the Taxonomy Importer in order
         to have the lineage properties in place.'),
+      '#weight' => -90,
     ];
 
     $site_name = \Drupal::config('system.site')->get('name');
@@ -673,13 +679,6 @@ class TreeGenerator extends ChadoImporterBase {
       }
     }
     return $lineage_elements;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postRun() {
-
   }
 
   /**

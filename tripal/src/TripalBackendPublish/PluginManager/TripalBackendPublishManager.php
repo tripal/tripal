@@ -123,4 +123,36 @@ class TripalBackendPublishManager extends DefaultPluginManager {
     }
   }
 
+  /**
+   * Publish a number of bundles for specific publish instances.
+   *
+   * @param array $storages
+   *   An associative array keyed by the id for the
+   *   TripalBackendPublish plugin instance (e.g. chado_storage),
+   *   and the value is a second array level with:
+   *   - 'bundles' = a list of zero or more bundles to be published.
+   *   - 'schema_name' = The database schema to publish under, e.g. 'chado'.
+   *
+   * @return void
+   *   No return value.
+   */
+  public function publishBundles(array $storages): void {
+    foreach ($storages as $storage => $options) {
+      $bundles = $options['bundles'] ?? [];
+      if ($bundles) {
+        $publish_instance = $this->createInstance($storage, []);
+        $schema_name = $options['schema_name'] ?? NULL;
+        foreach ($bundles as $bundle) {
+          $publish_options = [
+            'bundle' => $bundle,
+            'datastore' => $storage,
+            'schema_name' => $schema_name,
+            'republish' => FALSE,
+          ];
+          $publish_instance->publish($publish_options);
+        }
+      }
+    }
+  }
+
 }

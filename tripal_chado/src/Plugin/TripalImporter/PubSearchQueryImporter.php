@@ -1,14 +1,23 @@
 <?php
+
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Link;
+use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
+use Drupal\pgsql\Driver\Database\pgsql\Connection;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\tripal\Services\TripalFileRetriever;
+use Drupal\tripal\Services\TripalLogger;
+use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
+use Drupal\tripal\TripalPubLibrary\PluginManagers\TripalPubLibraryManager;
+use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
 /**
@@ -25,19 +34,26 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_remote: false,
   file_local: false,
   file_required: false,
+  publish: [
+    'bundle' => [
+      'pub',
+    ],
+  ],
   hidden: true,
 )]
 class PubSearchQueryImporter extends ChadoImporterBase {
 
   /**
-   * Connection to the Chado schema
-   * @var \Drupal\pgsql\Driver\Database\pgsql\Connection $chado
+   * Connection to the Public schema.
+   *
+   * @var \Drupal\pgsql\Driver\Database\pgsql\Connection
    */
-  protected $chado = NULL;
+  protected $public = NULL;
 
   /**
-   * Publication library manager service
-   * @var Drupal\tripal_chado\Plugin\TripalImporter\PubSearchQueryImporter $pub_library_manager
+   * Publication library manager service.
+   *
+   * @var Drupal\tripal\TripalPubLibrary\PluginManagers\TripalPubLibraryManager
    */
   protected $pub_library_manager = NULL;
 
@@ -85,6 +101,72 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   protected int $batch_size = 100;
 
   /**
+   * Implements ContainerFactoryPluginInterface->create().
+   *
+   * We are injecting an additional dependency here, the
+   * TripalPubLibraryManager.
+   *
+   * Since we have implemented the ContainerFactoryPluginInterface this static
+   * function will be called behind the scenes when a Plugin Manager uses
+   * createInstance(). Specifically this method is used to determine the
+   * parameters to pass to the constructor.
+   *
+   * @param Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container.
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   *
+   * @return static
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('tripal.pub_library'),
+      $container->get('database'),
+      $container->get('tripal_chado.database'),
+      $container->get('messenger'),
+      $container->get('tripal.logger'),
+      $container->get('tripal.fileretriever'),
+      $container->get('tripal.backend_publish'),
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    TripalPubLibraryManager $pub_library_manager,
+    Connection $public,
+    ChadoConnection $connection,
+    Messenger $messenger,
+    TripalLogger $logger,
+    TripalFileRetriever $fileretriever,
+    TripalBackendPublishManager $publish_manager,
+  ) {
+    parent::__construct(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $connection,
+      $messenger,
+      $logger,
+      $fileretriever,
+      $publish_manager,
+    );
+    $this->pub_library_manager = $pub_library_manager;
+    $this->public = $public;
+  }
+
+  /**
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
@@ -113,8 +195,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
     // If the query id is set, display the data
     if (!is_null($build_args['args'][1])) {
-      $public = \Drupal::service('database');
-      $row = $public->select('tripal_pub_library_query', 'tpi')
+      $row = $this->public->select('tripal_pub_library_query', 'tpi')
         ->fields('tpi')
         ->condition('pub_library_query_id', $query_id, '=')
         ->execute()->fetchObject();
@@ -164,9 +245,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    */
   protected function formQueryIdNotSet(&$form, $form_state) {
     // Get list of database/libraries
-    if (is_null($this->pub_library_manager)) {
-      $this->pub_library_manager = \Drupal::service('tripal.pub_library');
-    }
     $plugins = $this->pub_library_manager->getLibraryOptions();
     $form_state_values = $form_state->getValues();
 
@@ -240,7 +318,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         ];
 
         $public = \Drupal::database();
-        $query = $public->select('tripal_pub_library_query','tpi')
+        $query = $this->public->select('tripal_pub_library_query','tpi')
           ->fields('tpi')
           ->condition('pub_library_query_id', $query_id, '=');
         $results = $query->execute();
@@ -329,9 +407,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
           t('The query name must include its ID value in parentheses'));
     }
     else {
-      if (is_null($this->pub_library_manager)) {
-        $this->pub_library_manager = \Drupal::service('tripal.pub_library');
-      }
       $pub_record = $this->pub_library_manager->getSearchQuery($query_id);
       if (!$pub_record) {
         $form_state->setErrorByName('search_query_name',
@@ -360,7 +435,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    *   Exception if the database name does not exist
    */
   protected function getRemoteDbId(string $db_name) {
-    $query = $this->chado->select('1:db', 'DB');
+    $query = $this->connection->select('1:db', 'DB');
     $query->condition('"DB".name', $db_name, '=');
     $query->addField('DB', 'db_id');
     $db_id = $query->execute()->fetchField();
@@ -376,7 +451,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    * vocabulary, saving them in the class variable $this->cvterm_lookups
    */
   protected function cachePublicationCvterms() {
-    $query = $this->chado->select('1:cvterm', 'T');
+    $query = $this->connection->select('1:cvterm', 'T');
     $query->leftJoin('1:cv', 'CV', '"T".cv_id="CV".cv_id');
     $query->condition('"CV".name', 'tripal_pub', '=');
     $query->fields('T', ['cvterm_id', 'name']);
@@ -417,7 +492,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $n_found = 0;
     $batches = array_chunk($all_publications_dbxref, $this->batch_size);
     foreach ($batches as $batch) {
-      $select = $this->chado->select('1:pub', 'P');
+      $select = $this->connection->select('1:pub', 'P');
       $select->leftJoin('1:pub_dbxref', 'PX', '"P".pub_id="PX".pub_id');
       $select->leftJoin('1:dbxref', 'X', '"PX".dbxref_id="X".dbxref_id');
       $select->addField('P', 'pub_id', 'pub_id');
@@ -455,7 +530,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $n_inserted = 0;
     $batches = array_chunk($this->new_accessions, $this->batch_size);
     foreach ($batches as $batch) {
-      $insert = $this->chado->insert('1:dbxref');
+      $insert = $this->connection->insert('1:dbxref');
       $insert->fields(['db_id', 'accession', 'version']);
       foreach ($batch as $accession) {
         $insert->values([
@@ -517,9 +592,9 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         $uniquename = $publication['Citation']
           ?? trim(str_replace(',', ';', $publication['Authors'] ?? '') . ' ' . $title . ' ' . $series_name . '; ' . $pyear);
 
-        $type_id = $this->getPublicationTypeId($publication);
+        $type_id = $this->getPublicationTypeId($publications, $index);
         if ($type_id) {
-          $insert = $this->chado->insert('1:pub');
+          $insert = $this->connection->insert('1:pub');
           $insert->fields([
             'title' => $title,
             'series_name' => $series_name,
@@ -546,24 +621,29 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   /**
    * Get the cvterm_id for the publication type
    *
-   * @param array $publication
-   *   One publication record returned by the external database
+   * @param array &$publications
+   *   Array of publication records returned by the external database.
+   * @param int $index
+   *   Array key for the publication of interest.
    * @return int
    *   The corresponding cvterm_id value
    * @throw \Exception
    *   If type is not defined in the publication, or if the type is not available in the tripal_pub ontology
    */
-  protected function getPublicationTypeId(array $publication): int {
+  protected function getPublicationTypeId(array &$publications, int $index): int {
     $type_id = 0;
     // In the event that the publication has no type, e.g. 39755038,
     // then assign a generic 'Publication' type.
-    $type = $publication['Publication Type'] ?? 'Publication';
-    $accession = $publication['Publication Dbxref'] ?? 'accession_unknown';
+    $type = $publications[$index]['Publication Type'] ?? 'Publication';
+    $accession = $publications[$index]['Publication Dbxref'] ?? 'accession_unknown';
     if ($type) {
       if (is_array($type)) {
         // A publication can have more than one type. We can't support
-        // that in the pub table, so just return the first one.
+        // that in the pub table, so just return the first one. The other
+        // types will be stored as properties, so to avoid duplication
+        // with the first property, remove it.
         $type = $type[array_key_first($type)];
+        array_shift($publications[$index]['Publication Type']);
       }
       $type_id = $this->cvterm_lookups[$type] ?? 0;
       if (!$type_id) {
@@ -585,7 +665,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $n_inserted = 0;
     $batches = array_chunk($this->new_accessions, $this->batch_size);
     foreach ($batches as $batch) {
-      $insert = $this->chado->insert('1:pub_dbxref');
+      $insert = $this->connection->insert('1:pub_dbxref');
       $insert->fields(['pub_id', 'dbxref_id']);
       foreach ($batch as $accession) {
         $dbxref_id = $this->pub_index[$accession]['dbxref_id'];
@@ -620,7 +700,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     // Perform inserts in batches
     $batches = array_chunk($this->new_accessions, $this->batch_size);
     foreach ($batches as $batch) {
-      $insert = $this->chado->insert('1:pubprop');
+      $insert = $this->connection->insert('1:pubprop');
       $insert->fields(['pub_id', 'type_id', 'value', 'rank']);
       foreach ($batch as $accession) {
         $n_in_batch = 0;
@@ -756,7 +836,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $author_list = $publication['Author List'] ?? [];
     $contact_id_list = [];
     $rank = 0;
-    $insert = $this->chado->insert('1:pubauthor');
+    $insert = $this->connection->insert('1:pubauthor');
     $insert->fields(['pub_id', 'rank', 'editor', 'surname', 'givennames', 'suffix']);
     foreach ($author_list as $author) {
       if (($author['valid'] ?? 'Y') != 'N') {
@@ -782,7 +862,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $first_pubauthor_id = $insert->execute();
       if ($do_contact) {
         $delta = 0;
-        $contact_insert = $this->chado->insert('1:pubauthor_contact');
+        $contact_insert = $this->connection->insert('1:pubauthor_contact');
         $contact_insert->fields(['pubauthor_id', 'contact_id']);
         foreach ($author_list as $author) {
           if (($author['valid'] ?? 'Y') != 'N') {
@@ -825,13 +905,13 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    */
   protected function getContact(string $contact_name, string $type): int {
     $type_id = $this->getContactType($type);
-    $query = $this->chado->select('1:contact', 'C');
+    $query = $this->connection->select('1:contact', 'C');
     $query->condition('"C".name', $contact_name, 'ILIKE');
     $query->condition('"C".type_id', $type_id, '=');
     $query->addField('C', 'contact_id');
     $contact_id = $query->execute()->fetchField();
     if (!$contact_id) {
-      $insert = $this->chado->insert('1:contact');
+      $insert = $this->connection->insert('1:contact');
       $insert->fields([
         'name' => $contact_name,
         'description' => '',
@@ -853,7 +933,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   protected function getContactType(string $type_name): int {
     $cvterm_id = $this->contact_lookups[$type_name] ?? NULL;
     if (!$cvterm_id) {
-      $query = $this->chado->select('1:cvterm', 'T');
+      $query = $this->connection->select('1:cvterm', 'T');
       $query->leftJoin('1:cv', 'CV', '"T".cv_id="CV".cv_id');
       $query->condition('T.name', $type_name, '=');
       $query->condition('CV.name', 'tripal_contact', '=');
@@ -874,10 +954,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   protected function run_init(): ?array {
 
     $this->logger->notice('Initializing publication importer');
-
-    // Initialize services
-    $this->chado = $this->getChadoConnection();
-    $this->pub_library_manager = \Drupal::service('tripal.pub_library');
 
     // We can pass a query_id value, in which case we retrieve a criteria
     // array from the public.tripal_pub_library_query table. Alternatively we
@@ -1028,12 +1104,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       }
     }
     return;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postRun() {
   }
 
 }
