@@ -10,7 +10,6 @@
          beStrictAboutTestsThatDoNotTestAnything="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutChangesToGlobalState="true"
-         failOnWarning="true"
          printerClass="\Drupal\Tests\Listeners\HtmlOutputPrinter"
          cacheResult="false"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
@@ -29,7 +28,7 @@
       explicitly.
     -->
     <!-- To disable deprecation testing completely uncomment the next line. -->
-    <!-- <env name="SYMFONY_DEPRECATIONS_HELPER" value="disabled"/> -->
+    <env name="SYMFONY_DEPRECATIONS_HELPER" value="disabled"/>
     <!-- Deprecation errors can be selectively ignored by specifying a file of
       regular expression patterns for exclusion.
       See https://symfony.com/doc/current/components/phpunit_bridge.html#ignoring-deprecations

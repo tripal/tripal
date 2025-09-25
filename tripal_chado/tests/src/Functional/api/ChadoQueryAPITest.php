@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Functional\api;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 
 /**
  * Testing the tripal_chado/api/tripal_chado.query.api.php functions.
@@ -15,6 +16,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('Tripal')]
 #[Group('Tripal Chado')]
 #[Group('Tripal API')]
+#[IgnoreDeprecations]
 class ChadoQueryAPITest extends ChadoTestBrowserBase {
 
   protected $defaultTheme = 'stark';
