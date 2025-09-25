@@ -218,28 +218,28 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
     // Initialize the Drupal messenger
     if ($messenger === NULL) {
-      @trigger_error('Calling ' . __METHOD__ . '() without the $messenger argument is deprecated in tripal 4.0.0-alpha3 and it will be required in tripal:4.1.0. To resolve this, make sure the create() method in your importer grabs the Drupal\Core\Messenger\Messenger from the container and supplies it to the parent in the constructor.', E_USER_DEPRECATED);
+      @trigger_error('Calling ' . __METHOD__ . '() without the $messenger argument is deprecated in tripal 4.0.0-alpha3 and it will be required in tripal:4.1.0. To resolve this, make sure the create() method in your importer grabs the Drupal\Core\Messenger\Messenger from the container and supplies it to the parent in the constructor. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/tripalimporter_dev_inj_constructor.html', E_USER_DEPRECATED);
       $messenger = \Drupal::messenger();
     }
     $this->messenger = $messenger;
 
     // Initialize the Tripal logger.
     if ($logger === NULL) {
-      @trigger_error('Calling ' . __METHOD__ . '() without the $logger argument is deprecated in tripal 4.0.0-alpha3 and it will be required in tripal:4.1.0. To resolve this, make sure the create() method in your importer grabs the Drupal\tripal\Services\TripalLogger from the container and supplies it to the parent in the constructor.', E_USER_DEPRECATED);
+      @trigger_error('Calling ' . __METHOD__ . '() without the $logger argument is deprecated in tripal 4.0.0-alpha3 and it will be required in tripal:4.1.0. To resolve this, make sure the create() method in your importer grabs the Drupal\tripal\Services\TripalLogger from the container and supplies it to the parent in the constructor. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/tripalimporter_dev_inj_constructor.html', E_USER_DEPRECATED);
       $logger = \Drupal::service('tripal.logger');
     }
     $this->logger = $logger;
 
     // Initialize file retrieval service.
     if ($fileretriever === NULL) {
-      @trigger_error('Calling ' . __METHOD__ . '() without the $fileretriever argument is deprecated in tripal 4.0.0-alpha3 and it will be required in tripal:4.1.0. To resolve this, make sure the create() method in your importer grabs the Drupal\tripal\Services\TripalFileRetriever from the container and supplies it to the parent in the constructor.', E_USER_DEPRECATED);
+      @trigger_error('Calling ' . __METHOD__ . '() without the $fileretriever argument is deprecated in tripal 4.0.0-alpha3 and it will be required in tripal:4.1.0. To resolve this, make sure the create() method in your importer grabs the Drupal\tripal\Services\TripalFileRetriever from the container and supplies it to the parent in the constructor. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/tripalimporter_dev_inj_constructor.html', E_USER_DEPRECATED);
       $fileretriever = \Drupal::service('tripal.fileretriever');
     }
     $this->fileretriever = $fileretriever;
 
     // Initialize the publish manager.
     if ($publish_manager === NULL) {
-      @trigger_error('Calling ' . __METHOD__ . '() without the $publish_manager argument is deprecated in tripal 4.0.0-alpha3 and it will be required in tripal:4.1.0. To resolve this, make sure the create() method in your importer grabs the Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager from the container and supplies it to the parent in the constructor.', E_USER_DEPRECATED);
+      @trigger_error('Calling ' . __METHOD__ . '() without the $publish_manager argument is deprecated in tripal 4.0.0-alpha3 and it will be required in tripal:4.1.0. To resolve this, make sure the create() method in your importer grabs the Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager from the container and supplies it to the parent in the constructor. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/tripalimporter_dev_inj_constructor.html', E_USER_DEPRECATED);
       $publish_manager = \Drupal::service('tripal.backend_publish');
     }
     $this->publish_manager = $publish_manager;
