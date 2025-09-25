@@ -2,24 +2,23 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- * Plugin implementation of Default Tripal field for sequence data.
- *
- * @FieldType(
- *   id = "chado_sequence_length_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Feature Sequence Length"),
- *   description = @Translation("A chado feature sequence length"),
- *   default_widget = "chado_sequence_length_widget_default",
- *   default_formatter = "chado_sequence_length_formatter_default"
- * )
+ * Plugin implementation of Default Tripal field for sequence length.
  */
-
-
+#[FieldType(
+  id: 'chado_sequence_length_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Feature Sequence Length'),
+  description: new TranslatableMarkup('A chado feature sequence length'),
+  default_widget: 'chado_sequence_length_widget_default',
+  default_formatter: 'chado_sequence_length_formatter_default',
+)]
 class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_sequence_length_type_default";

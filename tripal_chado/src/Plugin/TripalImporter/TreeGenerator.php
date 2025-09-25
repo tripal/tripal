@@ -2,24 +2,25 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
 /**
  * Tree Generator implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "chado_tree_generator",
- *    label = @Translation("Taxonomy Tree Generator"),
- *    description = @Translation("Generate a taxonomy tree from organisms stored in Chado"),
- *    use_analysis = False,
- *    require_analysis = False,
- *    button_text = @Translation("Generate Taxonomy Tree"),
- *    file_upload = FALSE,
- *    file_local = FALSE,
- *    file_remote = FALSE,
- *    file_required = FALSE,
- *  )
  */
+#[TripalImporter(
+  id: 'chado_tree_generator',
+  label: new TranslatableMarkup('Taxonomy Tree Generator'),
+  description: new TranslatableMarkup('Generate a taxonomy tree from organisms stored in Chado'),
+  use_analysis: false,
+  require_analysis: false,
+  button_text: new TranslatableMarkup('Generate Taxonomy Tree'),
+  file_upload: false,
+  file_remote: false,
+  file_local: false,
+  file_required: false,
+)]
 class TreeGenerator extends ChadoImporterBase {
 
   /**
@@ -178,7 +179,11 @@ class TreeGenerator extends ChadoImporterBase {
       $options['message_opts']['job'] = $this->job;
     }
 
-    // This importer imports only species (taxonomy) trees.
+    // This importer generates only species (taxonomy) trees.
+    // These trees will be stored with the 'Species Tree' type.
+    // Vocab: EDAM, Term: Species tree (data:3272).
+    // Let's set the leaf type to taxonomy so that the API knows these
+    // are species trees.
     $options['leaf_type'] = 'taxonomy';
 
     // Now import the tree.
@@ -384,6 +389,7 @@ class TreeGenerator extends ChadoImporterBase {
     $parent = $tree;
     $i = 1;
     $lineage_good = TRUE;
+    $lineage_nodes = [];
     foreach ($lineage_elements as $element) {
 
       // If we have lineageex available from NCBI, it will include rank terms (order, family, etc.)

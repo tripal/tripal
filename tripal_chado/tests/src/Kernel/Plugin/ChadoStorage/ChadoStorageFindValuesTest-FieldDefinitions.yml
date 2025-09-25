@@ -15,308 +15,308 @@
 
 gene:
   field_multi_value_chado_property:
-    field_name: field_multi_value_chado_property
-    base_table: feature
+    field_name: 'field_multi_value_chado_property'
+    base_table: 'feature'
     properties:
       record_id:
-        action: store_id
+        action: 'store_id'
         drupal_store: true
-        path: feature.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       prop_id:
-        action: store_pkey
+        action: 'store_pkey'
         drupal_store: true
-        path: feature.feature_id>featureprop_longest.feature_id;featureprop_id
+        path: 'feature.feature_id>featureprop_longest.feature_id;featureprop_id'
         table_alias_mapping:
-          featureprop_longest: featureprop
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+          featureprop_longest: 'featureprop'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       linker_id:
-        action: store_link
-        path: feature.feature_id>featureprop_longest.feature_id
+        action: 'store_link'
+        path: 'feature.feature_id>featureprop_longest.feature_id'
         table_alias_mapping:
-          featureprop_longest: featureprop
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+          featureprop_longest: 'featureprop'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       value:
-        action: store
-        path: feature.feature_id>featureprop_longest.feature_id;value
+        action: 'store'
+        path: 'feature.feature_id>featureprop_longest.feature_id;value'
         table_alias_mapping:
-          featureprop_longest: featureprop
+          featureprop_longest: 'featureprop'
         delete_if_empty: true
         empty_value: ''
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
       rank:
-        action: store
-        path: feature.feature_id>featureprop_longest.feature_id;rank
+        action: 'store'
+        path: 'feature.feature_id>featureprop_longest.feature_id;rank'
         table_alias_mapping:
-          featureprop_longest: featureprop
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+          featureprop_longest: 'featureprop'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       type_id:
-        action: store
-        path: feature.feature_id>featureprop_longest.feature_id;type_id
+        action: 'store'
+        path: 'feature.feature_id>featureprop_longest.feature_id;type_id'
         table_alias_mapping:
-          featureprop_longest: featureprop
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+          featureprop_longest: 'featureprop'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
   gene_contact:
-    field_name: gene_contact
-    base_table: feature
-    object_table: contact
+    field_name: 'gene_contact'
+    base_table: 'feature'
+    object_table: 'contact'
     properties:
       record_id:
-        action: store_id
+        action: 'store_id'
         drupal_store: true
-        path: feature.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       linker_id:
-        action: store_pkey
+        action: 'store_pkey'
         drupal_store: true
-        path: feature_contact.feature_contact_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature_contact.feature_contact_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       link:
-        action: store_link
+        action: 'store_link'
         drupal_store: false
-        path: feature.feature_id>feature_contact.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id>feature_contact.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       contact_id:
-        action: store
+        action: 'store'
         drupal_store: true
-        path: feature_contact.contact_id
+        path: 'feature_contact.contact_id'
         delete_if_empty: true
         empty_value: 0
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       contact_name:
-        action: read_value
+        action: 'read_value'
         drupal_store: false
-        path: feature_contact.contact_id>contact.contact_id;name
-        as: contact_name
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        path: 'feature_contact.contact_id>contact.contact_id;name'
+        as: 'contact_name'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
       contact_description:
-        action: read_value
+        action: 'read_value'
         drupal_store: false
-        path: feature_contact.contact_id>contact.contact_id;description
-        as: contact_description
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        path: 'feature_contact.contact_id>contact.contact_id;description'
+        as: 'contact_description'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
       contact_type:
-        action: read_value
+        action: 'read_value'
         drupal_store: false
-        path: feature_contact.contact_id>contact.contact_id;contact.type_id>cvterm.cvterm_id;name
-        as: contact_type
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        path: 'feature_contact.contact_id>contact.contact_id;contact.type_id>cvterm.cvterm_id;name'
+        as: 'contact_type'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
   gene_is_obsolete:
-    field_name: gene_is_obsolete
-    base_table: feature
+    field_name: 'gene_is_obsolete'
+    base_table: 'feature'
     properties:
       record_id:
-        action: store_id
+        action: 'store_id'
         drupal_store: true
-        path: feature.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       value:
-        action: store
-        path: feature.is_obsolete
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType
+        action: 'store'
+        path: 'feature.is_obsolete'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
   gene_is_analysis:
-    field_name: gene_is_analysis
-    base_table: feature
+    field_name: 'gene_is_analysis'
+    base_table: 'feature'
     properties:
       record_id:
-        action: store_id
+        action: 'store_id'
         drupal_store: true
-        path: feature.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       value:
-        action: store
-        path: feature.is_analysis
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType
+        action: 'store'
+        path: 'feature.is_analysis'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
   gene_length:
-    field_name: gene_length
-    base_table: feature
+    field_name: 'gene_length'
+    base_table: 'feature'
     properties:
       record_id:
-        action: store_id
+        action: 'store_id'
         drupal_store: true
-        path: feature.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       seqlen:
-        action: read_value
-        path: feature.seqlen
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: 'read_value'
+        path: 'feature.seqlen'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
   gene_name:
-    field_name: gene_name
-    base_table: feature
+    field_name: 'gene_name'
+    base_table: 'feature'
     properties:
       record_id:
-        action: store_id
+        action: 'store_id'
         drupal_store: true
-        path: feature.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       value:
-        action: store
-        path: feature.name
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        action: 'store'
+        path: 'feature.name'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
   gene_organism:
-    field_name: gene_organism
-    base_table: feature
+    field_name: 'gene_organism'
+    base_table: 'feature'
     properties:
       record_id:
-        action: store_id
+        action: 'store_id'
         drupal_store: true
-        path: feature.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       organism_id:
-        action: store
-        path: feature.organism_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: 'store'
+        path: 'feature.organism_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       label:
-        action: replace
+        action: 'replace'
         template: '<i>[genus] [species]</i> [infraspecific_type] [infraspecific_name]'
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
       genus:
-        action: read_value
-        path: feature.organism_id>organism.organism_id;genus
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        action: 'read_value'
+        path: 'feature.organism_id>organism.organism_id;genus'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
       species:
-        action: read_value
-        path: feature.organism_id>organism.organism_id;species
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        action: 'read_value'
+        path: 'feature.organism_id>organism.organism_id;species'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
       infraspecific_name:
-        action: read_value
-        path: feature.organism_id>organism.organism_id;infraspecific_name
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        action: 'read_value'
+        path: 'feature.organism_id>organism.organism_id;infraspecific_name'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
       infraspecific_type:
-        action: read_value
-        path: feature.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id;name
-        as: infraspecific_type_name
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: 'read_value'
+        path: 'feature.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id;name'
+        as: 'infraspecific_type_name'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
   gene_sequence:
-    field_name: gene_sequence
-    base_table: feature
+    field_name: 'gene_sequence'
+    base_table: 'feature'
     properties:
       record_id:
-        action: store_id
+        action: 'store_id'
         drupal_store: true
-        path: feature.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       residues:
-        action: store
-        path: feature.residues
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType
+        action: 'store'
+        path: 'feature.residues'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
       seqlen:
-        action: store
-        path: feature.seqlen
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: 'store'
+        path: 'feature.seqlen'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       md5checksum:
-        action: store
-        path: feature.md5checksum
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType
+        action: 'store'
+        path: 'feature.md5checksum'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType'
   gene_sequence_md5_checksum:
-    field_name: gene_sequence_md5_checksum
-    base_table: feature
+    field_name: 'gene_sequence_md5_checksum'
+    base_table: 'feature'
     properties:
       record_id:
-        action: store_id
+        action: 'store_id'
         drupal_store: true
-        path: feature.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       seqlen:
-        action: read_value
-        path: feature.seqlen
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: 'read_value'
+        path: 'feature.seqlen'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       md5checksum:
-        action: read_value
-        path: feature.md5checksum
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType
+        action: 'read_value'
+        path: 'feature.md5checksum'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType'
   gene_synonym:
-    field_name: gene_synonym
-    base_table: feature
+    field_name: 'gene_synonym'
+    base_table: 'feature'
     properties:
       record_id:
-        action: store_id
+        action: 'store_id'
         drupal_store: true
-        path: feature.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       linker_pkey_id:
-        action: store_pkey
+        action: 'store_pkey'
         drupal_store: true
-        path: feature.feature_id>feature_synonym.feature_id;feature_synonym_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id>feature_synonym.feature_id;feature_synonym_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       linker_base_fkey_id:
-        action: store_link
+        action: 'store_link'
         drupal_store: true
-        path: feature.feature_id>feature_synonym.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id>feature_synonym.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       linker_synonym_fkey_id:
-        action: store
+        action: 'store'
         drupal_store: true
-        path: feature.feature_id>feature_synonym.feature_id;synonym_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id>feature_synonym.feature_id;synonym_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       is_current:
-        action: store
+        action: 'store'
         drupal_store: false
-        path: feature.feature_id>feature_synonym.feature_id;is_current
+        path: 'feature.feature_id>feature_synonym.feature_id;is_current'
         empty_value: true
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
       is_internal:
-        action: store
+        action: 'store'
         drupal_store: false
-        path: feature.feature_id>feature_synonym.feature_id;is_internal
+        path: 'feature.feature_id>feature_synonym.feature_id;is_internal'
         empty_value: false
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
       linker_pub_id:
-        action: store
+        action: 'store'
         drupal_store: false
-        path: feature.feature_id>feature_synonym.feature_id;pub_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id>feature_synonym.feature_id;pub_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       name:
-        action: read_value
-        path: feature_synonym.synonym_id>synonym.synonym_id;name
-        as: synonym_name
+        action: 'read_value'
+        path: 'feature_synonym.synonym_id>synonym.synonym_id;name'
+        as: 'synonym_name'
         drupal_store: false
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
       synonym_type:
-        action: read_value
-        path: feature_synonym.synonym_id>synonym.synonym_id;synonym.type_id>cvterm.cvterm_id;name
-        as: synonym_type
+        action: 'read_value'
+        path: 'feature_synonym.synonym_id>synonym.synonym_id;synonym.type_id>cvterm.cvterm_id;name'
+        as: 'synonym_type'
         drupal_store: false
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
   gene_type:
-    field_name: gene_type
-    base_table: feature
+    field_name: 'gene_type'
+    base_table: 'feature'
     properties:
       record_id:
-        action: store_id
+        action: 'store_id'
         drupal_store: true
-        path: feature.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       type_id:
-        action: store
-        path: feature.type_id
+        action: 'store'
+        path: 'feature.type_id'
         empty_value: 0
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       term_name:
-        action: read_value
-        path: feature.type_id>cvterm.cvterm_id;name
-        as: term_name
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        action: 'read_value'
+        path: 'feature.type_id>cvterm.cvterm_id;name'
+        as: 'term_name'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
       id_space:
-        action: read_value
-        path: feature.type_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name
-        as: idSpace
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        action: 'read_value'
+        path: 'feature.type_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name'
+        as: 'idSpace'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
       accession:
-        action: read_value
-        path: feature.type_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;accession
-        as: accession
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        action: 'read_value'
+        path: 'feature.type_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;accession'
+        as: 'accession'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
   gene_uniquename:
-    field_name: gene_uniquename
-    base_table: feature
+    field_name: 'gene_uniquename'
+    base_table: 'feature'
     properties:
       record_id:
-        action: store_id
+        action: 'store_id'
         drupal_store: true
-        path: feature.feature_id
-        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        path: 'feature.feature_id'
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
       value:
-        action: store
-        path: feature.uniquename
-        propertyType class: Drupal\tripal\TripalStorage\TextStoragePropertyType
+        action: 'store'
+        path: 'feature.uniquename'
+        propertyType class: 'Drupal\tripal\TripalStorage\TextStoragePropertyType'

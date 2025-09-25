@@ -4,12 +4,14 @@ namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Core\Form\FormState;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the publish form.
  *
  * @group TripalPublish
  */
+#[Group('TripalPublish')]
 class TripalPublishFormTest extends TripalTestKernelBase {
 
   /**

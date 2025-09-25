@@ -30,10 +30,9 @@ class TripalIdSpaceManager extends TripalCollectionPluginManager {
     parent::__construct(
         'Plugin/TripalIdSpace'
         ,$namespaces
-        ,$cache_backend
         ,$module_handler
         ,'Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface'
-        ,'Drupal\tripal\TripalVocabTerms\Annotation\TripalIdSpace'
+        ,'Drupal\tripal\TripalVocabTerms\Attribute\TripalIdSpace'
         ,'tripal_id_space_collection'
     );
     $this->alterInfo('tripal_id_space_info');

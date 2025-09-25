@@ -1,11 +1,11 @@
 ARG phpversion='8.3'
-ARG drupalversion='11.0.x-dev'
+ARG drupalversion='11.2.x-dev'
 ARG postgresqlversion='17'
 FROM tripalproject/tripaldocker-drupal:drupal${drupalversion}-php${phpversion}-pgsql${postgresqlversion}
 
 ## Redefine the core args so that they are within the build scope.
 ARG phpversion='8.3'
-ARG drupalversion='11.0.x-dev'
+ARG drupalversion='11.2.x-dev'
 ARG postgresqlversion='17'
 
 ## Now define the args only needed within the build scope.
@@ -20,6 +20,8 @@ ENV PATH="/var/www/drupal/vendor/drush/drush:$PATH"
 # Label docker image
 LABEL tripal.version="4.x-dev"
 LABEL tripal.stability="development"
+
+HEALTHCHECK --interval=2m --timeout=30s --start-period=2m --retries=3 CMD [ "pg_isready", "-U", "postgres" ]
 
 COPY . /tripal_app
 
@@ -43,6 +45,7 @@ RUN service apache2 start \
 
 RUN service apache2 start \
   && service postgresql start \
+  && drush cache:rebuild \
   && if [ "$installchado" = "TRUE" ] && [ "$migratechado" = "TRUE" ]; then \
     vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
     && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema} \
@@ -59,5 +62,6 @@ RUN service apache2 start \
   && if [ "$installchado" = "TRUE" ]; then \
   vendor/bin/drush trp-import-types --collection_id=general_chado --username=drupaladmin; \
   fi \
+  && curl https://qlty.sh | sh \
   && service apache2 stop \
   && service postgresql stop

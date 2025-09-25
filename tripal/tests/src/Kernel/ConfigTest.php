@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for configuration in Yaml files.
@@ -11,6 +12,8 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group Tripal
  * @group Tripal Config
  */
+#[Group('Tripal')]
+#[Group('Tripal Config')]
 class configTest extends TripalTestKernelBase {
 
   /**

@@ -7,14 +7,68 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityViewBuilder;
+use Drupal\Core\Entity\Attribute\ContentEntityType;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Component\Utility\Xss;
 use Drupal\user\UserInterface;
+use Drupal\tripal\Access\TripalEntityAccessControlHandler;
+use Drupal\tripal\Entity\TripalEntityViewsData;
+use Drupal\tripal\Form\TripalEntityForm;
+use Drupal\tripal\Form\TripalEntityDeleteForm;
+use Drupal\tripal\Form\TripalEntityUnpublishForm;
+use Drupal\tripal\Routing\TripalEntityHtmlRouteProvider;
+use Drupal\tripal\ListBuilders\TripalEntityListBuilder;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 
 /**
  * Defines the Tripal Content entity.
  *
  * @ingroup tripal
+ */
+#[ContentEntityType(
+  id: 'tripal_entity',
+  label: new TranslatableMarkup('Tripal Content'),
+  bundle_label: new TranslatableMarkup('Tripal Content Type'),
+  handlers: [
+    'storage' => SqlContentEntityStorage::class,
+    'list_builder' => TripalEntityListBuilder::class,
+    'view_builder' => EntityViewBuilder::class,
+    'views_data' => TripalEntityViewsData::class,
+    'form' => [
+      'default' => TripalEntityForm::class,
+      'add' => TripalEntityForm::class,
+      'edit' => TripalEntityForm::class,
+      'delete' => TripalEntityDeleteForm::class,
+      'unpublish' => TripalEntityUnpublishForm::class,
+    ],
+    'access' => TripalEntityAccessControlHandler::class,
+    'route_provider' => [
+      'html' => TripalEntityHtmlRouteProvider::class,
+    ],
+  ],
+  base_table: 'tripal_entity',
+  entity_keys: [
+    'id' => 'id',
+    'bundle' => 'type',
+    'uid' => 'user_id',
+    'status' => 'status',
+  ],
+  links: [
+    'canonical' => '/bio_data/{tripal_entity}',
+    'add-page' => '/bio_data/add',
+    'add-form' => '/bio_data/add/{tripal_entity_type}',
+    'edit-form' => '/bio_data/{tripal_entity}/edit',
+    'delete-form' => '/bio_data/{tripal_entity}/delete',
+    'unpublish-form' => '/bio_data/{tripal_entity}/unpublish',
+    'collection' => '/admin/content/bio_data',
+  ],
+  bundle_entity_type: 'tripal_entity_type',
+  field_ui_base_route: 'entity.tripal_entity_type.edit_form',
+)]
+/**
+ * @todo Remove this annotation when we no longer support Drupal 10.x.
  *
  * @ContentEntityType(
  *   id = "tripal_entity",
@@ -337,8 +391,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           'alias' => $new_alias,
         ]);
         if (!is_object($new_alias_object)) {
-          throw new \Exception(t("We were unable to create the alias: ':new_alias'",
-            [':new_alias' => $new_alias]));
+          throw new \Exception("We were unable to create the alias: '" . $new_alias . "'");
         }
         $new_alias_object->save();
         // and update the internal path field.
@@ -351,8 +404,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     elseif ($existing_alias and ($existing_alias['alias'] != $new_alias)) {
       $existing_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->load($existing_alias['id']);
       if (!is_object($existing_alias_object)) {
-        throw new \Exception(t("Unable to load the existing alias ':existing_alias' in order to update it.",
-          [':existing_alias' => $existing_alias['alias']]));
+        throw new \Exception("Unable to load the existing alias '" . $existing_alias['alias']
+            . "' in order to update it.");
       }
 
       // As long as there were no duplicates, we can update the existing one.

@@ -2,30 +2,31 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
-use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\Core\Link;
-use Drupal\Core\Url;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
 /**
  * Taxonomy Importer implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "chado_taxonomy_loader",
- *    label = @Translation("NCBI Taxonomy Loader"),
- *    description = @Translation("Import organisms by NCBI Taxonomy ID into Chado"),
- *    use_analysis = False,
- *    require_analysis = False,
- *    button_text = @Translation("Import Organisms"),
- *    file_upload = FALSE,
- *    file_local = FALSE,
- *    file_remote = FALSE,
- *    file_required = FALSE,
- *  )
  */
+#[TripalImporter(
+  id: 'chado_taxonomy_loader',
+  label: new TranslatableMarkup('NCBI Taxonomy Loader'),
+  description: new TranslatableMarkup('Import organisms by NCBI Taxonomy ID into Chado'),
+  use_analysis: false,
+  require_analysis: false,
+  button_text: new TranslatableMarkup('Import Organisms'),
+  file_upload: false,
+  file_remote: false,
+  file_local: false,
+  file_required: false,
+)]
 class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPluginInterface {
 
   /**
@@ -54,6 +55,22 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    * Provide the property buddy instance
    */
   protected object $property_buddy;
+
+  /**
+   * Options for file retrieval from NCBI.
+   *  
+   * NOTE: NCBI accepts 3 requests/second by default but will allow 
+   * 10 requests/second if an API key is provided. This is defined  
+   * via the rate_limit key.
+   *
+   * @var array
+   *   Options to be passed to the file retrieval service.
+   *   @see Drupal\tripal\Services\TripalFileRetriever::retrieveFileContents()
+   */
+  protected array $retrieval_options = [
+    'rate_limit' => 0.334,
+    'retry_delay' => 1.0,
+  ];
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
@@ -280,9 +297,8 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     $total = count($this->all_orgs);
     $omitted_organisms = [];
     $api_key = \Drupal::state()->get('tripal_ncbi_api_key', NULL);
-    $sleep_time = 333334;
     if (!empty($api_key)) {
-      $sleep_time = 100000;
+      $this->retrieval_options['rate_limit'] = 0.1;
     }
 
     foreach ($this->all_orgs as $organism) {
@@ -307,9 +323,15 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         if (!empty($api_key)) {
           $search_url .= "&api_key=" . $api_key;
         }
-        $xml_text = $this->fileretriever->retrieveFileContents($search_url);
+        $xml_text = $this->fileretriever->retrieveFileContents($search_url, $this->retrieval_options);
         if (is_null($xml_text)) {
           $this->logger->warning("Could not look up @sci_name",
+            ['@sci_name' => $sci_name_escaped]
+          );
+          continue;
+        }
+        else if (!$this->xmlIsValid($xml_text)) {
+          $this->logger->error("Invalid XML returned for @sci_name, NCBI may be in maintenance mode.",
             ['@sci_name' => $sci_name_escaped]
           );
           continue;
@@ -519,15 +541,26 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       "&id=$taxid";
 
     $api_key = \Drupal::state()->get('tripal_ncbi_api_key', NULL);
-    $sleep_time = 333334;
     if (!empty($api_key)) {
-      $sleep_time = 100000;
+      $this->retrieval_options['rate_limit'] = 0.1;
       $fetch_url .= "&api_key=" . $api_key;
     }
 
     // Query NCBI
-    $xml_text = $this->fileretriever->retrieveFileContents($fetch_url);
-    if (!is_null($xml_text)) {
+    $xml_text = $this->fileretriever->retrieveFileContents($fetch_url, $this->retrieval_options);
+    if (is_null($xml_text)) {
+      $this->logger->error("Error contacting NCBI to look up taxid @taxid",
+        ['@taxid' => $taxid]
+      );
+      return FALSE;
+    }
+    else if (!$this->xmlIsValid($xml_text)) {
+      $this->logger->error("Invalid XML returned for taxid @taxid, NCBI may be in maintenance mode.",
+        ['@taxid' => $taxid]
+      );
+      return FALSE;
+    }
+    else {
       $xml = new \SimpleXMLElement($xml_text);
       $taxon = $xml->Taxon;
 
@@ -571,7 +604,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         if (!$organism) {
           $organism = $this->addOrganism($sci_name, $rank);
           if (!$organism) {
-            throw new \Exception(t('Cannot add organism: @sci_name', ['@sci_name' => $sci_name]));
+            throw new \Exception('Cannot add organism: ' . $sci_name);
           }
         }
       }
@@ -637,12 +670,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
           $name_ranks[$type]++;
         }
       }
-    }
-    else {
-      $this->logger->warning("Error contacting NCBI to look up taxid @taxid",
-        ['@taxid' => $taxid]
-      );
-      return FALSE;
     }
   }
 
@@ -737,7 +764,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
   public function formSubmit($form, &$form_state) {
 
   }
-
 
   /**
    * Ajax callback for the TaxonomyImporter::form() function.

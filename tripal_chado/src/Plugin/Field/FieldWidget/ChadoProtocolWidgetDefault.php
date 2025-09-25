@@ -2,22 +2,23 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
  * Plugin implementation of default Chado protocol widget.
- *
- * @FieldWidget(
- *   id = "chado_protocol_widget_default",
- *   label = @Translation("Chado Protocol Widget"),
- *   description = @Translation("The default protocol widget."),
- *   field_types = {
- *     "chado_protocol_type_default"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'chado_protocol_widget_default',
+  label: new TranslatableMarkup('Chado Protocol Widget'),
+  description: new TranslatableMarkup('The default protocol widget.'),
+  field_types: [
+    'chado_protocol_type_default',
+  ],
+)]
 class ChadoProtocolWidgetDefault extends ChadoWidgetBase {
 
   /**

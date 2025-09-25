@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use \Drupal\Tests\user\Traits\UserCreationTrait;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the base functionality for importers.
@@ -13,6 +14,7 @@ use \Drupal\Tests\user\Traits\UserCreationTrait;
  *
  * @group TripalImporter
  */
+#[Group('TripalImporter')]
 class TripalImporterBaseTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 
@@ -77,6 +79,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
    *
    * @group tripal_importer
    */
+  #[Group('tripal_importer')]
   public function testTripalImporterManager() {
 
     // Test the Tripal Importer Plugin Manager.
@@ -100,6 +103,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
    *
    * @group tripal_importer
    */
+  #[Group('tripal_importer')]
   public function testTripalImporterBase() {
 
     // CASE --- Valid
@@ -437,6 +441,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
    *
    * @group tripal_importer
    */
+  #[Group('tripal_importer')]
   public function testTripalImporterBaseJobs() {
 
     // CASE --- Valid
@@ -489,6 +494,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
    *
    * @group tripal_importer
    */
+  #[Group('tripal_importer')]
   public function testTripalImporterBaseFiles() {
 
     // CASE --- Valid
@@ -556,6 +562,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
    *
    * @group tripal_importer
    */
+  #[Group('tripal_importer')]
   public function testTripalImporterBaseProgress() {
 
     // We need to mock the logger to test the progress reporting.

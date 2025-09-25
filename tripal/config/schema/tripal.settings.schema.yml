@@ -11,6 +11,12 @@ tripal.settings:
           type: string
         default_cache_backend_field_values:
           type: boolean
+        widget_global_select_limit:
+          type: integer
+        publish_global_max_delta:
+          type: integer
+        publish_global_max_delta_inhibit:
+          type: boolean
     files:
       type: config_object
       mapping:

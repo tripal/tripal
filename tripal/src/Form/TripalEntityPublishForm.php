@@ -2,13 +2,11 @@
 
 namespace Drupal\tripal\Form;
 
-//use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\file\Entity\File;
-
 
 /**
  * Form that asks the user (admin) which content type they want to publish.
@@ -25,12 +23,12 @@ class TripalEntityPublishForm extends FormBase {
   /**
    * Build the form.
    */
-  function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state) {
     $bundles = [];
     $datastores = [];
     $publish_form_defaults = \Drupal::state()->get('tripal_publish_form_defaults', []);
 
-    // Get a list of TripalStorage plugins
+    // Get a list of TripalStorage plugins.
     /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
     $storage_manager = \Drupal::service('tripal.storage');
     $storage_defs = $storage_manager->getDefinitions();
@@ -48,19 +46,19 @@ class TripalEntityPublishForm extends FormBase {
       ->getStorage('tripal_entity_type')
       ->loadByProperties([]);
     foreach ($entity_types as $entity_type) {
-        $bundles[$entity_type->id()] = $entity_type->getLabel();
+      $bundles[$entity_type->id()] = $entity_type->getLabel();
     }
 
     $form['datastore'] = [
-      '#title' => 'Storage Backend',
-      '#description' => 'Please select the data storage backend that should be used for publishing content.',
+      '#title' => t('Storage Backend'),
+      '#description' => t('Please select the data storage backend that should be used for publishing content.'),
       '#type' => 'select',
       '#options' => $datastores,
       '#sort_options' => TRUE,
       '#required' => TRUE,
       '#ajax' => [
         'callback' => '::storageAjaxCallback',
-        'wrapper' => 'storage-options'
+        'wrapper' => 'storage-options',
       ],
     ];
 
@@ -73,8 +71,8 @@ class TripalEntityPublishForm extends FormBase {
 
     $form['storage-options'] = [
       '#type' => 'details',
-      '#description' => 'Please select a storage backend for additional options.',
-      '#title' => 'Storage Options',
+      '#description' => t('Please select a storage backend for additional options.'),
+      '#title' => t('Storage Options'),
       '#prefix' => '<div id="storage-options">',
       '#suffix' => '</div>',
       '#open' => TRUE,
@@ -94,8 +92,8 @@ class TripalEntityPublishForm extends FormBase {
     }
 
     $form['bundle'] = [
-      '#title' => 'Content Type',
-      '#description' => 'Please select a content type to publish.',
+      '#title' => t('Content Type'),
+      '#description' => t('Please select a content type to publish.'),
       '#type' => 'select',
       '#options' => $bundles,
       '#sort_options' => TRUE,
@@ -104,10 +102,10 @@ class TripalEntityPublishForm extends FormBase {
 
     $form['republish'] = [
       '#type' => 'checkbox',
-      '#title' => 'Republish Existing Content',
-      '#description' => 'Check this if the title format has been changed, if'
+      '#title' => t('Republish Existing Content'),
+      '#description' => t('Check this if the title format has been changed, if'
          . ' new fields have been added to the content type, or if records have'
-         . ' been changed in Chado. The entity ID number will not be changed.',
+         . ' been changed in Chado. The entity ID number will not be changed.'),
       '#default_value' => $publish_form_defaults['republish'] ?? 0,
     ];
 

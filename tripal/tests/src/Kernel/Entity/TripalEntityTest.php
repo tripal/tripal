@@ -6,6 +6,7 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\Entity\TripalEntityType;
 use \Drupal\Tests\user\Traits\UserCreationTrait;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TripalEntity Class.
@@ -13,6 +14,8 @@ use \Drupal\Tests\user\Traits\UserCreationTrait;
  * @group TripalEntity
  * @group TripalTokenParser
  */
+#[Group('TripalEntity')]
+#[Group('TripalTokenParser')]
 class TripalEntityTest extends TripalTestKernelBase {
 
   /**

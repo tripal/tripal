@@ -5,12 +5,14 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy\ChadoTestBuddyBase;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the Chado Property Buddy.
  *
  * @group ChadoBuddy
  */
+#[Group('ChadoBuddy')]
 class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
 
   /**

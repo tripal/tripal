@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Database;
 
+use Drupal\Core\Database\Statement\FetchAs;
 use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
 use Drupal\tripal_chado\Database\ChadoSchema;
@@ -236,6 +237,16 @@ class ChadoConnection extends TripalDbxConnection {
     ";
     $schemas = $this->query($sql_query)->fetchAll();
 
+    // Starting with Drupal 11.2, the PDO constants are deprecated,
+    // however the replacement method is not avaliable to 11.1 or earlier.
+    // Reference: https://www.drupal.org/node/3488338
+    if (floatval(\Drupal::VERSION) >= 11.2) {
+      $mode = FetchAs::Associative;
+    }
+    else {
+      $mode = \PDO::FETCH_ASSOC;
+    }
+
     // Then we get schema part of Tripal.
     $integrated_schemas = $this
       ->select('chado_installations' ,'i')
@@ -244,7 +255,7 @@ class ChadoConnection extends TripalDbxConnection {
         ['install_id', 'schema_name', 'version', 'created', 'updated']
       )
       ->execute()
-      ->fetchAllAssoc('schema_name', \PDO::FETCH_ASSOC)
+      ->fetchAllAssoc('schema_name', $mode)
     ;
 
     foreach ($schemas as $schema) {
