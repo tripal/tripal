@@ -16,7 +16,7 @@ function find_all_published(string $output_file_name) {
 
   // Get a list of defined bio_data bundles
   $sql = "SELECT name, label FROM [tripal_bundle] ORDER BY term_id";
-  $results = \Drupal::service('tripal_chado.database')->query($sql, []);
+  $results = chado_query($sql, []);
   $bundle_names = [];
   while ($obj = $results->fetchObject()) {
     $bundle_names[$obj->name] = $obj->label;
@@ -152,7 +152,7 @@ function query_one_bundle(string $bundle_name) {
   }
 
   $sql = "SELECT * " . $from . $where;
-  $results = \Drupal::service('tripal_chado.database')->query($sql, $args);
+  $results = chado_query($sql, $args);
   return [$table, $pkey_field, $results];
 }
 

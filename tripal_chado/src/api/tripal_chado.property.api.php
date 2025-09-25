@@ -678,7 +678,7 @@ function chado_get_table_property_types($prop_table, $schema_name = 'chado') {
     throw new Exception('Please provide a valid Chado property table');
   }
   $sql = 'SELECT DISTINCT type_id FROM {1:' . $prop_table . '}';
-  $results = $chado_connection->query($sql, [])->execute();
+  $results = $chado_connection->query($sql, []);
   $types = [];
   foreach ($results as $result) {
     $types[] = chado_generate_var('cvterm', ['cvterm_id' => $result->type_id], [], $schema_name);
