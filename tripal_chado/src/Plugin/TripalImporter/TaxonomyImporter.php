@@ -3,10 +3,14 @@
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\Core\Link;
+use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal\Services\TripalFileRetriever;
+use Drupal\tripal\Services\TripalLogger;
+use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\Database\ChadoConnection;
@@ -26,6 +30,11 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_remote: false,
   file_local: false,
   file_required: false,
+  publish: [
+    'bundle' => [
+      'organism',
+    ],
+  ],
 )]
 class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPluginInterface {
 
@@ -78,14 +87,19 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    * We are injecting an additional dependency here, the
    * ChadoBuddyPluginManager.
    *
-   * Since we have implemented the ContainerFactoryPluginInterface this static function
-   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the constructor.
+   * Since we have implemented the ContainerFactoryPluginInterface this static
+   * function will be called behind the scenes when a Plugin Manager uses
+   * createInstance(). Specifically this method is used to determine the
+   * parameters to pass to the constructor.
    *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container.
    * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
    * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
+   *   The plugin implementation definition.
    *
    * @return static
    */
@@ -94,17 +108,39 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       $configuration,
       $plugin_id,
       $plugin_definition,
+      $container->get('tripal_chado.chado_buddy'),
       $container->get('tripal_chado.database'),
-      $container->get('tripal_chado.chado_buddy')
+      $container->get('messenger'),
+      $container->get('tripal.logger'),
+      $container->get('tripal.fileretriever'),
+      $container->get('tripal.backend_publish'),
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition,
-                              ChadoConnection $connection, ChadoBuddyPluginManager $buddy_manager) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ChadoBuddyPluginManager $buddy_manager,
+    ChadoConnection $connection,
+    Messenger $messenger,
+    TripalLogger $logger,
+    TripalFileRetriever $fileretriever,
+    TripalBackendPublishManager $publish_manager,
+  ) {
+    parent::__construct(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $connection,
+      $messenger,
+      $logger,
+      $fileretriever,
+      $publish_manager,
+    );
     $this->buddy_manager = $buddy_manager;
     $this->dbxref_buddy = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
     $this->property_buddy = $this->buddy_manager->createInstance('chado_property_buddy', []);
@@ -114,7 +150,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-    $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
@@ -123,6 +158,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       '#title' => 'INSTRUCTIONS',
       '#description' => t('This form is used to import species from the NCBI
         Taxonomy database into this site.'),
+      '#weight' => -90,
     ];
 
     $form['ncbi_api_key'] = [
@@ -233,7 +269,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         LEFT JOIN {1:cvterm} CVT ON CVT.cvterm_id = O.type_id
       ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
     ";
-    $results = $chado->query($sql);
+    $results = $this->connection->query($sql);
 
     while ($item = $results->fetchObject()) {
       $this->all_orgs[] = $item;
@@ -475,10 +511,10 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         'type_id' => $type->cvterm_id,
         'infraspecific_name' => $infra,
       ];
-      $organism_id = $chado->insert('1:organism')
+      $organism_id = $this->connection->insert('1:organism')
         ->fields($values)
         ->execute();
-      $organism = $chado->select('1:organism', 'o')
+      $organism = $this->connection->select('1:organism', 'o')
         ->fields('o')
         ->condition('organism_id', $organism_id)
         ->execute()
@@ -498,10 +534,10 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         ];
         // $organism = chado_insert_record('organism', $values);
         // $organism = (object) $organism;
-        $organism_id = $chado->insert('1:organism')
+        $organism_id = $this->connection->insert('1:organism')
         ->fields($values)
         ->execute();
-        $organism = $chado->select('1:organism', 'o')
+        $organism = $this->connection->select('1:organism', 'o')
         ->fields('o')
         ->condition('organism_id', $organism_id)
         ->execute()
@@ -685,7 +721,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
   private function parseLineageEx ($lineageexobj) : string {
     $lineageex = '';
     $lineage_parts = [];
-    if (property_exists($lineageexobj, 'Taxon')) {
+    if (is_object($lineageexobj) && property_exists($lineageexobj, 'Taxon')) {
       foreach ($lineageexobj->Taxon as $lineage_element) {
         $lineage_parts[] = $lineage_element->Rank
                          . ':' . $lineage_element->TaxId
@@ -749,13 +785,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     ];
     $dbxref_record = $this->dbxref_buddy->upsertDbxref($values, []);
     $this->dbxref_buddy->associateDbxref('organism', $organism_id, $dbxref_record, $options);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postRun() {
-
   }
 
   /**
