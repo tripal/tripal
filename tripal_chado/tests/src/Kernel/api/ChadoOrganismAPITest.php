@@ -36,6 +36,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversFunction('chado_get_organism_select_options')]
 #[CoversFunction('chado_abbreviate_infraspecific_rank')]
 #[CoversFunction('chado_unabbreviate_infraspecific_rank')]
+#[IgnoreDeprecations]
 class ChadoOrganismAPITest extends ChadoTestKernelBase {
 
   /**
