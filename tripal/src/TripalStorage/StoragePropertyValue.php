@@ -2,8 +2,6 @@
 
 namespace Drupal\tripal\TripalStorage;
 
-use Drupal\tripal\TripalStorage\StoragePropertyBase;
-
 /**
  * Defines the Tripal storage property value.
  */
@@ -12,26 +10,21 @@ class StoragePropertyValue extends StoragePropertyBase {
   /**
    * Constructs a new tripal storage property value.
    *
-   * @param string entityType
+   * @param string $entityType
    *   The entity type associated with this storage property value.
-   *
-   * @param string fieldType
+   * @param string $fieldType
    *   The field type associated with this storage property value.
-   *
-   * @param string key
+   * @param string $key
    *   The key associated with this storage property value.
-   *
-   * @param string term_id
+   * @param string $term_id
    *   The controlled vocabulary term asssociated with this property. It must be
    *   in the form of "IdSpace:Accession" (e.g. "rdfs:label" or "OBI:0100026")
-   *
-   * @param string entityId
+   * @param string $entityId
    *   The entity id associated with this storage property value.
-   *
    * @param ? $value
    *   An optional initial value for this storage property value.
    */
-  public function __construct($entityType, $fieldType, $key, $term_id, $entityId, $value = NUll) {
+  public function __construct($entityType, $fieldType, $key, $term_id, $entityId, $value = NULL) {
     parent::__construct($entityType, $fieldType, $key, $term_id);
 
     $this->entityId = $entityId;
@@ -108,4 +101,5 @@ class StoragePropertyValue extends StoragePropertyBase {
    * @var ?
    */
   private $default_value;
+
 }
