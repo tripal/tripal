@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Core\Form\FormState;
-use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -79,7 +78,6 @@ class TripalPublishFormTest extends TripalTestKernelBase {
 
     // Setup the form_state.
     $form_state = new FormState();
-    // $form_state->setValue('datastore', 'drupal_sql_storage');
 
     // Now try validation!
     \Drupal::formBuilder()->submitForm(
