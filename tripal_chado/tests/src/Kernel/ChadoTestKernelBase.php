@@ -145,6 +145,11 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
       $this->installEntitySchema('file');
       $this->installSchema('file', ['file_usage']);
       $this->installSchema('tripal', ['tripal_import', 'tripal_jobs']);
+      // Get services used by importers.
+      $this->messenger = \Drupal::messenger();
+      $this->logger = \Drupal::service('tripal.logger');
+      $this->fileretriever = \Drupal::service('tripal.fileretriever');
+      $this->publish_manager = \Drupal::service('tripal.backend_publish');
     }
   }
 }
