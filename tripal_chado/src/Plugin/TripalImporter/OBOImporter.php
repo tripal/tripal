@@ -6,9 +6,20 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\File\FileSystem;
+use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal\Services\TripalFileRetriever;
+use Drupal\tripal\Services\TripalLogger;
+use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\Services\ChadoMviewsManager;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
 /**
@@ -32,6 +43,41 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_required: false,
 )]
 class OBOImporter extends ChadoImporterBase {
+
+  /**
+   * The Drupal FileSystem service.
+   *
+   * @var Drupal\Core\File\FileSystem
+   */
+  protected $file_system;
+
+  /**
+   * The Drupal Module Handler service.
+   *
+   * @var Drupal\Core\Extension\ModuleHandler
+   */
+  protected $module_handler;
+
+  /**
+   * The Tripal ID Space service.
+   *
+   * @var Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager
+   */
+  protected $idspace_manager;
+
+  /**
+   * The Tripal Vocabulary service.
+   *
+   * @var Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager
+   */
+  protected $vocabulary_manager;
+
+  /**
+   * The Drupal Module Handler service.
+   *
+   * @var Drupal\tripal_chado\Services\ChadoMviewsManager
+   */
+  protected $mviews_manager;
 
   /**
    * Keep track of vocabularies that have been added.
@@ -153,6 +199,80 @@ class OBOImporter extends ChadoImporterBase {
   private $term_names = [];
 
   /**
+   * Implements ContainerFactoryPluginInterface->create().
+   *
+   * We are injecting several additional dependencies here.
+   *
+   * Since we have implemented the ContainerFactoryPluginInterface this static
+   * function will be called behind the scenes when a Plugin Manager uses
+   * createInstance(). Specifically this method is used to determine the
+   * parameters to pass to the constructor.
+   *
+   * @param Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container.
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   *
+   * @return static
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('file_system'),
+      $container->get('module_handler'),
+      $container->get('tripal.collection_plugin_manager.idspace'),
+      $container->get('tripal.collection_plugin_manager.vocabulary'),
+      $container->get('tripal_chado.materialized_views'),
+      $container->get('tripal_chado.database'),
+      $container->get('messenger'),
+      $container->get('tripal.logger'),
+      $container->get('tripal.fileretriever'),
+      $container->get('tripal.backend_publish'),
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    FileSystem $file_system,
+    ModuleHandler $module_handler,
+    TripalIdSpaceManager $idspace_manager,
+    TripalVocabularyManager $vocabulary_manager,
+    ChadoMviewsManager $mviews_manager,
+    ChadoConnection $connection,
+    Messenger $messenger,
+    TripalLogger $logger,
+    TripalFileRetriever $fileretriever,
+    TripalBackendPublishManager $publish_manager,
+  ) {
+    parent::__construct(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $connection,
+      $messenger,
+      $logger,
+      $fileretriever,
+      $publish_manager,
+    );
+    $this->file_system = $file_system;
+    $this->module_handler = $module_handler;
+    $this->idspace_manager = $idspace_manager;
+    $this->vocabulary_manager = $vocabulary_manager;
+    $this->mviews_manager = $mviews_manager;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function form($form, &$form_state) {
@@ -270,8 +390,8 @@ class OBOImporter extends ChadoImporterBase {
       $uobo_file = trim($vocab->path);
       $matches = [];
       if (preg_match('/\{(.*?)\}/', $uobo_file, $matches)) {
-        $modpath = \Drupal::service('file_system')
-          ->realpath(\Drupal::service('module_handler')
+        $modpath = $this->file_system
+          ->realpath($this->module_handler
           ->getModule($matches[1])
           ->getPath());
         $uobo_file = preg_replace('/\{.*?\}/', $modpath, $uobo_file);
@@ -793,8 +913,7 @@ class OBOImporter extends ChadoImporterBase {
    * @return \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase
    */
   private function getIdSpace($name) {
-    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $idSpace = $idsmanager->loadCollection($name, 'chado_id_space');
+    $idSpace = $this->idspace_manager->loadCollection($name, 'chado_id_space');
     return $idSpace;
   }
 
@@ -807,8 +926,7 @@ class OBOImporter extends ChadoImporterBase {
    * @return \Drupal\tripal\TripalVocabTerms\TripalVocabularyBase
    */
   private function getVocabulary($name) {
-    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    $vocabulary = $vmanager->loadCollection($name, 'chado_vocabulary');
+    $vocabulary = $this->vocabulary_manager->loadCollection($name, 'chado_vocabulary');
     return $vocabulary;
   }
 
@@ -883,15 +1001,15 @@ class OBOImporter extends ChadoImporterBase {
    */
   public function postRun() {
 
+    parent::postRun();
+
     // Update the cv_root_mview materialized view.
     $this->logger->notice("Updating the cv_root_mview materialized view...");
-    $mviews = \Drupal::service('tripal_chado.materialized_views');
-    $mview = $mviews->create('cv_root_mview', $this->chado_schema_main);
+    $mview = $this->mviews_manager->create('cv_root_mview', $this->chado_schema_main);
     $mview->populate();
 
     $this->logger->notice("Updating the db2cv_mview materialized view...");
-    $mviews = \Drupal::service('tripal_chado.materialized_views');
-    $mview = $mviews->create('db2cv_mview', $this->chado_schema_main);
+    $mview = $this->mviews_manager->create('db2cv_mview', $this->chado_schema_main);
     $mview->populate();
 
     // @todo uncomment this when the chado_update_cvtermpath() function is ported.
@@ -919,8 +1037,8 @@ class OBOImporter extends ChadoImporterBase {
     $matches = [];
     if (preg_match("/\{(.*?)\}/", $obo->path, $matches)) {
       $module = $matches[1];
-      $path = \Drupal::service('file_system')
-        ->realpath(\Drupal::service('module_handler')
+      $path = $this->file_system
+        ->realpath($this->module_handler
         ->getModule($module)
         ->getPath());
 
