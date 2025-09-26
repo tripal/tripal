@@ -68,6 +68,16 @@ function tripal_file_install() {
 }
 
 /**
+ * Implements hook_uninstall().
+ *
+ * @ingroup tripal_file
+ */
+function tripal_file_uninstall() {
+  // Delete the custom tables created by this module.
+  tripal_file_drop_custom_chado_tables();
+}
+
+/**
  * Displays a status message.
  *
  * This handles displaying both to the UI and to drush output.
@@ -165,41 +175,8 @@ function tripal_file_import_content_types(): void {
  */
 function tripal_file_add_default_licenses($chado): void {
 
-  $license_defs = [
-    0 => [
-      'name' => 'No license',
-      'summary' => 'There is no license associated with this item.',
-      'uri' => NULL,
-    ],
-    1 => [
-      'name' => 'Public Domain',
-      'summary' => 'The data have no known copyrights or restrictions and can be freely used by anyone.',
-      'uri' => NULL,
-    ],
-    2 => [
-      'name' => 'CC0 1.0 Universal (CC0 1.0) Public Domain Dedication',
-      'summary' => 'The person who associated a work with this deed has ' .
-        'dedicated the work to the public domain by waiving all of his or ' .
-        'her rights to the work worldwide under copyright law, including all ' .
-        'related and neighboring rights, to the extent allowed by law. ' .
-        'You can copy, modify, distribute and perform the work, even for ' .
-        'commercial purposes, all without asking permission.',
-      'uri' => 'https://creativecommons.org/publicdomain/zero/1.0/legalcode',
-    ],
-    3 => [
-      'name' => 'Creative Commons Attribution 4.0 International Public License',
-      'summary' => 'You are free to copy and redistribute the material ' .
-        'in any medium or format, remix, transform, and build upon the '.
-        'material for any purpose, even commercially. The licensor cannot '.
-        'revoke these freedoms as long as you follow the license terms. ' .
-        'You must give appropriate credit, provide a link to the license, '.
-        'and indicate if changes were made. You may do so in any reasonable ' .
-        'manner, but not in any way that suggests the licensor endorses you ' .
-        'or your use. You may not apply legal terms or technological measures ' .
-        'that legally restrict others from doing anything the license permits.',
-      'uri' => 'https://creativecommons.org/licenses/by/4.0/legalcode',
-    ],
-  ];
+  $config = __DIR__ . '/config/other/tripal_file.license_definitions.yml';
+  $license_defs = Yaml::parseFile($config);
 
   // Add standard licenses if they do not exist.
   $n_added = 0;
