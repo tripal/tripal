@@ -993,16 +993,20 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     foreach ($possible_linking_tables as $linking_table) {
       $table_exists = $options['chado']->schema()->tableExists($linking_table);
       if ($table_exists) {
-        $linking_def = self::getChadoForeignKeyDef($options['chado']->schema(), $linking_table, $options['base_table']);
-        $fk_def = self::getChadoForeignKeyDef($options['chado']->schema(), $linking_table, $options['table']);
-        if ($fk_def) {
-          $linker_fkey_column = array_keys($fk_def['columns'])[0];
-          // Check for existing fields of this type.
-          if (array_key_exists($options['id'], $field_types)) {
-            // If yes, then add it to the field list.
-            foreach ($field_instances as $instance) {
-              if ($instance->getType() == $options['id']) {
-                $field_list[] = TripalFieldCollection::getFieldArrayFromFieldInstance($instance);
+        // Some materialized views may make it to this point, but if
+        // there is no primary key, we can't use it, e.g. analysis_organism.
+        $linker_pkey = self::getPrimaryKey($options['chado']->schema(), $linking_table);
+        if ($linker_pkey) {
+          $fk_def = self::getChadoForeignKeyDef($options['chado']->schema(), $linking_table, $options['table']);
+          if ($fk_def) {
+            $linker_fkey_column = array_keys($fk_def['columns'])[0];
+            // Check for existing fields of this type.
+            if (array_key_exists($options['id'], $field_types)) {
+              // If yes, then add it to the field list.
+              foreach ($field_instances as $instance) {
+                if ($instance->getType() == $options['id']) {
+                  $field_list[] = TripalFieldCollection::getFieldArrayFromFieldInstance($instance);
+                }
               }
             }
           }
@@ -1220,7 +1224,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    */
   protected static function getPrimaryKey(ChadoSchema $schema, string $table_name): ?string {
     $def = self::getChadoTableDef($schema, $table_name);
-    return $def['primary key'];
+    return $def['primary key'] ?? NULL;
   }
 
   /**
