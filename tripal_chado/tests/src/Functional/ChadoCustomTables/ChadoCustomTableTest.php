@@ -265,16 +265,26 @@ class ChadoCustomTableTest extends ChadoTestBrowserBase {
     // The 'name' column is set up with a unique constraint, but it is
     // nullable. With this test we should not be able to insert two null
     // records because we added 'nulls not distinct'.
+    // Since this is only supported on Postgresql >= 15, we will not
+    // expect an exception for versions < 15.
+    $psql_version = $chado->version();
+    // Remove distro info, e.g. "13.22 (Debian 13.22-1.pgdg12+1)" -> "13.22".
+    $psql_version = preg_replace('/[^\d\.].*$/', '', $psql_version);
+    $expect_exception = TRUE;
+    if (version_compare($psql_version, '15.0') < 0) {
+      $expect_exception = FALSE;
+    }
+
     $sql = "INSERT INTO $table_name4 (name, type_id, description) VALUES (NULL, 1, 'Dup')";
     $result1 = $chado->query($sql);
-    $caught = FALSE;
+    $threw_exception = FALSE;
     try {
       $result2 = $chado->query($sql);
     }
     catch (\Exception $e) {
-      $caught = TRUE;
+      $threw_exception = TRUE;
     }
-    $this->assertTrue($caught, 'There should have been an exception adding a second null record');
+    $this->assertEquals($expect_exception, $threw_exception, 'Unexpected exception status adding a second null record under postgresql version ' . $psql_version);
   }
 
 }
