@@ -209,6 +209,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
   public static function getSelectElement(array $element, mixed $default, array $options): ?array {
     $select_options = self::getSelectOptions($options);
     natcasesort($select_options);
+    $default_id = 0;
     if (gettype($default) == 'integer') {
       $default_id = $default;
     }
@@ -286,6 +287,9 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    * @param array $options
    *   select_limit - The maximum number of options to show in a select list.
    *   match_limit - Desired number of matching names to suggest.
+   *
+   * @return array
+   *   An array of options for a select element.
    */
   public static function getSelectOptions(array $options): ?array {
     // Construct a query
