@@ -61,24 +61,45 @@
   // Callback for mouseover event on graph node d.
   var phylogeny_node_mouse_over = function(d) {
     var el = $(this);
-    el.attr('cursor', 'pointer');
     var circle = el.find('circle');
-    // highlight in yellow no matter if leaf or interior node
-    circle.attr('fill', 'yellow');
-    if(!d.children) {
-      // only leaf nodes have descriptive text
-      var txt = el.find('text');
-      txt.attr('font-weight', 'bold');
-    }
-    else {
-      // interior node, only show tooltip if there is text associated
-      if (d.name) {
-        var mx = d3.event.layerX;
-        var my = d3.event.layerY;
+    if (!d.children) {
+      // Mouseover on leaf node only changes cursor and
+      // appearance if the node is clickable.
+      if (d.feature_eid || d.organism_eid) {
+        el.attr('cursor', 'pointer');
+        circle.attr('fill', 'yellow');
+        // only leaf nodes have descriptive text
+        var txt = el.find('text');
+        txt.attr('font-weight', 'bold');
+        var svg = document.getElementById('chado-phylogram');
+        var parentRect = svg.offsetParent.getBoundingClientRect();;
+        var ttx = d3.event.clientX - parentRect.left + 20;
+        var tty = d3.event.clientY - parentRect.top - 10;
+        var tip = "Click to view this feature";
+        if (d.organism_eid) {
+          tip = "Click to view this organism";
+        }
         tooltip
           .style("opacity", 0.9)
-          .style("left",(mx + 20) + "px")
-          .style("top", (my - 10) + "px")
+          .style("left", (ttx + 20) + "px")
+          .style("top", (tty - 10) + "px")
+          .html(tip);
+      }
+    }
+    else {
+      // Interior node, only change cursor and show tooltip if
+      // there is text associated.
+      if (d.name) {
+        el.attr('cursor', 'pointer');
+        circle.attr('fill', 'yellow');
+        var svg = document.getElementById('chado-phylogram');
+        var parentRect = svg.offsetParent.getBoundingClientRect();;
+        var ttx = d3.event.clientX - parentRect.left + 20;
+        var tty = d3.event.clientY - parentRect.top - 10;
+        tooltip
+          .style("opacity", 0.9)
+          .style("left", ttx + "px")
+          .style("top", tty + "px")
           .html(d.name);
       }
     }
@@ -89,7 +110,7 @@
     var el = $(this);
     el.attr('cursor', 'default');
     var circle = el.find('circle');
-    if(!d.children) {
+    if (!d.children) {
       // restore the color based on organism id for leaf nodes
       circle.attr('fill', phylogeny_organism_color(d));
       var txt = el.find('text');
@@ -98,12 +119,12 @@
     else {
       // restore interior nodes to white, remove tooltip
       circle.attr('fill', 'white');
-      tooltip
-        .style("opacity", 0.0)
-        .style("top", 0 + "px")
-        .style("left", 0 + "px")
-        .html('');
     }
+    tooltip
+      .style("opacity", 0.0)
+      .style("top", 0 + "px")
+      .style("left", 0 + "px")
+      .html('');
   };
 
   // Callback for mousedown/click event on graph node d.
@@ -111,9 +132,9 @@
     var el = $(this);
     var title = (! d.children ) ? d.name : 'interior node ' + d.phylonode_id;
 
-    if(d.children) {
+    if (d.children) {
       // interior node
-      if(d.phylonode_id) {
+      if (d.phylonode_id) {
       }
       else {
         // this shouldn't happen but ok
@@ -121,18 +142,18 @@
     }
     else {
       // leaf node
-      if(d.feature_eid) {
-        window.location.href = baseurl + '/bio_data/' + d.feature_eid;
+      if (d.feature_eid) {
+        window.open(baseurl + '/bio_data/' + d.feature_eid, '_blank');
         return;
       }
       // If this node is not associated with a feature but it has an
       // organism node then this is a taxonomic node and we want to
       // link it to the organism page.
       if (!d.feature_id && d.organism_nid) {
-        window.location.replace(baseurl + '/node/' + d.organism_nid);
+        window.open(baseurl + '/node/' + d.organism_nid, '_blank');
       }
       if (!d.feature_id && d.organism_eid) {
-        window.location.replace(baseurl + '/bio_data/' + d.organism_eid);
+        window.open(baseurl + '/bio_data/' + d.organism_eid, '_blank');
       }
     }
   };
@@ -152,7 +173,7 @@
       'phylogram_scale' : treeOptions['phylogram_scale']
     });
 
-    // Create a tooltip, used for mousover on interior notes
+    // Create a tooltip, used for mouseover.
     tooltip = d3.select('#chado-phylogram')
       .append('div')
       .style('opacity', 0)
@@ -163,12 +184,14 @@
       .style('border-width', '1px')
       .style('border-radius', '5px')
       .style('padding', '5px')
-  }
+      .style('position', 'absolute')
+      .style('display', 'inline-block')
+ }
 
   /* graphHeight() generate graph height based on leaf nodes */
   function phylogeny_graph_height(data) {
     function count_leaf_nodes(node) {
-      if(! node.children) {
+      if (! node.children) {
         return 1;
       }
       var ct = 0;
