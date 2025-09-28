@@ -87,10 +87,10 @@
       }
     }
     else {
-      // Interior node, only change cursor and show tooltip if
-      // there is text associated.
+      // Interior node, a tooltip is shown if there is text
+      // associated, but cursor is not changed because interior
+      // nodes are not clickable.
       if (d.name) {
-        el.attr('cursor', 'pointer');
         circle.attr('fill', 'yellow');
         var svg = document.getElementById('chado-phylogram');
         var parentRect = svg.offsetParent.getBoundingClientRect();;
