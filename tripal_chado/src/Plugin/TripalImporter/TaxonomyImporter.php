@@ -67,9 +67,9 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
 
   /**
    * Options for file retrieval from NCBI.
-   *  
-   * NOTE: NCBI accepts 3 requests/second by default but will allow 
-   * 10 requests/second if an API key is provided. This is defined  
+   *
+   * NOTE: NCBI accepts 3 requests/second by default but will allow
+   * 10 requests/second if an API key is provided. This is defined
    * via the rate_limit key.
    *
    * @var array
@@ -489,7 +489,8 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       $full_infra = $matches[3];
 
       // Get the CV term for the rank.
-      $query = $this->connection->select('1:cvterm', 't');
+      $query = $this->connection->select('1:cvterm', 't')
+        ->fields('t', ['cvterm_id']);
       $query->join('1:cv', 'cv', '"t".cv_id = "cv".cv_id');
       $query->condition('t.name', preg_replace('/ /', '_', $rank), '=');
       $query->condition('cv.name', 'taxonomic_rank', '=');
