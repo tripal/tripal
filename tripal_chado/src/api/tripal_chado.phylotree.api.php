@@ -774,7 +774,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
   // Get the vocabulary terms used to describe nodes in the tree if one
   // wasn't provided.
   if (count($vocab) == 0) {
-    $vocab = chado_phylogeny_get_node_types_vocab($chado, $options, $schema_name);
+    $vocab = chado_phylogeny_get_node_types_vocab($options, $schema_name);
   }
 
   if (is_array($tree) and array_key_exists('name', $tree)) {
