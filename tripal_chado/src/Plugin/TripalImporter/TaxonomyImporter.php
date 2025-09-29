@@ -789,8 +789,8 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     $query = $this->connection->select('1:organism_dbxref', 'ox');
     $query->condition('ox.organism_id', $organism_id, '=');
     $query->condition('ox.dbxref_id', $dbxref_record->getValue('dbxref.dbxref_id'), '=');
-    $count = $query->countQuery()->execute();
-    if (!$count) {
+    $count = $query->countQuery()->execute()->fetchField();
+    if ($count < 1) {
       $this->dbxref_buddy->associateDbxref('organism', $organism_id, $dbxref_record, $options);
     }
   }
