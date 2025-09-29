@@ -134,7 +134,10 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
     $id = 0;
 
     $matches = [];
-    if (preg_match('/\((\d+)\)/', $value, $matches)) {
+    if (preg_match('/^\d+$/', $value)) {
+      $id = $value;
+    }
+    elseif (preg_match('/\((\d+)\)/', $value, $matches)) {
       $id = $matches[array_key_last($matches)];
     }
 
