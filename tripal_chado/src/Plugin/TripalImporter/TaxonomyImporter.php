@@ -67,9 +67,9 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
 
   /**
    * Options for file retrieval from NCBI.
-   *  
-   * NOTE: NCBI accepts 3 requests/second by default but will allow 
-   * 10 requests/second if an API key is provided. This is defined  
+   *
+   * NOTE: NCBI accepts 3 requests/second by default but will allow
+   * 10 requests/second if an API key is provided. This is defined
    * via the rate_limit key.
    *
    * @var array
@@ -432,38 +432,33 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
 
     // First check the taxid to see if it's present and associated with an
     // organism already.
-    $values = [
-      'db_id' => [
-        'name' => 'NCBITaxon',
-      ],
-      'accession' => $taxid,
-    ];
-    $columns = ['dbxref_id'];
-    $dbxref = chado_select_record('dbxref', $columns, $values, NULL, $this->chado_schema_main);
-    if (count($dbxref) > 0) {
-      $columns = ['organism_id'];
-      $values = ['dbxref_id' => $dbxref[0]->dbxref_id];
-      $organism_dbxref = chado_select_record('organism_dbxref', $columns, $values, NULL, $this->chado_schema_main);
-      if (count($organism_dbxref) > 0) {
-        $organism_id = $organism_dbxref[0]->organism_id;
-        $columns = ['*'];
-        $values = ['organism_id' => $organism_id];
-        $organism = chado_select_record('organism', $columns, $values, NULL, $this->chado_schema_main);
-        if (count($organism) > 0) {
-          $organism = $organism[0];
-        }
-      }
+    $query = $this->connection->select('1:dbxref', 'x');
+    $query->join('1:db', 'db', '"x".db_id = "db".db_id');
+    $query->join('1:organism_dbxref', 'ox', '"x".dbxref_id = "ox".dbxref_id');
+    $query->join('1:organism', 'o', '"ox".organism_id = "o".organism_id');
+    $query->condition('db.name', 'NCBITaxon', '=');
+    $query->condition('x.accession', $taxid, '=');
+    $query->fields('o');
+    $results = $query->execute()->fetchAll();
+    if (count($results) > 0) {
+      $organism = $results[0];
     }
 
     // If the caller did not provide an organism then we want to try and
     // add one. But, it only makes sense to add one if this record
     // is of rank species.
     if (!$organism) {
-      // We do the lookup in two steps so that there is no error message for
-      // missing (new) organisms from chado_get_organism().
+      // We do the lookup in two steps so that there is no error if
+      // we don't retrieve an organism_id.
       $organism_ids = chado_get_organism_id_from_scientific_name($sci_name, []);
       if ($organism_ids) {
-        $organism = chado_get_organism(['organism_id' => $organism_ids[0]], [], $this->chado_schema_main);
+        $query = $this->connection->select('1:organism', 'o');
+        $query->condition('o.organism_id', $organism_ids[0], '=');
+        $query->fields('o');
+        $results = $query->execute()->fetchAll();
+        if (count($results) > 0) {
+          $organism = $results[0];
+        }
       }
     }
     return $organism;
@@ -494,10 +489,12 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       $full_infra = $matches[3];
 
       // Get the CV term for the rank.
-      $type = chado_get_cvterm([
-        'name' => preg_replace('/ /', '_', $rank),
-        'cv_id' => ['name' => 'taxonomic_rank'],
-      ], [], $this->chado_schema_main);
+      $query = $this->connection->select('1:cvterm', 't')
+        ->fields('t', ['cvterm_id']);
+      $query->join('1:cv', 'cv', '"t".cv_id = "cv".cv_id');
+      $query->condition('t.name', preg_replace('/ /', '_', $rank), '=');
+      $query->condition('cv.name', 'taxonomic_rank', '=');
+      $cvterm_id = $query->execute()->fetchField();
 
       // Remove the rank from the infraspecific name.
       $abbrev = chado_abbreviate_infraspecific_rank($rank);
@@ -508,7 +505,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         'genus' => $genus,
         'species' => $species,
         'abbreviation' => $genus[0] . '. ' . $species . ' ' . $full_infra,
-        'type_id' => $type->cvterm_id,
+        'type_id' => $cvterm_id,
         'infraspecific_name' => $infra,
       ];
       $organism_id = $this->connection->insert('1:organism')
@@ -683,9 +680,10 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
             case 'CommonName':
               // If we had to add the organism then include the common name too.
               if ($adds_organism) {
-                $organism->common_name = $name;
-                $values = ['organism_id' => $organism->id];
-                chado_update_record('organism', $values, $organism, NULL, $this->chado_schema_main);
+                $query = $this->connection->update('1:organism');
+                $query->condition('organism_id', $organism->id, '=');
+                $query->fields(['common_name' => $name]);
+                $query->execute();
               }
             case 'Includes':
               $this->addProperty($organism->organism_id, 'other_name', $name, $name_ranks[$type]);
@@ -784,7 +782,17 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       'pkey' => 'organism_id',
     ];
     $dbxref_record = $this->dbxref_buddy->upsertDbxref($values, []);
-    $this->dbxref_buddy->associateDbxref('organism', $organism_id, $dbxref_record, $options);
+
+    // Determine if the dbxref is already linked, and if not, link it.
+    // This will be moved to the buddy function later.
+    // @see issue #2300
+    $query = $this->connection->select('1:organism_dbxref', 'ox');
+    $query->condition('ox.organism_id', $organism_id, '=');
+    $query->condition('ox.dbxref_id', $dbxref_record->getValue('dbxref.dbxref_id'), '=');
+    $count = $query->countQuery()->execute()->fetchField();
+    if ($count < 1) {
+      $this->dbxref_buddy->associateDbxref('organism', $organism_id, $dbxref_record, $options);
+    }
   }
 
   /**
