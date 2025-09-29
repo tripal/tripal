@@ -1258,8 +1258,7 @@ class ChadoRecords {
    */
   protected function validateFKs($base_table, $delta, $record_id, $record) {
 
-    $schema = $this->connection->schema();
-    $table_def = $this->getChadoTableDef($schema, $base_table);
+    $table_def = $this->getChadoTableDef($base_table);
 
     $bad_fks = [];
     if (!array_key_exists('foreign keys', $table_def)) {
@@ -1324,8 +1323,7 @@ class ChadoRecords {
    */
   protected function validateTypes($base_table, $delta, $record_id, $record) {
 
-    $schema = $this->connection->schema();
-    $table_def = $this->getChadoTableDef($schema, $base_table);
+    $table_def = $this->getChadoTableDef($base_table);
 
     $bad_types = [];
     foreach ($table_def['fields'] as $col => $info) {
@@ -1394,8 +1392,7 @@ class ChadoRecords {
    */
   protected function validateSize($base_table, $delta, $record_id, $record) {
 
-    $schema = $this->connection->schema();
-    $table_def = $this->getChadoTableDef($schema, $base_table);
+    $table_def = $this->getChadoTableDef($base_table);
 
     $bad_sizes = [];
     foreach ($table_def['fields'] as $col => $info) {
@@ -1451,8 +1448,7 @@ class ChadoRecords {
    */
   protected function validateUnique($base_table, $delta, $record_id, $record) {
 
-    $schema = $this->connection->schema();
-    $table_def = $this->getChadoTableDef($schema, $base_table);
+    $table_def = $this->getChadoTableDef($base_table);
 
     // Check if we are violating a unique constraint (if it's an insert)
     if (array_key_exists('unique keys', $table_def)) {
@@ -1551,8 +1547,7 @@ class ChadoRecords {
    */
   protected function validateRequired($base_table, $delta, $record_id, $record) {
 
-    $schema = $this->connection->schema();
-    $table_def = $this->getChadoTableDef($schema, $base_table);
+    $table_def = $this->getChadoTableDef($base_table);
     $pkey = $table_def['primary key'];
 
     $missing = [];
@@ -1639,8 +1634,7 @@ class ChadoRecords {
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
 
     // Get information about this Chado table.
-    $schema = $this->connection->schema();
-    $pkey = $this->getPrimaryKey($schema, $chado_table);
+    $pkey = $this->getPrimaryKey($chado_table);
 
     // Iterate through each item of the table and perform an insert.
     $items = $this->getTableItems($base_table, $table_alias);
@@ -1763,7 +1757,7 @@ class ChadoRecords {
       // If limiting results to a set of primary keys, restrict the
       // query by adding this as a condition.
       if ($record_ids) {
-        $chado_table_pkey = $this->getPrimaryKey($this->connection->schema(), $chado_table);
+        $chado_table_pkey = $this->getPrimaryKey($chado_table);
         $select->condition($base_table_alias . '.' . $chado_table_pkey, $record_ids, 'IN');
       }
 
@@ -1891,8 +1885,7 @@ class ChadoRecords {
     $items = $this->getTableItems($base_table, $table_alias);
     foreach ($items as $delta => $record) {
 
-      $schema = $this->connection->schema();
-      $pkey = $this->getPrimaryKey($schema, $chado_table);
+      $pkey = $this->getPrimaryKey($chado_table);
 
       // Don't delete if we don't have any conditions set.
       if (!$this->hasValidConditions($record)) {
@@ -2212,15 +2205,13 @@ class ChadoRecords {
   /**
    * Get a table definition from the chado schema.
    *
-   * @param $schema
-   *   The schema to query for the table.
    * @param string $table_name
    *   The table name.
    *
    * @return array
    *   The table schema.
    */
-  public function getChadoTableDef(ChadoSchema $schema, string $table_name): array {
+  public function getChadoTableDef(string $table_name): array {
     $parameters = [
       'format' => 'Drupal',
       'source' => [
@@ -2229,23 +2220,21 @@ class ChadoRecords {
         'database'
       ],
     ];
-    $table_def = $schema->getTableDef($table_name, $parameters);
+    $table_def = $this->connection->schema->getTableDef($table_name, $parameters);
     return $table_def;
   }
 
   /**
    * Retrieves the name of the primary key for a Chado table.
    *
-   * @param Drupal\tripal_chado\Database\ChadoSchema $schema
-   *   The chado schema definition.
    * @param string $table_name
    *   The chado table to look up the primary key for.
    *
    * @return string|null
    *   The table primary key name.
    */
-  public function getPrimaryKey(ChadoSchema $schema, string $table_name): ?string {
-    $table_def = $this->getChadoTableDef($schema, $table_name);
+  public function getPrimaryKey(string $table_name): ?string {
+    $table_def = $this->getChadoTableDef($table_name);
     return $table_def['primary key'] ?? NULL;
   }
 
