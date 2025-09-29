@@ -307,7 +307,7 @@ class ChadoSchema {
    */
   public function getCustomTableSchema($table) {
 
-    $sql = "SELECT schema FROM [tripal_custom_tables] WHERE table_name = :table_name";
+    $sql = "SELECT schema FROM {0:tripal_custom_tables} WHERE table_name = :table_name";
     $results = $this->connection->query($sql, [':table_name' => $table]);
     $custom = $results->fetchObject();
     if (!$custom) {
