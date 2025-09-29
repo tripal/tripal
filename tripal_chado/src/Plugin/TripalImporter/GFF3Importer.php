@@ -482,8 +482,8 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     ];
 
     $form['targets']['target_organism_id'] = ChadoOrganismFormElementController::getFormElement([], 0, $options);
-    $form['organism_id']['#title'] = t('Target Organism');
-    $form['organism_id']['#description'] = t("Optional. Choose the organism to which target sequences belong.
+    $form['targets']['#title'] = t('Target Organism');
+    $form['targets']['#description'] = t("Optional. Choose the organism to which target sequences belong.
         Select this only if target sequences belong to a different organism than the
         one specified above. And only choose an organism here if all of the target sequences
         belong to the same species.  If the targets in the GFF file belong to multiple
