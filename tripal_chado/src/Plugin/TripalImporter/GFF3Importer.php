@@ -627,13 +627,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $this->gff_file = $this->arguments['files'][0]['file_path'];
 
     // Set the private member variables of this class using the loader inputs.
-    $this->organism_id = $arguments['organism_id'];
-
-    if (!preg_match('/^\d+$/', $arguments['organism_id'])) {
-      if (preg_match('/\((\d+)\)$/', $arguments['organism_id'], $matches)) {
-        $this->organism_id = $matches[1];
-      }
-    }
+    $this->organism_id = ChadoOrganismFormElementController::getPkeyId($arguments['organism_id']);
     $this->analysis_id = $arguments['analysis_id'];
     $this->add_only = $arguments['add_only'] ?? 0;
     $this->update = $arguments['update'] ?? 0;
