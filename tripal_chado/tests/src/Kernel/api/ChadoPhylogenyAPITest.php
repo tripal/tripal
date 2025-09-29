@@ -85,8 +85,8 @@ class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
             'common_name' => 'False Tripal',
             'abbreviation' => 'T. ' . $species . ' subsp. sativus',
            ];
-    $query = $this->chado_connection->insert('1:organism');
-    $organism_id = $query->fields($org);
+    $query = $this->chado_connection->insert('1:organism')
+      ->fields($org);
     $organism_id = $query->execute();
     $this->assertEquals('1', $organism_id, 'Unable to insert test organism 1.');
     $organism_ids[0] = $organism_id;
