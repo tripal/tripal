@@ -252,13 +252,7 @@ class FASTAImporter extends ChadoImporterBase {
   public function formValidate($form, &$form_state) {
     $form_state_values = $form_state->getValues();
 
-    $organism_id = $form_state_values['organism_id'];
-
-    if (!preg_match('/^\d+$/', $form_state_values['organism_id'])) {
-      if (preg_match('/\((\d+)\)$/', $form_state_values['organism_id'], $matches)) {
-        $organism_id = $matches[1];
-      }
-    }
+    $organism_id = ChadoOrganismFormElementController::getPkeyId($form_state_values['organism_id']);
 
     $file_upload = $form_state_values['file_upload'];
     $file_upload_existing = $form_state_values['file_upload_existing'] ?? null;
