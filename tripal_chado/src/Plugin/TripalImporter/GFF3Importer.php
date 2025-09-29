@@ -637,13 +637,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $this->analysis_id = $arguments['analysis_id'];
     $this->add_only = $arguments['add_only'] ?? 0;
     $this->update = $arguments['update'] ?? 0;
-    $this->target_organism_id = $arguments['target_organism_id'];
-
-    if (!preg_match('/^\d+$/', $arguments['target_organism_id'])) {
-      if (preg_match('/\((\d+)\)$/', $arguments['target_organism_id'], $matches)) {
-        $this->target_organism_id = $matches[1];
-      }
-    }
+    $this->target_organism_id = ChadoOrganismFormElementController::getPkeyId($arguments['target_organism_id']);
     $this->target_type = $arguments['target_type'];
     $this->create_target = $arguments['create_target'];
     $this->start_line = $arguments['line_number'];
