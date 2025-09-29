@@ -253,6 +253,13 @@ class FASTAImporter extends ChadoImporterBase {
     $form_state_values = $form_state->getValues();
 
     $organism_id = $form_state_values['organism_id'];
+
+    if (!preg_match('/^\d+$/', $form_state_values['organism_id'])) {
+      if (preg_match('/\((\d+)\)$/', $form_state_values['organism_id'], $matches)) {
+        $organism_id = $matches[1];
+      }
+    }
+
     $file_upload = $form_state_values['file_upload'];
     $file_upload_existing = $form_state_values['file_upload_existing'] ?? null;
     $file_local = $form_state_values['file_local'] ?? null;
@@ -351,6 +358,13 @@ class FASTAImporter extends ChadoImporterBase {
     $file_path = $this->arguments['files'][0]['file_path'];
 
     $organism_id = $arguments['organism_id'];
+
+    if (!preg_match('/^\d+$/', $arguments['organism_id'])) {
+      if (preg_match('/\((\d+)\)$/', $arguments['organism_id'], $matches)) {
+        $organism_id = $matches[1];
+      }
+    }
+
     $type = $arguments['seqtype'];
     $method = $arguments['method'];
     $match_type = $arguments['match_type'];
