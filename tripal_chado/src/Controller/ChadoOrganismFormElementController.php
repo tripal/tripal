@@ -262,7 +262,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
         $query->condition('organism_id', $default_id, '=');
         $result = $query->execute()->fetchObject();
         if ($result) {
-          // Strip HTML tags if present, e.g. in Pub title.
+          // Strip HTML tags if present, but this is unlikely for organism.
           $default_value = strip_tags($result->organism ?? '');
           // Append the chado pkey id value.
           $default_value .= ' (' . $default_id . ')';
