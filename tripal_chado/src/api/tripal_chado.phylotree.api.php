@@ -997,7 +997,9 @@ function chado_phylogeny_lookup_organism_by_name($name, $schema_name = 'chado') 
  *
  * @ingroup tripal_phylotree_api
  */
-function chado_phylogeny_get_node_types_vocab($chado, $options, $schema_name = 'chado') {
+function chado_phylogeny_get_node_types_vocab($options, $schema_name = 'chado') {
+  $chado = \Drupal::service('tripal_chado.database');
+  $chado->setSchemaName($schema_name);
   // Get the three default vocabulary terms used to describe nodes in the tree.
   $terms = ['leaf' => 'phylo_leaf', 'internal' => 'phylo_interior', 'root' => 'phylo_root'];
   $vocab = [];
