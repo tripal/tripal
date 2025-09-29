@@ -93,8 +93,8 @@ class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
 
     $org['infraspecific_name'] = 'selvaticus';
     $org['abbreviation'] = 'T. ' . $species . ' subsp. selvaticus';
-    $query = $this->chado_connection->insert('1:organism');
-    $organism_id = $query->fields($org);
+    $query = $this->chado_connection->insert('1:organism')
+      ->fields($org);
     $organism_id = $query->execute();
     $this->assertEquals('2', $organism_id, 'Unable to insert test organism 2.');
     $organism_ids[1] = $organism_id;
