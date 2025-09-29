@@ -782,7 +782,17 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       'pkey' => 'organism_id',
     ];
     $dbxref_record = $this->dbxref_buddy->upsertDbxref($values, []);
-    $this->dbxref_buddy->associateDbxref('organism', $organism_id, $dbxref_record, $options);
+
+    // Determine if the dbxref is already linked, and if not, link it.
+    // This will be moved to the buddy function later.
+    // @see issue #2300
+    $query = $this->connection->select('1:organism_dbxref', 'ox');
+    $query->condition('ox.organism_id', $organism_id, '=');
+    $query->condition('ox.dbxref_id', $dbxref_record->getValue('dbxref.dbxref_id'), '=');
+    $count = $query->countQuery()->execute();
+    if (!$count) {
+      $this->dbxref_buddy->associateDbxref('organism', $organism_id, $dbxref_record, $options);
+    }
   }
 
   /**
