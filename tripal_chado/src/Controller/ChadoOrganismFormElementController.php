@@ -272,7 +272,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
     $element = [
       '#type' => 'textfield',
       '#default_value' => $default_value,
-      '#autocomplete_route_name' => 'tripal_chado.organism_autocomplete_element',
+      '#autocomplete_route_name' => 'tripal_chado.organism_autocomplete',
       '#autocomplete_route_parameters' => ['match_limit' => $options['match_limit']],
       '#size' => $options['size'],
     ];
