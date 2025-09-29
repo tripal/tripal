@@ -6,6 +6,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
+use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;
 
 /**
  * FASTA Importer implementation of the TripalImporterBase.
@@ -43,16 +44,21 @@ class FASTAImporter extends ChadoImporterBase {
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
-    // get the list of organisms
-    $organisms = chado_get_organism_select_options();
+    $settings = \Drupal::config('tripal.settings');
 
-    $form['organism_id'] = [
-      '#title' => t('Organism'),
-      '#type' => 'select',
-      '#description' => t("Choose the organism to which these sequences are associated"),
-      '#required' => TRUE,
-      '#options' => $organisms,
-    ];
+    $options = [];
+    // Set some defaults to keep each of the fields simpler.
+    $options['select_limit'] = $settings->get('tripal_entity_type.widget_global_select_limit') ?? 50;
+    $options['match_limit'] = $settings->get('tripal_entity_type.match_limit') ?? 10;
+    $options['match_operator'] = $settings->get('tripal_entity_type.match_operator') ?? 'CONTAINS';
+    $options['size'] = $settings->get('tripal_entity_type.size');
+    $options['placeholder'] = $settings->get('tripal_entity_type.placeholder');
+
+    // Get the orgaism select element or auto-complete element.
+    $form['organism_id'] = ChadoOrganismFormElementController::getFormElement([], 0, $options);
+    $form['organism_id']['#title'] = t('Organism');
+    $form['organism_id']['#description'] = t("Choose the organism to which these sequences are associated");
+    $form['organism_id']['#required'] = TRUE;
 
     // get the sequence ontology CV ID
     $cv_results = $this->connection->select('1:cv', 'cv')

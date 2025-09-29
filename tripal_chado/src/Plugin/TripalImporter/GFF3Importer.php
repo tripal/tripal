@@ -14,6 +14,7 @@ use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
+use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;
 
 /**
  * GFF3 Importer implementation of the TripalImporterBase.
@@ -394,22 +395,26 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
-    // get the list of organisms
-    $organisms = chado_get_organism_select_options(FALSE, TRUE);
+    $settings = \Drupal::config('tripal.settings');
 
     // get the sequence ontology CV id
     $conditions = ['cv.name' => 'sequence'];
     $cv_records = $this->cvterm_buddy->getCv($conditions, []);
     $sequence_cv_id = $cv_records[0]->getValue('cv.cv_id');
 
-    $form['organism_id'] = [
-      '#title' => t('Existing Organism'),
-      '#type' => 'select',
-      '#description' => t("Choose an existing organism to which the entries in the GFF file will be associated."),
-      '#required' => TRUE,
-      '#options' => $organisms,
-      '#empty_option' => t('- Select -'),
-    ];
+    $options = [];
+    // Set some defaults to keep each of the fields simpler.
+    $options['select_limit'] = $settings->get('tripal_entity_type.widget_global_select_limit') ?? 50;
+    $options['match_limit'] = $settings->get('tripal_entity_type.match_limit') ?? 10;
+    $options['match_operator'] = $settings->get('tripal_entity_type.match_operator') ?? 'CONTAINS';
+    $options['size'] = $settings->get('tripal_entity_type.size');
+    $options['placeholder'] = $settings->get('tripal_entity_type.placeholder');
+
+    // Get the orgaism select element or auto-complete element.
+    $form['organism_id'] = ChadoOrganismFormElementController::getFormElement([], 0, $options);
+    $form['organism_id']['#title'] = t('Existing Organism');
+    $form['organism_id']['#description'] = t("Choose an existing organism to which the entries in the GFF file will be associated.");
+    $form['organism_id']['#required'] = TRUE;
 
     $form['landmark_type'] = [
       '#title' => t('Default Landmark Type'),
@@ -476,18 +481,14 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
        type if a more specific type name is given (e.g. cDNA_match or EST_match)."),
     ];
 
-    $form['targets']['target_organism_id'] = [
-      '#title' => t('Target Organism'),
-      '#type' => 'select',
-      '#description' => t("Optional. Choose the organism to which target sequences belong.
+    $form['targets']['target_organism_id'] = ChadoOrganismFormElementController::getFormElement([], 0, $options);
+    $form['organism_id']['#title'] = t('Target Organism');
+    $form['organism_id']['#description'] = t("Optional. Choose the organism to which target sequences belong.
         Select this only if target sequences belong to a different organism than the
         one specified above. And only choose an organism here if all of the target sequences
         belong to the same species.  If the targets in the GFF file belong to multiple
         different species then the organism must be specified using the 'target_organism=genus:species'
-        attribute in the GFF file."),
-      '#options' => $organisms,
-      '#empty_option' => t('- Select -'),
-    ];
+        attribute in the GFF file.");
 
     $form['targets']['target_type'] = [
       '#title' => t('Target Type'),
