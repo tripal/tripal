@@ -115,7 +115,7 @@ class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
     // Test chado_phylogeny_get_node_types_vocab().
     // This function is expected to return an array with three terms.
     // It returns FALSE on error.
-    $vocab = chado_phylogeny_get_node_types_vocab($this->chado_connection, [], $this->schemaName);
+    $vocab = chado_phylogeny_get_node_types_vocab([], $this->schemaName);
     $this->assertIsArray($vocab, 'Did not return an array from chado_phylogeny_get_node_types_vocab()');
     $this->assertEquals(count($vocab), 3, 'Did not return the expected three node types from chado_phylogeny_get_node_types_vocab()');
   }
