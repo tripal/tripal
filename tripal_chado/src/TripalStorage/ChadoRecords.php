@@ -2220,7 +2220,7 @@ class ChadoRecords {
         'database'
       ],
     ];
-    $table_def = $this->connection->schema->getTableDef($table_name, $parameters);
+    $table_def = $this->connection->schema()->getTableDef($table_name, $parameters);
     return $table_def;
   }
 
