@@ -2,14 +2,18 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
+use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal\Services\TripalFileRetriever;
+use Drupal\tripal\Services\TripalLogger;
+use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
-use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
+use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Drupal\tripal_chado\Database\ChadoConnection;
-use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
+use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
 /**
  * GFF3 Importer implementation of the TripalImporterBase.
@@ -32,6 +36,12 @@ use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
   file_remote: true,
   file_local: true,
   file_required: true,
+  publish: [
+    'bundle' => [
+      'gene',
+      'mrna',
+    ],
+  ],
 )]
 class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginInterface {
 
@@ -311,21 +321,25 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
    */
   private $proteins = [];
 
-
   /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * We are injecting an additional dependency here, the
    * ChadoBuddyPluginManager.
    *
-   * Since we have implemented the ContainerFactoryPluginInterface this static function
-   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the constructor.
+   * Since we have implemented the ContainerFactoryPluginInterface this static
+   * function will be called behind the scenes when a Plugin Manager uses
+   * createInstance(). Specifically this method is used to determine the
+   * parameters to pass to the constructor.
    *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container.
    * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
    * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
+   *   The plugin implementation definition.
    *
    * @return static
    */
@@ -334,17 +348,39 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       $configuration,
       $plugin_id,
       $plugin_definition,
+      $container->get('tripal_chado.chado_buddy'),
       $container->get('tripal_chado.database'),
-      $container->get('tripal_chado.chado_buddy')
+      $container->get('messenger'),
+      $container->get('tripal.logger'),
+      $container->get('tripal.fileretriever'),
+      $container->get('tripal.backend_publish'),
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition,
-                              ChadoConnection $connection, ChadoBuddyPluginManager $buddy_manager) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ChadoBuddyPluginManager $buddy_manager,
+    ChadoConnection $connection,
+    Messenger $messenger,
+    TripalLogger $logger,
+    TripalFileRetriever $fileretriever,
+    TripalBackendPublishManager $publish_manager,
+  ) {
+    parent::__construct(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $connection,
+      $messenger,
+      $logger,
+      $fileretriever,
+      $publish_manager,
+    );
     $this->buddy_manager = $buddy_manager;
     $this->dbxref_buddy = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
     $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
@@ -355,7 +391,6 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
    * {@inheritDoc}
    */
   public function form($form, &$form_state) {
-    $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
@@ -640,13 +675,13 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $this->feature_cv_buddy_record = $cv_records[0];
 
     // Get the organism object.
-    $this->organism = $chado->select('1:organism','o')
+    $this->organism = $this->connection->select('1:organism','o')
     ->fields('o')
     ->condition('organism_id', $this->organism_id)
     ->execute()
     ->fetchObject();
 
-    $num_found = $chado->select('1:organism','o')
+    $num_found = $this->connection->select('1:organism','o')
     ->fields('o')
     ->condition('organism_id', $this->organism_id)
     ->countQuery()
@@ -658,13 +693,13 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     }
 
     // Get the analysis object.
-    $this->analysis = $chado->select('1:analysis','a')
+    $this->analysis = $this->connection->select('1:analysis','a')
     ->fields('a')
     ->condition('analysis_id', $this->analysis_id)
     ->execute()
     ->fetchObject();
 
-    $num_found = $chado->select('1:analysis','a')
+    $num_found = $this->connection->select('1:analysis','a')
     ->fields('a')
     ->condition('analysis_id', $this->analysis_id)
     ->countQuery()
@@ -937,7 +972,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     // Check to see if we have a NULL publication in the pub table.  If not,
     // then add one.
     $select = ['uniquename' => 'null'];
-    $result_query = $chado->select('1:pub', 'pub')
+    $result_query = $this->connection->select('1:pub', 'pub')
       ->fields('pub')
       ->condition('uniquename', 'null');
     $result_count = $result_query->countQuery()->execute()->fetchField();
@@ -953,7 +988,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
              INNER JOIN {1:db} DB      ON DB.db_id      = DBX.db_id
            WHERE CVT.name = :type_id))
       ";
-      $status = $chado->query($pub_sql, [
+      $status = $this->connection->query($pub_sql, [
         ':uname' => 'null',
         ':type_id' => 'null',
       ]);
@@ -962,7 +997,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         return 0;
       }
 
-      $result_query = $chado->select('1:pub','pub')
+      $result_query = $this->connection->select('1:pub','pub')
         ->fields('pub')
         ->condition('uniquename','null');
       $result = $result_query->execute()->fetchObject();
@@ -1416,7 +1451,10 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         'seqlen' => strlen($residues),
         'md5checksum' => md5($residues),
       ];
-      chado_update_record('feature', ['feature_id' => $feature_id], $values, NULL, $this->chado_schema_main);
+      $query = $this->connection->update('1:feature');
+      $query->condition('feature_id', $feature_id, '=');
+      $query->fields($values);
+      $query->execute();
       $count++;
       $this->setItemsHandled($count);
     }
@@ -1442,7 +1480,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       return $this->landmarks[$landmark_name];
     }
 
-    $landmark_select = $chado->select('1:feature')
+    $landmark_select = $this->connection->select('1:feature')
       ->fields('feature')
       ->condition('organism_id', $this->organism_id)
       ->condition('uniquename', $landmark_name);
@@ -1494,7 +1532,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
   private function insertLandmark($name) {
     $chado = $this->getChadoConnection();
     $residues = '';
-    $insert_id = $chado->insert('1:feature')
+    $insert_id = $this->connection->insert('1:feature')
     ->fields([
       'organism_id' => $this->organism->organism_id,
       'uniquename' => $name,
@@ -1921,7 +1959,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
   private function queryLandmark(string $uniquename, int $organism_id): ?string {
     $typename = NULL;
     $chado = $this->getChadoConnection();
-    $query = $chado->select('1:feature', 'F');
+    $query = $this->connection->select('1:feature', 'F');
     $query->condition('F.uniquename', $uniquename, '=');
     $query->condition('F.organism_id', $organism_id, '=');
     $query->join('1:cvterm', 'T', '"F".type_id = "T".cvterm_id');
@@ -1993,7 +2031,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          $chado->query($sql, $args);
+          $this->connection->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2044,7 +2082,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql . $fin_sql;
-          $chado->query($sql, $args);
+          $this->connection->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2086,7 +2124,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       if ($i == $batch_size or $total == $num_features) {
         if (count($names) > 0) {
           $args = [':uniquenames[]' => $names];
-          $results = $chado->query($sql, $args);
+          $results = $this->connection->query($sql, $args);
           while ($f = $results->fetchObject()) {
             if (array_key_exists($f->uniquename, $this->features)) {
               $matched_findex = $this->features[$f->uniquename]['findex'];
@@ -2158,13 +2196,13 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       if ($i == $batch_size or $total == $num_features) {
         if (count($feature_ids) > 0) {
           $args = [':feature_ids[]' => $feature_ids];
-          $chado->query($sql1, $args);
-          $chado->query($sql2, $args);
-          $chado->query($sql3, $args);
-          $chado->query($sql4, $args);
-          $chado->query($sql5, $args);
-          $chado->query($sql6, $args);
-          $chado->query($sql7, $args);
+          $this->connection->query($sql1, $args);
+          $this->connection->query($sql2, $args);
+          $this->connection->query($sql3, $args);
+          $this->connection->query($sql4, $args);
+          $this->connection->query($sql5, $args);
+          $this->connection->query($sql6, $args);
+          $this->connection->query($sql7, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2224,7 +2262,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          $chado->query($sql, $args);
+          $this->connection->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2293,7 +2331,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          $chado->query($sql, $args);
+          $this->connection->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2344,7 +2382,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       if ($i == $batch_size or $total == $num_dbxrefs) {
         $sql = rtrim($sql, " OR\n");
         $sql = $init_sql . $sql;
-        $results = $chado->query($sql, $args);
+        $results = $this->connection->query($sql, $args);
         while ($dbxref = $results->fetchObject()) {
           $index = $dbxref->name . ':' . $dbxref->accession;
           $this->dbxref_lookup[$index]['dbxref_id'] = $dbxref->dbxref_id;
@@ -2453,7 +2491,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       if (!isset($this->landmark_types_type_ids[$type])) {
         $sql_landmark_type_id = "SELECT cvterm_id FROM {1:cvterm} WHERE name = :name";
         $args_type = array(':name' => $type);
-        $results_type_ids = $chado->query($sql_landmark_type_id, $args_type);
+        $results_type_ids = $this->connection->query($sql_landmark_type_id, $args_type);
         $rowsCount = 0;
         foreach ($results_type_ids as $row) {
           $rowsCount++;
@@ -2538,7 +2576,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($names) > 0) {
           $sql = rtrim($sql, " OR\n");
           $sql = $init_sql . $sql;
-          $results = $chado->query($sql, $args);
+          $results = $this->connection->query($sql, $args);
           while ($f = $results->fetchObject()) {
             $this->landmarks[$f->uniquename] = $f->feature_id;
           }
@@ -2593,7 +2631,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          $chado->query($sql, $args);
+          $this->connection->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2650,7 +2688,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          $chado->query($sql, $args);
+          $this->connection->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2714,7 +2752,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          $chado->query($sql, $args);
+          $this->connection->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2789,7 +2827,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          $chado->query($sql, $args);
+          $this->connection->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2852,7 +2890,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          $chado->query($sql, $args);
+          $this->connection->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2913,7 +2951,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          $chado->query($sql, $args);
+          $this->connection->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2938,7 +2976,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
 
     // Get the organism object.
     list($genus, $species) = explode(':', $organism_attr, 2);
-    $organism_select = $chado->select('1:organism','o');
+    $organism_select = $this->connection->select('1:organism','o');
     $organism_select->fields('o');
     $organism_select->condition('genus', $genus);
     $organism_select->condition('species', $species);
@@ -2957,7 +2995,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     }
 
     if ($this->create_organism) {
-      $organism_insert = $chado->insert('1:organism');
+      $organism_insert = $this->connection->insert('1:organism');
       $organism_insert->fields([
         'genus' => $genus,
         'species' => $species
@@ -3021,7 +3059,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, " OR\n");
           $sql = $init_sql . $sql;
-          $results = $chado->query($sql, $args);
+          $results = $this->connection->query($sql, $args);
           while ($synonym = $results->fetchObject()) {
             $this->synonym_lookup[$synonym->name] = $synonym->synonym_id;
           }
@@ -3073,7 +3111,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          $chado->query($sql, $args);
+          $this->connection->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -3134,7 +3172,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          $chado->query($sql, $args);
+          $this->connection->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -3288,7 +3326,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          $chado->query($sql, $args);
+          $this->connection->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -3299,13 +3337,6 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         $args = [];
       }
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postRun() {
-
   }
 
   /**
