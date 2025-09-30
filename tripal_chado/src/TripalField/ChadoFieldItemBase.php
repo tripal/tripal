@@ -468,10 +468,10 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
     // Start from the primary key of the object table, and work
     // back to candidate base tables.
-    $object_pkey_col = self::getPrimaryKey($schema, $linked_table);
+    $object_pkey_col = self::getPrimaryKey($linked_table, $schema);
     $all_tables = $schema->getTables(['type' => 'table']);
     foreach (array_keys($all_tables) as $table) {
-      $foreign_keys = self::getChadoForeignKeyDef($schema, $table);
+      $foreign_keys = self::getChadoForeignKeyDef($table, $schema);
       if ($foreign_keys) {
         // For "single-hop" logic, we add this table if there is a
         // foreign key to our linked_table.
@@ -565,8 +565,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   protected function getTableColumns($table_name, $column_types = []) {
     $table_columns = [];
 
-    $table_schema_defs = self::getChadoTableDefs([$table_name]);
-    $table_schema_def = $table_schema_defs[$table_name];
+    $table_schema_def = self::getChadoTableDef($table_name);
     foreach ($table_schema_def['fields'] as $field => $properties) {
       if (!$column_types or in_array($properties['type'], $column_types)) {
         $table_columns[] = $field;
@@ -643,14 +642,13 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   protected function getLinkerTables($object_table, $base_table) {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
-    $object_pkey_col = self::getPrimaryKey($schema, $object_table);
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
+    $object_pkey_col = self::getPrimaryKey($object_table, $schema);
 
     $all_tables = $schema->getTables(['type' => 'table']);
     $linker_tables = [];
     foreach (array_keys($all_tables) as $table_name) {
-      $table_schema_defs = self::getChadoTableDefs([$table_name], $schema);
-      $table_schema_def = $table_schema_defs[$table_name];
+      $table_schema_def = self::getChadoTableDef($table_name, $schema);
       if (array_key_exists('foreign keys', $table_schema_def)) {
         // Map for easy lookup.
         $all_fkeys = [];
@@ -851,8 +849,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
     $field_list = [];
 
-    $table_defs = self::getChadoTableDefs([$options['base_table']], $options['chado']->schema());
-    $table_def = $table_defs[$options['base_table']];
+    $table_def = self::getChadoTableDef($options['base_table'], $options['chado']->schema());
     // Skip if by programming error the column was not specified, or it does not exist in the table
     if (array_key_exists($options['base_column'], $table_def['fields'])) {
 
@@ -921,7 +918,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $field_list = [];
 
     // See if the base table has a foreign key directly to the field's table.
-    $fk_def = self::getChadoForeignKeyDef($options['chado']->schema(), $options['base_table'], $options['table']);
+    $fk_def = self::getChadoForeignKeyDef($options['base_table'], $options['table'], $options['chado']->schema());
     if ($fk_def) {
       $options['base_column'] = array_keys($fk_def['columns'])[0];
       // Check for existing fields of this type.
@@ -936,8 +933,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
       // If this is new, then create a field entry in the list.
       if (!$field_list) {
-        $table_defs = self::getChadoTableDefs([$options['base_table']], $options['chado']->schema());
-        $table_def = $table_defs[$options['base_table']];
+        $table_def = self::getChadoTableDef($options['base_table'], $options['chado']->schema());
         // Use the column not null and default value status to set the field's required status
         $required = $table_def['fields'][$options['base_column']]['not null'] ?? FALSE;
         if ($table_def['fields'][$options['base_column']]['default'] ?? FALSE) {
@@ -997,8 +993,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       if ($table_exists) {
         // Some materialized views may look like a linker table, but if
         // there is no primary key, we can't use it, e.g. analysis_organism.
-        $linker_pkey = self::getPrimaryKey($options['chado']->schema(), $linking_table);
-        $fk_def = self::getChadoForeignKeyDef($options['chado']->schema(), $linking_table, $options['table']);
+        $linker_pkey = self::getPrimaryKey($linking_table, $options['chado']->schema());
+        $fk_def = self::getChadoForeignKeyDef($linking_table, $options['table'], $options['chado']->schema());
         if ($linker_pkey && $fk_def) {
           $linker_fkey_column = array_keys($fk_def['columns'])[0];
           // Check for existing fields of this type.
@@ -1142,10 +1138,11 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *
    * @param array $field_list
    *   Discoverd field definitions.
+   *
    * @return array
    *   The same array with plugin IDs added.
    */
-  static public function discoverPostprocess(array $field_list): array {
+  public static function discoverPostprocess(array $field_list): array {
     foreach ($field_list as $key => $field) {
       $field_list[$key]['settings']['id_space_plugin_id'] = 'chado_id_space';
       $field_list[$key]['settings']['vocabulary_plugin_id'] = 'chado_vocabulary';
@@ -1158,12 +1155,13 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *
    * @param string $table
    *   The table name.
-   *
-   * @param string column
+   * @param string $column
    *   The column name.
-   *
    * @param string $default_term
    *   The default term to use.
+   *
+   * @return string
+   *   The term ID for the column.
    */
   protected static function getColumnTermId(string $table, string $column, string $default_term): string {
     $id = $default_term;
@@ -1187,7 +1185,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *
    * @param array $table_names
    *   The table names to query.
-   * @param ?Drupal\tripal_chado\Database\ChadoSchema $schema
+   * @param Drupal\tripal_chado\Database\ChadoSchema|null $schema
    *   The chado schema definition.
    *
    * @return array
@@ -1219,7 +1217,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *
    * @param string $table_name
    *   The table name to query.
-   * @param ?Drupal\tripal_chado\Database\ChadoSchema $schema
+   * @param Drupal\tripal_chado\Database\ChadoSchema|null $schema
    *   The chado schema definition.
    *
    * @return array
@@ -1237,9 +1235,9 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * definition array, specifically the value may be an array instead of
    * a string.
    *
-   * @param string $table_name
-   *   The chado table to look up the primary key for.
-   * @param ?Drupal\tripal_chado\Database\ChadoSchema $schema
+   * @param string $table_names
+   *   The chado tables to look up the primary key for.
+   * @param Drupal\tripal_chado\Database\ChadoSchema|null $schema
    *   The chado schema definition.
    *
    * @return array
@@ -1266,7 +1264,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *
    * @param string $table_name
    *   The chado table to look up the primary key for.
-   * @param ?Drupal\tripal_chado\Database\ChadoSchema $schema
+   * @param Drupal\tripal_chado\Database\ChadoSchema|null $schema
    *   The chado schema definition.
    *
    * @return string|null
@@ -1293,8 +1291,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   The the foreign key definition, or an empty array if none exists.
    */
   public static function getChadoForeignKeyDef(string $left_table, ?string $right_table = NULL, ?ChadoSchema $schema = NULL): array {
-    $table_defs = self::getChadoTableDefs([$left_table], $schema);
-    $definition = $table_defs[$left_table]['foreign keys'] ?? [];
+    $table_def = self::getChadoTableDef($left_table, $schema);
+    $definition = $table_def['foreign keys'] ?? [];
     if ($right_table) {
       $definition = $definition[$right_table] ?? [];
     }
