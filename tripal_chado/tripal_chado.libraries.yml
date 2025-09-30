@@ -8,11 +8,11 @@ tripal_chado.chado_table:
 tripal_chado.phylotree:
   css:
     component:
-      css/tripal_phylogeny.css: {}
+      'css/tripal_phylogeny.css': {}
   js:
-    https://d3js.org/d3.v3.min.js: { type: external, minified: true }
-    js/d3.phylogram.js: {}
-    js/tripal_phylogeny.js: {}
+    'https://d3js.org/d3.v3.min.js': { type: 'external', minified: true }
+    'js/d3.phylogram.js': {}
+    'js/tripal_phylogeny.js': {}
   dependencies:
     - 'core/drupal'
     - 'core/once'
