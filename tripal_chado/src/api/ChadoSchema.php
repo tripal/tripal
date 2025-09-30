@@ -216,6 +216,7 @@ class ChadoSchema {
     $tables = array_keys($schema);
 
     // Now add in the custom tables too if requested.
+    // @todo change this to the variable once custom tables are supported.
     if (FALSE) {
       $sql = "SELECT table_name FROM {0:tripal_custom_tables}";
       $resource = $this->connection->query($sql);
