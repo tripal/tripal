@@ -285,7 +285,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
   }
 
   /**
-   * The select options for a select element.
+   * Provides an organism list for use as select options.
    *
    * @param array $options
    *   select_limit - The maximum number of options to show in a select list.
