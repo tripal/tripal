@@ -471,7 +471,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
        type if a more specific type name is given (e.g. cDNA_match or EST_match)."),
     ];
 
-    $form['targets']['target_organism_id'] = ChadoOrganismFormElementController::getFormElement([], 0, $options);
+    $form['targets']['target_organism_id'] = ChadoOrganismFormElementController::getFormElement([], 0, []);
     $form['targets']['#title'] = t('Target Organism');
     $form['targets']['#description'] = t("Optional. Choose the organism to which target sequences belong.
         Select this only if target sequences belong to a different organism than the
