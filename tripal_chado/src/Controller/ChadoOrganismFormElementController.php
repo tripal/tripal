@@ -195,7 +195,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
   }
 
   /**
-   * The select form element.
+   * Provides a Drupal form element with a select list of Chado organisms.
    *
    * @param array $element
    *   The form element array to be populated.
