@@ -44,18 +44,8 @@ class FASTAImporter extends ChadoImporterBase {
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
-    $settings = \Drupal::config('tripal.settings');
-
-    $options = [];
-    // Set some defaults to keep each of the fields simpler.
-    $options['select_limit'] = $settings->get('tripal_entity_type.widget_global_select_limit') ?? 50;
-    $options['match_limit'] = $settings->get('tripal_entity_type.match_limit') ?? 10;
-    $options['match_operator'] = $settings->get('tripal_entity_type.match_operator') ?? 'CONTAINS';
-    $options['size'] = $settings->get('tripal_entity_type.size');
-    $options['placeholder'] = $settings->get('tripal_entity_type.placeholder');
-
     // Get the orgaism select element or auto-complete element.
-    $form['organism_id'] = ChadoOrganismFormElementController::getFormElement([], 0, $options);
+    $form['organism_id'] = ChadoOrganismFormElementController::getFormElement([], 0, []);
     $form['organism_id']['#title'] = t('Organism');
     $form['organism_id']['#description'] = t("Choose the organism to which these sequences are associated");
     $form['organism_id']['#required'] = TRUE;
@@ -351,13 +341,7 @@ class FASTAImporter extends ChadoImporterBase {
     $arguments = $this->arguments['run_args'];
     $file_path = $this->arguments['files'][0]['file_path'];
 
-    $organism_id = $arguments['organism_id'];
-
-    if (!preg_match('/^\d+$/', $arguments['organism_id'])) {
-      if (preg_match('/\((\d+)\)$/', $arguments['organism_id'], $matches)) {
-        $organism_id = $matches[1];
-      }
-    }
+    $organism_id = ChadoOrganismFormElementController::getPkeyId($arguments['organism_id']);
 
     $type = $arguments['seqtype'];
     $method = $arguments['method'];

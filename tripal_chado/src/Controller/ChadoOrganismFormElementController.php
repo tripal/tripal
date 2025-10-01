@@ -121,7 +121,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    *
    * The value includes a numeric ID in parentheses at the end of the string.
    *
-   * @param string $value
+   * @param ?string $value
    *   A value from an autocomplete with the ID in parentheses at the end,
    *   e.g. "Tripalus bogusii (ignored) (123)".
    *
@@ -130,11 +130,14 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    *   passed, which can happen if the user did not let the autocomplete
    *   supply a value.
    */
-  public static function getPkeyId(string $value): int {
+  public static function getPkeyId(?string $value = NULL): int {
     $id = 0;
 
     $matches = [];
-    if (preg_match('/^\d+$/', $value)) {
+    if (!$value) {
+      return $id;
+    }
+    elseif (preg_match('/^\d+$/', $value)) {
       $id = $value;
     }
     elseif (preg_match('/\((\d+)\)/', $value, $matches)) {
@@ -165,7 +168,24 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    * @return array|null
    *   A form element array, either a select or an autocomplete.
    */
-  public static function getFormElement(array $element, mixed $default, array $options): ?array {
+  public static function getFormElement(array $element, mixed $default, array $options = []): ?array {
+
+    $settings = \Drupal::config('tripal.settings');
+
+    // Set the default options if they are not provided.
+    $default_options = [
+      'select_limit' => $settings->get('tripal_entity_type.widget_global_select_limit') ?? 50,
+      'match_limit' => $settings->get('tripal_entity_type.match_limit') ?? 10,
+      'match_operator' => $settings->get('tripal_entity_type.match_operator') ?? 'CONTAINS',
+      'size' => $settings->get('tripal_entity_type.size'),
+      'placeholder' => $settings->get('tripal_entity_type.placeholder'),
+    ];
+
+    foreach ($default_options as $key => $value) {
+      if (!isset($options[$key])) {
+        $options[$key] = $value;
+      }
+    }
 
     $element = [];
 
@@ -209,7 +229,23 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    * @return array|null
    *   A form element array, either a select element.
    */
-  public static function getSelectElement(array $element, mixed $default, array $options): ?array {
+  public static function getSelectElement(array $element, mixed $default, array $options = []): ?array {
+    $settings = \Drupal::config('tripal.settings');
+
+    // Set the default options if they are not provided.
+    $default_options = [
+      'select_limit' => $settings->get('tripal_entity_type.widget_global_select_limit') ?? 50,
+      'match_limit' => $settings->get('tripal_entity_type.match_limit') ?? 10,
+      'match_operator' => $settings->get('tripal_entity_type.match_operator') ?? 'CONTAINS',
+      'size' => $settings->get('tripal_entity_type.size'),
+      'placeholder' => $settings->get('tripal_entity_type.placeholder'),
+    ];
+
+    foreach ($default_options as $key => $value) {
+      if (!isset($options[$key])) {
+        $options[$key] = $value;
+      }
+    }
     $select_options = self::getSelectOptions($options);
     natcasesort($select_options);
     $default_id = 0;
@@ -246,7 +282,24 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    * @return array|null
    *   A form element array, an autocomplete.
    */
-  public static function getAutocompleteElement(array $element, mixed $default, array $options): ?array {
+  public static function getAutocompleteElement(array $element, mixed $default, array $options = []): ?array {
+    $settings = \Drupal::config('tripal.settings');
+
+    // Set the default options if they are not provided.
+    $default_options = [
+      'select_limit' => $settings->get('tripal_entity_type.widget_global_select_limit') ?? 50,
+      'match_limit' => $settings->get('tripal_entity_type.match_limit') ?? 10,
+      'match_operator' => $settings->get('tripal_entity_type.match_operator') ?? 'CONTAINS',
+      'size' => $settings->get('tripal_entity_type.size'),
+      'placeholder' => $settings->get('tripal_entity_type.placeholder'),
+    ];
+
+    foreach ($default_options as $key => $value) {
+      if (!isset($options[$key])) {
+        $options[$key] = $value;
+      }
+    }
+
     if (gettype($default) == 'string') {
       $default_value = $default;
     }
@@ -292,10 +345,10 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    *   match_limit - Desired number of matching names to suggest.
    *
    * @return array
-   *   An associative array where the key is the organism_id and the value 
+   *   An associative array where the key is the organism_id and the value
    *   is either the abbreviation or the scientific name. More specifically,
    *   if the abbreviation is present then that will be used and if not,
-   *   the scientific name will be resolved using the genus, species and 
+   *   the scientific name will be resolved using the genus, species and
    *   infraspecific columns.
    */
   public static function getSelectOptions(array $options): ?array {
