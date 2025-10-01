@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal_chado\Controller;
 
-@trigger_error('The ' . __NAMESPACE__ . '\ChadoOrganismAutocompleteController is deprecated in tripal:4.0.0 and is removed from tripal:4.1.0. Instead, use \Drupal\tripal_chado\Controller\ChadoOrganismFormElement. All the methods in ChadoOrganismAutocompleteController now exist in ChadoOrganismFormElement class with the same functionality. See https://github.com/tripal/tripal_doc/pull/110', E_USER_DEPRECATED);
+@trigger_error('The ' . __NAMESPACE__ . '\ChadoOrganismAutocompleteController is deprecated in tripal:4.0.0-alpha3 and is removed from tripal:4.1.0. Instead, use \Drupal\tripal_chado\Controller\ChadoOrganismFormElement. All the methods in ChadoOrganismAutocompleteController now exist in ChadoOrganismFormElement class with the same functionality. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/organism_autocomplete.html', E_USER_DEPRECATED);
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
