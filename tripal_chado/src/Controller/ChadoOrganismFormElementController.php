@@ -292,7 +292,11 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    *   match_limit - Desired number of matching names to suggest.
    *
    * @return array
-   *   An array of options for a select element.
+   *   An associative array where the key is the organism_id and the value 
+   *   is either the abbreviation or the scientific name. More specifically,
+   *   if the abbreviation is present then that will be used and if not,
+   *   the scientific name will be resolved using the genus, species and 
+   *   infraspecific columns.
    */
   public static function getSelectOptions(array $options): ?array {
     // Construct a query
