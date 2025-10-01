@@ -1444,7 +1444,10 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         'seqlen' => strlen($residues),
         'md5checksum' => md5($residues),
       ];
-      chado_update_record('feature', ['feature_id' => $feature_id], $values, NULL, $this->chado_schema_main);
+      $query = $this->connection->update('1:feature');
+      $query->condition('feature_id', $feature_id, '=');
+      $query->fields($values);
+      $query->execute();
       $count++;
       $this->setItemsHandled($count);
     }

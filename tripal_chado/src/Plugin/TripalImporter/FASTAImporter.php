@@ -801,16 +801,14 @@ class FASTAImporter extends ChadoImporterBase {
             return 0;
           }
 
-          // the changes to the uniquename don't conflict so proceed with the update
-          $values = ['uniquename' => $uname];
-          $match = [
-            'name' => $name,
-            'organism_id' => $organism_id,
-            'type_id' => $cvterm->cvterm_id,
-          ];
-
-          // perform the update
-          $success = chado_update_record('feature', $match, $values);
+          // The changes to the uniquename don't conflict so proceed
+          // with the update.
+          $query = $this->connection->update('1:feature');
+          $query->condition('name', $name, '=');
+          $query->condition('organism_id', $organism_id, '=');
+          $query->condition('type_id', $cvterm->cvterm_id, '=');
+          $query->fields(['uniquename' => $uname]);
+          $success = $query->execute();
           if (!$success) {
             $this->logger->error("Failed to update feature '@name' ('@uname')",
               ['@name' => $name, '@uname' => $uname]
@@ -826,13 +824,12 @@ class FASTAImporter extends ChadoImporterBase {
         // we want to update the name.
         $values = [];
         if ($name) {
-          $values = ['name' => $name];
-          $match = [
-            'uniquename' => $uname,
-            'organism_id' => $organism_id,
-            'type_id' => $cvterm->cvterm_id,
-          ];
-          $success = chado_update_record('feature', $match, $values);
+          $query = $this->connection->update('1:feature');
+          $query->condition('uniquename', $uname, '=');
+          $query->condition('organism_id', $organism_id, '=');
+          $query->condition('type_id', $cvterm->cvterm_id, '=');
+          $query->fields(['name' => $name]);
+          $success = $query->execute();
           if (!$success) {
             $this->logger->error("Failed to update feature '@name' ('@uname')",
               ['@name' => $name, '@uname' => $uname]
