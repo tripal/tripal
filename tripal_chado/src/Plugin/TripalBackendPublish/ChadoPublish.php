@@ -282,7 +282,15 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
       // Look up the object table from the foreign key of the $linker_column.
       $chado = \Drupal::service('tripal_chado.database');
-      $linker_schema_def = $chado->schema()->getTableDef($linker_table, ['format' => 'Drupal']);
+      $parameters = [
+        'format' => 'Drupal',
+        'source' => [
+          'file',
+          'tripal',
+          'database'
+        ],
+      ];
+      $linker_schema_def = $chado->schema()->getTableDef($linker_table, $parameters);
       $foreign_keys = $linker_schema_def['foreign keys'] ?? [];
       foreach ($foreign_keys as $table => $info) {
         if ($info['columns'][$linker_column] ?? FALSE) {
@@ -650,7 +658,15 @@ class ChadoPublish extends TripalBackendPublishBase {
     $chado = \Drupal::service('tripal_chado.database');
 
     $schema = $chado->schema();
-    $table_def = $schema->getTableDef($this->base_table, ['format' => 'drupal']);
+    $parameters = [
+      'format' => 'Drupal',
+      'source' => [
+        'file',
+        'tripal',
+        'database'
+      ],
+    ];
+    $table_def = $schema->getTableDef($this->base_table, $parameters);
     $pkey = $table_def['primary key'];
 
     // Returns array with key chado record id and value entity id.

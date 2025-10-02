@@ -177,6 +177,7 @@ class ChadoTermMapping extends ConfigEntityBase implements ChadoTermMappingInter
     if (!is_array($config)) {
       throw new \Exception("refreshMapping configuration path not found: $config_path");
     }
+
     $mapping = $storage->load($mapping_id);
     if ($mapping) {
       $storage->delete([$mapping]);
