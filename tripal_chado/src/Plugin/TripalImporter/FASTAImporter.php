@@ -6,6 +6,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
+use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;
 
 /**
  * FASTA Importer implementation of the TripalImporterBase.
@@ -43,16 +44,11 @@ class FASTAImporter extends ChadoImporterBase {
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
-    // get the list of organisms
-    $organisms = chado_get_organism_select_options();
-
-    $form['organism_id'] = [
-      '#title' => t('Organism'),
-      '#type' => 'select',
-      '#description' => t("Choose the organism to which these sequences are associated"),
-      '#required' => TRUE,
-      '#options' => $organisms,
-    ];
+    // Get the orgaism select element or auto-complete element.
+    $form['organism_id'] = ChadoOrganismFormElementController::getFormElement([], 0, []);
+    $form['organism_id']['#title'] = t('Organism');
+    $form['organism_id']['#description'] = t("Choose the organism to which these sequences are associated");
+    $form['organism_id']['#required'] = TRUE;
 
     // get the sequence ontology CV ID
     $cv_results = $this->connection->select('1:cv', 'cv')
@@ -246,7 +242,8 @@ class FASTAImporter extends ChadoImporterBase {
   public function formValidate($form, &$form_state) {
     $form_state_values = $form_state->getValues();
 
-    $organism_id = $form_state_values['organism_id'];
+    $organism_id = ChadoOrganismFormElementController::getPkeyId($form_state_values['organism_id']);
+
     $file_upload = $form_state_values['file_upload'];
     $file_upload_existing = $form_state_values['file_upload_existing'] ?? null;
     $file_local = $form_state_values['file_local'] ?? null;
@@ -344,7 +341,8 @@ class FASTAImporter extends ChadoImporterBase {
     $arguments = $this->arguments['run_args'];
     $file_path = $this->arguments['files'][0]['file_path'];
 
-    $organism_id = $arguments['organism_id'];
+    $organism_id = ChadoOrganismFormElementController::getPkeyId($arguments['organism_id']);
+
     $type = $arguments['seqtype'];
     $method = $arguments['method'];
     $match_type = $arguments['match_type'];
