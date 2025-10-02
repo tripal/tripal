@@ -85,13 +85,13 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table
-    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
     $base_column = $storage_settings['base_column'];
     $base_column_term = self::getColumnTermId($base_table, $base_column, 'schema:name');
 
     // Relationship table
     $linker_table = $storage_settings['linker_table'] ?? ($base_table . '_relationship');
-    $linker_schema_def = self::getChadoTableDef($schema, $linker_table);
+    $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
     $linker_pkey_col = $linker_schema_def['primary key'];
     // Relationship table column naming is not consistent for nd_reagent and project
     $linker_subject_col = $storage_settings['subject_column'] ?? NULL;
@@ -109,7 +109,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $linker_type_term = self::getColumnTermId($linker_table, $linker_type_col, 'schema:additionalType');
 
     // Columns from linked tables to specify the relationship type
-    $cvterm_schema_def = self::getChadoTableDef($schema, 'cvterm');
+    $cvterm_schema_def = self::getChadoTableDef('cvterm', $schema);
     $type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $type_len = $cvterm_schema_def['fields']['name']['size'];
 
@@ -370,7 +370,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $object_column = '';
     // The subject and object columns will be among the foreign keys to the base table
     $schema = $chado->schema();
-    $table_schema_def = self::getChadoTableDef($schema, $relationship_table);
+    $table_schema_def = self::getChadoTableDef($relationship_table, $schema);
     if ($table_schema_def['foreign keys'][$base_table]['columns'] ?? NULL) {
       foreach (array_keys($table_schema_def['foreign keys'][$base_table]['columns']) as $relationship_column) {
         if (preg_match('/subject/', $relationship_column)) {

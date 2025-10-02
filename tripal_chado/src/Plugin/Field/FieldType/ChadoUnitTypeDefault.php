@@ -65,7 +65,7 @@ class ChadoUnitTypeDefault extends ChadoFieldItemBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
 
-    $cvterm_def = self::getChadoTableDef($schema, 'cvterm');
+    $cvterm_def = self::getChadoTableDef('cvterm', $schema);
     $cv_name_len = $cvterm_def['fields']['name']['size'];
 
     $unittype_id_term = self::getColumnTermId('featuremap', 'unittype_id', 'UO:0000000');

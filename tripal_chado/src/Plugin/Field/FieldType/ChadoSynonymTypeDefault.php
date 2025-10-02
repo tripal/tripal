@@ -90,7 +90,7 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
     $linker_table = $base_table . '_synonym';
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $linker_table_def = self::getChadoTableDef($schema, $linker_table);
+    $linker_table_def = self::getChadoTableDef($linker_table, $schema);
     if (!$linker_table_def) {
       $form_state->setErrorByName('storage_plugin_settings][linker_table',
           'The selected base table cannot support synonyms.');
@@ -130,11 +130,11 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
     // Determine the primary key of the base table.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
-    $synonym_table_def = self::getChadoTableDef($schema, 'synonym');
-    $linker_table_def = self::getChadoTableDef($schema, $linker_table);
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
+    $synonym_table_def = self::getChadoTableDef('synonym', $schema);
+    $linker_table_def = self::getChadoTableDef($linker_table, $schema);
     $linker_table_pkey = $linker_table_def['primary key'];
-    $cvterm_table_def = self::getChadoTableDef($schema, 'cvterm');
+    $cvterm_table_def = self::getChadoTableDef('cvterm', $schema);
 
     // Create variables to store the terms for the properties. We can use terms
     // from Chado tables if appropriate.

@@ -8,6 +8,7 @@ use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
 use Drupal\tripal_chado\Controller\ChadoProjectAutocompleteController;
 use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 
 /**
  * Tests the Generic Autocomplete.
@@ -19,6 +20,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('Tripal')]
 #[Group('Tripal Chado')]
 #[Group('Autocomplete')]
+#[IgnoreDeprecations]
 class ChadoAutocompleteControllerTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 

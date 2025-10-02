@@ -905,7 +905,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
 
     // Now determine the primary key for the chado table.
-    $chado_table_pkey = $this->records->getPrimaryKey($this->connection->schema(), $base_table);
+    $chado_table_pkey = $this->records->getPrimaryKey($base_table, $this->connection->schema());
 
     if ($elements['chado_column'] !== $chado_table_pkey) {
       $this->logger->error($this->t('The @field.@key property type uses the store_id action and the column specified in the "path" settings is not the primary key for base table.',
@@ -1457,7 +1457,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // Get the name of the primary key column.
     $schema = $this->connection->schema();
-    $pkey_column = $this->records->getPrimaryKey($schema, $base_table);
+    $pkey_column = $this->records->getPrimaryKey($base_table, $schema);
 
     // Set up the query.
     $query = $this->connection->select('1:' . $base_table, 'BT', []);

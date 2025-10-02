@@ -80,11 +80,11 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table
-    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
     // Object table
     $object_table = self::$object_table;
-    $object_schema_def = self::getChadoTableDef($schema, $object_table);
+    $object_schema_def = self::getChadoTableDef($object_table, $schema);
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Columns specific to the object table
@@ -103,15 +103,15 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
 
     // Columns from linked tables
     // both platformtype and substratetype reference the cvterm table
-    $cvterm_schema_def = self::getChadoTableDef($schema, 'cvterm');
+    $cvterm_schema_def = self::getChadoTableDef('cvterm', $schema);
     $type_term = self::getColumnTermId('cvterm', 'name', 'rdfs:type');
     $type_len = $cvterm_schema_def['fields']['name']['size'];
-    $contact_schema_def = self::getChadoTableDef($schema, 'contact');
+    $contact_schema_def = self::getChadoTableDef('contact', $schema);
     $manufacturer_term = self::getColumnTermId('contact', 'name', 'EFO:0001728');
     $manufacturer_len = $contact_schema_def['fields']['name']['size'];
     $protocol_term = self::getColumnTermId('protocol', 'name', 'sep:00101');  // text
     $dbxref_term = self::getColumnTermId('dbxref', 'accession', 'data:2091');
-    $db_schema_def = self::getChadoTableDef($schema, 'db');
+    $db_schema_def = self::getChadoTableDef('db', $schema);
     $db_term = self::getColumnTermId('db', 'name', 'schema:name');
 
     // Linker table, when used, requires specifying the linker table and column.
@@ -119,7 +119,7 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = self::getChadoTableDef($schema, $linker_table);
+      $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];

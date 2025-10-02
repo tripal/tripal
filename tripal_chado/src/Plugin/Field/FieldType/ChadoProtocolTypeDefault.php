@@ -80,11 +80,11 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table
-    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
     // Object table
     $object_table = self::$object_table;
-    $object_schema_def = self::getChadoTableDef($schema, $object_table);
+    $object_schema_def = self::getChadoTableDef($object_table, $schema);
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Columns specific to the object table
@@ -95,7 +95,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
     $softwaredescription_term = self::getColumnTermId($object_table, 'softwaredescription', 'SWO:0000001');  // text
 
     // Columns from linked tables
-    $cvterm_schema_def = self::getChadoTableDef($schema, 'cvterm');
+    $cvterm_schema_def = self::getChadoTableDef('cvterm', $schema);
     $protocol_type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $protocol_type_len = $cvterm_schema_def['fields']['name']['size'];
     $pub_title_term = self::getColumnTermId('pub', 'title', 'schema:publication');
@@ -107,7 +107,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = self::getChadoTableDef($schema, $linker_table);
+      $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
