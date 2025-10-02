@@ -471,7 +471,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $object_pkey_col = self::getPrimaryKey($linked_table, $schema);
     $all_tables = $schema->getTables(['type' => 'table']);
     foreach (array_keys($all_tables) as $table) {
-      $foreign_keys = self::getChadoForeignKeyDef($table, $schema);
+      $foreign_keys = self::getChadoForeignKeyDef($table, NULL, $schema);
       if ($foreign_keys) {
         // For "single-hop" logic, we add this table if there is a
         // foreign key to our linked_table.
