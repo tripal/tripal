@@ -268,7 +268,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
   }
 
   /**
-   * Provides a Drupal textfield form element that autocompletes with chado organisms.
+   * Provides a textfield form element that autocompletes with chado organisms.
    *
    * @param array $element
    *   The form element array to be populated.
