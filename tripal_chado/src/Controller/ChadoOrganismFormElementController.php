@@ -160,14 +160,13 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    *   The default value, either an integer pkey ID or a string.
    * @param array $options
    *   The following keys are used:
-   *   select_limit - The maximum number of options to show in a select list.
-   *                If the number of possible options exceeds this limit,
-   *               an autocomplete text field is returned instead.
-   *              A value of zero means always use an autocomplete.
-   *   match_operator - Either 'CONTAINS' (default) or 'STARTS_WITH'.
-   *   match_limit - Desired number of autocomplete matching names to suggest.
-   *   size - The size of the textfield for autocomplete.
-   *   placeholder - Placeholder text for the autocomplete textfield.
+   *   - select_limit: The maximum number of options to show in a select list
+   *   before switching to an autocomplete instead. A value of zero means always
+   *   use an autocomplete.
+   *   - match_operator: Either 'CONTAINS' (default) or 'STARTS_WITH'.
+   *   - match_limit: Desired number of autocomplete matching names to suggest.
+   *   - size: The size of the textfield for autocomplete.
+   *   - placeholder: Placeholder text for the autocomplete textfield.
    *
    * @return array|null
    *   A form element array, either a select or an autocomplete.
@@ -233,8 +232,12 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
         $options[$key] = $value;
       }
     }
+
+    // Retrieve the organism to provide in the select list.
     $select_options = self::getSelectOptions($options);
     natcasesort($select_options);
+
+    // Determine the default value.
     $default_id = 0;
     if (gettype($default) == 'integer') {
       $default_id = $default;
@@ -242,6 +245,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
     elseif (gettype($default) == 'string') {
       $default_id = self::getPkeyId($default);
     }
+
     $element = [
       '#type' => 'select',
       '#options' => $select_options,
@@ -249,6 +253,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
       '#empty_option' => t('- Select -'),
     ];
     $element['#element_validate'] = [[static::class, 'validateAutocomplete']];
+
     return $element;
   }
 
@@ -331,7 +336,8 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    *   infraspecific columns.
    */
   public static function getSelectOptions(array $options): ?array {
-    // Construct a query
+
+    // Construct a query.
     // A single wildcard indicates that all records are to be returned.
     $string = '%';
 
@@ -341,14 +347,17 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
     // Add one to select limit so we know if it is exceeded.
     $count_options = $options;
     $count_options['match_limit'] = $options['select_limit'] + 1;
+
     $query = self::getQuery($string, $count_options);
     $results = $query->execute();
+
     $select_options = [];
     while ($record = $results->fetchObject()) {
       // Strip HTML tags if present, but this is not likely for organism.
       $organism = strip_tags($record->abbreviation ?: $record->organism ?? '');
       $select_options[$record->pkey] = $organism;
     }
+
     return $select_options;
   }
 
