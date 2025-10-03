@@ -12,8 +12,58 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class ChadoGenericAutocompleteController extends ControllerBase {
 
   /**
-   * Controls whether the primary key is included in the response in
-   * parentheses. Used by derived classes.
+   * Contains default values for options needed for this controllers methods.
+   *
+   * These options are set when ::getDefaultOptions() is called.
+   *
+   * @var array
+   *   Populated by it's getter, this array will contain the default values for
+   *   the options used in the various form methods.
+   *   Keys match those defined for the ::getFormElement() $options paramater.
+   */
+  protected static array $default_options = [];
+
+  /**
+   * Retrieves the default options used by the form element methods.
+   *
+   * @return array
+   *   The default values for the options used in the various form methods.
+   *   Keys match those defined for the ::getFormElement() $options paramater.
+   */
+  public static function getDefaultOptions(): array {
+
+    // We can use static in-memory caching to save grabbing from settings
+    // multiple times in a single page load.
+    if (!empty($this->default_options)) {
+      return $this->default_options;
+    }
+
+    // If the options have not been set yet, then we need to grab them from
+    // the tripal config settings.
+    $settings = \Drupal::config('tripal.settings');
+    $default_options = [
+      'select_limit' => $settings->get('tripal_entity_type.widget_global_select_limit') ?? 50,
+      'match_limit' => $settings->get('tripal_entity_type.match_limit') ?? 10,
+      'match_operator' => $settings->get('tripal_entity_type.match_operator') ?? 'CONTAINS',
+      'size' => $settings->get('tripal_entity_type.size'),
+      'placeholder' => $settings->get('tripal_entity_type.placeholder'),
+    ];
+    $this->default_options = $default_options;
+
+    // Sync the match operator property with the settings.
+    $this->match_operator = $default_options['match_operator'];
+
+    return $default_options;
+  }
+
+  /**
+   * Indicates if the primary key should be added to the response.
+   *
+   * Used by derived classes.
+   *
+   * @var bool
+   *   If TRUE then the primary key is added to the end of the response string
+   *   within curved brackets. If FALSE then it is not.
    */
   protected bool $include_pkey = TRUE;
 
