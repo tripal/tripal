@@ -100,10 +100,12 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
       $query->addField('BT', 'organism_id', 'pkey');
       $query->addField('BT', 'abbreviation', 'abbreviation');
       $query->addField('BT', 'common_name', 'common_name');
-      $query->addExpression("CONCAT_WS(' ', genus, species, name, infraspecific_name)", 'organism');
+      $query->addExpression("RTRIM(CONCAT_WS(' ', genus, species, name, infraspecific_name))", 'organism');
 
       // A single "%" wildcard is used to indicate that we should return
       // all records. This is used for a form select element.
+      // Note: We don't need to trim here since this is a partial string
+      // comparison.
       if ($string != '%') {
         $query->where("CONCAT_WS(' ', genus, species, name, infraspecific_name) ILIKE :value",
             [':value' => $condition_value]);
