@@ -23,9 +23,8 @@ changelog:
     - title: "Performance Improvements"
       labels:
         - "Group 10 - Performance"
-    - title: "General Maitenance + Automated Testing"
+    - title: "Automated Testing"
       labels:
-        - "Group 0 - Maintenance | Docker | Misc"
         - "Group 9 - Automated Testing"
     - title: "Other Changes"
       labels:
