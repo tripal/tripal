@@ -1,0 +1,32 @@
+changelog:
+  categories:
+    - title: "Deprecations"
+      labels:
+        - "Includes Deprecations"
+    - title: "Bug Fixes"
+      labels:
+        - "bug - confirmed"
+        - "bug - external"
+        - "bug - potential"
+    - title: "Content Pages, Fields + Display"
+      labels:
+        - "Group 1 -  Tripal Content Types | Terms | Fields"
+        - "Group 7 - Page Display"
+    - title: "Biological Data Storage + Import"
+      labels:
+        - "Group 2 - Data Storage | Tripal DBX | Chado"
+        - "Group 4 - Data Importing"
+    - title: "Searching + Web Services"
+      labels:
+        - "Group 5 - Search | ElasticSearch | Views"
+        - "Group 6 - Web Services"
+    - title: "Performance Improvements"
+      labels:
+        - "Group 10 - Performance"
+    - title: "General Maitenance + Automated Testing"
+      labels:
+        - "Group 0 - Maintenance | Docker | Misc"
+        - "Group 9 - Automated Testing"
+    - title: "Other Changes"
+      labels:
+        - "*" # This special label matches any content not covered by other labels
