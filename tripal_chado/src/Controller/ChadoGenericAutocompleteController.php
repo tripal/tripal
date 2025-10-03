@@ -13,12 +13,12 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class ChadoGenericAutocompleteController extends ControllerBase {
 
   /**
-   * Contains default values for options needed for this controllers methods.
+   * Contains default values for options needed for this controller's methods.
    *
    * These options are set when ::getDefaultOptions() is called.
    *
    * @var array
-   *   Populated by it's getter, this array will contain the default values for
+   *   Populated by its getter, this array will contain the default values for
    *   the options used in the various form methods.
    *   Keys match those defined for the ::getFormElement() $options paramater.
    */
@@ -98,7 +98,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
    * @param string $base_table
    *   Chado base table name.
    * @param string $column_name
-   *   Name of chado base column  in the specified table to be returned.
+   *   Name of chado base column in the specified table to be returned.
    * @param string $type_column
    *   If the base table has a type column, the column name. This is
    *   usually "type_id". Use a single character placeholder if absent.
@@ -120,7 +120,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
    *   name is added to the end of the key/value surrounded by square brackets.
    *   If the include_pkey property is TRUE then the primary key value is
    *   appended to the end of both the key and value surrounded by curved
-   *   brackets. e.g. 'ftbA-1 [gene] (42)'.
+   *   brackets, e.g. 'ftbA-1 [gene] (42)'.
    */
   public function handleGenericAutocomplete(
     Request $request,
@@ -168,9 +168,9 @@ class ChadoGenericAutocompleteController extends ControllerBase {
             $value .= ' (' . $record->pkey . ')';
           }
           $response[] = [
-          // Value returned and value displayed by textfield.
+            // Value returned and value displayed by textfield.
             'value' => $value,
-          // Value shown in the list of options.
+            // Value shown in the list of options.
             'label' => $value,
           ];
         }
@@ -293,7 +293,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
    * @return int
    *   Primary key ID number of the record, or 0 if an unparsable $value was
    *   passed, which can happen if the user did not let the autocomplete
-   *   supply a value. (e.g. 12).
+   *   supply a value, (e.g. 12).
    */
   public static function getPkeyId(string $value): int {
     $id = 0;
