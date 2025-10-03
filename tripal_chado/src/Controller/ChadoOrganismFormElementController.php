@@ -34,7 +34,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
     // The string to autocomplete from the form input.
     $string = trim($request->query->get('q'));
 
-    $default_options = $this->getDefaultOptions();
+    $default_options = static::getDefaultOptions();
     $options = [
       'match_limit' => $match_limit ?? $default_options['match_limit'],
       'match_operator' => $default_options['match_operator'],
@@ -80,7 +80,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
   public static function getQuery(string $string, array $options): ?Select {
 
     // Set defaults.
-    $default_options = $this->getDefaultOptions();
+    $default_options = static::getDefaultOptions();
     $options['match_operator'] ??= $default_options['match_operator'];
     $options['match_limit'] ??= $default_options['match_limit'];
 
@@ -174,7 +174,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
   public static function getFormElement(array $element, mixed $default, array $options = []): ?array {
 
     // Set the default options if they are not provided.
-    $default_options = $this->getDefaultOptions();
+    $default_options = static::getDefaultOptions();
     foreach ($default_options as $key => $value) {
       if (!isset($options[$key])) {
         $options[$key] = $value;
@@ -226,7 +226,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
   public static function getSelectElement(array $element, mixed $default, array $options = []): ?array {
 
     // Set the default options if they are not provided.
-    $default_options = $this->getDefaultOptions();
+    $default_options = static::getDefaultOptions();
     foreach ($default_options as $key => $value) {
       if (!isset($options[$key])) {
         $options[$key] = $value;
@@ -277,7 +277,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
   public static function getAutocompleteElement(array $element, mixed $default, array $options = []): ?array {
 
     // Set the default options if they are not provided.
-    $default_options = $this->getDefaultOptions();
+    $default_options = static::getDefaultOptions();
     foreach ($default_options as $key => $value) {
       if (!isset($options[$key])) {
         $options[$key] = $value;
@@ -342,7 +342,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
     $string = '%';
 
     // Get the default options.
-    $options['select_limit'] ??= $this->getDefaultOptions()['select_limit'];
+    $options['select_limit'] ??= static::getDefaultOptions()['select_limit'];
 
     // Add one to select limit so we know if it is exceeded.
     $count_options = $options;

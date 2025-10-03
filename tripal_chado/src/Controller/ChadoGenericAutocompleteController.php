@@ -35,8 +35,8 @@ class ChadoGenericAutocompleteController extends ControllerBase {
 
     // We can use static in-memory caching to save grabbing from settings
     // multiple times in a single page load.
-    if (!empty($this->default_options)) {
-      return $this->default_options;
+    if (!empty(static::$default_options)) {
+      return static::$default_options;
     }
 
     // If the options have not been set yet, then we need to grab them from
@@ -49,10 +49,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
       'size' => $settings->get('tripal_entity_type.size'),
       'placeholder' => $settings->get('tripal_entity_type.placeholder'),
     ];
-    $this->default_options = $default_options;
-
-    // Sync the match operator property with the settings.
-    $this->match_operator = $default_options['match_operator'];
+    static::$default_options = $default_options;
 
     return $default_options;
   }
