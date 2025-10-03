@@ -34,9 +34,10 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
     // The string to autocomplete from the form input.
     $string = trim($request->query->get('q'));
 
+    $default_options = $this->getDefaultOptions();
     $options = [
-      'match_limit' => $match_limit,
-      'match_operator' => $this->match_operator,
+      'match_limit' => $match_limit ?? $default_options['match_limit'],
+      'match_operator' => $default_options['match_operator'],
     ];
 
     $query = $this->getQuery($string, $options);
@@ -79,8 +80,9 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
   public static function getQuery(string $string, array $options): ?Select {
 
     // Set defaults.
-    $options['match_operator'] ??= 'CONTAINS';
-    $options['match_limit'] ??= 10;
+    $default_options = $this->getDefaultOptions();
+    $options['match_operator'] ??= $default_options['match_operator'];
+    $options['match_limit'] ??= $default_options['match_limit'];
 
     // Generate a query only if $string is at least a character
     // long and result count is set to a value greater than 0.
@@ -172,17 +174,8 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    */
   public static function getFormElement(array $element, mixed $default, array $options = []): ?array {
 
-    $settings = \Drupal::config('tripal.settings');
-
     // Set the default options if they are not provided.
-    $default_options = [
-      'select_limit' => $settings->get('tripal_entity_type.widget_global_select_limit') ?? 50,
-      'match_limit' => $settings->get('tripal_entity_type.match_limit') ?? 10,
-      'match_operator' => $settings->get('tripal_entity_type.match_operator') ?? 'CONTAINS',
-      'size' => $settings->get('tripal_entity_type.size'),
-      'placeholder' => $settings->get('tripal_entity_type.placeholder'),
-    ];
-
+    $default_options = $this->getDefaultOptions();
     foreach ($default_options as $key => $value) {
       if (!isset($options[$key])) {
         $options[$key] = $value;
@@ -232,17 +225,9 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    *   A form element array, either a select element.
    */
   public static function getSelectElement(array $element, mixed $default, array $options = []): ?array {
-    $settings = \Drupal::config('tripal.settings');
 
     // Set the default options if they are not provided.
-    $default_options = [
-      'select_limit' => $settings->get('tripal_entity_type.widget_global_select_limit') ?? 50,
-      'match_limit' => $settings->get('tripal_entity_type.match_limit') ?? 10,
-      'match_operator' => $settings->get('tripal_entity_type.match_operator') ?? 'CONTAINS',
-      'size' => $settings->get('tripal_entity_type.size'),
-      'placeholder' => $settings->get('tripal_entity_type.placeholder'),
-    ];
-
+    $default_options = $this->getDefaultOptions();
     foreach ($default_options as $key => $value) {
       if (!isset($options[$key])) {
         $options[$key] = $value;
@@ -285,17 +270,9 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    *   A form element array, an autocomplete.
    */
   public static function getAutocompleteElement(array $element, mixed $default, array $options = []): ?array {
-    $settings = \Drupal::config('tripal.settings');
 
     // Set the default options if they are not provided.
-    $default_options = [
-      'select_limit' => $settings->get('tripal_entity_type.widget_global_select_limit') ?? 50,
-      'match_limit' => $settings->get('tripal_entity_type.match_limit') ?? 10,
-      'match_operator' => $settings->get('tripal_entity_type.match_operator') ?? 'CONTAINS',
-      'size' => $settings->get('tripal_entity_type.size'),
-      'placeholder' => $settings->get('tripal_entity_type.placeholder'),
-    ];
-
+    $default_options = $this->getDefaultOptions();
     foreach ($default_options as $key => $value) {
       if (!isset($options[$key])) {
         $options[$key] = $value;
@@ -357,6 +334,10 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
     // Construct a query
     // A single wildcard indicates that all records are to be returned.
     $string = '%';
+
+    // Get the default options.
+    $options['select_limit'] ??= $this->getDefaultOptions()['select_limit'];
+
     // Add one to select limit so we know if it is exceeded.
     $count_options = $options;
     $count_options['match_limit'] = $options['select_limit'] + 1;
