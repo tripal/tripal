@@ -85,8 +85,8 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // Get the base table columns needed for this field.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
-    $prop_schema_def = self::getChadoTableDef($schema, $prop_table);
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
+    $prop_schema_def = self::getChadoTableDef($prop_table, $schema);
     $prop_pkey_col = $prop_schema_def['primary key'];
     $prop_fk_col = array_keys($prop_schema_def['foreign keys'][$base_table]['columns'])[0];
 
@@ -238,7 +238,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
 
     // If the property table exists, and has a foreign key to the base table,
     // then this content type is compatible.
-    $prop_def = self::getChadoTableDef($schema, $base_table . 'prop');
+    $prop_def = self::getChadoTableDef($base_table . 'prop', $schema);
     if ($prop_def) {
       if (array_key_exists($base_table, $prop_def['foreign keys'])) {
         $compatible = TRUE;

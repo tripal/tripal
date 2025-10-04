@@ -63,7 +63,7 @@ class ChadoIntegerTypeDefault extends ChadoFieldItemBase {
     // Get the base table columns needed for this field.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
     $base_column = $settings['base_column'];
 
     // Get the property terms by using the Chado table columns they map to.

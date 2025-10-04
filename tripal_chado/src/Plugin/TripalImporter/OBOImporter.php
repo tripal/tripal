@@ -2110,12 +2110,14 @@ class OBOImporter extends ChadoImporterBase {
    */
   private function getCachedTermStanza($id) {
     if ($this->cache_type == 'table') {
-      $values = ['id' => $id];
-      $result = chado_select_record('tripal_obo_temp', ['stanza'], $values);
-      if (count($result) == 0) {
+      $query = $this->connection->select('1:tripal_obo_temp', 't');
+      $query->condition('t.id', $id, '=');
+      $query->addField('t', 'stanza', 'stanza');
+      $stanza = $query->execute()->fetchField();
+      if (!$stanza) {
         return FALSE;
       }
-      return unserialize(base64_decode($result['stanza']));
+      return unserialize(base64_decode($stanza));
     }
 
     if (array_key_exists($id, $this->termStanzaCache['ids'])) {
@@ -2296,7 +2298,9 @@ class OBOImporter extends ChadoImporterBase {
         'stanza' => base64_encode(serialize($stanza)),
         'type' => $type,
       ];
-      $success = chado_insert_record('tripal_obo_temp', $values);
+      $query = $this->connection->insert('1:tripal_obo_temp');
+      $query->fields($values);
+      $success = $query->execute();
       if (!$success) {
         throw new \Exception("Cannot insert stanza into temporary table.");
       }

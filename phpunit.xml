@@ -12,6 +12,7 @@
          beStrictAboutChangesToGlobalState="true"
          failOnRisky="true"
          failOnWarning="true"
+         failOnDeprecation="true"
          displayDetailsOnTestsThatTriggerErrors="true"
          displayDetailsOnTestsThatTriggerWarnings="true"
          displayDetailsOnTestsThatTriggerDeprecations="true"

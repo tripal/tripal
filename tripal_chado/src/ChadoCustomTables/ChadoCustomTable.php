@@ -209,6 +209,9 @@ class ChadoCustomTable {
     if (!$table_schema) {
       return [];
     }
+    // There was a hard-to-reproduce bug with unserializing which
+    // was fixed with the allowed_classes option, which provides
+    // more security, and there are no classes serialized here.
     return unserialize($table_schema, ['allowed_classes' => FALSE]);
   }
 
