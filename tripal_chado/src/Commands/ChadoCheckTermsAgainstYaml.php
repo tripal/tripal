@@ -256,11 +256,33 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *   Options from drush command line.
    */
   protected function chadoCheckTermsFindCvProblems(&$problems, &$solutions, &$summary_rows, $options) {
+    // These were removed in PR #1727.
     $obsolete_cvs = [
-      'organism_property', 'analysis_property', 'tripal_phylogeny',
-      'featuremap_units', 'featurepos_property', 'featuremap_property',
-      'study_property', 'nd_experiment_types', 'nd_geolocation_property',
-      'tripal_analysis', 'library_property', 'library_type', 'project_property',
+      'organism_property',
+      'analysis_property',
+      'tripal_phylogeny',
+      'feature_relationship',
+      'feature_property',
+      'contact_property',
+      'contact_type',
+      'contact_relationship',
+      'featuremap_units',
+      'featurepos_property',
+      'featuremap_property',
+      'library_property',
+      'library_type',
+      'project_property',
+      'study_property',
+      'project_relationship',
+      'pub_type',
+      'pub_property',
+      'pub_relationship',
+      'stock_relationship',
+      'stock_property',
+      'stock_type',
+      'tripal_analysis',
+      'nd_experiment_types',
+      'nd_geolocation_property',
     ];
     $query = $this->chado->select('1:cv', 'CV')
       ->fields('CV', ['cv_id', 'name']);
