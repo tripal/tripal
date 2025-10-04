@@ -120,7 +120,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
 
     // Check for some specific cv / db which should have been inserted.
     $cv_found = $chado2check->query("SELECT 1 FROM {1:cv} WHERE name = 'tripal_contact'")->fetchField();
-    $this->assertEquals(1, $cv_found, 'Found feature_property CV');
+    $this->assertEquals(1, $cv_found, 'Found tripal_contact CV');
     $db_found = $chado2check->query("SELECT 1 FROM {1:db} WHERE name = 'TAXRANK';")->fetchField();
     $this->assertEquals(1, $db_found, 'Found TAXRANK DB');
     $cvterm_found = $chado2check->query("SELECT 1 FROM {1:cvterm} WHERE name = 'accession'")->fetchField();
