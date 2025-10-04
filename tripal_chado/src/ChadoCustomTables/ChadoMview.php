@@ -103,7 +103,7 @@ class ChadoMview extends ChadoCustomTable {
    * {@inheritDoc}
    * @see \Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable::setTableSchema()
    */
-  public function setTableSchema(array $table_schema, bool $force = False) {
+  public function setTableSchema(array $table_schema, bool $force = False): bool {
     $success = parent::setTableSchema($table_schema, $force);
     if ($success) {
       $this->setTableValue('name', $table_schema['table']);

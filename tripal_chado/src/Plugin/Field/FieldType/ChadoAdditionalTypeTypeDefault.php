@@ -90,8 +90,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // base table will be different.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_table_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
     // Create variables to store the terms for the properties. We can use terms
     // from Chado tables if appropriate.
@@ -114,7 +113,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // table, the fkey linking to the base table, and we'll set a value
     // of the type name.
     if ($type_table != $base_table) {
-      $type_table_def = $schema->getTableDef($type_table, ['format' => 'Drupal']);
+      $type_table_def = self::getChadoTableDef($type_table, $schema);
       $type_pkey_col = $type_table_def['primary key'];
       $type_fkey_col = array_keys($type_table_def['foreign keys'][$base_table]['columns'])[0];
       $link_term = self::getColumnTermId($type_table, $type_fkey_col, self::$record_id_term);
@@ -396,7 +395,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       $schema = $chado->schema();
 
       // Get a list of tables with foreign keys to selected $base_table.
-      $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+      $base_schema_def = self::getChadoTableDef($base_table, $schema);
       $fkey_list = $base_schema_def['referring_tables']??[];
       asort($fkey_list);
 
@@ -407,7 +406,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       // For each of these tables, if there is a column with a foreign key to the
       // cvterm table, return table+column, formatted for use in the form select.
       foreach ($fkey_list as $type_table) {
-        $type_schema_def = $schema->getTableDef($type_table, ['format' => 'Drupal']);
+        $type_schema_def = self::getChadoTableDef($type_table, $schema);
         if (isset($type_schema_def['foreign keys']['cvterm']['columns'])) {
           foreach ($type_schema_def['foreign keys']['cvterm']['columns'] as $column_name => $table) {
             $fkey = $type_table . self::$table_column_delimiter . $column_name;
@@ -458,12 +457,12 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $schema = $chado->schema();
 
     // If the base table has a 'type_id' column, then it is compatible.
-    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_table_def = self::getChadoTableDef($base_table, $schema);
     if (isset($base_table_def['fields']['type_id'])) {
       $compatible = TRUE;
     }
 
-    $prop_def = $schema->getTableDef($base_table . 'prop', ['format' => 'Drupal']);
+    $prop_def = self::getChadoTableDef($base_table . 'prop', $schema);
     // If the property table exists, and has a foreign key to the base table,
     // then this content type is compatible.
     if ($prop_def) {
@@ -498,7 +497,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // or else have it specified in a property table. Sometimes we have both.
     $type_table = NULL;
     $type_column = NULL;
-    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_table_def = self::getChadoTableDef($base_table, $schema);
     $base_type_column = 'type_id';
     $base_type_id = $base_table_def['fields'][$base_type_column] ?? NULL;
     $prop_type_id = NULL;
@@ -510,7 +509,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       $prop_table = $base_table . 'prop';
       $prop_type_column = 'type_id';
       if ($chado->schema()->tableExists($prop_table)) {
-        $prop_table_def = $schema->getTableDef($prop_table, ['format' => 'Drupal']);
+        $prop_table_def = self::getChadoTableDef($prop_table, $schema);
         $prop_type_id = $prop_table_def['fields'][$prop_type_column] ?? NULL;
         if ($prop_type_id) {
           $type_table = $prop_table;
