@@ -34,9 +34,10 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
     // The string to autocomplete from the form input.
     $string = trim($request->query->get('q'));
 
+    $default_options = static::getDefaultOptions();
     $options = [
-      'match_limit' => $match_limit,
-      'match_operator' => $this->match_operator,
+      'match_limit' => $match_limit ?? $default_options['match_limit'],
+      'match_operator' => $default_options['match_operator'],
     ];
 
     $query = $this->getQuery($string, $options);
@@ -79,8 +80,9 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
   public static function getQuery(string $string, array $options): ?Select {
 
     // Set defaults.
-    $options['match_operator'] ??= 'CONTAINS';
-    $options['match_limit'] ??= 10;
+    $default_options = static::getDefaultOptions();
+    $options['match_operator'] ??= $default_options['match_operator'];
+    $options['match_limit'] ??= $default_options['match_limit'];
 
     // Generate a query only if $string is at least a character
     // long and result count is set to a value greater than 0.
@@ -100,10 +102,12 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
       $query->addField('BT', 'organism_id', 'pkey');
       $query->addField('BT', 'abbreviation', 'abbreviation');
       $query->addField('BT', 'common_name', 'common_name');
-      $query->addExpression("CONCAT_WS(' ', genus, species, name, infraspecific_name)", 'organism');
+      $query->addExpression("RTRIM(CONCAT_WS(' ', genus, species, name, infraspecific_name))", 'organism');
 
       // A single "%" wildcard is used to indicate that we should return
       // all records. This is used for a form select element.
+      // Note: We don't need to trim here since this is a partial string
+      // comparison.
       if ($string != '%') {
         $query->where("CONCAT_WS(' ', genus, species, name, infraspecific_name) ILIKE :value",
             [':value' => $condition_value]);
@@ -156,31 +160,21 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    *   The default value, either an integer pkey ID or a string.
    * @param array $options
    *   The following keys are used:
-   *   select_limit - The maximum number of options to show in a select list.
-   *                If the number of possible options exceeds this limit,
-   *               an autocomplete text field is returned instead.
-   *              A value of zero means always use an autocomplete.
-   *   match_operator - Either 'CONTAINS' (default) or 'STARTS_WITH'.
-   *   match_limit - Desired number of autocomplete matching names to suggest.
-   *   size - The size of the textfield for autocomplete.
-   *   placeholder - Placeholder text for the autocomplete textfield.
+   *   - select_limit: The maximum number of options to show in a select list
+   *   before switching to an autocomplete instead. A value of zero means always
+   *   use an autocomplete.
+   *   - match_operator: Either 'CONTAINS' (default) or 'STARTS_WITH'.
+   *   - match_limit: Desired number of autocomplete matching names to suggest.
+   *   - size: The size of the textfield for autocomplete.
+   *   - placeholder: Placeholder text for the autocomplete textfield.
    *
    * @return array|null
    *   A form element array, either a select or an autocomplete.
    */
   public static function getFormElement(array $element, mixed $default, array $options = []): ?array {
 
-    $settings = \Drupal::config('tripal.settings');
-
     // Set the default options if they are not provided.
-    $default_options = [
-      'select_limit' => $settings->get('tripal_entity_type.widget_global_select_limit') ?? 50,
-      'match_limit' => $settings->get('tripal_entity_type.match_limit') ?? 10,
-      'match_operator' => $settings->get('tripal_entity_type.match_operator') ?? 'CONTAINS',
-      'size' => $settings->get('tripal_entity_type.size'),
-      'placeholder' => $settings->get('tripal_entity_type.placeholder'),
-    ];
-
+    $default_options = static::getDefaultOptions();
     foreach ($default_options as $key => $value) {
       if (!isset($options[$key])) {
         $options[$key] = $value;
@@ -230,24 +224,20 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    *   A form element array, either a select element.
    */
   public static function getSelectElement(array $element, mixed $default, array $options = []): ?array {
-    $settings = \Drupal::config('tripal.settings');
 
     // Set the default options if they are not provided.
-    $default_options = [
-      'select_limit' => $settings->get('tripal_entity_type.widget_global_select_limit') ?? 50,
-      'match_limit' => $settings->get('tripal_entity_type.match_limit') ?? 10,
-      'match_operator' => $settings->get('tripal_entity_type.match_operator') ?? 'CONTAINS',
-      'size' => $settings->get('tripal_entity_type.size'),
-      'placeholder' => $settings->get('tripal_entity_type.placeholder'),
-    ];
-
+    $default_options = static::getDefaultOptions();
     foreach ($default_options as $key => $value) {
       if (!isset($options[$key])) {
         $options[$key] = $value;
       }
     }
+
+    // Retrieve the organism to provide in the select list.
     $select_options = self::getSelectOptions($options);
     natcasesort($select_options);
+
+    // Determine the default value.
     $default_id = 0;
     if (gettype($default) == 'integer') {
       $default_id = $default;
@@ -255,6 +245,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
     elseif (gettype($default) == 'string') {
       $default_id = self::getPkeyId($default);
     }
+
     $element = [
       '#type' => 'select',
       '#options' => $select_options,
@@ -262,11 +253,12 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
       '#empty_option' => t('- Select -'),
     ];
     $element['#element_validate'] = [[static::class, 'validateAutocomplete']];
+
     return $element;
   }
 
   /**
-   * Provides a Drupal textfield form element that autocompletes with chado organisms.
+   * Provides a textfield form element that autocompletes with chado organisms.
    *
    * @param array $element
    *   The form element array to be populated.
@@ -283,17 +275,9 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    *   A form element array, an autocomplete.
    */
   public static function getAutocompleteElement(array $element, mixed $default, array $options = []): ?array {
-    $settings = \Drupal::config('tripal.settings');
 
     // Set the default options if they are not provided.
-    $default_options = [
-      'select_limit' => $settings->get('tripal_entity_type.widget_global_select_limit') ?? 50,
-      'match_limit' => $settings->get('tripal_entity_type.match_limit') ?? 10,
-      'match_operator' => $settings->get('tripal_entity_type.match_operator') ?? 'CONTAINS',
-      'size' => $settings->get('tripal_entity_type.size'),
-      'placeholder' => $settings->get('tripal_entity_type.placeholder'),
-    ];
-
+    $default_options = static::getDefaultOptions();
     foreach ($default_options as $key => $value) {
       if (!isset($options[$key])) {
         $options[$key] = $value;
@@ -352,20 +336,28 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
    *   infraspecific columns.
    */
   public static function getSelectOptions(array $options): ?array {
-    // Construct a query
+
+    // Construct a query.
     // A single wildcard indicates that all records are to be returned.
     $string = '%';
+
+    // Get the default options.
+    $options['select_limit'] ??= static::getDefaultOptions()['select_limit'];
+
     // Add one to select limit so we know if it is exceeded.
     $count_options = $options;
     $count_options['match_limit'] = $options['select_limit'] + 1;
+
     $query = self::getQuery($string, $count_options);
     $results = $query->execute();
+
     $select_options = [];
     while ($record = $results->fetchObject()) {
       // Strip HTML tags if present, but this is not likely for organism.
       $organism = strip_tags($record->abbreviation ?: $record->organism ?? '');
       $select_options[$record->pkey] = $organism;
     }
+
     return $select_options;
   }
 

@@ -994,8 +994,10 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         // Some materialized views may look like a linker table, but if
         // there is no primary key, we can't use it, e.g. analysis_organism.
         $linker_pkey = self::getPrimaryKey($linking_table, $options['chado']->schema());
+        // Make sure a foreign key exists in both directions.
         $fk_def = self::getChadoForeignKeyDef($linking_table, $options['table'], $options['chado']->schema());
-        if ($linker_pkey && $fk_def) {
+        $bt_fk_def = self::getChadoForeignKeyDef($linking_table, $options['base_table'], $options['chado']->schema());
+        if ($linker_pkey && $fk_def && $bt_fk_def) {
           $linker_fkey_column = array_keys($fk_def['columns'])[0];
           // Check for existing fields of this type.
           if (array_key_exists($options['id'], $field_types)) {
