@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 /**
  * Plugin implementation of default Tripal Phylotree Visualization formatter.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'chado_phylotreevis_formatter_default',
   label: new TranslatableMarkup('Chado Phylogenetic Tree Visualization formatter'),
   description: new TranslatableMarkup('Formats and visually displays a chado phylogenetic tree'),
@@ -19,18 +19,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     'chado_phylotreevis_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Tripal Phylotree Visualization formatter.
- *
- * @FieldFormatter(
- *   id = "chado_phylotreevis_formatter_default",
- *   label = @Translation("Chado Phylogenetic Tree Visualization formatter"),
- *   description = @Translation("Formats and visually displays a chado phylogenetic tree"),
- *   field_types = {
- *     "chado_phylotreevis_type_default"
- *   },
- * )
- */
 class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
 
   /**

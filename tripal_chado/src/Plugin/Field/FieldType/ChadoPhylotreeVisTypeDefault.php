@@ -13,25 +13,13 @@ use Drupal\tripal_chado\Services\ChadoPhylotree;
 /**
  * Plugin implementation of the 'phylotreevisualization' field type for Chado.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_phylotreevis_type_default',
   label: new TranslatableMarkup('Chado Phylogenetic Visualization Field Type'),
   description: new TranslatableMarkup('Visualization of a phylogenetic tree.'),
   default_formatter: 'chado_phylotreevis_formatter_default',
   cardinality: 1,
 )]
-/**
- * Plugin implementation of the 'phylotreevisualization' field type for Chado.
- *
- * @FieldType(
- *   id = "chado_phylotreevis_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Phylogenetic Visualization Field Type"),
- *   description = @Translation("Visualization of a phylogenetic tree."),
- *   default_formatter = "chado_phylotreevis_formatter_default",
- *   cardinality = 1,
- * )
- */
 class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
 
   /**
