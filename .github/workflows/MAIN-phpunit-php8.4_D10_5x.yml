@@ -1,0 +1,34 @@
+name: 'PHPUnit'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - '4.x'
+      - 'tv4g0-2208-codeclimateToQltyCloud'
+      - 'tv4g9-issue2170-wrong-config-drupal-10.x-dockers'
+  # Allows us to schedule when this workflow is run.
+  # This ensures we pick up any new changes in Drupal.
+  schedule:
+    # Run at 6am every night.
+    - cron: '0 6 * * *'
+
+permissions: read-all
+
+jobs:
+  running-tests:
+    name: 'Drupal 10.5: PHP 8.4'
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: 'Checkout Repository'
+        uses: 'actions/checkout@v4'
+      - name: 'Run Automated testing'
+        uses: 'tripal/test-tripal-action@v1.5'
+        with:
+          directory-name: 'tripal'
+          modules: 'tripal tripal_biodb tripal_chado'
+          php-version: '8.4'
+          pgsql-version: '17'
+          drupal-version: '10.5.x-dev'
+          build-image: true
+          phpunit-command-options: '-c /var/www/drupal/web/modules/contrib/tripal/phpunit.9.6.xml'

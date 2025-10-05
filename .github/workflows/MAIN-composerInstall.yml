@@ -23,6 +23,7 @@ jobs:
           - '8.1'
           - '8.2'
           - '8.3'
+          - '8.4'
         pgsql-version:
           - '13'
           - '17'
@@ -45,7 +46,13 @@ jobs:
           - php-version: '8.3'
             pgsql-version: '13'
             drupal-version: '11.1.x-dev'
+          - php-version: '8.4'
+            pgsql-version: '13'
+            drupal-version: '11.1.x-dev'
           - php-version: '8.3'
+            pgsql-version: '13'
+            drupal-version: '11.2.x-dev'
+          - php-version: '8.4'
             pgsql-version: '13'
             drupal-version: '11.2.x-dev'
           # Exclude higher postgresql version from middle Drupal versions
