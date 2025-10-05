@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\ChadoField\FieldType;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -180,6 +181,7 @@ class ChadoPhylotreeTypeCRUDTest extends ChadoTestKernelBase {
    *
    * @dataProvider provideScenarios
    */
+  #[DataProvider('provideScenarios')]
   public function testChadoPhylotreeVisTypeEntityCrud(int $current_scenario_key, string $current_scenario_label) {
     $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
 
