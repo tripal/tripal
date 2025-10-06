@@ -1113,14 +1113,20 @@ EOD;
     }
     $statements = $this->createTableSql($name, $table);
 
-    // Update the unique constraint if so configured, and if the
-    // postgresql version allows.
+    // The schema may contain an optional array of names of unique keys wanting
+    // this type of unique constraint. If the postgresql version allows, then
+    // update, but only for those keys so configured.
     if ($table['nulls not distinct'] ?? FALSE) {
       $psql_version = $this->connection->version();
       // Remove distro info, e.g. "13.22 (Debian 13.22-1.pgdg12+1)" -> "13.22".
       $psql_version = preg_replace('/[^\d\.].*$/', '', $psql_version);
       if (version_compare($psql_version, '15.0') >= 0) {
-        $statements[0] = preg_replace('/ UNIQUE \(/', ' UNIQUE NULLS NOT DISTINCT (', $statements[0]);
+        foreach ($table['nulls not distinct'] as $key => $state) {
+          if ($state) {
+            $ukey = '__' . $key . '__key UNIQUE ';
+            $statements[0] = str_replace($ukey, $ukey . 'NULLS NOT DISTINCT ', $statements[0]);
+          }
+        }
       }
     }
 
