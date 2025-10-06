@@ -1087,7 +1087,6 @@ EOD;
    * support using postgresql UNIQUE NULLS NOT DISTINCT, because otherwise
    * you can insert duplicate records if one column is NULL.
    * This is only available for Postgresql versions 15 and above.
-   * @see https://github.com/GMOD/Chado/issues/139
    *
    * @param string $name
    *   The name of the table to create.
@@ -1098,6 +1097,9 @@ EOD;
    *   If the specified table already exists.
    * @throws \BadMethodCallException
    *   When ::createTableSql() is not implemented in the concrete driver class.
+   *
+   * For information about Postgresql version 15 support:
+   * @see https://github.com/GMOD/Chado/issues/139
    */
   public function createTable($name, $table) {
 
