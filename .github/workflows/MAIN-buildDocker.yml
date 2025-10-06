@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - '4.x'
-      - 'tv4g0-2208-codeclimateToQltyCloud'
+      - 'tv4g0-issue2247-support-php-8.4'
   # Allows us to manually trigger this workflow.
   # This is great if there is a change made to Tripal core that we want to test our modules on ASAP.
   workflow_dispatch:
@@ -27,6 +27,7 @@ jobs:
           - '8.1'
           - '8.2'
           - '8.3'
+          - '8.4'
         pgsql-version:
           - '13'
           - '14'
@@ -96,10 +97,10 @@ jobs:
           password: '${{ secrets.DOCKERHUB_PASSWORD }}'
           buildArgs: 'drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }},installchado=FALSE'
           labels: 'tripal.branch=4.x,drupal.version.label=${{ matrix.drupal-version }},php.version.label=${{ matrix.php-version }}, postgresql.version.label=${{ matrix.pgsql-version }}'
-      ## Build Images tagged drupal{VER} focused on php 8.3 + postgresql 17
+      ## Build Images tagged drupal{VER} focused on php 8.4 + postgresql 17
       - uses: 'mr-smithers-excellent/docker-build-push@v6'
         name: 'Build & push Docker image Drupal focused Docker images.'
-        if: ${{ matrix.php-version == '8.3' && matrix.pgsql-version == '17' }}
+        if: ${{ matrix.php-version == '8.4' && matrix.pgsql-version == '17' }}
         with:
           image: 'tripalproject/tripaldocker'
           tags: 'drupal${{ matrix.drupal-version }}'
@@ -110,8 +111,8 @@ jobs:
           labels: 'tripal.branch=4.x,drupal.version.label=${{ matrix.drupal-version }},php.version.label=${{ matrix.php-version }}, postgresql.version.label=${{ matrix.pgsql-version }}'
       ## Build the image tagged as latest which is the highest version combo that we feel is well supported.
       - uses: 'mr-smithers-excellent/docker-build-push@v6'
-        name: 'Build latest using 11.2.x-dev, PHP 8.3, PgSQL 17'
-        if: ${{ matrix.drupal-version == '11.2.x-dev' && matrix.php-version == '8.3' && matrix.pgsql-version == '17' }}
+        name: 'Build latest using 11.2.x-dev, PHP 8.4, PgSQL 17'
+        if: ${{ matrix.drupal-version == '11.2.x-dev' && matrix.php-version == '8.4' && matrix.pgsql-version == '17' }}
         with:
           image: 'tripalproject/tripaldocker'
           tags: 'latest'
