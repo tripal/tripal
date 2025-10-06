@@ -299,7 +299,7 @@ class ChadoPublish extends TripalBackendPublishBase {
         'source' => [
           'file',
           'tripal',
-          'database'
+          'database',
         ],
       ];
       $linker_schema_def = $chado->schema()->getTableDef($linker_table, $parameters);
@@ -679,7 +679,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       'source' => [
         'file',
         'tripal',
-        'database'
+        'database',
       ],
     ];
     $table_def = $schema->getTableDef($this->base_table, $parameters);
