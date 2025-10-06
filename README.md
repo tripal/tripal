@@ -42,15 +42,15 @@ This project uses QLTY Cloud to determine the quality of our codebase and the co
 
 | Tripal     | Drupal              | PHP         | PostgreSQL |
 |------------|---------------------|-------------|------------|
-| 4.0-alpha1 | >=9.2 <=10.0        | >=8.0 <=8.1 | 13         |
-| 4.0-alpha2 | >=10.0 <= 10.1      | >=8.1 <=8.2 | 13         |
+| 4.0-alpha1 | >=9.2 <=10.0        | >=8.0 <=8.1 | >=13 <=16  |
+| 4.0-alpha2 | >=10.0 <= 10.1      | >=8.1 <=8.2 | >=13 <=16  |
+| 4.0-alpha3 | >=10.4 <= 11.2      | >=8.1 <=8.3 | >=13 <=17  |
 
 ## Current Timeline
 
-### Required for Tripal 4.alpha3 Release
+### Required for Tripal 4.alpha4 Release
 
 - Display suite / page work (partially complete; needs default layouts for existing content types + auto application).
-- ✅ Importers: Publications
 - Search via Views (partially complete; waiting on default views for existing content types)
 
 ## How to get involved!
