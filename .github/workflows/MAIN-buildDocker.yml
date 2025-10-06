@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - '4.x'
-      - 'tv4g0-issue2247-support-php-8.4'
+      - 'tv4g0-issue2247-support-php-8.4-docker'
   # Allows us to manually trigger this workflow.
   # This is great if there is a change made to Tripal core that we want to test our modules on ASAP.
   workflow_dispatch:
@@ -41,6 +41,12 @@ jobs:
           - '11.2.x-dev'
           - '11.x-dev'
         exclude:
+          ## Only Drupal 11.x supports PHP 8.4
+          - php-version: '8.4'
+            drupal-version: '10.4.x-dev'
+          - php-version: '8.4'
+            drupal-version: '10.5.x-dev'
+          ## Drupal 11.x requires PHP 8.3+
           - php-version: '8.1'
             drupal-version: '11.1.x-dev'
           - php-version: '8.2'
@@ -53,6 +59,7 @@ jobs:
             drupal-version: '11.x-dev'
           - php-version: '8.2'
             drupal-version: '11.x-dev'
+          ## Drupal 11.x requires PostgreSQL 16+
           - pgsql-version: '13'
             drupal-version: '11.1.x-dev'
           - pgsql-version: '14'
