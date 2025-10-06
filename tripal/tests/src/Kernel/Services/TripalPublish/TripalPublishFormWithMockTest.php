@@ -6,7 +6,7 @@ use Drupal\Core\Form\FormState;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\tripal\Entity\TripalEntityType;
-use Drupal\tripal\Kernel\TripalTestKernelBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager;
 use Drupal\tripal\TripalStorage\TripalStorageBase;
 use PHPUnit\Framework\Attributes\Group;
