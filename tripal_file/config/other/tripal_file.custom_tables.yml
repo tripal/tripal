@@ -275,7 +275,8 @@ analysis_file:
             - file_id
             - analysis_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        analysis_file_c1: true
     indexes:
         analysis_file_idx1:
             - file_id
@@ -319,7 +320,8 @@ assay_file:
             - file_id
             - assay_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        assay_file_c1: true
     indexes:
         assay_file_idx1:
             - file_id
@@ -363,7 +365,8 @@ biomaterial_file:
             - file_id
             - biomaterial_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        biomaterial_file_c1: true
     indexes:
         biomaterial_file_idx1:
             - file_id
@@ -404,7 +407,8 @@ file_contact:
             - file_id
             - contact_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        file_contact_c1: true
     indexes:
         file_contact_idx1:
             - file_id
@@ -448,7 +452,8 @@ cv_file:
             - file_id
             - cv_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        cv_file_c1: true
     indexes:
         cv_file_idx1:
             - file_id
@@ -492,7 +497,8 @@ eimage_file:
             - file_id
             - eimage_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        eimage_file_c1: true
     indexes:
         eimage_file_idx1:
             - file_id
@@ -536,7 +542,8 @@ feature_file:
             - file_id
             - feature_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        feature_file_c1: true
     indexes:
         feature_file_idx1:
             - file_id
@@ -580,7 +587,8 @@ featuremap_file:
             - file_id
             - featuremap_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        featuremap_file_c1: true
     indexes:
         featuremap_file_idx1:
             - file_id
@@ -624,7 +632,8 @@ library_file:
             - file_id
             - library_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        library_file_c1: true
     indexes:
         library_file_idx1:
             - file_id
@@ -668,7 +677,8 @@ nd_protocol_file:
             - file_id
             - nd_protocol_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        nd_protocol_file_c1: true
     indexes:
         nd_protocol_file_idx1:
             - file_id
@@ -712,7 +722,8 @@ organism_file:
             - file_id
             - organism_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        organism_file_c1: true
     indexes:
         organism_file_idx1:
             - file_id
@@ -756,7 +767,8 @@ phylotree_file:
             - file_id
             - phylotree_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        phylotree_file_c1: true
     indexes:
         phylotree_file_idx1:
             - file_id
@@ -800,7 +812,8 @@ project_file:
             - file_id
             - project_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        project_file_c1: true
     indexes:
         project_file_idx1:
             - file_id
@@ -844,7 +857,8 @@ file_pub:
             - file_id
             - pub_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        file_pub_c1: true
     indexes:
         file_pub_idx1:
             - file_id
@@ -888,7 +902,8 @@ stock_file:
             - file_id
             - stock_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        stock_file_c1: true
     indexes:
         stock_file_idx1:
             - file_id
@@ -932,7 +947,8 @@ stockcollection_file:
             - file_id
             - stockcollection_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        stockcollection_file_c1: true
     indexes:
         stockcollection_file_idx1:
             - file_id
@@ -976,7 +992,8 @@ study_file:
             - file_id
             - study_id
             - type_id
-    'nulls not distinct': true
+    'nulls not distinct':
+        study_file_c1: true
     indexes:
         study_file_idx1:
             - file_id
