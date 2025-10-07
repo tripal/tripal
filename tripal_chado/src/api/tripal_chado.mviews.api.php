@@ -104,9 +104,19 @@ function chado_add_mview($name, $modulename, $mv_schema, $query,
  *
  * @ingroup tripal_mviews_api
  */
-function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
-    $indexed, $query, $special_index, $comment = NULL,
-    $mv_schema = NULL, ?ChadoConnection $chado = NULL) {
+function chado_edit_mview(
+  $mview_id,
+  $name,
+  $modulename,
+  $mv_table,
+  $mv_specs,
+  $indexed,
+  $query,
+  $special_index,
+  $comment = NULL,
+  $mv_schema = NULL,
+  ?ChadoConnection $chado = NULL,
+) {
 
     $logger = \Drupal::service('tripal.logger');
 

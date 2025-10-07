@@ -112,17 +112,19 @@ function chado_edit_custom_table(int $table_id, string $table_name,
  *   If this custom table is a materialized view, the mview ID.
  * @param bool $redirect
  *   If this form should redirect to a new page.
- * @param Drupal\tripal_chado\Database\ChadoConnection $chado
- *   A ChadoConnection instance. If none is proivded then
- *   the default chado installation is used.
  *
  * @return bool
  *   True if the table was created successfully, False otherwise.
  *
  * @ingroup tripal_custom_tables_api
  */
-function chado_create_custom_table(string $table, array $schema, bool $skip_if_exists = TRUE,
-    ?int $mview_id = NULL, bool $redirect = TRUE) {
+function chado_create_custom_table(
+  string $table,
+  array $schema,
+  bool $skip_if_exists = TRUE,
+  ?int $mview_id = NULL,
+  bool $redirect = TRUE,
+) {
 
   $chado = \Drupal::service('tripal_chado.database');
   $custom_tables = \Drupal::service('tripal_chado.custom_tables');

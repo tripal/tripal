@@ -78,7 +78,6 @@ function hook_importer_finish($importer) {
  *
  * @param int $import_id
  *   The ID of the import record.
- *
  * @param Drupal\tripal\Services\TripalJob|null $job
  *   An optional Job object.
  *
