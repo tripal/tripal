@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal\TripalBackendPublish\PluginManager;
 
+use Drupal\tripal\Services\TripalJob;
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -15,21 +17,26 @@ class TripalBackendPublishManager extends DefaultPluginManager {
   /**
    * The TripalLogger object.
    *
-   * @var \Drupal\tripal\Services\TripalLogger $logger
+   * @var \Drupal\tripal\Services\TripalLogger
    */
   protected $logger = NULL;
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
    *
-   * Since we have implemented the ContainerFactoryPluginInterface this static function
-   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the constructor.
+   * Since we have implemented the ContainerFactoryPluginInterface this static
+   * function will be called behind the scenes when a Plugin Manager uses
+   * createInstance(). Specifically, this method is used to determine the
+   * parameters to pass to the constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The current container.
    * @param array $configuration
+   *   A configuration array.
    * @param string $plugin_id
+   *   The plugin identifier.
    * @param mixed $plugin_definition
+   *   The definition of the plugin.
    *
    * @return static
    */
@@ -48,19 +55,18 @@ class TripalBackendPublishManager extends DefaultPluginManager {
    * @param \Traversable $namespaces
    *   An object that implements \Traversable which contains the root paths
    *   keyed by the corresponding namespace to look for plugin implementations.
+   * @param Drupal\Core\Cache\CacheBackendInterface $cache_backend
+   *   The cache backend.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
-   * @param string $plugin_interface
-   *   The interface each plugin should implement.
-   * @param string $plugin_definition_annotation_name
-   *   The name of the annotation that contains the plugin definition.
    * @param \Drupal\tripal\Services\TripalLogger $logger
+   *   Dependency injection of the tripal logger.
    */
   public function __construct(
     \Traversable $namespaces,
     CacheBackendInterface $cache_backend,
     ModuleHandlerInterface $module_handler,
-    \Drupal\tripal\Services\TripalLogger $logger
+    TripalLogger $logger,
   ) {
     parent::__construct(
       "Plugin/TripalBackendPublish",
@@ -90,21 +96,19 @@ class TripalBackendPublishManager extends DefaultPluginManager {
    *
    * @param string $bundle
    *   The entity type id (bundle) to be published.
-   *
    * @param string $datastore
    *   The plugin id for the TripalStorage backend to publish
    *   from, for example 'chado_storage'.
-   *
    * @param array $options
    *   Associative array of additional options to pass to the publish
    *   plugin. Valid keys are 'schema_name', 'republish', 'batch_size'.
-   *
    * @param Drupal\tripal\Services\TripalJob|null $job
    *   An optional TripalJob object.
    */
   public static function runTripalJob($bundle, $datastore, $options = [], ?TripalJob $job = NULL) {
     try {
-      // Load the specified plugin. An invalid plugin_id is caught during __construct().
+      // Load the specified plugin. An invalid plugin_id is caught
+      // during __construct().
       $publish_service = \Drupal::service('tripal.backend_publish');
       $publish_instance = $publish_service->createInstance($datastore, []);
       $publish_options = $options;
