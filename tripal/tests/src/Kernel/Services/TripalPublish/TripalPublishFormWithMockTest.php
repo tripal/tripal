@@ -1,9 +1,14 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel;
+namespace Drupal\Tests\tripal\Kernel\Services\TripalPublish;
 
-use \Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\Core\Form\FormState;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager;
+use Drupal\tripal\TripalStorage\TripalStorageBase;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -13,15 +18,50 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('TripalPublish')]
 class TripalPublishFormWithMockTest extends TripalTestKernelBase {
-  protected $defaultTheme = 'stark';
 
   use UserCreationTrait;
+  use StringTranslationTrait;
 
+  /**
+   * The name of the default theme.
+   *
+   * @var string
+   */
+  protected $defaultTheme = 'stark';
+
+  /**
+   * List of modules used for testing.
+   *
+   * @var array
+   */
   protected static $modules = ['system', 'user', 'file', 'tripal'];
 
+  /**
+   * The name of the plugin.
+   *
+   * @var string
+   */
   protected string $plugin_id;
+
+  /**
+   * An annotation specification.
+   *
+   * @var array
+   */
   protected array $annotation;
+
+  /**
+   * The expected render array for the form.
+   *
+   * @var array
+   */
   protected array $expected_form;
+
+  /**
+   * The name of the bundle being tested.
+   *
+   * @var string
+   */
   protected string $bundle_name;
 
   /**
@@ -45,14 +85,12 @@ class TripalPublishFormWithMockTest extends TripalTestKernelBase {
     $this->setUpCurrentUser();
 
     $container = \Drupal::getContainer();
-    $logger = $container->get('tripal.logger');
 
     $this->plugin_id = 'mock_datastore_' . uniqid();
-    $configuration = [];
     $this->annotation = [
       'id' => $this->plugin_id,
-      'label' => t('Mock Datastore'),
-      'description' => t('Just a mock datastore for testing the form'),
+      'label' => $this->t('Mock Datastore'),
+      'description' => $this->t('Just a mock datastore for testing the form'),
     ];
     $this->expected_form = [
       'random_element' => [
@@ -63,12 +101,12 @@ class TripalPublishFormWithMockTest extends TripalTestKernelBase {
     ];
 
     // Create a mock datastore.
-    $mock_plugin = $this->createMock(\Drupal\tripal\TripalStorage\TripalStorageBase::class);
+    $mock_plugin = $this->createMock(TripalStorageBase::class);
     $mock_plugin->method('publishForm')
       ->willReturn($this->expected_form);
 
     // Create a mock version of the plugin manager to return our mock plugin.
-    $manager = $this->createMock(\Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager::class);
+    $manager = $this->createMock(TripalStorageManager::class);
     $manager->method('getInstance')
       ->willReturn($mock_plugin);
     $manager->method('getDefinitions')
@@ -80,7 +118,7 @@ class TripalPublishFormWithMockTest extends TripalTestKernelBase {
 
     // We also need a bundle with this storage type...
     $this->bundle_name = 'fake_bundle_' . uniqid();
-    $entityType = \Drupal\tripal\Entity\TripalEntityType::create([
+    $entityType = TripalEntityType::create([
       'id' => $this->bundle_name,
       'label' => 'FAKE Bundle For Testing',
       'termIdSpace' => 'FAKE',
@@ -104,7 +142,7 @@ class TripalPublishFormWithMockTest extends TripalTestKernelBase {
   public function testTripalPublishFormBuild() {
 
     // Setup the form_state.
-    $form_state = new \Drupal\Core\Form\FormState();
+    $form_state = new FormState();
     $form_state->setValue('datastore', $this->plugin_id);
 
     // Build the form using the Drupal form builder.
@@ -119,7 +157,8 @@ class TripalPublishFormWithMockTest extends TripalTestKernelBase {
     $this->assertEquals('content_bio_data_publish_form', $form['#form_id'],
       'We did not get the form id we expected.');
 
-    // Check that our form has the basic details even with no storage backends available.
+    // Check that our form has the basic details even with no storage
+    // backends available.
     $this->assertArrayHasKey('random_element', $form['storage-options'],
       "The form should have the random element added by our mock datastore.");
     $this->assertEquals('textfield', $form['storage-options']['random_element']['#type'],
@@ -132,7 +171,7 @@ class TripalPublishFormWithMockTest extends TripalTestKernelBase {
   public function testTripalPublishFormSubmit() {
 
     // Setup the form_state.
-    $form_state = new \Drupal\Core\Form\FormState();
+    $form_state = new FormState();
     $form_state->setValue('datastore', $this->plugin_id);
     $form_state->setValue('bundle', $this->bundle_name);
 
@@ -144,7 +183,7 @@ class TripalPublishFormWithMockTest extends TripalTestKernelBase {
     // And do some basic checks to check for errors.
     $this->assertTrue($form_state->isValidationComplete(),
       "We expect the form state to have been updated to indicate that validation is complete.");
-    //   Looking for form validation errors
+    // Looking for form validation errors.
     $form_validation_messages = $form_state->getErrors();
     $helpful_output = [];
     foreach ($form_validation_messages as $element => $markup) {
@@ -165,7 +204,7 @@ class TripalPublishFormWithMockTest extends TripalTestKernelBase {
     // And do some basic checks to check for errors.
     $this->assertTrue($form_state->isValidationComplete(),
       "We expect the form state to have been updated to indicate that validation is complete.");
-    //   Looking for form validation errors
+    // Looking for form validation errors.
     $form_validation_messages = $form_state->getErrors();
     $helpful_output = [];
     foreach ($form_validation_messages as $element => $markup) {
@@ -174,4 +213,5 @@ class TripalPublishFormWithMockTest extends TripalTestKernelBase {
     $this->assertCount(0, $form_validation_messages,
       "We should not have any validation errors but instead we have: " . implode(" AND ", $helpful_output));
   }
+
 }
