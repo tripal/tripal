@@ -94,14 +94,14 @@ class ChadoLicenseTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table.
-    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
     // Object table.
     $object_table = self::$object_table;
-    $object_pkey_col = self::getPrimaryKey($schema, $object_table);
+    $object_pkey_col = self::getPrimaryKey($object_table, $schema);
 
     // Columns specific to the object table.
-    $object_schema_def = self::getChadoTableDef($schema, $object_table);
+    $object_schema_def = self::getChadoTableDef($object_table, $schema);
     $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
     $name_len = $object_schema_def['fields']['name']['length'];
     $summary_term = self::getColumnTermId($object_table, 'summary', 'schema:description');
@@ -111,8 +111,8 @@ class ChadoLicenseTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = self::getChadoTableDef($schema, $linker_table);
-      $linker_pkey_col = self::getPrimaryKey($schema, $linker_table);
+      $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
+      $linker_pkey_col = self::getPrimaryKey($linker_table, $schema);
       // The following should be the same as $base_pkey_col.
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
       $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);

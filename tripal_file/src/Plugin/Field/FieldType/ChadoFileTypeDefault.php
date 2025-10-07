@@ -96,18 +96,18 @@ class ChadoFileTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table.
-    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
     // Object table.
     $object_table = self::$object_table;
-    $object_pkey_col = self::getPrimaryKey($schema, $object_table);
+    $object_pkey_col = self::getPrimaryKey($object_table, $schema);
 
     // Columns specific to the object table.
     $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
     $description_term = self::getColumnTermId($object_table, 'description', 'schema:description');
 
     // Cvterm table, to retrieve the name for the file type.
-    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $cvterm_schema_def = self::getChadoTableDef('cvterm', $schema);
     $file_type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $file_type_len = $cvterm_schema_def['fields']['name']['size'];
 
@@ -116,8 +116,8 @@ class ChadoFileTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = self::getChadoTableDef($schema, $linker_table);
-      $linker_pkey_col = self::getPrimaryKey($schema, $linker_table);
+      $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
+      $linker_pkey_col = self::getPrimaryKey($linker_table, $schema);
       // The following should be the same as $base_pkey_col.
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
       $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);

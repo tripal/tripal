@@ -86,11 +86,11 @@ class ChadoFileLocationTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table.
-    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
     // The fileloc table.
     $object_table = self::$object_table;
-    $object_schema = self::getChadoTableDef($schema, $object_table);
+    $object_schema = self::getChadoTableDef($object_table, $schema);
     $object_pkey_col = $object_schema['primary key'];
 
     // Columns specific to the fileloc table.
