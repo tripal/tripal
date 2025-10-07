@@ -248,7 +248,11 @@ class ChadoCustomTableTest extends ChadoTestBrowserBase {
     $schema_array4 = $schema_array;
     $table_name4 = 'file4';
     $schema_array4['table'] = $table_name4;
-    $schema_array4['nulls not distinct'] = TRUE;
+    $schema_array4['nulls not distinct'] = [
+      'file_c1' => TRUE,
+      'notexist' => TRUE,
+      'ignore' => FALSE,
+    ];
     $table_name = $schema_array4['table'];
     $custom_table_obj4 = $manager->create($table_name, $chado_schema_name);
     $this->assertIsObject($custom_table_obj4, 'Unable to create a custom table object using the service manager.');
