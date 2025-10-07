@@ -2,12 +2,11 @@
 
 namespace Drupal\tripal\TripalBackendPublish\PluginManager;
 
-use Drupal\tripal\Services\TripalJob;
-use Drupal\tripal\Services\TripalLogger;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\tripal\Services\TripalJob;
+use Drupal\tripal\Services\TripalLogger;
 
 /**
  * Provides a TripalBackendPublish plugin manager.
