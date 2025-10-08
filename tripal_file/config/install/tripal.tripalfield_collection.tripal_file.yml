@@ -41,35 +41,6 @@ fields:
                         filter_format: 'plain_text'
                         num_rows: 1
 
-    -   name: 'file_description'
-        content_type: 'tripal_file'
-        label: 'Description'
-        type: 'chado_text_type_default'
-        description: 'A description of the file.'
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: 'chado_storage'
-            storage_plugin_settings:
-                base_table: 'file'
-                base_column: 'description'
-        settings:
-            termIdSpace: 'schema'
-            termAccession: 'description'
-        display:
-            view:
-                default:
-                    region: 'content'
-                    label: 'above'
-                    weight: 20
-                    settings:
-                        field_prefix: ''
-                        field_suffix: ''
-            form:
-                default:
-                    region: 'content'
-                    weight: 20
-
     -   name: 'file_type'
         content_type: 'tripal_file'
         label: 'File Type'
@@ -91,38 +62,67 @@ fields:
                 default:
                     region: 'content'
                     label: 'above'
-                    weight: 30
+                    weight: 20
             form:
                 default:
                     region: 'content'
-                    weight: 30
+                    weight: 20
 
-    -   name: 'file_license'
+    -   name: 'file_description'
         content_type: 'tripal_file'
-        label: 'License'
-        type: 'chado_license_type_default'
-        description: 'The license associated with this file.'
+        label: 'Description'
+        type: 'chado_text_type_default'
+        description: 'A description of the file.'
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
                 base_table: 'file'
-                linker_table: 'file_license'
-                linker_fkey_column: 'license_id'
+                base_column: 'description'
         settings:
             termIdSpace: 'schema'
-            termAccession: 'license'
+            termAccession: 'description'
         display:
             view:
                 default:
                     region: 'content'
                     label: 'above'
-                    weight: 40
+                    weight: 30
+                    settings:
+                        field_prefix: ''
+                        field_suffix: ''
             form:
                 default:
                     region: 'content'
-                    weight: 40
+                    weight: 30
+
+    -   name: 'file_contact'
+        content_type: 'tripal_file'
+        label: 'File Source'
+        type: 'chado_contact_type_default'
+        description: 'Associates an individual or organization with this record.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: file
+                linker_table: file_contact
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: 'NCIT'
+            termAccession: 'C47954'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 35
+          form:
+            default:
+              region: 'content'
+              weight: 35
 
     -   name: 'file_location'
         content_type: 'tripal_file'
@@ -140,6 +140,33 @@ fields:
         settings:
             termIdSpace: 'schema'
             termAccession: 'itemLocation'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 40
+            form:
+                default:
+                    region: 'content'
+                    weight: 40
+
+    -   name: 'file_license'
+        content_type: 'tripal_file'
+        label: 'License'
+        type: 'chado_license_type_default'
+        description: 'The license associated with this file.'
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                linker_table: 'file_license'
+                linker_fkey_column: 'license_id'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'license'
         display:
             view:
                 default:
@@ -223,33 +250,6 @@ fields:
         settings:
             termIdSpace: 'operation'
             termAccession: '2945'
-        display:
-          view:
-            default:
-              region: 'content'
-              label: 'above'
-              weight: 80
-          form:
-            default:
-              region: 'content'
-              weight: 80
-
-    -   name: 'file_contact'
-        content_type: 'tripal_file'
-        label: 'Contact'
-        type: 'chado_contact_type_default'
-        description: 'A contact referencing this file.'
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: 'chado_storage'
-            storage_plugin_settings:
-                base_table: file
-                linker_table: file_contact
-                linker_fkey_column: contact_id
-        settings:
-            termIdSpace: 'NCIT'
-            termAccession: 'C47954'
         display:
           view:
             default:
