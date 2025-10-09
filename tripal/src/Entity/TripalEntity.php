@@ -552,7 +552,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $props = $item->getProperties();
         $main_prop_key = NULL;
         if (method_exists($item, 'mainPropertyName')) {
-          $main_prop_key = $item->mainPropertyName();
+          $main_prop_key = $item->mainDisplayPropertyName();
         }
         if (is_array($props)) {
           foreach ($props as $prop) {
