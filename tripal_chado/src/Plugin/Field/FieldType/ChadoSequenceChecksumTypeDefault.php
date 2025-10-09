@@ -64,7 +64,7 @@ class ChadoSequenceChecksumTypeDefault extends ChadoFieldItemBase {
     // Get the length of the database fields so we don't go over the size limit.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $feature_def = $schema->getTableDef('feature', ['format' => 'Drupal']);
+    $feature_def =  self::getChadoTableDef('feature', $schema);
     $md5_checksum_len = $feature_def['fields']['md5checksum']['size'];
 
     // Return the properties for this field.
