@@ -182,10 +182,11 @@ function chado_get_organism_scientific_name($organism, $schema_name = NULL) {
     }
   }
   else {
-    $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id], [], $schema_name);
-    if ($rank_term) {
-      $rank = $rank_term->name;
-    }
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('1:cvterm', 't');
+    $query->condition('t.cvterm_id', $organism->type_id, '=');
+    $query->addField('t', 'name', 'name');
+    $rank = $query->execute()->fetchField();
   }
 
   if ($rank) {
