@@ -2,147 +2,147 @@ system-under-test:
   chado_version: '1.3.3.013'
 scenarios:
   -
-      field_type: chado_analysis_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAnalysisTypeDefault
-      widget_id: chado_analysis_widget_default
-      formatter_id: chado_analysis_formatter_default
+      field_type: 'chado_analysis_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAnalysisTypeDefault'
+      widget_id: 'chado_analysis_widget_default'
+      formatter_id: 'chado_analysis_formatter_default'
   -
-      field_type: chado_array_design_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoArrayDesignTypeDefault
-      widget_id: chado_array_design_widget_default
-      formatter_id: chado_array_design_formatter_default
+      field_type: 'chado_array_design_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoArrayDesignTypeDefault'
+      widget_id: 'chado_array_design_widget_default'
+      formatter_id: 'chado_array_design_formatter_default'
   -
-      field_type: chado_assay_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAssayTypeDefault
-      widget_id: chado_assay_widget_default
-      formatter_id: chado_assay_formatter_default
+      field_type: 'chado_assay_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAssayTypeDefault'
+      widget_id: 'chado_assay_widget_default'
+      formatter_id: 'chado_assay_formatter_default'
   -
-      field_type: chado_biomaterial_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoBiomaterialTypeDefault
-      widget_id: chado_biomaterial_widget_default
-      formatter_id: chado_biomaterial_formatter_default
+      field_type: 'chado_biomaterial_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoBiomaterialTypeDefault'
+      widget_id: 'chado_biomaterial_widget_default'
+      formatter_id: 'chado_biomaterial_formatter_default'
   -
-      field_type: chado_boolean_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoBooleanTypeDefault
-      widget_id: chado_boolean_type_widget
-      formatter_id: chado_boolean_type_formatter
+      field_type: 'chado_boolean_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoBooleanTypeDefault'
+      widget_id: 'chado_boolean_type_widget'
+      formatter_id: 'chado_boolean_type_formatter'
   -
-      field_type: chado_contact_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoContactTypeDefault
-      widget_id: chado_contact_widget_default
-      formatter_id: chado_contact_formatter_default
+      field_type: 'chado_contact_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoContactTypeDefault'
+      widget_id: 'chado_contact_widget_default'
+      formatter_id: 'chado_contact_formatter_default'
   -
-      field_type: chado_contact_by_role_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoContactByRoleTypeDefault
-      widget_id: chado_contact_widget_default
-      formatter_id: chado_contact_formatter_default
+      field_type: 'chado_contact_by_role_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoContactByRoleTypeDefault'
+      widget_id: 'chado_contact_widget_default'
+      formatter_id: 'chado_contact_formatter_default'
   -
-      field_type: chado_dbxref_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoDbxrefTypeDefault
-      widget_id: chado_dbxref_widget_default
-      formatter_id: chado_dbxref_formatter_default
+      field_type: 'chado_dbxref_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoDbxrefTypeDefault'
+      widget_id: 'chado_dbxref_widget_default'
+      formatter_id: 'chado_dbxref_formatter_default'
   -
-      field_type: chado_source_data_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSourceDataTypeDefault
-      widget_id: chado_source_data_widget_default
-      formatter_id: chado_source_data_formatter_default
+      field_type: 'chado_source_data_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSourceDataTypeDefault'
+      widget_id: 'chado_source_data_widget_default'
+      formatter_id: 'chado_source_data_formatter_default'
   -
-      field_type: chado_feature_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoFeatureTypeDefault
-      widget_id: chado_feature_widget_default
-      formatter_id: chado_feature_formatter_default
+      field_type: 'chado_feature_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoFeatureTypeDefault'
+      widget_id: 'chado_feature_widget_default'
+      formatter_id: 'chado_feature_formatter_default'
   -
-      field_type: chado_featuremap_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoFeatureMapTypeDefault
-      widget_id: chado_featuremap_widget_default
-      formatter_id: chado_featuremap_formatter_default
+      field_type: 'chado_featuremap_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoFeatureMapTypeDefault'
+      widget_id: 'chado_featuremap_widget_default'
+      formatter_id: 'chado_featuremap_formatter_default'
   -
-      field_type: chado_sequence_checksum_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceChecksumTypeDefault
-      widget_id: chado_sequence_checksum_widget_default
-      formatter_id: chado_sequence_checksum_formatter_default
+      field_type: 'chado_sequence_checksum_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceChecksumTypeDefault'
+      widget_id: 'chado_sequence_checksum_widget_default'
+      formatter_id: 'chado_sequence_checksum_formatter_default'
   -
-      field_type: chado_sequence_length_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceLengthTypeDefault
-      widget_id: chado_sequence_length_widget_default
-      formatter_id: chado_sequence_length_formatter_default
+      field_type: 'chado_sequence_length_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceLengthTypeDefault'
+      widget_id: 'chado_sequence_length_widget_default'
+      formatter_id: 'chado_sequence_length_formatter_default'
   -
-      field_type: chado_integer_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoIntegerTypeDefault
-      widget_id: chado_integer_type_widget
-      formatter_id: chado_integer_type_formatter
+      field_type: 'chado_integer_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoIntegerTypeDefault'
+      widget_id: 'chado_integer_type_widget'
+      formatter_id: 'chado_integer_type_formatter'
   -
-      field_type: chado_organism_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoOrganismTypeDefault
-      widget_id: chado_organism_widget_default
-      formatter_id: chado_organism_formatter_default
+      field_type: 'chado_organism_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoOrganismTypeDefault'
+      widget_id: 'chado_organism_widget_default'
+      formatter_id: 'chado_organism_formatter_default'
   -
-      field_type: chado_project_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoProjectTypeDefault
-      widget_id: chado_project_widget_default
-      formatter_id: chado_project_formatter_default
+      field_type: 'chado_project_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoProjectTypeDefault'
+      widget_id: 'chado_project_widget_default'
+      formatter_id: 'chado_project_formatter_default'
   -
-      field_type: chado_property_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPropertyTypeDefault
-      widget_id: chado_property_widget_default
-      formatter_id: chado_property_formatter_default
+      field_type: 'chado_property_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPropertyTypeDefault'
+      widget_id: 'chado_property_widget_default'
+      formatter_id: 'chado_property_formatter_default'
   -
-      field_type: chado_protocol_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoProtocolTypeDefault
-      widget_id: chado_protocol_widget_default
-      formatter_id: chado_protocol_formatter_default
+      field_type: 'chado_protocol_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoProtocolTypeDefault'
+      widget_id: 'chado_protocol_widget_default'
+      formatter_id: 'chado_protocol_formatter_default'
   -
-      field_type: chado_pub_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPubTypeDefault
-      widget_id: chado_pub_widget_default
-      formatter_id: chado_pub_formatter_default
+      field_type: 'chado_pub_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPubTypeDefault'
+      widget_id: 'chado_pub_widget_default'
+      formatter_id: 'chado_pub_formatter_default'
   -
-      field_type: chado_relationship_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoRelationshipTypeDefault
-      widget_id: chado_relationship_widget_default
-      formatter_id: chado_relationship_formatter_default
+      field_type: 'chado_relationship_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoRelationshipTypeDefault'
+      widget_id: 'chado_relationship_widget_default'
+      formatter_id: 'chado_relationship_formatter_default'
   -
-      field_type: chado_sequence_coordinates_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceCoordinatesDefault
-      widget_id: chado_sequence_coordinates_widget_default
-      formatter_id: chado_sequence_coordinates_formatter_default
+      field_type: 'chado_sequence_coordinates_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceCoordinatesDefault'
+      widget_id: 'chado_sequence_coordinates_widget_default'
+      formatter_id: 'chado_sequence_coordinates_formatter_default'
   -
-      field_type: chado_sequence_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceTypeDefault
-      widget_id: chado_sequence_widget_default
-      formatter_id: chado_sequence_formatter_default
+      field_type: 'chado_sequence_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceTypeDefault'
+      widget_id: 'chado_sequence_widget_default'
+      formatter_id: 'chado_sequence_formatter_default'
   -
-      field_type: chado_stock_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStockTypeDefault
-      widget_id: chado_stock_widget_default
-      formatter_id: chado_stock_formatter_default
+      field_type: 'chado_stock_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStockTypeDefault'
+      widget_id: 'chado_stock_widget_default'
+      formatter_id: 'chado_stock_formatter_default'
   -
-      field_type: chado_string_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault
-      widget_id: chado_string_type_widget
-      formatter_id: chado_string_type_formatter
+      field_type: 'chado_string_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+      widget_id: 'chado_string_type_widget'
+      formatter_id: 'chado_string_type_formatter'
   -
-      field_type: chado_study_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStudyTypeDefault
-      widget_id: chado_study_widget_default
-      formatter_id: chado_study_formatter_default
+      field_type: 'chado_study_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStudyTypeDefault'
+      widget_id: 'chado_study_widget_default'
+      formatter_id: 'chado_study_formatter_default'
   -
-      field_type: chado_synonym_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSynonymTypeDefault
-      widget_id: chado_synonym_widget_default
-      formatter_id: chado_synonym_formatter_default
+      field_type: 'chado_synonym_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSynonymTypeDefault'
+      widget_id: 'chado_synonym_widget_default'
+      formatter_id: 'chado_synonym_formatter_default'
   -
-      field_type: chado_text_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault
-      widget_id: chado_text_type_widget
-      formatter_id: chado_text_type_formatter
+      field_type: 'chado_text_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
+      widget_id: 'chado_text_type_widget'
+      formatter_id: 'chado_text_type_formatter'
   -
-      field_type: chado_additional_type_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAdditionalTypeTypeDefault
-      widget_id: chado_additional_type_widget_default
-      formatter_id: chado_additional_type_formatter_default
+      field_type: 'chado_additional_type_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAdditionalTypeTypeDefault'
+      widget_id: 'chado_additional_type_widget_default'
+      formatter_id: 'chado_additional_type_formatter_default'
   -
-      field_type: chado_unit_type_default
-      field_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoUnitTypeDefault
-      widget_id: chado_unit_widget_default
-      formatter_id: chado_unit_formatter_default
+      field_type: 'chado_unit_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoUnitTypeDefault'
+      widget_id: 'chado_unit_widget_default'
+      formatter_id: 'chado_unit_formatter_default'
