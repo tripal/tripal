@@ -1,5 +1,18 @@
 system-under-test:
   chado_version: '1.3.3.013'
+## Generate scenarios using the following code.
+## $field_definitions = \Drupal::service('plugin.manager.field.field_type')
+##   ->getGroupedDefinitions()['Chado Fields'];
+## $scenarios = [];
+## foreach ($field_definitions as $defn) {
+## $s[] = [
+##   'field_type' => $defn['id'],
+##   'field_class' => $defn['class'],
+##   'widget_id' => $defn['default_widget'],
+##   'formatter_id' => $defn['default_formatter']
+##   ];
+## }
+## Symfony\Component\Yaml\Yaml::dump($s);
 scenarios:
   -
       field_type: 'chado_analysis_type_default'
