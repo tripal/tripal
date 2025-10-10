@@ -1,0 +1,7 @@
+tripal_ws.settings_form:
+  path: '/admin/config/system/tripal-ws'
+  defaults:
+    _title: 'Tripal Webservices settings'
+    _form: 'Drupal\tripal_ws\Form\TripalWsSettingsForm'
+  requirements:
+    _permission: 'administer tripal_ws'

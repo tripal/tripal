@@ -1,0 +1,9 @@
+name: Tripal Webservices
+type: module
+description: Provides Webservices in the form of a RESTful API
+package: Tripal Extension
+core_version_requirement: ^10.4 | ^11.1
+dependencies:
+  - tripal:tripal
+  - tripal_chado:tripal_chado
+configure: tripal_ws.settings_form
