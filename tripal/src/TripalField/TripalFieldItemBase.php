@@ -612,7 +612,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public function tripalLoad($field_item, $field_name, $prop_types, $prop_values, $entity) {
     // @trigger_error(__METHOD__ . '() is deprecated in tripal:4.0.0 and is removed from tripal:4.1.0. Instead, you should use syncFieldValuesWithTripalStorage() which acts on the current TripalFieldItem instance. See https://github.com/tripal/tripal/pull/2281', E_USER_DEPRECATED);
-
     $delta = $field_item->getName();
     foreach ($prop_values as $property) {
       $prop_key = $property->getKey();
@@ -630,7 +629,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public function tripalClear($field_item, $field_name, $prop_types, $prop_values, $entity) {
     // @trigger_error(__METHOD__ . '() is deprecated in tripal:4.0.0 and is removed from tripal:4.1.0. Instead, you should use clearFieldValuesForTripalStorage() which acts on the current TripalFieldItem instance. See https://github.com/tripal/tripal/pull/2281', E_USER_DEPRECATED);
-
     $delta = $field_item->getName();
 
     foreach ($prop_values as $prop_value) {
@@ -735,6 +733,38 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
     return [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isEmpty() {
+
+    // Get the current field items values (keyed by property name).
+    // If these are empty then the field does not have any values at all
+    // such as when it has never been set or when all properties are all NULL.
+    $field_values = $this->getValue();
+    if (empty($field_values)) {
+      return TRUE;
+    }
+
+    // Now lets work on the TripalStorage property values for this field...
+    //
+    // If the main property is empty then we want to mark the whole field as
+    // empty. This happens when the storage backend populates keys but the
+    // main property value has been set empty in the form to indicate it
+    // should be removed.
+    $property_values = $this->getTripalStoragePropertyValues();
+    $main_property_name = $this->mainPropertyName();
+    if (array_key_exists($main_property_name, $property_values)) {
+      $main_property_value = $property_values[$main_property_name]->getValue();
+      $main_property_default_value = $property_values[$main_property_name]->getDefaultValue();
+      if (($main_property_value === NULL) or ($main_property_value === $main_property_default_value)) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
   }
 
   /**

@@ -81,6 +81,16 @@ class StoragePropertyValue extends StoragePropertyBase {
   }
 
   /**
+   * Gets the default value of this storage property value.
+   *
+   * @return mixed
+   *   The value to use as the default value.
+   */
+  public function getDefaultValue() {
+    return $this->default_value;
+  }
+
+  /**
    * The entity id associated with this storage property value.
    *
    * @var string

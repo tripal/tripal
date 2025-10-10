@@ -1266,13 +1266,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       // Set the property values that should be saved in Drupal, everything
       // else will stay in the underlying data store (e.g. Chado).
       $context = self::saveValuesArray($this, $values, $tripal_storages, TRUE);
-      $delta_remove = $context['empty_items'];
 
-      // Now remove any values that shouldn't be there.
-      foreach ($delta_remove as $field_name => $deltas) {
-        foreach (array_reverse($deltas) as $delta) {
-          $this->get($field_name)->removeItem($delta);
-        }
+      // Now remove any empty field values.
+      foreach (array_keys($this->getFieldDefinitions()) as $field_name) {
+        $field_item_list = $this->get($field_name);
+        $field_item_list->filterEmptyItems();
       }
     }
     catch (\Exception $e) {
