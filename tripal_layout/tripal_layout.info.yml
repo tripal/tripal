@@ -4,7 +4,7 @@ description: 'Auto generates layouts for Tripal entity types'
 core_version_requirement: '^10.4 || ^11.1'
 php: 8.1
 package: 'Tripal'
-version: '4.0.alpha3'
+version: '4.0.alpha4'
 dependencies:
   - 'tripal:tripal'
   - 'fields:field_group'

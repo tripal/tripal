@@ -101,9 +101,8 @@ class ChadoStringTypeDefault extends ChadoFieldItemBase {
     $max_length = $field_definition->getSetting('max_length');
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
     $base_column = $settings['base_column'];
-    $base_pkey_col = $base_schema_def['primary key'];
 
     // Get the property terms by using the Chado table columns they map to.
     $value_term = self::getColumnTermId($base_table, $base_column, 'NCIT:C25712');

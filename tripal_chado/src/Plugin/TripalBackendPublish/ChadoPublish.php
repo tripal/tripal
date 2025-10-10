@@ -3,11 +3,11 @@
 namespace Drupal\tripal_chado\Plugin\TripalBackendPublish;
 
 use Drupal\Component\Utility\Xss;
-use Drupal\tripal\TripalBackendPublish\Attribute\TripalBackendPublish;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use \Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
+use Drupal\tripal\TripalBackendPublish\Attribute\TripalBackendPublish;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
+use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
+use Drupal\tripal\TripalStorage\StoragePropertyValue;
 
 /**
  * Chado-specific TripalEntity publish.
@@ -20,9 +20,9 @@ use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
 class ChadoPublish extends TripalBackendPublishBase {
 
   /**
-   * The base table of the bundle
+   * The base table of the bundle.
    *
-   * @var string $base_table
+   * @var string
    */
   protected $base_table = '';
 
@@ -32,126 +32,134 @@ class ChadoPublish extends TripalBackendPublishBase {
    * This is to store the field information for fields that are attached
    * to the bundle (entity type) that is being published.
    *
-   * @var \Drupal\Core\Field\BaseFieldDefinition $field_definition
+   * @var \Drupal\Core\Field\BaseFieldDefinition
    */
   protected $field_info = [];
 
   /**
    * A list of the main properties for each field.
+   *
    * The key is the field name, and the value is the name of the main property.
    *
-   * @var array $main_property_names
+   * @var array
    */
   protected $main_property_names = [];
 
   /**
    * Stores the bundle (entity type) object.
    *
-   * @var \Drupal\tripal\Entity\TripalEntityType $entity_type
-   **/
+   * @var \Drupal\tripal\Entity\TripalEntityType
+   */
   protected $entity_type = NULL;
 
   /**
    * Stores the user that is publishing content.
    *
-   * @var int $uid
-   **/
+   * @var int
+   */
   protected $uid = NULL;
 
   /**
    * The TripalStorage object.
    *
-   * @var \Drupal\tripal\TripalStorage\TripalStorageBase $storage
-   **/
+   * @var \Drupal\tripal\TripalStorage\TripalStorageBase
+   */
   protected $storage = NULL;
 
   /**
-   *  A list of property types that are required to uniquely identify an entity.
+   * A list of property types that are required to uniquely identify an entity.
    *
-   * @var array $required_types
+   * @var array
    */
   protected $required_types = [];
 
   /**
-   *  A list of property types that are not one of the required types.
+   * A list of property types that are not one of the required types.
    *
-   * @var array $non_required_types
+   * @var array
    */
   protected $non_required_types = [];
 
   /**
    * Supported actions during publishing.
-   * Any field containing properties that are not in this list, will not be published!
    *
-   * @var array $supported_actions
+   * Any field containing properties that are not in this list will not
+   * be published!
+   *
+   * @var array
    */
   protected $supported_actions = ['store_id', 'store', 'store_link', 'store_pkey', 'read_value', 'replace', 'function'];
 
   /**
    * Keep track of fields which are not supported in order to let the user know.
    *
-   * @var array $unsupported_fields
+   * @var array
    */
   protected $unsupported_fields = [];
 
   /**
-   * All published entities for the current bundle. The key will be
-   * the chado record ID, the values will be the entity IDs.
+   * All published entities for the current bundle.
    *
-   * @var array $existing_published_entities
+   * The key will be the chado record ID, the values will be the entity IDs.
+   *
+   * @var array
    */
   protected $existing_published_entities = [];
 
   /**
-   * The first 100 published entities, key is entity_id,
-   * value is title. These are only used for unit tests,
-   * so don't need to use memory to store them all.
+   * The first 100 published entities.
    *
-   * @var array $published_or_updated_entities
+   * The key is entity_id, value is title. These are only used for
+   * unit tests, so don't need to use memory to store them all.
+   *
+   * @var array
    */
   protected $published_or_updated_entities = [];
 
   /**
    * Array of values to search in chado storage.
    *
-   * @var array $search_values
+   * @var array
    */
   protected $search_values = [];
 
   /**
-   * Information used to migrate Tripal 3 entity values
-   * when first publishing a migrated chado instance.
+   * Information used to migrate Tripal 3 entity values.
    *
-   * @var array $migration_data
+   * This is used when first publishing a migrated chado instance.
+   *
+   * @var array
    */
   protected array $migration_data = [];
 
   /**
-   * Stores the maximum entity ID value present in $this->migration_data
+   * Stores the maximum entity ID value present in $this->migration_data.
    *
-   * @var int $max_migrated_entity_id
+   * @var int
    */
   protected int $max_migrated_entity_id = 0;
 
   /**
    * Flag to permit a more lenient Tripal 3 migration.
-   * If a record is missing in the migration data, then skip it.
    *
-   * @var bool $lenient_migration
+   * When set to TRUE, if a record is missing in the migration data,
+   * then skip it.
+   *
+   * @var bool
    */
   protected bool $lenient_migration = FALSE;
 
   /**
    * Entity and field values used for token replacement, keyed by record_id.
    *
-   * @var array $token_values
+   * @var array
    */
   protected array $token_values = [];
 
   /**
    * Number of entities with blank titles.
    *
-   * @var int $count_blank_titles
+   * @var int
    */
   protected int $count_blank_titles = 0;
 
@@ -210,7 +218,8 @@ class ChadoPublish extends TripalBackendPublishBase {
                 return $errormsg;
               }
             }
-            // The columns are bundle_name(not used), chado_table, pkey_id, entity_id
+            // The columns are:
+            // bundle_name(not used), chado_table, pkey_id, entity_id.
             $this->migration_data[$cols[1]][$cols[2]] = $cols[3];
             $n_records++;
             if ($cols[3] > $this->max_migrated_entity_id) {
@@ -219,15 +228,15 @@ class ChadoPublish extends TripalBackendPublishBase {
           }
         }
         catch (\Exception $e) {
-          $errormsg = $this->t('Unable to load migration data from file ":filename" '. $e->getMessage(),
-            [':filename' => $filename]);
+          $errormsg = $this->t('Unable to load migration data from file ":filename" :message',
+            [':filename' => $filename, ':message' => $d->getMessage()]);
         }
       }
-      // Makes sure value of next entity ID is above any in the migration data
-      $this->set_tripal_entity_id_seq();
+      // Makes sure value of next entity ID is above any in the migration data.
+      $this->setTripalEntityIdSeq();
 
       if (!$errormsg) {
-        $this->logger->notice(t('Loaded @n_records records of migration data, maximum entity ID is @max_eid',
+        $this->logger->notice($this->t('Loaded @n_records records of migration data, maximum entity ID is @max_eid',
                                 ['@n_records' => $n_records, '@max_eid' => $this->max_migrated_entity_id]));
       }
     }
@@ -235,11 +244,13 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
+   * Updates tripal_entity_id_seq when migrating.
+   *
    * When migrating Tripal 3 entity ID values, makes sure the
    * sequence "tripal_entity_id_seq" next value is higher than
    * the maximum from the migration data.
    */
-  protected function set_tripal_entity_id_seq() {
+  protected function setTripalEntityIdSeq() {
     if ($this->max_migrated_entity_id) {
       $sql = "SELECT NEXTVAL('tripal_entity_id_seq')";
       $nextval = $this->connection->query($sql, [])->fetchField();
@@ -276,13 +287,22 @@ class ChadoPublish extends TripalBackendPublishBase {
       $linker_table = $storage_plugin_settings['linker_table'] ?? NULL;
       $linker_column = $storage_plugin_settings['linker_fkey_column'] ?? NULL;
       if (!$linker_table) {
+        // This unicode character is a right arrow.
         // @todo How to get this value from tripal_chado/src/TripalField/ChadoFieldItemBase.php:34 ?
-        $table_column_delimiter = " \u{2192} ";  // right arrow
+        $table_column_delimiter = " \u{2192} ";
         [$linker_table, $linker_column] = explode($table_column_delimiter, $storage_plugin_settings['linker_table_and_column']);
       }
       // Look up the object table from the foreign key of the $linker_column.
       $chado = \Drupal::service('tripal_chado.database');
-      $linker_schema_def = $chado->schema()->getTableDef($linker_table, ['format' => 'Drupal']);
+      $parameters = [
+        'format' => 'Drupal',
+        'source' => [
+          'file',
+          'tripal',
+          'database',
+        ],
+      ];
+      $linker_schema_def = $chado->schema()->getTableDef($linker_table, $parameters);
       $foreign_keys = $linker_schema_def['foreign keys'] ?? [];
       foreach ($foreign_keys as $table => $info) {
         if ($info['columns'][$linker_column] ?? FALSE) {
@@ -357,7 +377,8 @@ class ChadoPublish extends TripalBackendPublishBase {
             $prop_key = $prop_type->getKey();
             $field_info['prop_types'][$prop_key] = $prop_type;
 
-            // Store any table alias mappings, such as those used for property fields.
+            // Store any table alias mappings, such as those used for
+            // property fields.
             if ($prop_key == $main_property_name) {
               $prop_storage_settings = $prop_type->getStorageSettings();
               if (array_key_exists('table_alias_mapping', $prop_storage_settings)) {
@@ -388,7 +409,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       $field_definition = $this->field_info[$field_name]['definition'];
       $field_class = $this->field_info[$field_name]['class'];
 
-      foreach ($keys as $key => $prop_type) {
+      foreach ($keys as $prop_type) {
         $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
             $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
         $this->search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
@@ -417,8 +438,7 @@ class ChadoPublish extends TripalBackendPublishBase {
         // Every field has a "main" property that provides the value for the
         // token. We need to make sure we add this property as well as the
         // record_id.
-
-        // Add the record_id
+        // Add the record_id.
         $prop = $field_info['prop_types']['record_id'];
         $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
             $field_class::$id, 'record_id', $prop->getTerm()->getTermId(), NULL);
@@ -440,10 +460,10 @@ class ChadoPublish extends TripalBackendPublishBase {
   /**
    * Adds search criteria for fixed values.
    *
-   * Sometimes type values are fixed and the user cannot change
-   * them.  An example of this is are cases where the ChadoAdditionalTypeDefault
-   * field has a type_id that will never be changed. Content types such as "mRNA"
-   * or "gene" use these. We need to add these to our search filter.
+   * Sometimes type values are fixed and the user cannot change them.
+   * An example of this is are cases where the ChadoAdditionalTypeDefault
+   * field has a type_id that will never be changed. Content types such as
+   * "mRNA" or "gene" use these. We need to add these to our search filter.
    */
   protected function addFixedTypeValues() {
 
@@ -502,8 +522,8 @@ class ChadoPublish extends TripalBackendPublishBase {
       $field_definition = $this->field_info[$field_name]['definition'];
       $field_class = $this->field_info[$field_name]['class'];
 
-      foreach ($keys as $key => $prop_type) {
-        // Only add here if not already added in one of the previous steps
+      foreach ($keys as $prop_type) {
+        // Only add here if not already added in one of the previous steps.
         if (!($this->search_values[$field_name][0][$prop_type->getKey()]['value'] ?? FALSE)) {
           $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
               $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
@@ -534,8 +554,9 @@ class ChadoPublish extends TripalBackendPublishBase {
       return FALSE;
     }
 
-    // We only want to add fields where we support the action for all property types in it.
-    foreach ($this->field_info[$field_name]['prop_types'] as $checking_prop_key => $checking_prop_type) {
+    // We only want to add fields where we support the action for all property
+    // types in it.
+    foreach ($this->field_info[$field_name]['prop_types'] as $checking_prop_type) {
       $settings = $checking_prop_type->getStorageSettings();
       if (!in_array($settings['action'], $this->supported_actions)) {
         // Add it to the list of unsupported fields just in case
@@ -553,11 +574,12 @@ class ChadoPublish extends TripalBackendPublishBase {
    * Retrieve the chado record ID for a single match record.
    *
    * @param array $match
+   *   A single match record.
    *
    * @return int
-   *   The chado record ID
+   *   The chado record ID.
    */
-  protected function getChadoRecordID(array $match) {
+  protected function getChadoRecordId(array $match) {
     $record_id = NULL;
     foreach ($match as $field_info) {
       if ($field_info[0]['record_id']['value'] ?? NULL) {
@@ -584,8 +606,8 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     // Iterate through each match we are checking for an existing entity for.
     foreach ($matches as $match) {
-      // Retrieve the chado record pkey ID for this match
-      $record_id = $this->getChadoRecordID($match);
+      // Retrieve the chado record pkey ID for this match.
+      $record_id = $this->getChadoRecordId($match);
       $entity_id = $this->existing_published_entities[$record_id] ?? NULL;
 
       // Build an array of token keys and values to use for token replacement.
@@ -595,10 +617,10 @@ class ChadoPublish extends TripalBackendPublishBase {
 
       foreach ($match as $field_name => $field_items) {
         if ($field_items) {
-          foreach($field_items as $delta => $properties) {
+          foreach ($field_items as $properties) {
             foreach ($properties as $property_name => $prop_deets) {
               $prop_value = $prop_deets['value']->getValue();
-              if ($property_name == ($this->main_property_names[$field_name]??'')) {
+              if ($property_name == ($this->main_property_names[$field_name] ?? '')) {
                 $token_values[$field_name] = $prop_value;
               }
             }
@@ -610,11 +632,13 @@ class ChadoPublish extends TripalBackendPublishBase {
       $entity_title = $this->token_parser->replaceTokens($title_format, $token_values);
       $sanitized_title = Xss::filter($entity_title, $this->allowed_title_tags);
       $titles[$record_id] = $sanitized_title;
-      // Watch for empty titles, e.g. using a token for a column that can be left NULL or blank
+      // Watch for empty titles, e.g. using a token for a column that can be
+      // left NULL or blank.
       if (!trim(strip_tags($sanitized_title))) {
         $this->count_blank_titles++;
       }
-      // Save the token values, we will need them again when we generate the URL Alias
+      // Save the token values, we will need them again when we generate
+      // the URL Alias.
       $this->token_values[$record_id] = $token_values;
     }
     return $titles;
@@ -637,7 +661,7 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * Filter entities for only those that are orphaned.
+   * Filters entities to return only orphaned entities.
    *
    * Orphaned entities are those without an underlying chado record.
    *
@@ -650,7 +674,15 @@ class ChadoPublish extends TripalBackendPublishBase {
     $chado = \Drupal::service('tripal_chado.database');
 
     $schema = $chado->schema();
-    $table_def = $schema->getTableDef($this->base_table, ['format' => 'drupal']);
+    $parameters = [
+      'format' => 'Drupal',
+      'source' => [
+        'file',
+        'tripal',
+        'database',
+      ],
+    ];
+    $table_def = $schema->getTableDef($this->base_table, $parameters);
     $pkey = $table_def['primary key'];
 
     // Returns array with key chado record id and value entity id.
@@ -677,13 +709,17 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * Implements bundle token lookup similar to that done in
-   * Drupal\tripal\Entity\getBundleEntityTokenValues getBundleEntityTokenValues()
+   * Implements bundle token lookup.
+   *
+   * This implementation is similar to that done in
+   * Drupal\tripal\Entity\getBundleEntityTokenValues
+   * getBundleEntityTokenValues()
    *
    * @param string $tokenized_string
-   *   The title format template
+   *   The title format template.
    * @param int|null $entity_id
    *   The drupal entity numeric ID. Not known for a newly published entity.
+   *
    * @return array
    *   Associative array of all tokens and their values,
    *   ready to use for token replacement.
@@ -696,7 +732,7 @@ class ChadoPublish extends TripalBackendPublishBase {
         $value = NULL;
 
         // Look for values for bundle or entity related tokens.
-        if (($token === 'TripalEntityType__entity_id') OR ($token === 'TripalBundle__bundle_id')) {
+        if (($token === 'TripalEntityType__entity_id') or ($token === 'TripalBundle__bundle_id')) {
           $value = $this->entity_type->getID();
         }
         elseif ($token == 'TripalEntityType__label') {
@@ -714,7 +750,7 @@ class ChadoPublish extends TripalBackendPublishBase {
         elseif ($token == 'TripalEntityType__term_label') {
           $value = $this->entity_type->getTerm()->getName();
         }
-        // We skip over any tokens other than those defined here
+        // We skip over any tokens other than those defined here.
         if (!is_null($value)) {
           $values[$token] = $value;
         }
@@ -724,12 +760,13 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * Makes sure the title format is not the generic default. For publishing
-   * a user-created content type, we enforce that the title format has been
-   * set by the site admin.
+   * Makes sure the title format is not the generic default.
+   *
+   * For publishing a user-created content type, we enforce that the
+   * title format has been set by the site admin.
    *
    * @param string $title_format
-   *   A string containing one or more tokens
+   *   A string containing one or more tokens.
    *
    * @return bool
    *   TRUE if title_format is valid, FALSE if not valid.
@@ -753,8 +790,9 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * Check if the new title does not match the existing published
-   * title, and if so, update it.
+   * Check if the new title matches the existing published title.
+   *
+   * If the title does not match, update it.
    * This can happen if the title format has been changed.
    * Array keys for both input arrays are the chado record ID,
    * array values are the titles.
@@ -774,7 +812,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       $existing_title = $existing_titles[$record_id] ?? NULL;
       if (!is_null($existing_title) and ($new_title != $existing_title)) {
         $entity_id = $this->existing_published_entities[$record_id];
-        $query = $this->connection->update('tripal_entity')
+        $this->connection->update('tripal_entity')
           ->fields(['title' => $new_title])
           ->condition('id', $entity_id, '=')
           ->execute();
@@ -796,7 +834,7 @@ class ChadoPublish extends TripalBackendPublishBase {
    */
   protected function findEntities(array $record_ids) {
 
-    // Convert published chado record IDs to entity IDs
+    // Convert published chado record IDs to entity IDs.
     $entity_ids = [];
     foreach ($record_ids as $record_id) {
       $entity_id = $this->existing_published_entities[$record_id] ?? NULL;
@@ -836,8 +874,9 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * When using Tripal 3 migration data, validate that all
-   * values are present and available.
+   * Validate Tripal 3 migration data.
+   *
+   * This validates that all values are present and available.
    *
    * @param array &$matches
    *   The array of matches for each entity.
@@ -856,7 +895,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       $n_skipped = 0;
       // Validate that we have migration data for all records to be published.
       foreach ($matches as $index => $match) {
-        $record_id = $this->getChadoRecordID($match);
+        $record_id = $this->getChadoRecordId($match);
         $old_entity_id = $this->migration_data[$this->base_table][$record_id] ?? NULL;
         if (!$old_entity_id) {
           if (!$lenient) {
@@ -903,7 +942,7 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * Performs bulk insert of new entities into the tripal_entity table
+   * Performs bulk insert of new entities into the tripal_entity table.
    *
    * @param array $matches
    *   The array of new matches for each entity.
@@ -919,11 +958,11 @@ class ChadoPublish extends TripalBackendPublishBase {
       $fields[] = 'id';
     }
     $query = $this->connection->insert('tripal_entity', [])
-      -> fields($fields);
+      ->fields($fields);
     $added_record_ids = [];
     $entity_ids = [];
     foreach ($matches as $match) {
-      $record_id = $this->getChadoRecordID($match);
+      $record_id = $this->getChadoRecordId($match);
       $title = $titles[$record_id];
       $added_record_ids[] = $record_id;
       $values = [$this->bundle, $this->uid, $title, 1, $timestamp, $timestamp];
@@ -943,13 +982,13 @@ class ChadoPublish extends TripalBackendPublishBase {
         $entity_ids[] = $index + $first_added_entity_id;
       }
       $this->existing_published_entities[$record_id] = $entity_ids[$index];
-      // Return only the first 100 for the publish job
+      // Return only the first 100 for the publish job.
       if (count($this->published_or_updated_entities) < 100) {
         $this->published_or_updated_entities[$index + $first_added_entity_id] = $titles[$record_id];
       }
     }
 
-    // Insert the default URL alias for each new entity
+    // Insert the default URL alias for each new entity.
     $storage = \Drupal::entityTypeManager()->getStorage('tripal_entity');
     $entities = $storage->loadMultiple($entity_ids);
     $index = 0;
@@ -962,7 +1001,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       $index++;
     }
     if ($index) {
-      // Clear cache so that fields will appear on new entities
+      // Clear cache so that fields will appear on new entities.
       \Drupal::service('cache.entity')->invalidateMultiple($tags);
       \Drupal::service('cache_tags.invalidator')->invalidateTags(['rendered']);
 
@@ -1002,9 +1041,9 @@ class ChadoPublish extends TripalBackendPublishBase {
    * Finds existing fields so that we will not be adding any duplicate fields.
    *
    * @param string $field_name
-   *   The name of the field
+   *   The name of the field.
    * @param array $record_ids
-   *   Chado record IDs to process
+   *   Chado record IDs to process.
    *
    * @return array
    *   An associative array of matched entities keyed first by the
@@ -1026,7 +1065,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
     $args = [
       ':bundle' => $this->bundle,
-      ':entity_ids[]' => $batch_ids
+      ':entity_ids[]' => $batch_ids,
     ];
     $results = $this->connection->query($sql, $args);
     while ($result = $results->fetchAssoc()) {
@@ -1047,7 +1086,7 @@ class ChadoPublish extends TripalBackendPublishBase {
    * of items for the given field.
    *
    * @param string $field_name
-   *   The name of the field
+   *   The name of the field.
    * @param array $matches
    *   The array of matches for each entity.
    *
@@ -1066,11 +1105,12 @@ class ChadoPublish extends TripalBackendPublishBase {
    * Inserts records into the field tables for entities.
    *
    * @param string $field_name
-   *   The name of the field
+   *   The name of the field.
    * @param array $matches
    *   The array of matches for each entity.
    * @param array $existing
-   *   An associative array of entities that already have an existing item for this field.
+   *   An associative array of entities that already have an existing item
+   *     for this field.
    * @param array $titles
    *   The array of entity titles keyed by the record ID.
    *
@@ -1083,19 +1123,18 @@ class ChadoPublish extends TripalBackendPublishBase {
     $insert_batch_size = 1000;
     $num_total_matches = $this->countFieldMatches($field_name, $matches);
 
-    // Construct a list of the columns in the field table
+    // Construct a list of the columns in the field table.
     $fields = ['bundle', 'deleted', 'entity_id', 'revision_id', 'langcode', 'delta'];
     $all_types = array_merge(
       $this->required_types[$field_name] ?? [],
       $this->non_required_types[$field_name] ?? []
     );
     foreach (array_keys($all_types) as $key) {
-      $fields[] = $field_name . '_'. $key;
+      $fields[] = $field_name . '_' . $key;
     }
 
-    // Initialize queries
+    // Initialize queries.
     $insert_query = $this->connection->insert($field_table)->fields($fields);
-    $insert_count = 0;
     $num_processed_matches = 0;
     $num_inserted = 0;
     $num_updated = 0;
@@ -1104,7 +1143,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     // Iterate through the matches. Each match corresponds to a single
     // entity.
     foreach ($matches as $match) {
-      $record_id = $this->getChadoRecordID($match);
+      $record_id = $this->getChadoRecordId($match);
       $entity_id = $this->existing_published_entities[$record_id];
 
       // Iterate through the "items" of each field and insert a record value
@@ -1162,19 +1201,21 @@ class ChadoPublish extends TripalBackendPublishBase {
    * Determine if a particular field item is new and needs to be published.
    *
    * @param string $field_name
-   *   Name of the field being published
+   *   Name of the field being published.
    * @param array $match
-   *   Contains all data to be published
+   *   Contains all data to be published.
    * @param array $existing
-   *   An associative array of entities that already have an existing item for this field.
+   *   An associative array of entities that already have an existing item
+   *       for this field.
    * @param array $titles
    *   The array of entity titles keyed by the record ID.
    * @param int $entity_id
-   *   Id of the entity for this field
+   *   Id of the entity for this field.
    * @param int $delta
-   *   Field delta
+   *   Field delta.
    * @param int $record_id
-   *   The chado record ID
+   *   The chado record ID.
+   *
    * @return bool
    *   TRUE if item should be published.
    */
@@ -1211,33 +1252,38 @@ class ChadoPublish extends TripalBackendPublishBase {
 
   /**
    * Add a single field item to the insert query.
+   *
    * This is a helper function for insertFieldItems().
    *
-   * @param &$insert_query
-   *   The query builder object under construction
+   * @param object &$insert_query
+   *   The query builder object under construction.
    * @param array $match
-   *   Contains all data to be published
+   *   Contains all data to be published.
    * @param int $entity_id
-   *   Id of the entity for this field
+   *   Id of the entity for this field.
    * @param int $delta
-   *   Field delta
+   *   Field delta.
    * @param string $field_name
-   *   Name of the field being published
+   *   Name of the field being published.
+   *
    * @return void
+   *   No return value.
    */
   private function insertOneFieldItem(&$insert_query, $match, $entity_id, $delta, $field_name): void {
     $values = [
       'bundle' => $this->bundle,
       'deleted' => 0,
       'entity_id' => $entity_id,
-      'revision_id' => $entity_id,  // For an unversioned entity this is the same as the entity id
+    // For an unversioned entity this is the same as the entity id.
+      'revision_id' => $entity_id,
       'langcode' => 'und',
       'delta' => $delta,
     ];
     foreach ($this->required_types[$field_name] as $key => $properties) {
-      $column = $field_name . '_'. $key;
+      $column = $field_name . '_' . $key;
       $value = $match[$field_name][$delta][$key]['value']->getValue();
-      // If there is no value, use a placeholder of the correct type, string '', int 0, etc.
+      // If there is no value, use a placeholder of the correct type,
+      // string '', int 0, etc.
       if (is_null($value)) {
         $value = $properties->getDefaultValue();
       }
@@ -1247,7 +1293,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     // There might not be non_required_types for this field.
     if (isset($this->non_required_types[$field_name])) {
       foreach ($this->non_required_types[$field_name] as $key => $properties) {
-        $column = $field_name . '_'. $key;
+        $column = $field_name . '_' . $key;
         $values[$column] = $properties->getDefaultValue();
       }
     }
@@ -1256,35 +1302,40 @@ class ChadoPublish extends TripalBackendPublishBase {
 
   /**
    * Update an existing published field item.
+   *
    * This is a helper function for insertFieldItems().
    * Unlike insertOneFieldItem(), each update is a separate
    * query because we need to include conditions.
    *
    * @param array $match
-   *   Contains all data to be published
+   *   Contains all data to be published.
    * @param int $entity_id
-   *   Id of the entity for this field
+   *   Id of the entity for this field.
    * @param int $delta
-   *   Field delta
+   *   Field delta.
    * @param string $field_name
-   *   Name of the field being published
+   *   Name of the field being published.
    * @param string $field_table
-   *   Name of the drupal field table
+   *   Name of the drupal field table.
+   *
    * @return void
+   *   No return value.
    */
   private function updateOneFieldItem($match, $entity_id, $delta, $field_name, $field_table): void {
     $values = [
       'bundle' => $this->bundle,
       'deleted' => 0,
       'entity_id' => $entity_id,
-      'revision_id' => $entity_id,  // For an unversioned entity this is the same as the entity id
+    // For an unversioned entity this is the same as the entity id.
+      'revision_id' => $entity_id,
       'langcode' => 'und',
       'delta' => $delta,
     ];
     foreach ($this->required_types[$field_name] as $key => $properties) {
-      $column = $field_name . '_'. $key;
+      $column = $field_name . '_' . $key;
       $value = $match[$field_name][$delta][$key]['value']->getValue();
-      // If there is no value, use a placeholder of the correct type, string '', int 0, etc.
+      // If there is no value, use a placeholder of the correct type,
+      // string '', int 0, etc.
       if (is_null($value)) {
         $value = $properties->getDefaultValue();
       }
@@ -1294,7 +1345,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     // There might not be non_required_types for this field.
     if (isset($this->non_required_types[$field_name])) {
       foreach ($this->non_required_types[$field_name] as $key => $properties) {
-        $column = $field_name . '_'. $key;
+        $column = $field_name . '_' . $key;
         $values[$column] = $properties->getDefaultValue();
       }
     }
@@ -1317,7 +1368,7 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected function excludeExisting($matches) {
     $new_matches = [];
     foreach ($matches as $match) {
-      $record_id = $this->getChadoRecordID($match);
+      $record_id = $this->getChadoRecordId($match);
       if (!array_key_exists($record_id, $this->existing_published_entities)) {
         $new_matches[] = $match;
       }
@@ -1327,8 +1378,9 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * Divides up a long list of record IDs into smaller batches
-   * for publishing, to reduce memory requirements.
+   * Divides list of record IDs into batches.
+   *
+   * This is done to reduce memory requirements for publishing.
    *
    * @param array $record_ids
    *   A list of primary key values.
@@ -1354,7 +1406,7 @@ class ChadoPublish extends TripalBackendPublishBase {
    */
   protected function getRecordIds() {
 
-    // Populates the $this->field_info variable with field information
+    // Populates the $this->field_info variable with field information.
     $this->setFieldInfo();
 
     // Get the required field properties that will uniquely identify an entity.
@@ -1362,7 +1414,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     $this->required_types = $this->storage->getStoredTypes();
     $this->non_required_types = $this->storage->getNonStoredTypes();
 
-    // Build the $this->search_values array
+    // Build the $this->search_values array.
     $this->addRequiredValues();
     $this->addTokenValues();
     $this->addFixedTypeValues();
@@ -1372,11 +1424,11 @@ class ChadoPublish extends TripalBackendPublishBase {
     // content type. This allows us to later divide publishing into small
     // batches to reduce the amount of memory required if there are
     // thousands of records to publish.
-    $this->logger->notice('Finding all candidate records in the "'.$this->base_table.'" chado table');
+    $this->logger->notice('Finding all candidate records in the "' . $this->base_table . '" chado table');
     $record_ids = $this->storage->findAllRecordIds($this->bundle);
 
-    // Get a list of already-published entities.
-    // The key will be the chado table record ID, the values will be the entity IDs.
+    // Get a list of already-published entities. The key will be the
+    // chado table record ID, the values will be the entity IDs.
     $this->existing_published_entities = $this->entity_lookup_manager->getPublishedEntityIds($this->bundle, 'tripal_entity');
 
     // If not republishing everything, remove any already published records.
@@ -1397,18 +1449,19 @@ class ChadoPublish extends TripalBackendPublishBase {
    *   Optional keys are:
    *     'republish' - If true, then republish existing entitites.
    *     'job' - A Tripal job object
-   *     'batch_size' - Maximum number of records to publish per batch, defaults to 1000
+   *     'batch_size' - Maximum number of records to publish per batch,
+   *         defaults to 1000
    *     'migration_file' - Used to migrate Tripal 3 bio_data entity IDs.
-   *     'lenient_migration' - Do not stop if there are missing records in the migration
-   *         data, rather just skip over them.
+   *     'lenient_migration' - Do not stop if there are missing records in the
+   *         migration data, rather just skip over them.
    *
    * @return bool
    *   TRUE if successful, FALSE if an error occurred
    */
-  public function publish_init(array $options): bool {
+  public function publishInit(array $options): bool {
     $this->logger->notice('Initializing publish');
 
-    // Required options
+    // Required options.
     $this->bundle = $options['bundle'] ?? '';
     $this->datastore = $options['datastore'] ?? '';
     if (!$this->bundle) {
@@ -1417,7 +1470,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     if (!$this->datastore) {
       throw new TripalPublishException('A datastore must be specified to publish');
     }
-    // Optional values
+    // Optional values.
     $this->schema_name = $options['schema_name'] ?? 'chado';
     $this->republish = boolval($options['republish'] ?? 1);
     $this->job = $options['job'] ?? NULL;
@@ -1425,7 +1478,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       $this->batch_size = $options['batch_size'];
     }
 
-    // If $options['migration'] is set, load the specified data file
+    // If $options['migration'] is set, load the specified data file.
     $this->lenient_migration = $options['lenient_migration'] ?? FALSE;
     $errormsg = $this->loadMigrationData($options['migration_file'] ?? '');
     if ($errormsg) {
@@ -1433,14 +1486,14 @@ class ChadoPublish extends TripalBackendPublishBase {
       return FALSE;
     }
 
-    // The current user will be the author of any newly published entitites
+    // The current user will be the author of any newly published entitites.
     $this->uid = \Drupal::currentUser()->id();
 
-    // List of allowed HTML tags in entity titles
+    // List of allowed HTML tags in entity titles.
     $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
     $this->allowed_title_tags = explode(' ', $tag_string ?? '');
 
-    // Initialize class variables that may persist between consecutive jobs
+    // Initialize class variables that may persist between consecutive jobs.
     $this->field_info = [];
     $this->entity_type = NULL;
     $this->required_types = [];
@@ -1473,35 +1526,37 @@ class ChadoPublish extends TripalBackendPublishBase {
     // Get the storage plugin used to publish.
     $this->storage = $this->storage_manager->getInstance(['plugin_id' => $this->datastore]);
     if (!$this->storage) {
-      throw new \TripalPublishException('Could not find an instance of the TripalStorage backend: "' . $this->datastore . '".');
+      throw new TripalPublishException('Could not find an instance of the TripalStorage backend: "' . $this->datastore . '"');
     }
     // @todo somehow set the chado schema using the value in $this->schema_name
     return TRUE;
   }
 
   /**
-   * Provides a final summary message for publish
+   * Provides a final summary message for publish.
    *
    * @param bool $success
-   *   TRUE if no errors encountered
+   *   TRUE if no errors encountered.
    * @param array $stats
-   *   Various statistics to display
+   *   Various statistics to display.
+   *
    * @return void
+   *   No return value.
    */
-  protected function publish_summarize(bool $success, array $stats): void {
-    $message = "Publish " . ($success?'completed.':'encountered errors.');
+  protected function publishSummarize(bool $success, array $stats): void {
+    $message = "Publish " . ($success ? 'completed.' : 'encountered errors.');
     $message .= " Published " . number_format($stats['total_new_entities']) . " new entities";
-    // This summary value is displayed only when republish is specified
+    // This summary value is displayed only when republish is specified.
     if ($this->republish) {
       $message .= ", checked " . number_format($stats['total_existing_entities']) . " existing entities";
     }
-    // Titles will be updated only if the entity title format was changed
+    // Titles will be updated only if the entity title format was changed.
     if ($stats['total_updated_titles']) {
       $message .= ", updated titles for " . number_format($stats['total_updated_titles']) . " entities";
     }
     $message .= ", added " . number_format($stats['total_new_field_items']) . " new field values";
     if ($this->republish) {
-      $message .= ", and republished ". number_format($stats['total_republished_field_items']) . " existing field values";
+      $message .= ", and republished " . number_format($stats['total_republished_field_items']) . " existing field values";
     }
     $message .= '.';
     $this->logger->notice($message);
@@ -1522,7 +1577,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     // at least one record was not published. The formatters will not
     // display this last extra record.
     $cardinalities = [];
-    foreach ($this->field_info as $field_name => $field_info) {
+    foreach ($this->field_info as $field_info) {
       $cardinality = $field_info['cardinality'];
       if (array_key_exists('object_table', $field_info)) {
         $cardinalities[$field_info['object_table']] = $cardinality + 1;
@@ -1552,28 +1607,30 @@ class ChadoPublish extends TripalBackendPublishBase {
    *   Optional keys are:
    *     'republish' - If true, then republish existing entitites.
    *     'job' - A Tripal job object
-   *     'batch_size' - Maximum number of records to publish per batch, defaults to 1000
-   *     'migration_file' - During migration of a Tripal 3 site, we would like to preserve
-   *         the numeric entity IDs. This option specifies the name of a file generated
-   *         by the tripal_chado/migration/export_tripal3_entity_mapping.php utility
-   *         that was run on the Tripal 3 site.
-   *     'lenient_migration' - Do not stop if there are missing records in the migration
-   *         data, rather just skip over them.
+   *     'batch_size' - Maximum number of records to publish per batch,
+   *         defaults to 1000.
+   *     'migration_file' - During migration of a Tripal 3 site, we would
+   *         like to preserve the numeric entity IDs. This option specifies
+   *         the name of a file generated by the
+   *         tripal_chado/migration/export_tripal3_entity_mapping.php
+   *         utility that was run on the Tripal 3 site.
+   *     'lenient_migration' - Do not stop if there are missing records in
+   *         the migration data, rather just skip over them.
    *     'unpublish' - A true value to instead unpublish content.
    *     'orphaned' - Used for unpublish to only unpublish orphaned content.
-   * .
+   *   .
+   *
    * @return array
    *   An associative array of the first 100 entities that were published,
    *   keyed by their titles, and the value being the entity_id.
-   *
    */
   public function publish(array $options): array {
-    // Initialization for publish
-    if (!$this->publish_init($options)) {
+    // Initialization for publish.
+    if (!$this->publishInit($options)) {
       return [];
     }
 
-    // Retrieve all chado record IDs for this bundle
+    // Retrieve all chado record IDs for this bundle.
     $record_ids = $this->getRecordIds();
 
     // Take the unpublish branch if specified.
@@ -1581,23 +1638,24 @@ class ChadoPublish extends TripalBackendPublishBase {
       return $this->unpublish($options);
     }
 
-    // If there are no record IDs for this bundle, return early
+    // If there are no record IDs for this bundle, return early.
     if (!count($record_ids)) {
       $this->logger->notice('There are no records to publish for this content type');
       return [];
     }
 
-    // Retrieve and validate the page title format
+    // Retrieve and validate the page title format.
     $title_format = $this->entity_type->getTitleFormat();
     if (!$this->validateTitleFormat($title_format)) {
       return [];
     }
 
-    // Sort and divide $record_id array into batches of $this->batch_size records
+    // Sort and divide $record_id array into batches of
+    // $this->batch_size records.
     $record_id_batches = $this->divideIntoBatches($record_ids);
     $number_of_batches = count($record_id_batches);
 
-    // Let user know what and how much will be published
+    // Let user know what and how much will be published.
     $message = 'Preparing to publish ' . number_format(count($record_ids)) . ' "' . $this->bundle . '" records';
     if ($number_of_batches > 1) {
       $message .= ' in ' . number_format($number_of_batches) . ' batches';
@@ -1640,7 +1698,8 @@ class ChadoPublish extends TripalBackendPublishBase {
       $existing_titles = $this->findEntities($record_id_batch);
       $total_existing_entities += count($existing_titles);
 
-      // At this point we start to make database updates, so wrap in a transaction
+      // At this point we start to make database updates, so wrap in
+      // a transaction.
       try {
         $transaction_drupal = $this->connection->startTransaction();
 
@@ -1657,13 +1716,15 @@ class ChadoPublish extends TripalBackendPublishBase {
         // is in the form of fields and can come from any number of data storage
         // backends. But, if the entity with a given title for this content type
         // doesn't exist, then let's create one.
-        $this->logger->notice($batch_prefix . 'Step 5 of 6: Publishing ' . number_format(count($new_matches))  . ' new entities');
+        $this->logger->notice($batch_prefix . 'Step 5 of 6: Publishing ' . number_format(count($new_matches)) . ' new entities');
         $this->insertEntities($new_matches, $titles);
 
-        // Now we have to publish the field items. These represent storage back-end information
-        // about the entity. If the entity was previously published we still may be adding new
-        // information about it (say if we are publishing genes from a noSQL back-end but the
-        // original entity was created when it was first published when using the Chado backend).
+        // Now we have to publish the field items. These represent storage
+        // back-end information about the entity. If the entity was previously
+        // published we still may be adding new information about it (say if
+        // we are publishing genes from a noSQL back-end but the original
+        // entity was created when it was first published when using the Chado
+        // backend).
         $this->logger->notice($batch_prefix . 'Step 6 of 6: Adding field items to published entities');
 
         if (!empty($this->unsupported_fields)) {
@@ -1675,7 +1736,8 @@ class ChadoPublish extends TripalBackendPublishBase {
           $existing_field_items = $this->findFieldItems($field_name, $record_id_batch);
           [$num_inserted, $num_updated] = $this->insertFieldItems($field_name, $matches, $existing_field_items, $titles);
 
-          // To reduce clutter, a log message is not shown for fields with no items added
+          // To reduce clutter, a log message is not shown for fields with
+          // no items added.
           if ($num_inserted) {
             $this->logger->notice('  Published ' . number_format($num_inserted) . " items for field \"$field_name\"");
             $total_new_field_items += $num_inserted;
@@ -1689,20 +1751,20 @@ class ChadoPublish extends TripalBackendPublishBase {
       catch (Exception $e) {
         $transaction_drupal->rollback();
         $this->logger->error($e->getMessage() . " - Since an error occurred, database changes for $batch_prefix have been rolled back");
-        // In case of error, do not attempt to publish any more batches
+        // In case of error, do not attempt to publish any more batches.
         $success = FALSE;
         break;
       }
-    } // end of the batch loop
+    }
 
-    // Present a final summary message, cumulative for all batches
+    // This completes the batch loop. Present a final summary
+    // message, cumulative for all batches.
     if ($this->count_blank_titles) {
-      $this->logger->warning(t('@count entities have blank titles. You should either'
-          . ' update the source records, or modify the title format tokens, and then republish.',
+      $this->logger->warning($this->t('@count entities have blank titles. You should either update the source records, or modify the title format tokens, and then republish.',
           ['@count' => $this->count_blank_titles]));
     }
 
-    $this->publish_summarize($success, [
+    $this->publishSummarize($success, [
       'total_new_entities' => $total_new_entities,
       'total_existing_entities' => $total_existing_entities,
       'total_updated_titles' => $total_updated_titles,
@@ -1710,7 +1772,8 @@ class ChadoPublish extends TripalBackendPublishBase {
       'total_republished_field_items' => $total_republished_field_items,
     ]);
 
-    // This return value is currently only used for unit tests, so is limited to 100 records.
+    // This return value is currently only used for unit tests, so is
+    // limited to 100 records.
     return $this->published_or_updated_entities;
   }
 
@@ -1772,4 +1835,5 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     return $entity_ids;
   }
+
 }
