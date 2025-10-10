@@ -551,8 +551,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         /** @var \Drupal\Core\TypedData\TypedDataInterface $prop **/
         $props = $item->getProperties();
         $main_prop_key = NULL;
-        if (method_exists($item, 'mainPropertyName')) {
+        if (method_exists($item, 'mainDisplayPropertyName')) {
           $main_prop_key = $item->mainDisplayPropertyName();
+        }
+        elseif (method_exists($item, 'mainPropertyName')) {
+          $main_prop_key = $item->mainPropertyName();
         }
         if (is_array($props)) {
           foreach ($props as $prop) {
