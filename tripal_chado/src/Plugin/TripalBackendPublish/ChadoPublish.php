@@ -3,6 +3,7 @@
 namespace Drupal\tripal_chado\Plugin\TripalBackendPublish;
 
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalBackendPublish\Attribute\TripalBackendPublish;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
@@ -18,6 +19,8 @@ use Drupal\tripal\TripalStorage\StoragePropertyValue;
   description: new TranslatableMarkup('Creates Tripal content based on records in a chado database.'),
 )]
 class ChadoPublish extends TripalBackendPublishBase {
+
+  use StringTranslationTrait;
 
   /**
    * The base table of the bundle.
