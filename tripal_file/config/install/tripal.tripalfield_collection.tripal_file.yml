@@ -234,6 +234,33 @@ fields:
               region: 'content'
               weight: 70
 
+    -   name: 'file_pub'
+        content_type: 'tripal_file'
+        label: 'Publication'
+        type: 'chado_pub_type_default'
+        description: 'A publication referencing this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: file
+                linker_table: file_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'publication'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 81
+          form:
+            default:
+              region: 'content'
+              weight: 81
+
     -   name: 'analysis_file'
         content_type: 'tripal_file'
         label: 'Analysis'
@@ -255,11 +282,11 @@ fields:
             default:
               region: 'content'
               label: 'above'
-              weight: 81
+              weight: 82
           form:
             default:
               region: 'content'
-              weight: 81
+              weight: 82
 
     -   name: 'organism_file'
         content_type: 'tripal_file'
@@ -282,11 +309,11 @@ fields:
             default:
               region: 'content'
               label: 'above'
-              weight: 82
+              weight: 83
           form:
             default:
               region: 'content'
-              weight: 82
+              weight: 83
 
     -   name: 'project_file'
         content_type: 'tripal_file'
@@ -304,33 +331,6 @@ fields:
         settings:
             termIdSpace: 'NCIT'
             termAccession: 'C47885'
-        display:
-          view:
-            default:
-              region: 'content'
-              label: 'above'
-              weight: 83
-          form:
-            default:
-              region: 'content'
-              weight: 83
-
-    -   name: 'file_pub'
-        content_type: 'tripal_file'
-        label: 'Publication'
-        type: 'chado_pub_type_default'
-        description: 'A publication referencing this file.'
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: 'chado_storage'
-            storage_plugin_settings:
-                base_table: file
-                linker_table: file_pub
-                linker_fkey_column: pub_id
-        settings:
-            termIdSpace: 'schema'
-            termAccession: 'publication'
         display:
           view:
             default:
