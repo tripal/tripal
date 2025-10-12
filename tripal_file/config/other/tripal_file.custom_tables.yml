@@ -32,6 +32,7 @@ license:
     table: 'license'
     fields:
         license_id:
+            size: big
             type: serial
             'not null': true
         name:
@@ -101,6 +102,7 @@ fileprop:
     table: 'fileprop'
     fields:
         fileprop_id:
+            size: big
             type: serial
             'not null': true
         file_id:
@@ -140,6 +142,7 @@ file_relationship:
     table: 'file_relationship'
     fields:
         file_relationship_id:
+            size: big
             type: serial
             'not null': true
         subject_id:
@@ -179,6 +182,7 @@ file_dbxref:
     table: 'file_dbxref'
     fields:
         file_dbxref_id:
+            size: big
             type: serial
             'not null': true
         file_id:
@@ -218,6 +222,7 @@ file_license:
     table: 'file_license'
     fields:
         file_license_id:
+            size: big
             type: serial
             'not null': true
         file_id:
