@@ -83,12 +83,14 @@ class ChadoFileLocationFormatterDefault extends ChadoFormatterBase {
       $rows[$delta] = $row;
     }
 
-    $elements[0] = [
-      '#theme' => 'table',
-      '#header' => $header,
-      '#rows' => $rows,
-      '#attributes' => ['class' => 'chado-file-location-table'],
-    ];
+    if ($rows) {
+      $elements[0] = [
+        '#theme' => 'table',
+        '#header' => $header,
+        '#rows' => $rows,
+        '#attributes' => ['class' => 'chado-file-location-table'],
+      ];
+    }
 
     return $elements;
   }

@@ -57,12 +57,14 @@ class ChadoFileFormatterDefault extends ChadoFormatterBase {
       $rows[$delta] = $row;
     }
 
-    $elements[0] = [
-      '#theme' => 'table',
-      '#header' => $header,
-      '#rows' => $rows,
-      '#wrapper_attributes' => ['class' => 'container'],
-    ];
+    if ($rows) {
+      $elements[0] = [
+        '#theme' => 'table',
+        '#header' => $header,
+        '#rows' => $rows,
+        '#wrapper_attributes' => ['class' => 'container'],
+      ];
+    }
 
     return $elements;
   }
