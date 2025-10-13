@@ -33,7 +33,15 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'
+    // The property that indicates if this field is empty.
+    return 'type_id';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'term_name';
   }
 

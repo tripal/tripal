@@ -30,6 +30,15 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
+    return 'sequence_coordinates';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'sequence_coordinates';
   }
 
