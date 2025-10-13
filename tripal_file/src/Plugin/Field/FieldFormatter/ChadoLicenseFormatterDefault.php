@@ -12,7 +12,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  */
 #[TripalFieldFormatter(
   id: 'chado_license_formatter_default',
-  label: new TranslatableMarkup('Chado license formatter'),
+  label: new TranslatableMarkup('Chado License Formatter'),
   description: new TranslatableMarkup('A chado license formatter'),
   field_types: [
     'chado_license_type_default',

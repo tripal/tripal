@@ -16,7 +16,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  */
 #[TripalFieldFormatter(
   id: 'chado_file_location_formatter_default',
-  label: new TranslatableMarkup('Chado file location formatter'),
+  label: new TranslatableMarkup('Chado File Location Formatter'),
   description: new TranslatableMarkup('A chado file location formatter'),
   field_types: [
     'chado_file_location_type_default',

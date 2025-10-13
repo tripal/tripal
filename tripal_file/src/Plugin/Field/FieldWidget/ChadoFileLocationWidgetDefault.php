@@ -28,6 +28,8 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
    * We need to access this service directly for any files that are
    * not registered with Drupal. We will only load this service when
    * it is necessary.
+   *
+   * @var Drupal\Core\File\FileUrlGenerator|null
    */
   protected static ?FileUrlGenerator $file_url_generator = NULL;
 
@@ -67,12 +69,13 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $linker_id,
     ];
+// @todo issue with layout https://www.drupal.org/project/drupal/issues/3519949
     $elements['fileloc_uri'] = [
       '#title' => $this->t('URI'),
       '#type' => 'textfield',
       '#default_value' => $uri,
       '#description' => $this->t('Enter a web URL or a local URI to a file on this site. This value is required.'),
-      // This element is required, but check this in validation.
+      // This element is required, but we check this in validation.
       '#required' => FALSE,
       '#element_validate' => [[static::class, 'validateFilelocUri']],
     ];

@@ -13,7 +13,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  */
 #[TripalFieldFormatter(
   id: 'chado_file_formatter_default',
-  label: new TranslatableMarkup('Chado file formatter'),
+  label: new TranslatableMarkup('Chado File Formatter'),
   description: new TranslatableMarkup('A chado file formatter'),
   field_types: [
     'chado_file_type_default',

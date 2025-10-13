@@ -16,7 +16,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 #[FieldType(
   id: 'chado_file_type_default',
   category: 'tripal_chado',
-  label: new TranslatableMarkup('File'),
+  label: new TranslatableMarkup('Chado File'),
   description: new TranslatableMarkup('A file is an information-bearing object that contains a physical embodiment of some information using a particular character encoding.'),
   default_widget: 'chado_file_widget_default',
   default_formatter: 'chado_file_formatter_default',

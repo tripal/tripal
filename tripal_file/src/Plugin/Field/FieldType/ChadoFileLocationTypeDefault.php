@@ -16,7 +16,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 #[FieldType(
   id: 'chado_file_location_type_default',
   category: 'tripal_chado',
-  label: new TranslatableMarkup('File Location'),
+  label: new TranslatableMarkup('Chado File Location'),
   description: new TranslatableMarkup('The location of the file.'),
   default_widget: 'chado_file_location_widget_default',
   default_formatter: 'chado_file_location_formatter_default',
