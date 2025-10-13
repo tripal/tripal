@@ -261,7 +261,7 @@ fields:
               region: 'content'
               weight: 81
 
-    -   name: 'analysis_file'
+    -   name: 'file_analysis'
         content_type: 'tripal_file'
         label: 'Analysis'
         type: 'chado_analysis_type_default'
@@ -288,7 +288,7 @@ fields:
               region: 'content'
               weight: 82
 
-    -   name: 'organism_file'
+    -   name: 'file_organism'
         content_type: 'tripal_file'
         label: 'Organism'
         type: 'chado_organism_type_default'
@@ -315,7 +315,7 @@ fields:
               region: 'content'
               weight: 83
 
-    -   name: 'project_file'
+    -   name: 'file_project'
         content_type: 'tripal_file'
         label: 'Project'
         type: 'chado_project_type_default'
@@ -342,7 +342,7 @@ fields:
               region: 'content'
               weight: 84
 
-    -   name: 'study_file'
+    -   name: 'file_study'
         content_type: 'tripal_file'
         label: 'Study'
         type: 'chado_study_type_default'
