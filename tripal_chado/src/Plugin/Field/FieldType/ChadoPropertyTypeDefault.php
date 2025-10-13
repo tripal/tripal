@@ -29,6 +29,22 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
+    return 'value';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
+    return 'value';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
     $settings['storage_plugin_settings']['prop_table'] = '';

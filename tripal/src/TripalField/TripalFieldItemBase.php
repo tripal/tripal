@@ -26,6 +26,13 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   /**
    * {@inheritdoc}
    */
+  public static function mainDisplayPropertyName() {
+    return 'value';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function defaultFieldSettings() {
     $settings = [
       'termIdSpace' => '',

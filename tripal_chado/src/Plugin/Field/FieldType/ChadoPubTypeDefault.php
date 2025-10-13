@@ -32,7 +32,15 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'
+    // The property that indicates if this field is empty.
+    return self::$object_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'pub_title';
   }
 
