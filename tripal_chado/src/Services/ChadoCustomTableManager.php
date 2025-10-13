@@ -41,13 +41,13 @@ class ChadoCustomTableManager {
    *
    * @param string $table_name
    *   The name of the custom table.
-   * @param string $chado_schema
+   * @param string|null $chado_schema
    *   Optional. The chado schema where the custom table will live. If no
    *   schema is specified then the default schema is used.
    *
    * @return \Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable
    */
-  public function create(string $table_name, string $chado_schema = NULL) {
+  public function create(string $table_name, ?string $chado_schema = NULL) {
     // If the schema is not specified, get the default one.
     $chado_schema = $this->chado_connection->schema()->getDefault();
     $custom_table = new ChadoCustomTable($table_name, $chado_schema);
@@ -81,14 +81,14 @@ class ChadoCustomTableManager {
    *
    * @param string $table_name
    *   The name of the table to find the ID for.
-   * @param string $chado_schema
+   * @param string|null $chado_schema
    *   Optional. The chado schema from which to find a custom tables. If no
    *   schema is specified then the default schema is used.
    *
    * @return \Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable
    *   A ChadoCustomTable object or NULL if not found.
    */
-  public function loadbyName(string $table_name, string $chado_schema = NULL) {
+  public function loadbyName(string $table_name, ?string $chado_schema = NULL) {
     $table_id = $this->findByName($table_name, $chado_schema);
     if (!$table_id) {
       return NULL;
@@ -101,14 +101,14 @@ class ChadoCustomTableManager {
    *
    * @param string $table_name
    *   The name of the table to find the ID for.
-   * @param string $chado_schema
+   * @param string|null $chado_schema
    *   Optional. The chado schema from which to find a custom tables. If no
    *   schema is specified then the default schema is used.
    *
    * @return int
    *   The id of the matching custom table.
    */
-  public function findByName(string $table_name, string $chado_schema = NULL) {
+  public function findByName(string $table_name, ?string $chado_schema = NULL) {
 
     // Retrieve the default name of the Chado schema if it's not provided.
     if ($chado_schema === NULL) {
@@ -124,7 +124,7 @@ class ChadoCustomTableManager {
   /**
    * Retrieve a list of all Chado custom table names.
    *
-   * @param string $chado_schema
+   * @param string|null $chado_schema
    *   Optional. The chado schema from which to retrieve custom tables. If no
    *   schema is specified then the default schema is used.
    *
@@ -132,7 +132,7 @@ class ChadoCustomTableManager {
    *  An associative array of custom tables with the key being the id and
    *  the value the table name.
    */
-  public function getTables(string $chado_schema = NULL) {
+  public function getTables(?string $chado_schema = NULL) {
     $tables = [];
 
     // Retrieve the default name of the Chado schema if it's not provided.

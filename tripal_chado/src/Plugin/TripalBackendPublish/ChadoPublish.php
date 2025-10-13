@@ -369,7 +369,7 @@ class ChadoPublish extends TripalBackendPublishBase {
           ];
 
           // Store the main properties for later.
-          $main_property_name = $instance->mainPropertyName();
+          $main_property_name = $instance->mainDisplayPropertyName();
           $this->main_property_names[$field_name] = $main_property_name;
 
           // Order the property types by key for easy lookup.
@@ -448,7 +448,7 @@ class ChadoPublish extends TripalBackendPublishBase {
         /** @var \Drupal\tripal\TripalField\TripalFieldItemBase $field */
         /** @var \Drupal\tripal\TripalStorage\StoragePropertyBase $prop **/
         $field = $this->field_info[$field_name]['instance'];
-        $main_prop = $field->mainPropertyName();
+        $main_prop = $field->mainDisplayPropertyName();
         $prop = $field_info['prop_types'][$main_prop];
         $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
             $field_class::$id, $main_prop, $prop->getTerm()->getTermId(), NULL);
