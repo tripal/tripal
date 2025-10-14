@@ -20,11 +20,11 @@ class ChadoMview extends ChadoCustomTable {
    *
    * @param string $table_name
    *   The name of the custom table.
-   * @param string $chado_schema
+   * @param string|null $chado_schema
    *   Optional. The chado schema where the custom table will live. If no
    *   schema is specified then the default schema is used.
    */
-  public function __construct($table_name, string $chado_schema = NULL) {
+  public function __construct($table_name, ?string $chado_schema = NULL) {
 
     parent::__construct($table_name, $chado_schema);
 
