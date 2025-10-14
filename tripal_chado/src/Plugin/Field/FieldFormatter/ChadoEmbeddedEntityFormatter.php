@@ -291,10 +291,7 @@ class ChadoEmbeddedEntityFormatter extends ChadoFormatterBase {
    * viewed.
    */
   public function prepareView(array $entities_items) {
-    // Collect entity IDs to load. For performance, we want to use a single
-    // "multiple entity load" to load all the entities for the multiple
-    // "entity reference item lists" being displayed. We thus cannot use
-    // \Drupal\Core\Field\EntityReferenceFieldItemList::referencedEntities().
+    // Collect entity IDs to load.
     $ids = [];
     foreach ($entities_items as $items) {
       foreach ($items as $item) {
