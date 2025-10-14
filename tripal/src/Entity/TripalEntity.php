@@ -1271,9 +1271,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $context = self::saveValuesArray($this, $values, $tripal_storages, TRUE);
 
       // Now remove any empty field values.
-      foreach (array_keys($this->getFieldDefinitions()) as $field_name) {
-        $field_item_list = $this->get($field_name);
-        $field_item_list->filterEmptyItems();
+      foreach ($context['empty_items'] as $field_name => $deltas) {
+        foreach (array_reverse($deltas) as $delta) {
+          $this->get($field_name)->removeItem($delta);
+        }
       }
     }
     catch (\Exception $e) {
