@@ -66,9 +66,9 @@ class FieldStaticMethodTest extends ChadoTestKernelBase {
    * setup.
    *
    * @var array
-   *  A list of scenarios where each one has the following keys:
-   *  - id: the machine name of the field to be tested.
-   *  - class: the class defining the field to be tested.
+   *   A list of scenarios where each one has the following keys:
+   *   - id: the machine name of the field to be tested.
+   *   - class: the class defining the field to be tested.
    */
   protected array $scenarios;
 
