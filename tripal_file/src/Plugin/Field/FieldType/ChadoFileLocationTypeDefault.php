@@ -38,6 +38,13 @@ class ChadoFileLocationTypeDefault extends ChadoFieldItemBase {
   protected static $object_table = 'fileloc';
 
   /**
+   * The name of the primary key column in the object table.
+   *
+   * @var string
+   */
+  protected static $object_id = 'fileloc_id';
+
+  /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
