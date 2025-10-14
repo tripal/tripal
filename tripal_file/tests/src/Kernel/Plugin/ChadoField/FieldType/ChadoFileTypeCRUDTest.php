@@ -40,8 +40,17 @@ class ChadoFileTypeCRUDTest extends ChadoTestKernelBase {
    *
    * @var array
    */
-  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field',
-    'datetime', 'views', 'tripal', 'tripal_chado', 'tripal_file',
+  protected static $modules = [
+    'system',
+    'user',
+    'path',
+    'path_alias',
+    'field',
+    'datetime',
+    'views',
+    'tripal',
+    'tripal_chado',
+    'tripal_file',
   ];
 
   /**
@@ -160,12 +169,56 @@ class ChadoFileTypeCRUDTest extends ChadoTestKernelBase {
     // according to the system under test.
     $this->setupChadoEntityFieldSystemUnderTest($this->system_under_test);
 
-    // Create license record in chado for testing (not published).
+    // Create one license record in chado for testing (not published).
     $this->license_id = $this->chado_connection
       ->insert('1:license')
       ->fields(['name' => 'Public Domain', 'summary' => 'You can do anything at zombo com', 'uri' => 'https://zombo.com'])
       ->execute();
     $this->assertNotEmpty($this->license_id, 'Did not create license');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown(): void {
+
+    // This is a list of the tables that the module creates when installed.
+    $tripal_file_tables = [
+      'file',
+      'license',
+      'fileloc',
+      'fileprop',
+      'file_relationship',
+      'file_dbxref',
+      'file_license',
+      'analysis_file',
+      'assay_file',
+      'biomaterial_file',
+      'file_contact',
+      'cv_file',
+      'eimage_file',
+      'feature_file',
+      'featuremap_file',
+      'library_file',
+      'nd_protocol_file',
+      'organism_file',
+      'phylotree_file',
+      'project_file',
+      'file_pub',
+      'stock_file',
+      'stockcollection_file',
+      'study_file',
+    ];
+
+    // Tests the module uninstall.
+    $test_schema_name = $this->chado_connection->getSchemaName();
+    tripal_file_drop_custom_chado_tables($test_schema_name);
+    foreach ($tripal_file_tables as $table) {
+      $table_exists = $this->chado_connection->schema()->tableExists($table);
+      $this->assertFalse($table_exists, "The table \"$table\" was not removed when the tripal_file module was uninstalled");
+    }
+
+    parent::tearDown();
   }
 
   /**
@@ -183,15 +236,6 @@ class ChadoFileTypeCRUDTest extends ChadoTestKernelBase {
       "Base Fields Only",
     ];
 
-#    $scenarios[] = [
-#      1,
-#      "Properties Added on Edit",
-#    ];
-
-#    $scenarios[] = [
-#      2,
-#      "Property Reorder",
-#    ];
     return $scenarios;
   }
 
