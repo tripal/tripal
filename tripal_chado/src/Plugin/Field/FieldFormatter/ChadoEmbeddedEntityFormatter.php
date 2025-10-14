@@ -2,7 +2,9 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
@@ -10,8 +12,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'embedded entity' formatter.
@@ -285,50 +287,6 @@ class ChadoEmbeddedEntityFormatter extends ChadoFormatterBase {
   /**
    * {@inheritdoc}
    *
-   * @see ::prepareView()
-   * @see ::getEntitiesToView()
-   */
-  public function view(FieldItemListInterface $items, $langcode = NULL) {
-    $elements = parent::view($items, $langcode);
-
-    $field_level_access_cacheability = new CacheableMetadata();
-
-    // Try to map the cacheability of the access result that was set at
-    // _accessCacheability in getEntitiesToView() to the corresponding render
-    // subtree. If no such subtree is found, then merge it with the field-level
-    // access cacheability.
-    foreach ($items as $delta => $item) {
-      // Ignore items for which access cacheability could not be determined in
-      // prepareView().
-      if (!empty($item->_accessCacheability)) {
-        if (isset($elements[$delta])) {
-          CacheableMetadata::createFromRenderArray($elements[$delta])
-            ->merge($item->_accessCacheability)
-            ->applyTo($elements[$delta]);
-        }
-        else {
-          $field_level_access_cacheability = $field_level_access_cacheability->merge($item->_accessCacheability);
-        }
-      }
-    }
-
-    // Apply the cacheability metadata for the inaccessible entities and the
-    // entities for which the corresponding render subtree could not be found.
-    // This causes the field to be rendered (and cached) according to the cache
-    // contexts by which the access results vary, to ensure only users with
-    // access to this field can view it. It also tags this field with the cache
-    // tags on which the access results depend, to ensure users that cannot view
-    // this field at the moment will gain access once any of those cache tags
-    // are invalidated.
-    $field_level_access_cacheability->merge(CacheableMetadata::createFromRenderArray($elements))
-      ->applyTo($elements);
-
-    return $elements;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
    * Loads the entities referenced in that field across all the entities being
    * viewed.
    */
@@ -345,42 +303,24 @@ class ChadoEmbeddedEntityFormatter extends ChadoFormatterBase {
         // contains a valid entity ready for display. All items are initialized
         // at FALSE.
         $item->_loaded = FALSE;
-        if ($this->needsEntityLoad($item)) {
-          $ids[] = $item->target_id;
-        }
+        $ids[] = $item->entity_id;
       }
     }
+
     if ($ids) {
-      $target_type = $this->getFieldSetting('target_type');
-      $target_entities = \Drupal::entityTypeManager()->getStorage($target_type)->loadMultiple($ids);
+      $target_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadMultiple($ids);
     }
 
     // For each item, pre-populate the loaded entity in $item->entity, and set
     // the 'loaded' flag.
     foreach ($entities_items as $items) {
       foreach ($items as $item) {
-        if (isset($target_entities[$item->target_id])) {
-          $item->entity = $target_entities[$item->target_id];
-          $item->_loaded = TRUE;
-        }
-        elseif ($item->hasNewEntity()) {
+        if (isset($target_entities[$item->entity_id])) {
+          $item->entity = $target_entities[$item->entity_id];
           $item->_loaded = TRUE;
         }
       }
     }
-  }
-
-  /**
-   * Returns whether the entity referenced by an item needs to be loaded.
-   *
-   * @param \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $item
-   *   The item to check.
-   *
-   * @return bool
-   *   TRUE if the entity needs to be loaded.
-   */
-  protected function needsEntityLoad(EntityReferenceItem $item) {
-    return !$item->hasNewEntity();
   }
 
   /**
