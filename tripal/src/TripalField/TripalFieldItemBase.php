@@ -601,12 +601,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   public function tripalSave($field_item, $field_name, $prop_types, $prop_values, $entity) {
     @trigger_error(__METHOD__ . '() is deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Instead, you should use syncTripalStoragePropertyValues() which acts on the current TripalFieldItem instance. See https://github.com/tripal/tripal/pull/2281', E_USER_DEPRECATED);
 
-    $delta = $field_item->getName();
-    foreach ($prop_values as $property) {
-      $prop_key = $property->getKey();
-      $value = $entity->get($field_name)->get($delta)->get($prop_key)->getValue();
-      $property->setValue($value);
-    }
+    $this->syncTripalStoragePropertyValues();
   }
 
   /**
@@ -618,12 +613,18 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * @see https://github.com/tripal/tripal/pull/2281
    */
   public function tripalLoad($field_item, $field_name, $prop_types, $prop_values, $entity) {
-    // @trigger_error(__METHOD__ . '() is deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Instead, you should use syncFieldValuesWithTripalStorage() which acts on the current TripalFieldItem instance. See https://github.com/tripal/tripal/pull/2281', E_USER_DEPRECATED);
-    $delta = $field_item->getName();
-    foreach ($prop_values as $property) {
-      $prop_key = $property->getKey();
-      $entity->get($field_name)->get($delta)->get($prop_key)->setValue($property->getValue(), FALSE);
+    @trigger_error(__METHOD__ . '() is deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Instead, you should use updateTripalStoragePropertyValues() followed by syncFieldValuesWithTripalStorage() which acts on the current TripalFieldItem instance. See https://github.com/tripal/tripal/pull/2281', E_USER_DEPRECATED);
+
+    // Process the property values to match the format of the new method.
+    $new_values = [];
+    foreach ($prop_values as $propval) {
+      $prop_key = $propval->getKey();
+      $new_values[$prop_key] = $propval->getValue();
     }
+    $this->updateTripalStoragePropertyValues($new_values);
+
+    // Now that we've updated the properties, sync them with the fields.
+    $this->syncFieldValuesWithTripalStorage();
   }
 
   /**
@@ -635,27 +636,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * @see https://github.com/tripal/tripal/pull/2281
    */
   public function tripalClear($field_item, $field_name, $prop_types, $prop_values, $entity) {
-    // @trigger_error(__METHOD__ . '() is deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Instead, you should use clearFieldValuesForTripalStorage() which acts on the current TripalFieldItem instance. See https://github.com/tripal/tripal/pull/2281', E_USER_DEPRECATED);
-    $delta = $field_item->getName();
+    @trigger_error(__METHOD__ . '() is deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Instead, you should use clearFieldValuesForTripalStorage() which acts on the current TripalFieldItem instance. See https://github.com/tripal/tripal/pull/2281', E_USER_DEPRECATED);
 
-    foreach ($prop_values as $prop_value) {
-      $prop_key = $prop_value->getKey();
-
-      // Get the settings from the property type whose key matches this value.
-      $cache = TRUE;
-      foreach ($prop_types as $prop_type) {
-        if ($prop_type->getKey() == $prop_key) {
-          $cache = $prop_type->getCacheStatus();
-        }
-      }
-
-      // Keep properties that have caching enabled.
-      if ($cache) {
-        continue;
-      }
-      // Clear all other properties.
-      $entity->get($field_name)->get($delta)->get($prop_key)->setValue('', FALSE);
-    }
+    $this->clearFieldValuesForTripalStorage();
   }
 
   /**
