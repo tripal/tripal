@@ -223,7 +223,22 @@ class ChadoEmbeddedEntityFormatter extends ChadoFormatterBase {
       }
     }
 
-    return $this->createListMarkup($elements);
+    $result_array = $this->createListMarkup($elements);
+
+    foreach ($result_array as $delta => $item) {
+      $elements[$delta] = [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['tripal-chado-embedded-entity-format']],
+        'content' => $item,
+        '#attached' => [
+          'library' => [
+            'tripal_chado/tripal_chado.field.ChadoEmbeddedEntityFormatter',
+          ],
+        ],
+      ];
+    }
+
+    return $elements;
   }
 
   /**
