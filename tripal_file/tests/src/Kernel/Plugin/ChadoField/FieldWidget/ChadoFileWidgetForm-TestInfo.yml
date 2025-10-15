@@ -1,0 +1,342 @@
+system-under-test:
+  chado_version: '1.3.3.013'
+  termIdSpace:
+  - 'NCIT'
+  bundle:
+    label: 'File'
+    termIdSpace: 'SIO'
+    termAccession: '000396'
+    id: 'test_file'
+    settings:
+      chado_base_table: 'file'
+  fields:
+  - name: 'file_name'
+    type: 'chado_text_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
+    widget: 'chado_text_type_widget'
+    formatter: 'chado_text_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'name'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'file'
+          base_column: 'name'
+  - name: 'file_description'
+    type: 'chado_text_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
+    widget: 'chado_text_type_widget'
+    formatter: 'chado_text_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'description'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'file'
+          base_column: 'description'
+  - name: 'file_type'
+    type: 'chado_additional_type_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAdditionalTypeTypeDefault'
+    widget: 'chado_additional_type_widget_default'
+    formatter: 'chado_additional_type_formatter_default'
+    termIdSpace: 'schema'
+    termAccession: 'additionalType'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'file'
+          type_table: 'file'
+          type_column: 'type_id'
+  - name: 'file_license'
+    type: 'chado_license_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoLicenseTypeTypeDefault'
+    widget: 'chado_license_widget_default'
+    formatter: 'chado_license_formatter_default'
+    termIdSpace: 'schema'
+    termAccession: 'license'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'file'
+          linker_table: 'file_license'
+          linker_fkey_column: 'license_id'
+  - name: 'file_location'
+    type: 'chado_file_location_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoFileLocationTypeTypeDefault'
+    widget: 'chado_file_location_widget_default'
+    formatter: 'chado_file_location_formatter_default'
+    termIdSpace: 'schema'
+    termAccession: 'itemLocation'
+    cardinality: -1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'file'
+          linker_table: 'fileloc'
+          linker_fkey_column: 'file_id'
+scenarios:
+  - label: 'Base Fields Only'
+    description: 'Create a file entity.'
+    create:
+      expected_form_keys:
+        file_name:
+        - record_id:
+            '#type': 'value'
+            '#value': '0'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+        file_description:
+        - record_id:
+            '#type': 'value'
+            '#value': '0'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+        file_type:
+        - record_id:
+            '#type': 'value'
+            '#value': '0'
+          prop_id:
+            '#type': 'value'
+            '#value': '0'
+          link_id:
+            '#type': 'value'
+            '#value': '0'
+          type_id:
+            '#type': 'value'
+            '#value': ''
+          value:
+            '#type': 'value'
+            '#value': ''
+        file_license:
+        - record_id:
+            '#type': 'value'
+            '#value': '0'
+          linker_id:
+            '#type': 'value'
+            '#value': '0'
+          link:
+            '#type': 'value'
+            '#value': '0'
+          linker_fkey_column:
+            '#type': 'value'
+            '#value': 'license_id'
+          field_name:
+            '#type': 'value'
+            '#value': 'file_license'
+          license_id:
+            '#type': 'select'
+            '#value': '0'
+        file_location:
+        - record_id:
+            '#type': 'value'
+            '#value': '0'
+          fileloc_id:
+            '#type': 'value'
+            '#value': '0'
+          linker_id:
+            '#type': 'value'
+            '#value': '0'
+          field_name:
+            '#type': 'value'
+            '#value': 'file_location'
+          fileloc_uri:
+            '#type': 'textfield'
+            '#value': ''
+          fileloc_filename:
+            '#type': 'textfield'
+            '#value': ''
+          fileloc_size:
+            '#type': 'number'
+            '#value': ''
+          fileloc_md5checksum:
+            '#type': 'textfield'
+            '#value': ''
+          fileloc_rank:
+            '#type': 'value'
+            '#value': '0'
+      user_input:
+        file_name:
+        - record_id: 0
+          value:
+            format: 'plain_text'
+            value: 'An Image File'
+        file_description:
+        - record_id: 0
+          value:
+            format: 'basic_html'
+            value: 'This is a test of the file content type'
+        file_type:
+        - record_id: 0
+          type_id: ''
+          term_name: ''
+          id_space: ''
+          accession: ''
+          field_name: 'file_type'
+          term_autoc: 'Image (data:2968)'
+        file_license:
+        - record_id: 0
+          linker_id: 0
+          license_id: 9999
+          field_name: 'file_license'
+        file_location:
+        - record_id: 0
+          linker_id: 0
+          fileloc_id: 0
+          fileloc_uri: 'https://tripal.info'
+          fileloc_size: 8192
+          fileloc_filename: 'someknowledge.txt'
+          fileloc_md5checksum: null
+          field_name: 'file_location'
+        - record_id: 0
+          linker_id: 0
+          fileloc_id: 0
+          fileloc_uri: 'ftp://google.com/the.internet'
+          fileloc_size: 4096
+          fileloc_filename: 'allknowledge.txt'
+          fileloc_md5checksum: '0123456789ABCDEF0123456789abcdef'
+      expected_field_values:
+        file_name:
+        - record_id: 1
+          value: 'An Image File'
+        file_description:
+        - record_id: 1
+          value: 'This is a test of the file content type'
+        file_type:
+        - record_id: 1
+          type_id: '15'
+        file_license:
+        - record_id: 1
+          license_id: 9999
+        file_location:
+        - record_id: 1
+          fileloc_size: 8192
+          fileloc_filename: 'someknowledge.txt'
+          fileloc_md5checksum: null
+        - record_id: 1
+          fileloc_uri: 'ftp://google.com/the.internet'
+          fileloc_size: 4096
+          fileloc_filename: 'allknowledge.txt'
+          fileloc_md5checksum: '0123456789ABCDEF0123456789abcdef'
+    edit:
+      expected_form_keys:
+        file_name:
+        - record_id:
+            '#type': 'value'
+            '#value': '1'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+        file_description:
+        - record_id:
+            '#type': 'value'
+            '#value': '1'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+        file_type:
+        - record_id:
+            '#type': 'value'
+            '#value': '1'
+          prop_id:
+            '#type': 'value'
+            '#value': '0'
+          link_id:
+            '#type': 'value'
+            '#value': '0'
+          type_id:
+            '#type': 'value'
+            '#value': '15'
+          value:
+            '#type': 'value'
+            '#value': ''
+        file_license:
+        - record_id:
+            '#type': 'value'
+            '#value': '1'
+          linker_id:
+            '#type': 'value'
+            '#value': '1'
+          link:
+            '#type': 'value'
+            '#value': '1'
+          linker_fkey_column:
+            '#type': 'value'
+            '#value': 'license_id'
+          field_name:
+            '#type': 'value'
+            '#value': 'file_license'
+          license_id:
+            '#type': 'select'
+            '#value': '1'
+        file_location:
+        - record_id:
+            '#type': 'value'
+            '#value': '1'
+          fileloc_id:
+            '#type': 'value'
+            '#value': '1'
+          linker_id:
+            '#type': 'value'
+            '#value': '1'
+          field_name:
+            '#type': 'value'
+            '#value': 'file_location'
+          fileloc_uri:
+            '#type': 'textfield'
+            '#value': 'https://tripal.info'
+          fileloc_filename:
+            '#type': 'textfield'
+            '#value': 'someknowledge.txt'
+          fileloc_size:
+            '#type': 'number'
+            '#value': '8192'
+          fileloc_md5checksum:
+            '#type': 'textfield'
+            '#value': ''
+          fileloc_rank:
+            '#type': 'value'
+            '#value': '0'
+      user_input:
+        file_name:
+        - record_id: 1
+          value:
+            format: 'plain_text'
+            value: 'This is an updated file name'
+        file_description:
+        - record_id: 1
+          value:
+            format: 'basic_html'
+            value: 'This is an updated description'
+        file_location:
+        - record_id: 1
+          linker_id: 0
+          fileloc_id: 0
+          fileloc_uri: 'https://tripal.info'
+          fileloc_size: 8193
+          fileloc_filename: 'abitofknowledge.txt'
+          fileloc_md5checksum: null
+          field_name: 'file_location'
+      expected_field_values:
+        file_name:
+        - record_id: 1
+          value: 'This is an updated file name'
+        file_description:
+        - record_id: 1
+          value: 'This is an updated description'
+        file_type:
+        - record_id: 1
+          type_id: '15'
+        file_license:
+        - record_id: 1
+          license_id: 9999
+        file_location:
+        - record_id: 1
+          fileloc_size: 8193
+          fileloc_filename: 'abitofknowledge.txt'
+          fileloc_md5checksum: null

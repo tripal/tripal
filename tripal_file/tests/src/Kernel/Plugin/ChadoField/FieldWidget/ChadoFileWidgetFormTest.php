@@ -50,6 +50,7 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
     'text',
     'tripal',
     'tripal_chado',
+    'tripal_file',
   ];
 
   /**
@@ -72,6 +73,13 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
    * @var string
    */
   protected string $yaml_info_file = __DIR__ . '/ChadoFileWidgetForm-TestInfo.yml';
+
+  /**
+   * License record ID created for testing.
+   *
+   * @var array
+   */
+  protected int $license_id;
 
   /**
    * Describes the environment to setup for this test.
@@ -120,7 +128,6 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
-    $this->markTestSkipped('not even started yet'); // @todo
     parent::setUp();
 
     // The Drupal connection will be created in the parent. This is used
@@ -140,8 +147,34 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
       $this->system_under_test['chado_version']
     );
 
-    // Next setup the environment according to the system under test.
-    $this->setupChadoEntityFieldTestEnvironment($this->system_under_test);
+    // Next setup the environment, but skip the system under test for now,
+    // we need to setup the tripal_file module before that can be done.
+    $this->setupChadoEntityFieldTestEnvironment([]);
+
+    // Install schema for custom chado tables, needed for tripal_file module.
+    $this->installSchema('tripal_chado', ['tripal_custom_tables']);
+
+    // Set up the tripal file module.
+    $this->installConfig(['tripal_file']);
+
+    // Install the module's custom chado tables in the test schema.
+    $test_schema_name = $this->chado_connection->getSchemaName();
+    tripal_file_create_custom_chado_tables($test_schema_name);
+
+    // Install terms for the tripal_file module.
+    $terms_init_service = \Drupal::service('tripal_chado.terms_init');
+    $terms_init_service->installTerms('tripal_file_content_terms');
+
+    // Now that tripal_file is set up, we can setup the environment
+    // according to the system under test.
+    $this->setupChadoEntityFieldSystemUnderTest($this->system_under_test);
+
+    // Create one license record in chado for testing (not published).
+    $this->license_id = $this->chado_connection
+      ->insert('1:license')
+      ->fields(['name' => 'Public Domain', 'summary' => 'You can do anything at zombo com', 'uri' => 'https://zombo.com'])
+      ->execute();
+    $this->assertNotEmpty($this->license_id, 'Did not create license');
   }
 
   /**
@@ -159,23 +192,11 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
       "Base Fields Only",
     ];
 
-    $scenarios[] = [
-      1,
-      "Properties Added on Edit",
-    ];
-
-    $scenarios[] = [
-      2,
-      "Property Reorder",
-    ];
-
     return $scenarios;
   }
 
   /**
    * Retrieves the current scenario based on the data provider.
-   *
-   * NOTE: Also ensures the type_ids match what is currently in the database.
    *
    * @param int $current_scenario_key
    *   The key of the scenario in the YAML.
@@ -191,33 +212,16 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
     $current_scenario = $this->scenarios[$current_scenario_key];
     $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
 
-    // Set the property field types just in case.
-    $comment_type_id = $this->getCvtermID('rdfs', 'comment');
-    $location_type_id = $this->getCvtermID('NCIT', 'C25341');
-    foreach (['create', 'edit'] as $process_key) {
-      foreach (['user_input'] as $input_type) {
-        if (array_key_exists('project_prop1', $current_scenario[$process_key][$input_type])) {
-          foreach ($current_scenario[$process_key][$input_type]['project_prop1'] as $delta => $values) {
-            if ($values['type_id'] === 181) {
-              $current_scenario[$process_key][$input_type]['project_prop1'][$delta]['type_id'] = $comment_type_id;
-            }
-          }
-        }
-        if (array_key_exists('project_prop2', $current_scenario[$process_key][$input_type])) {
-          foreach ($current_scenario[$process_key][$input_type]['project_prop2'] as $delta => $values) {
-            if ($values['type_id'] === 159) {
-              $current_scenario[$process_key][$input_type]['project_prop2'][$delta]['type_id'] = $location_type_id;
-            }
-          }
-        }
-      }
-    }
+    // Insert the test license actual ID into the scenario.
+    $current_scenario['create']['user_input']['file_license'][0]['license_id'] = $this->license_id;
+    $current_scenario['create']['expected_field_values']['file_license'][0]['license_id'] = $this->license_id;
+    $current_scenario['edit']['expected_field_values']['file_license'][0]['license_id'] = $this->license_id;
 
     return $current_scenario;
   }
 
   /**
-   * Tests the ChadoPropertyType field through entity form + field widget.
+   * Tests the ChadoFileType field through entity form + field widget.
    *
    * @param int $current_scenario_key
    *   The key of the scenario in the YAML.
@@ -227,12 +231,10 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
    * @dataProvider provideScenarios
    */
   #[DataProvider('provideScenarios')]
-  public function testChadoPropertyWidgetUpdate(int $current_scenario_key, string $current_scenario_label) {
-    $this->markTestSkipped('not even started yet'); // @todo
+  public function testChadoFileWidgetUpdate(int $current_scenario_key, string $current_scenario_label) {
 
     // Retrieve the full details of the current scenario.
     $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
-
     // 1. Test the create form is generated properly.
     // Setup an empty Tripal entity form to interact with (test defaults).
     [$form_object, $form, $form_state] = $this->setupTripalEntityAddForm($this->bundle_name);
