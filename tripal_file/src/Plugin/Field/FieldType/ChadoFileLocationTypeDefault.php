@@ -49,7 +49,7 @@ class ChadoFileLocationTypeDefault extends ChadoFieldItemBase {
    */
   public static function mainPropertyName() {
     // The property that indicates if this field is empty.
-    return self::$object_id;
+    return 'fileloc_uri';
   }
 
   /**
