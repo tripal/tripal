@@ -127,10 +127,8 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       if ($item['fileloc_uri'] ?? '') {
         $values[$delta]['fileloc_rank'] = $delta;
       }
-    }
 
-    // Look up md5 checksum and size for local files.
-    foreach ($values as $delta => $item) {
+      // Look up md5 checksum and size for local files.
       $uri = $item['fileloc_uri'] ?? '';
       if ($uri) {
         // We can only lookup local files, ignore external files.
@@ -144,6 +142,15 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
             $values[$delta]['fileloc_md5checksum'] = $file_md5_checksum;
           }
         }
+
+        // Extract a filename from the URI if one was not supplied.
+        if (!$values[$delta]['fileloc_filename']) {
+          $path = parse_url($uri, PHP_URL_PATH);
+          if ($path) {
+            $values[$delta]['fileloc_filename'] = basename($path);
+          }
+        }
+
       }
     }
 
