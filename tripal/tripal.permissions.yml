@@ -61,21 +61,6 @@ publish tripal content:
   title: 'Publish Tripal Content'
   description: 'Allows the user to publish Tripal content of all Tripal Content Types for online access.'
 
-##
-# These should all be per content type.
-# @todo See Issue #1355 (https://github.com/tripal/tripal/issues/1355)
-##
-add tripal content entities:
-  title: 'Create new Tripal Content'
-
-edit tripal content entities:
-  title: 'Edit Tripal Content'
-
-delete tripal content entities:
-  title: 'Delete Tripal Content'
-
-view tripal content entities:
-  title: 'View Tripal Content'
 
 ##
 # The core Trpal Importers permissions.
@@ -95,3 +80,4 @@ allow tripal import:
 ##
 permission_callbacks:
   - 'Drupal\tripal\Controller\TripalImporterPermissionsController::permissions'
+  - 'Drupal\tripal\Access\TripalEntityPermissions::tripalContentTypePermissions'
