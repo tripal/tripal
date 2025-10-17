@@ -79,25 +79,29 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       '#required' => FALSE,
       '#element_validate' => [[static::class, 'validateFilelocUri']],
     ];
-    $elements['fileloc_upload'] = [
-      '#type' => 'managed_file',
-      '#title' => $this->t('Upload file'),
-      '#description' => $this->t('An uploaded file is stored locally at the path specified in the URI field. Valid extensions are: ')
-        . $this->getSetting('valid_extensions'),
-      '#upload_location' => $this->getSetting('upload_location'),
-      '#multiple' => FALSE,
-      '#required' => FALSE,
-      '#upload_validators' => [
-        'FileExtension' => [
-           'extensions' => $this->getSetting('valid_extensions'),
+    // Upload is only shown when there is not yet a uri.
+    if (!$uri) {
+      $upload_location = \Drupal::token()->replace($this->getSetting('upload_location'));
+      $elements['fileloc_upload'] = [
+        '#type' => 'managed_file',
+        '#title' => $this->t('Upload file'),
+        '#description' => $this->t('The uploaded file will be stored in the %dir directory. Valid file extensions are: %ext',
+          ['%dir' => $upload_location, '%ext' => $this->getSetting('valid_extensions')]),
+        '#upload_location' => $upload_location,
+        '#multiple' => FALSE,
+        '#required' => FALSE,
+        '#upload_validators' => [
+          'FileExtension' => [
+             'extensions' => $this->getSetting('valid_extensions'),
+          ],
         ],
-      ],
-    ];
+      ];
+    }
     $elements['fileloc_filename'] = [
       '#title' => $this->t('File Name'),
       '#type' => 'textfield',
       '#default_value' => $filename,
-      '#description' => $this->t('Enter an optional alternative name to display if there is no file name included in the URL.'),
+      '#description' => $this->t('Enter an optional alternative name to display as the file name if there is no file name included in the URL.'),
       '#required' => FALSE,
     ];
     $elements['fileloc_size'] = [
@@ -125,6 +129,14 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
     // Save some initial values to allow later handling of the "Remove" button.
     $this->saveInitialValues($delta, $field_name, $fileloc_id, $form_state);
 
+    // Save the uri so we can remove managed files if their delta
+    // is later cleared or removed.
+    $storage = $form_state->getStorage();
+    if (!($storage['initial_values'][$field_name][$delta]['fileloc_uri'] ?? FALSE)) {
+      $storage['initial_values'][$field_name][$delta]['fileloc_uri'] = $uri;
+      $form_state->setStorage($storage);
+    }
+
     return $elements;
   }
 
@@ -132,8 +144,10 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $field_name = $this->fieldDefinition->getName();
     foreach (array_keys($values) as $delta) {
-      // Handle uploaded file element.
+
+      // Handle the uploaded managed file element.
       $this->massageFile($values, $delta, $form, $form_state);
 
       // Use the Drupal delta value as the chado rank.
@@ -143,7 +157,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
 
       // Look up md5 checksum and size for local files.
       $uri = $values[$delta]['fileloc_uri'] ?? '';
-      if ($uri) {
+      if ($uri && (!$values[$delta]['fileloc_size'] || !$values[$delta]['fileloc_md5checksum'])) {
         // We can only lookup local files, ignore external files.
         $scheme = parse_url($uri, PHP_URL_SCHEME);
         if ($scheme == 'public') {
@@ -155,17 +169,16 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
             $values[$delta]['fileloc_md5checksum'] = $file_md5_checksum;
           }
         }
+      }
 
-        // Extract a filename from the URI if one was not supplied.
-        if (!$values[$delta]['fileloc_filename']) {
-          // To allow parsing of a drupal uri like public://, add a fake host.
-          $tmp_uri = preg_replace('/^public:\/\//', 'public://host/', $uri);
-          $path = parse_url($tmp_uri, PHP_URL_PATH);
-          if ($path) {
-            $values[$delta]['fileloc_filename'] = basename($path);
-          }
+      // Extract a filename from the URI if one was not supplied.
+      if (!$values[$delta]['fileloc_filename'] && $uri) {
+        // To allow parsing of a drupal uri like public://, add a fake host.
+        $tmp_uri = preg_replace('/^public:\/\//', 'public://host/', $uri);
+        $path = parse_url($tmp_uri, PHP_URL_PATH);
+        if ($path) {
+          $values[$delta]['fileloc_filename'] = basename($path);
         }
-
       }
     }
 
@@ -173,15 +186,33 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
     $values = $this->genericSelectMassageFormValues('fileloc_id', $values);
     $values = $this->massagePropertyFormValues('fileloc_uri', $values, $form_state, NULL, 'fileloc_id');
 
+    // Handle the case where an existing managed file was removed
+    // from the form. This happens when either the fields were
+    // cleared, or the "Remove" button was pressed.
+    foreach (array_keys($values) as $delta) {
+      $uri = $values[$delta]['fileloc_uri'] ?? '';
+      if (!$uri) {
+        $storage = $form_state->getStorage();
+        $initial_uri = $storage['initial_values'][$field_name][$delta]['fileloc_uri'];
+        if ($initial_uri) {
+          /** @var Drupal\file\Entity\File|null $file */
+          $file = $this->getManagedFile($initial_uri);
+          if ($file) {
+            $file->delete();
+          }
+        }
+      }
+    }
+
     return $values;
   }
 
   /**
-   * Process an uploaded managed file.
+   * Post-submit processing of an uploaded managed file.
    *
-   * This massage also gets called when a file is selected, so we only
-   * process after final submission, i.e. trigger is 'op' and validation
-   * is complete.
+   * This massage also gets called when a file is selected, and during
+   * validation, so we only process after final submission, i.e.
+   * trigger is 'op' and validation is complete.
    *
    * @param array &$values
    *   The form values. Any changes made are passed through this variable.
@@ -200,17 +231,18 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
     $triggering_element = $form_state->getTriggeringElement();
     if ($triggering_element && $triggering_element['#name'] == 'op' && $form_state->isValidationComplete()) {
       $managed_files = $form_state->getValue('file_location')[$delta]['fileloc_upload'] ?? [];
-      $fileloc_uri = $values[$delta]['fileloc_uri'] ?? '';
+      $fileloc_uri = $values[$delta]['fileloc_uri'];
       if (!empty($managed_files)) {
-        // This is a loop, but we only support one file here.
+        // Although this is a loop, we only have one file here.
         foreach ($managed_files as $file_id) {
+          /** @var Drupal\file\FileInterface $file */
           $file = File::load($file_id);
           $managed_file_uri = $file->getFileUri();
           if ($fileloc_uri && $fileloc_uri != $managed_file_uri) {
             // @todo We could implement a way to move the uploaded file, using
-            // a path supplied in the fileloc_uri.
-            // e.g. \Drupal::service('file.repository')->move(?, ?);
-            // move(FileInterface $source, $destination, $replace):
+            // a path supplied in $fileloc_uri which might even support tokens.
+            // e.g. \Drupal::service('file.repository')
+            // ->move(FileInterface $source, $destination, $replace):
             // Moves a managed file to a new location and updates its database entry.
           }
           $values[$delta]['fileloc_uri'] = $managed_file_uri;
@@ -246,6 +278,29 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       }
     }
     return $file_path;
+  }
+
+  /**
+   * Given a public:// uri, get a corresponding managed file object.
+   *
+   * @param string $uri
+   *   The uri to look up, e.g. 'public://dir/filename.txt'.
+   *
+   * @return Drupal\file\Entity\File|null
+   *   The managed file object if it exists, or NULL if this
+   *   file is not managed or if it does not exist.
+   */
+  protected static function getManagedFile(string $uri): ?File {
+    $file = NULL;
+    /** @var Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager */
+    $entityTypeManager = \Drupal::entityTypeManager();
+    /** @var Drupal\file\FileInterface[] $files */
+    $files = $entityTypeManager->getStorage('file')->loadByProperties(['uri' => $uri]);
+    if ($files) {
+      /** @var Drupal\file\FileInterface $file */
+      $file = reset($files);
+    }
+    return $file;
   }
 
   /**
@@ -331,7 +386,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
   public static function defaultSettings() {
     return [
       'valid_extensions' => 'gif jpg png bz gz zip txt csv tsv xls xlsx doc docx odf fna fa fasta faa gff gtf gff3 vcf bcf bam bai',
-      'upload_location' => 'public://',
+      'upload_location' => 'public://tripal_file/[date:custom:Y]/[date:custom:m-d]',
     ] + parent::defaultSettings();
   }
 
@@ -390,10 +445,6 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
     if (!preg_match('/^public:\/\//', $element_value)) {
       $form_state->setErrorByName(implode('][', $element_parents),
         t('The upload location must start with "public://"'));
-    }
-    if (!self::getLocalPath($element_value)) {
-      $form_state->setErrorByName(implode('][', $element_parents),
-        t('The specified path does not exist in the local filesystem, you need to create it first.'));
     }
   }
 
