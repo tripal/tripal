@@ -1,4 +1,5 @@
 <?php
+//https://www.drupal.org/docs/creating-custom-modules/creating-custom-field-types-widgets-and-formatters/create-a-custom-field-widget
 
 namespace Drupal\tripal_file\Plugin\Field\FieldWidget;
 
@@ -79,20 +80,17 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       '#required' => FALSE,
       '#element_validate' => [[static::class, 'validateFilelocUri']],
     ];
-    // @todo make extension list configurable
-    $valid_extensions = 'png gif jpg txt gz fna fa fasta faa gff gff3 vcf bcf';
     $elements['fileloc_upload'] = [
       '#type' => 'managed_file',
       '#title' => $this->t('Upload file'),
       '#description' => $this->t('An uploaded file is stored locally at the path specified in the URI field. Valid extensions are: ')
         . $valid_extensions,
-      // @todo make location configurable
-      '#upload_location' => 'public://',
+      '#upload_location' => $this->getSetting('upload_location'),
       '#multiple' => FALSE,
       '#required' => FALSE,
       '#upload_validators' => [
         'FileExtension' => [
-           'extensions' => $valid_extensions,
+           'extensions' => $this->getSetting('valid_extensions'),
         ],
       ],
     ];
@@ -234,7 +232,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
   }
 
   /**
-   * Form element validation handler for the uri field.
+   * Widget form element validation handler for the uri field.
    *
    * This field is required in the database table, but we do not set
    * the form field as required because doing so affects empty records.
@@ -242,12 +240,12 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
    * @param array $element
    *   The form element being validated.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state of the (entire) configuration form.
+   *   The form state object.
    *
    * @return void
    *   No return value.
    */
-  public static function validateFilelocUri($element, FormStateInterface $form_state): void {
+  public static function validateFilelocUri(array $element, FormStateInterface $form_state): void {
     // Element_parents e.g. 0 => "file_location",
     // 1 => 0 (delta), 2 => "fileloc_uri".
     $element_parents = $element['#parents'];
@@ -255,7 +253,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
     $element_value = $element['#value'];
     $form_state_values = $form_state->getValues();
     $other_values = $form_state_values['file_location'][$delta];
-    // Need either uri or a managed file.
+    // Need uri, but a managed file can generate the uri later.
     if ($element_value == '' && empty($other_values['fileloc_upload']['fids'])) {
       // If all other fields of the same delta are empty, then we allow
       // the empty value, as it is probably the last delta.
@@ -284,7 +282,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
   }
 
   /**
-   * Form element validation handler for the MD5 Checksum field.
+   * Widget form element validation handler for the MD5 Checksum field.
    *
    * An MD5 checksum must have a length of exactly 32 and be valid
    * hexadecimal characters. An empty value is also allowed.
@@ -292,12 +290,12 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
    * @param array $element
    *   The form element being validated.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state of the (entire) configuration form.
+   *   The form state object.
    *
    * @return void
    *   No return value.
    */
-  public static function validateMd5checksum($element, FormStateInterface $form_state): void {
+  public static function validateMd5checksum(array $element, FormStateInterface $form_state): void {
     $element_parents = $element['#parents'];
     // Element_parents e.g. 0 => "file_location",
     // 1 => 0, 2 => "fileloc_md5checksum".
@@ -314,7 +312,73 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
    * {@inheritdoc}
    */
   public static function defaultSettings() {
-    return self::defaultSelectSettings() + parent::defaultSettings();
+    return [
+      'valid_extensions' => 'gif jpg png bz gz zip txt csv tsv xls xlsx doc docx odf fna fa fasta faa gff gtf gff3 vcf bcf bam bai',
+      'upload_location' => 'public://',
+    ] + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    $elements = [];
+    $elements['valid_extensions'] = [
+      '#title' => $this->t('Valid Extensions'),
+      '#type' => 'textfield',
+      '#default_value' => $this->getSetting('valid_extensions'),
+      '#description' => $this->t('Enter a list of file extensions that are allowed to be uploaded to this site.'),
+      '#required' => FALSE,
+    ];
+    $elements['upload_location'] = [
+      '#title' => $this->t('Upload Location'),
+      '#type' => 'textfield',
+      '#default_value' => $this->getSetting('upload_location'),
+      '#description' => $this->t('Enter a local path where files will be uploaded. It must start with "public://".'),
+      '#required' => TRUE,
+      '#element_validate' => [[static::class, 'validateSettingsUploadLocation']],
+    ];
+    return $elements + parent::settingsForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    $summary = [];
+
+    $valid_extensions = $this->getSetting('valid_extensions');
+    $upload_location = $this->getSetting('upload_location');
+
+    $summary[] = $this->t("Valid Extensions: @valid_extensions", ['@valid_extensions' => $valid_extensions]);
+    $summary[] = $this->t("Upload Location: @upload_location", ['@upload_location' => $upload_location]);
+
+    return $summary + parent::settingsSummary();
+  }
+
+  /**
+   * Settings form element validation handler for the upload location.
+   *
+   * @param array $element
+   *   The form element being validated.
+   * @param Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object of the settings form.
+   *
+   * @return void
+   *   No return value.
+   */
+  public static function validateSettingsUploadLocation(array $element, FormStateInterface $form_state): void {
+    $element_parents = $element['#parents'];
+    $element_value = $element['#value'];
+    if (!preg_match('/^public:\/\//', $element_value)) {
+      $form_state->setErrorByName(implode('][', $element_parents),
+        t('The upload location must start with "public://"'));
+    }
+    if (!self::getLocalPath($element_value)) {
+      $form_state->setErrorByName(implode('][', $element_parents),
+        t('The specified path does not exist in the local filesystem, you need to create it first.'));
+    }
   }
 
 }
+
