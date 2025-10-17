@@ -7,6 +7,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\File\FileUrlGenerator;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\file\Entity\File;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
@@ -74,10 +75,26 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       '#title' => $this->t('URI'),
       '#type' => 'textfield',
       '#default_value' => $uri,
-      '#description' => $this->t('Enter a web URL or a local URI to a file on this site. This value is required.'),
-      // This element is required, but we check this in validation.
+      '#description' => $this->t('Enter a web URL or a local URI to a file on this site.'),
       '#required' => FALSE,
       '#element_validate' => [[static::class, 'validateFilelocUri']],
+    ];
+    // @todo make extension list configurable
+    $valid_extensions = 'png gif jpg txt gz fna fa fasta faa gff gff3 vcf bcf';
+    $elements['fileloc_upload'] = [
+      '#type' => 'managed_file',
+      '#title' => $this->t('Upload file'),
+      '#description' => $this->t('An uploaded file is stored locally at the path specified in the URI field. Valid extensions are: ')
+        . $valid_extensions,
+      // @todo make location configurable
+      '#upload_location' => 'public://',
+      '#multiple' => FALSE,
+      '#required' => FALSE,
+      '#upload_validators' => [
+        'FileExtension' => [
+           'extensions' => $valid_extensions,
+        ],
+      ],
     ];
     $elements['fileloc_filename'] = [
       '#title' => $this->t('File Name'),
@@ -118,18 +135,17 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    foreach (array_keys($values) as $delta) {
+      // Handle uploaded file element.
+      $this->massageFile($values, $delta, $form, $form_state);
 
-    $values = $this->genericSelectMassageFormValues('fileloc_id', $values);
-    $values = $this->massagePropertyFormValues('fileloc_uri', $values, $form_state, NULL, 'fileloc_id');
-
-    foreach ($values as $delta => $item) {
       // Use the Drupal delta value as the chado rank.
-      if ($item['fileloc_uri'] ?? '') {
+      if ($values[$delta]['fileloc_uri'] ?? '') {
         $values[$delta]['fileloc_rank'] = $delta;
       }
 
       // Look up md5 checksum and size for local files.
-      $uri = $item['fileloc_uri'] ?? '';
+      $uri = $values[$delta]['fileloc_uri'] ?? '';
       if ($uri) {
         // We can only lookup local files, ignore external files.
         $scheme = parse_url($uri, PHP_URL_SCHEME);
@@ -145,7 +161,9 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
 
         // Extract a filename from the URI if one was not supplied.
         if (!$values[$delta]['fileloc_filename']) {
-          $path = parse_url($uri, PHP_URL_PATH);
+          // To allow parsing of a drupal uri like public://, add a fake host.
+          $tmp_uri = preg_replace('/^public:\/\//', 'public://host/', $uri);
+          $path = parse_url($tmp_uri, PHP_URL_PATH);
           if ($path) {
             $values[$delta]['fileloc_filename'] = basename($path);
           }
@@ -154,7 +172,38 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       }
     }
 
+    // Now we can do the standard massaging.
+    $values = $this->genericSelectMassageFormValues('fileloc_id', $values);
+    $values = $this->massagePropertyFormValues('fileloc_uri', $values, $form_state, NULL, 'fileloc_id');
+
     return $values;
+  }
+
+  /**
+   * @todo
+   *
+   * This massage also gets called when a file is selected.
+   */
+  protected function massageFile(array &$values, int $delta, array $form, FormStateInterface $form_state) {
+    $triggering_element = $form_state->getTriggeringElement()['#name'];
+    if ($triggering_element == 'op' && $form_state->isValidationComplete()) {
+      $managed_files = $form_state->getValue('file_location')[$delta]['fileloc_upload'] ?? [];
+      $fileloc_uri = $values[$delta]['fileloc_uri'] ?? '';
+      if (!empty($managed_files)) {
+        // This is a loop, but we only support one file here.
+        foreach ($managed_files as $file_id) {
+          $file = File::load($file_id);
+          $managed_file_uri = $file->getFileUri();
+          if ($fileloc_uri && $fileloc_uri != $managed_file_uri) {
+// @todo move file?
+// \Drupal::service('file.repository')->move(?, ?);
+// move(FileInterface $source, $destination, $replace): Moves a managed file to a new location and updates its database entry.
+          }
+          $values[$delta]['fileloc_uri'] = $managed_file_uri;
+
+        }
+      }
+    }
   }
 
   /**
@@ -200,13 +249,14 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
    */
   public static function validateFilelocUri($element, FormStateInterface $form_state): void {
     // Element_parents e.g. 0 => "file_location",
-    // 1 => 0, 2 => "fileloc_uri".
+    // 1 => 0 (delta), 2 => "fileloc_uri".
     $element_parents = $element['#parents'];
     $delta = $element_parents[1];
     $element_value = $element['#value'];
     $form_state_values = $form_state->getValues();
     $other_values = $form_state_values['file_location'][$delta];
-    if ($element_value == '') {
+    // Need either uri or a managed file.
+    if ($element_value == '' && empty($other_values['fileloc_upload']['fids'])) {
       // If all other fields of the same delta are empty, then we allow
       // the empty value, as it is probably the last delta.
       $other_values_empty = (!$other_values['fileloc_filename']
@@ -217,7 +267,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
           t('The URI field is a required value.'));
       }
     }
-    else {
+    elseif ($element_value) {
       // Check that this is a well-formed uri using the same code
       // as the formatter.
       $scheme = parse_url($element_value, PHP_URL_SCHEME);
