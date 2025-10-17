@@ -1,5 +1,4 @@
 <?php
-//https://www.drupal.org/docs/creating-custom-modules/creating-custom-field-types-widgets-and-formatters/create-a-custom-field-widget
 
 namespace Drupal\tripal_file\Plugin\Field\FieldWidget;
 
@@ -84,7 +83,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       '#type' => 'managed_file',
       '#title' => $this->t('Upload file'),
       '#description' => $this->t('An uploaded file is stored locally at the path specified in the URI field. Valid extensions are: ')
-        . $valid_extensions,
+        . $this->getSetting('valid_extensions'),
       '#upload_location' => $this->getSetting('upload_location'),
       '#multiple' => FALSE,
       '#required' => FALSE,
@@ -178,13 +177,28 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
   }
 
   /**
-   * @todo
+   * Process an uploaded managed file.
    *
-   * This massage also gets called when a file is selected.
+   * This massage also gets called when a file is selected, so we only
+   * process after final submission, i.e. trigger is 'op' and validation
+   * is complete.
+   *
+   * @param array &$values
+   *   The form values. Any changes made are passed through this variable.
+   * @param int $delta
+   *   The delta identifying which file location to massage.
+   * @param array $form
+   *   The form array definition.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   *
+   * @return void
+   *   No return value, any changes made are passed through $values.
    */
-  protected function massageFile(array &$values, int $delta, array $form, FormStateInterface $form_state) {
-    $triggering_element = $form_state->getTriggeringElement()['#name'];
-    if ($triggering_element == 'op' && $form_state->isValidationComplete()) {
+  protected function massageFile(array &$values, int $delta, array $form, FormStateInterface $form_state): void {
+    // Triggering element is null when called by phpunit test.
+    $triggering_element = $form_state->getTriggeringElement();
+    if ($triggering_element && $triggering_element['#name'] == 'op' && $form_state->isValidationComplete()) {
       $managed_files = $form_state->getValue('file_location')[$delta]['fileloc_upload'] ?? [];
       $fileloc_uri = $values[$delta]['fileloc_uri'] ?? '';
       if (!empty($managed_files)) {
