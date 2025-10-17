@@ -82,6 +82,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
     // Upload is only shown when there is not yet a uri.
     if (!$uri) {
       $upload_location = \Drupal::token()->replace($this->getSetting('upload_location'));
+      $valid_extensions = $this->getSetting('valid_extensions');
       $elements['fileloc_upload'] = [
         '#type' => 'managed_file',
         '#title' => $this->t('Upload file'),
@@ -90,12 +91,10 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
         '#upload_location' => $upload_location,
         '#multiple' => FALSE,
         '#required' => FALSE,
-        '#upload_validators' => [
-          'FileExtension' => [
-             'extensions' => $this->getSetting('valid_extensions'),
-          ],
-        ],
       ];
+      if ($valid_extensions) {
+        $elements['fileloc_upload']['#upload_validators']['FileExtension']['extensions'] = $valid_extensions;
+      }
     }
     $elements['fileloc_filename'] = [
       '#title' => $this->t('File Name'),
@@ -385,7 +384,8 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
    */
   public static function defaultSettings() {
     return [
-      'valid_extensions' => 'gif jpg png bz gz zip txt csv tsv xls xlsx doc docx odf fna fa fasta faa gff gtf gff3 vcf bcf bam bai',
+      'valid_extensions' => '',
+#@@@gif jpg png bz gz zip txt csv tsv xls xlsx doc docx odf fna fa fasta faa gff gtf gff3 vcf bcf bam bai',
       'upload_location' => 'public://tripal_file/[date:custom:Y]/[date:custom:m-d]',
     ] + parent::defaultSettings();
   }
@@ -399,7 +399,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       '#title' => $this->t('Valid Extensions'),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('valid_extensions'),
-      '#description' => $this->t('Enter a list of file extensions that are allowed to be uploaded to this site.'),
+      '#description' => $this->t('If you want to restrict the types of files that can be uploaded, enter a list of file extensions, separated by spaces, that are allowed to be uploaded to this site.'),
       '#required' => FALSE,
     ];
     $elements['upload_location'] = [
@@ -420,6 +420,9 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
     $summary = [];
 
     $valid_extensions = $this->getSetting('valid_extensions');
+    if (!$valid_extensions) {
+      $valid_extensions = '(All extensions allowed)';
+    }
     $upload_location = $this->getSetting('upload_location');
 
     $summary[] = $this->t("Valid Extensions: @valid_extensions", ['@valid_extensions' => $valid_extensions]);
