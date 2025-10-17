@@ -48,6 +48,7 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
     'filter',
     'datetime',
     'text',
+    'file',
     'tripal',
     'tripal_chado',
     'tripal_file',
@@ -150,6 +151,9 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
     // Next setup the environment, but skip the system under test for now,
     // we need to setup the tripal_file module before that can be done.
     $this->setupChadoEntityFieldTestEnvironment([]);
+
+    // We will be using the drupal 'file' module also.
+    $this->installEntitySchema('file');
 
     // Install schema for custom chado tables, needed for tripal_file module.
     $this->installSchema('tripal_chado', ['tripal_custom_tables']);
