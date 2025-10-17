@@ -207,12 +207,15 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
           $file = File::load($file_id);
           $managed_file_uri = $file->getFileUri();
           if ($fileloc_uri && $fileloc_uri != $managed_file_uri) {
-// @todo move file?
-// \Drupal::service('file.repository')->move(?, ?);
-// move(FileInterface $source, $destination, $replace): Moves a managed file to a new location and updates its database entry.
+            // @todo We could implement a way to move the uploaded file, using
+            // a path supplied in the fileloc_uri.
+            // e.g. \Drupal::service('file.repository')->move(?, ?);
+            // move(FileInterface $source, $destination, $replace):
+            // Moves a managed file to a new location and updates its database entry.
           }
           $values[$delta]['fileloc_uri'] = $managed_file_uri;
-
+          $file->setPermanent();
+          $file->save();
         }
       }
     }
