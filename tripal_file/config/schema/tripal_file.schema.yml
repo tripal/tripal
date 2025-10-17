@@ -1,0 +1,12 @@
+field.widget.settings.chado_file_location_widget_default:
+  type: mapping
+  label: 'Chado File Location widget settings'
+  mapping:
+    valid_extensions:
+      type: string
+      label: 'Valid Extensions'
+      nullable: true
+    upload_location:
+      type: string
+      label: 'Upload Location in public://'
+      nullable: false
