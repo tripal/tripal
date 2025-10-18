@@ -105,11 +105,14 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
     ];
     $elements['fileloc_size'] = [
       '#title' => $this->t('File Size'),
-      '#type' => 'number',
+      '#type' => 'textfield',
       '#default_value' => $size,
-      '#min' => 0,
       '#description' => $this->t('If the file is local, this will be determined automatically.'),
       '#required' => FALSE,
+      '#maxlength' => 1024,
+      // We have no validation on this element since the db table column is
+      // text. A user might want to use size prefixes e.g. '1.2kb', or more
+      // descriptive information such as '100 bytes, 25 lines'.
     ];
     $elements['fileloc_md5checksum'] = [
       '#title' => $this->t('MD5 Checksum'),
@@ -117,6 +120,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       '#default_value' => trim($md5checksum),
       '#description' => $this->t('If the file is local, this will be determined automatically.'),
       '#required' => FALSE,
+      '#maxlength' => 32,
       '#element_validate' => [[static::class, 'validateMd5checksum']],
     ];
     // Mirror the delta as the rank value.
@@ -128,7 +132,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
     // Save some initial values to allow later handling of the "Remove" button.
     $this->saveInitialValues($delta, $field_name, $fileloc_id, $form_state);
 
-    // Save the uri so we can remove managed files if their delta
+    // Save the initial uri so that we can remove managed files if their delta
     // is later cleared or removed.
     $storage = $form_state->getStorage();
     if (!($storage['initial_values'][$field_name][$delta]['fileloc_uri'] ?? FALSE)) {
@@ -385,7 +389,6 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
   public static function defaultSettings() {
     return [
       'valid_extensions' => '',
-#@@@gif jpg png bz gz zip txt csv tsv xls xlsx doc docx odf fna fa fasta faa gff gtf gff3 vcf bcf bam bai',
       'upload_location' => 'public://tripal_file/[date:custom:Y]/[date:custom:m-d]',
     ] + parent::defaultSettings();
   }
