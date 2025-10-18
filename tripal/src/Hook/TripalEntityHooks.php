@@ -27,7 +27,13 @@ class TripalEntityHooks {
     foreach ($entities as &$entity) {
 
       // Ensure that the TripalStorage backends are setup.
-      $tripal_storages = $entity->setupTripalStorageBackends();
+      // @debug print "\n\nIN tripalEntityStorageLoad()!!!\n\n";
+      // Now that we have the entity created, lets initialize TripalStorage
+      // for all of the fields so it can be cached locally.
+      $entity->registerAllTripalFields();
+
+      // @debug print "\nWe now have " . count($entity->tripal_storages) . " TripalStorage backends setup in LOAD.\n";
+      $tripal_storages = $entity->tripal_storages;
 
       // Create a values array appropriate for `loadValues()`
       $values = TripalEntity::getValuesArray($entity);
