@@ -83,17 +83,28 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
     if (!$uri) {
       $upload_location = \Drupal::token()->replace($this->getSetting('upload_location'));
       $valid_extensions = $this->getSetting('valid_extensions');
+      if ($valid_extensions) {
+        $description = $this->t('The uploaded file will be stored in the %dir directory. Valid file extensions are: %ext',
+          ['%dir' => $upload_location, '%ext' => $valid_extensions]);
+      }
+      else {
+        $description = $this->t('The uploaded file will be stored in the %dir directory.',
+          ['%dir' => $upload_location]);
+      }
       $elements['fileloc_upload'] = [
         '#type' => 'managed_file',
         '#title' => $this->t('Upload file'),
-        '#description' => $this->t('The uploaded file will be stored in the %dir directory. Valid file extensions are: %ext',
-          ['%dir' => $upload_location, '%ext' => $this->getSetting('valid_extensions')]),
+        '#description' => $description,
         '#upload_location' => $upload_location,
         '#multiple' => FALSE,
         '#required' => FALSE,
       ];
       if ($valid_extensions) {
         $elements['fileloc_upload']['#upload_validators']['FileExtension']['extensions'] = $valid_extensions;
+      }
+      // This disables the default drupal file extension validation.
+      else {
+        $elements['fileloc_upload']['#upload_validators']['FileExtension'] = '';
       }
     }
     $elements['fileloc_filename'] = [
