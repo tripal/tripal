@@ -177,8 +177,8 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
         if ($scheme == 'public') {
           $file_path = self::getLocalPath($uri);
           if ($file_path) {
-            $file_size = filesize($file_path);
-            $file_md5_checksum = md5_file($file_path);
+            $file_size = filesize(urldecode($file_path));
+            $file_md5_checksum = md5_file(urldecode($file_path));
             $values[$delta]['fileloc_size'] = $file_size;
             $values[$delta]['fileloc_md5checksum'] = $file_md5_checksum;
           }
@@ -287,7 +287,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
         self::$file_url_generator = \Drupal::service('file_url_generator');
       }
       $file_path = \Drupal::root() . self::$file_url_generator->generateString($uri);
-      if (!file_exists($file_path)) {
+      if (!file_exists(urldecode($file_path))) {
         $file_path = '';
       }
     }
