@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Tests the ChadoFileTypeDefault Field Type.
+ * Tests the widgets on a File entity.
  *
  * Specifically focused on create + update actions performed on the entity
  * directly. Both TripalEntity, ChadoStorage and the field will be covered.
@@ -20,7 +20,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal_file')]
 #[Group('TripalField')]
 #[Group('ChadoField')]
-class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
+class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;
 
@@ -73,7 +73,7 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
    *
    * @var string
    */
-  protected string $yaml_info_file = __DIR__ . '/ChadoFileWidgetForm-TestInfo.yml';
+  protected string $yaml_info_file = __DIR__ . '/ChadoFileLocationWidgetForm-TestInfo.yml';
 
   /**
    * License record ID created for testing.

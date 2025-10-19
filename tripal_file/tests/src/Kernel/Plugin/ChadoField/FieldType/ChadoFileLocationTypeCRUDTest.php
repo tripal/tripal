@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Tests the File, License, and File Location Field Types.
+ * Tests the License and File Location Field Types.
  *
  * Specifically focused on create + update actions performed on the entity
  * directly. Both TripalEntity, ChadoStorage and the fields will be covered.
@@ -21,7 +21,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal_file')]
 #[Group('TripalField')]
 #[Group('ChadoField')]
-class ChadoFileTypeCRUDTest extends ChadoTestKernelBase {
+class ChadoFileLocationTypeCRUDTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;
 
@@ -72,7 +72,7 @@ class ChadoFileTypeCRUDTest extends ChadoTestKernelBase {
    *
    * @var string
    */
-  protected string $yaml_info_file = __DIR__ . '/ChadoFileType-TestInfo.yml';
+  protected string $yaml_info_file = __DIR__ . '/ChadoFileLocationType-TestInfo.yml';
 
   /**
    * License record ID created for testing.
