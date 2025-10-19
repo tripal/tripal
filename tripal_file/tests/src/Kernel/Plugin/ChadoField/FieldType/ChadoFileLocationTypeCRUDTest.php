@@ -77,7 +77,7 @@ class ChadoFileLocationTypeCRUDTest extends ChadoTestKernelBase {
   /**
    * License record ID created for testing.
    *
-   * @var array
+   * @var int
    */
   protected int $license_id;
 
