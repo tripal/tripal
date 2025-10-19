@@ -13,11 +13,11 @@ use PHPUnit\Framework\Attributes\Group;
  * Specifically focused on create + update actions performed on the entity
  * directly. Both TripalEntity, ChadoStorage and the field will be covered.
  *
- * @group tripal_file
+ * @group tripal-file
  * @group TripalField
  * @group ChadoField
  */
-#[Group('tripal_file')]
+#[Group('tripal-file')]
 #[Group('TripalField')]
 #[Group('ChadoField')]
 class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
