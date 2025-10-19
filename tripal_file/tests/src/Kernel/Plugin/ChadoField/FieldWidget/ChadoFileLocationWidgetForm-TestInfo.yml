@@ -152,7 +152,7 @@ scenarios:
             '#type': 'textfield'
             '#value': ''
           fileloc_size:
-            '#type': 'number'
+            '#type': 'textfield'
             '#value': ''
           fileloc_md5checksum:
             '#type': 'textfield'
@@ -189,7 +189,7 @@ scenarios:
           linker_id: 0
           fileloc_id: 0
           fileloc_uri: 'https://tripal.info'
-          fileloc_size: 8192
+          fileloc_size: '8.192MB'
           fileloc_filename: 'someknowledge.txt'
           fileloc_md5checksum: null
           field_name: 'file_location'
@@ -215,7 +215,7 @@ scenarios:
           license_id: 9999
         file_location:
         - record_id: 1
-          fileloc_size: 8192
+          fileloc_size: '8.192MB'
           fileloc_filename: 'someknowledge.txt'
           fileloc_md5checksum: null
         - record_id: 1
@@ -294,8 +294,8 @@ scenarios:
             '#type': 'textfield'
             '#value': 'someknowledge.txt'
           fileloc_size:
-            '#type': 'number'
-            '#value': '8192'
+            '#type': 'textfield'
+            '#value': '8.192MB'
           fileloc_md5checksum:
             '#type': 'textfield'
             '#value': ''
