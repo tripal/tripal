@@ -233,7 +233,7 @@ class ChadoFileLocationTypeCRUDTest extends ChadoTestKernelBase {
 
     $scenarios[] = [
       0,
-      "Base Fields Only",
+      'Base Fields Only',
     ];
 
     return $scenarios;

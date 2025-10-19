@@ -236,7 +236,7 @@ class ChadoFileTypeCRUDTest extends ChadoTestKernelBase {
 
     $scenarios[] = [
       0,
-      "Add files when edited",
+      'Add files when edited',
     ];
 
     return $scenarios;

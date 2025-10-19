@@ -20,7 +20,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal-file')]
 #[Group('TripalField')]
 #[Group('ChadoField')]
-class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
+class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;
 
@@ -73,14 +73,14 @@ class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
    *
    * @var string
    */
-  protected string $yaml_info_file = __DIR__ . '/ChadoFileLocationWidgetForm-TestInfo.yml';
+  protected string $yaml_info_file = __DIR__ . '/ChadoFileWidgetForm-TestInfo.yml';
 
   /**
-   * License record ID created for testing.
+   * File record IDs created for testing.
    *
-   * @var int
+   * @var array
    */
-  protected int $license_id;
+  protected array $file_ids;
 
   /**
    * Describes the environment to setup for this test.
@@ -169,16 +169,19 @@ class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
     $terms_init_service = \Drupal::service('tripal_chado.terms_init');
     $terms_init_service->installTerms('tripal_file_content_terms');
 
+    // Create three file records in chado for testing (not published).
+    for ($i = 1; $i <= 3; $i++) {
+      $this->file_ids[$i] = $this->chado_connection
+        ->insert('1:file')
+        ->fields(['name' => 'File ' . $i, 'type_id' => 1, 'description' => 'File description ' . $i])
+        ->execute();
+      $this->assertNotEmpty($this->file_ids[$i], 'Did not create file');
+    }
+
     // Now that tripal_file is set up, we can setup the environment
     // according to the system under test.
     $this->setupChadoEntityFieldSystemUnderTest($this->system_under_test);
 
-    // Create one license record in chado for testing (not published).
-    $this->license_id = $this->chado_connection
-      ->insert('1:license')
-      ->fields(['name' => 'Public Domain', 'summary' => 'You can do anything at zombo com', 'uri' => 'https://zombo.com'])
-      ->execute();
-    $this->assertNotEmpty($this->license_id, 'Did not create license');
   }
 
   /**
@@ -193,7 +196,7 @@ class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
 
     $scenarios[] = [
       0,
-      'Base Fields Only',
+      'Add files when edited',
     ];
 
     return $scenarios;
@@ -215,11 +218,6 @@ class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
     // Retrieve the correct scenario.
     $current_scenario = $this->scenarios[$current_scenario_key];
     $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
-
-    // Insert the test license actual ID into the scenario.
-    $current_scenario['create']['user_input']['file_license'][0]['license_id'] = $this->license_id;
-    $current_scenario['create']['expected_field_values']['file_license'][0]['license_id'] = $this->license_id;
-    $current_scenario['edit']['expected_field_values']['file_license'][0]['license_id'] = $this->license_id;
 
     return $current_scenario;
   }

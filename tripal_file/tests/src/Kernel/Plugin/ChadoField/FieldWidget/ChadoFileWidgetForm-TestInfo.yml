@@ -1,0 +1,190 @@
+system-under-test:
+  chado_version: '1.3.3.013'
+  termIdSpace:
+  - 'NCIT'
+  bundle:
+    label: 'Project'
+    termIdSpace: 'NCIT'
+    termAccession: 'C47885'
+    id: 'test_project'
+    settings:
+      chado_base_table: 'project'
+  fields:
+  - name: 'project_name'
+    type: 'chado_string_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+    widget: 'chado_string_type_widget'
+    formatter: 'chado_string_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'name'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'project'
+          base_column: 'name'
+      max_length: 255
+  - name: 'project_description'
+    type: 'chado_text_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
+    widget: 'chado_text_type_widget'
+    formatter: 'chado_text_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'description'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'project'
+          base_column: 'description'
+  - name: 'project_file'
+    type: 'chado_file_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoFileTypeTypeDefault'
+    widget: 'chado_file_widget_default'
+    formatter: 'chado_file_formatter_default'
+    termIdSpace: 'SIO'
+    termAccession: '000396'
+    cardinality: -1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'project'
+          linker_table: 'project_file'
+          linker_fkey_column: 'file_id'
+scenarios:
+  - label: 'Add files when edited'
+    description: 'Create a project entity'
+    create:
+      expected_form_keys:
+        project_name:
+        - record_id:
+            '#type': 'value'
+            '#value': '0'
+          value:
+            '#type': 'textfield'
+        project_description:
+        - record_id:
+            '#type': 'value'
+            '#value': '0'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+        project_file:
+        - record_id:
+            '#type': 'value'
+            '#value': '0'
+          linker_id:
+            '#type': 'value'
+            '#value': '0'
+          link:
+            '#type': 'value'
+            '#value': '0'
+          linker_fkey_column:
+            '#type': 'value'
+            '#value': 'file_id'
+      user_input:
+        project_name:
+        - record_id: 0
+          value: 'The Tripal Project'
+        project_description:
+        - record_id: 0
+          value:
+            format: 'basic_html'
+            value: 'This project will have one file attached'
+        project_file:
+        - record_id: 0
+          linker_id: 0
+          field_name: 'project_file'
+          file_id: 1
+          linker_rank: 4
+      expected_field_values:
+        project_name:
+        - record_id: 1
+          value: 'The Tripal Project'
+        project_description:
+        - record_id: 1
+          value: 'This project will have one file attached'
+        project_file:
+        - record_id: 1
+          linker_id: 1
+          file_id: 1
+          linker_type_id: ''
+          linker_rank: 4
+    edit:
+      expected_form_keys:
+        project_name:
+        - record_id:
+            '#type': 'value'
+            '#value': '1'
+          value:
+            '#type': 'textfield'
+        project_description:
+        - record_id:
+            '#type': 'value'
+            '#value': '1'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+        project_file:
+        - record_id:
+            '#type': 'value'
+            '#value': '1'
+          linker_id:
+            '#type': 'value'
+            '#value': '1'
+          link:
+            '#type': 'value'
+            '#value': '1'
+          linker_fkey_column:
+            '#type': 'value'
+            '#value': 'file_id'
+        - record_id:
+            '#type': 'value'
+            '#value': '0'
+          linker_id:
+            '#type': 'value'
+            '#value': '0'
+          link:
+            '#type': 'value'
+            '#value': '0'
+          linker_fkey_column:
+            '#type': 'value'
+            '#value': 'file_id'
+      user_input:
+        project_name:
+        - record_id: 0
+          value: 'The Tripal 4 Project'
+        project_description:
+        - record_id: 0
+          value:
+            format: 'basic_html'
+            value: 'This project will have two files attached'
+        project_file:
+        - record_id: 1
+          linker_id: 1
+          field_name: 'project_file'
+          file_id: 1
+          linker_rank: 4
+        - record_id: 0
+          linker_id: 0
+          file_id: 2
+          linker_type_id: 5
+          linker_rank: 6
+      expected_field_values:
+        project_name:
+        - record_id: 1
+          value: 'The Tripal 4 Project'
+        project_description:
+        - record_id: 1
+          value: 'This project will have two files attached'
+        project_file:
+        - record_id: 1
+          linker_id: 2
+          file_id: 1
+          linker_type_id: ''
+          linker_rank: 4
+        - record_id: 1
+          linker_id: 3
+          file_id: 2
+          linker_type_id: 5
+          linker_rank: 6
