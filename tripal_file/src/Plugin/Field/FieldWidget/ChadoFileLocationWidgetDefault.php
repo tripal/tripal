@@ -169,31 +169,8 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
         $values[$delta]['fileloc_rank'] = $delta;
       }
 
-      // Look up md5 checksum and size for local files.
-      $uri = $values[$delta]['fileloc_uri'] ?? '';
-      if ($uri && (!$values[$delta]['fileloc_size'] || !$values[$delta]['fileloc_md5checksum'])) {
-        // We can only lookup local files, ignore external files.
-        $scheme = parse_url($uri, PHP_URL_SCHEME);
-        if ($scheme == 'public') {
-          $file_path = self::getLocalPath($uri);
-          if ($file_path) {
-            $file_size = filesize(urldecode($file_path));
-            $file_md5_checksum = md5_file(urldecode($file_path));
-            $values[$delta]['fileloc_size'] = $file_size;
-            $values[$delta]['fileloc_md5checksum'] = $file_md5_checksum;
-          }
-        }
-      }
-
-      // Extract a filename from the URI if one was not supplied.
-      if (!$values[$delta]['fileloc_filename'] && $uri) {
-        // To allow parsing of a drupal uri like public://, add a fake host.
-        $tmp_uri = preg_replace('/^public:\/\//', 'public://host/', $uri);
-        $path = parse_url($tmp_uri, PHP_URL_PATH);
-        if ($path) {
-          $values[$delta]['fileloc_filename'] = basename($path);
-        }
-      }
+      // Populate file name, file size, and md5 checksum.
+      $this->massageDerivableValues($values, $delta);
     }
 
     // Now we can do the standard massaging.
@@ -211,6 +188,8 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
         if ($initial_uri) {
           /** @var Drupal\file\Entity\File|null $file */
           $file = $this->getManagedFile($initial_uri);
+          // @todo check for the unlikely case that this uri was
+          // used on another file record, and if so then don't delete.
           if ($file) {
             $file->delete();
           }
@@ -263,6 +242,46 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
           $file->setPermanent();
           $file->save();
         }
+      }
+    }
+  }
+
+  /**
+   * Adds file name, MD5 checksum, and file size when possible.
+   *
+   * @param array &$values
+   *   The form values. Any changes made are passed through this variable.
+   * @param int $delta
+   *   The delta identifying which values to massage.
+   *
+   * @return void
+   *   No return value, any changes made are passed through $values.
+   */
+  protected function massageDerivableValues(array &$values, int $delta): void {
+    // Look up md5 checksum and size for local files.
+    $uri = $values[$delta]['fileloc_uri'] ?? '';
+    if ($uri && (!$values[$delta]['fileloc_size'] || !$values[$delta]['fileloc_md5checksum'])) {
+      // We can only lookup local files, ignore external files.
+      $scheme = parse_url($uri, PHP_URL_SCHEME);
+      if ($scheme == 'public') {
+        $file_path = self::getLocalPath($uri);
+        if ($file_path) {
+          $file_size = filesize(urldecode($file_path));
+          $file_md5_checksum = md5_file(urldecode($file_path));
+          $values[$delta]['fileloc_size'] = $file_size;
+          $values[$delta]['fileloc_md5checksum'] = $file_md5_checksum;
+        }
+      }
+    }
+
+    // Extract a filename from the URI if one was not supplied.
+    if (!$values[$delta]['fileloc_filename'] && $uri) {
+      // To allow parsing of an internal drupal uri like public://,
+      // add a fake host.
+      $tmp_uri = preg_replace('/^public:\/\//', 'public://host/', $uri);
+      $path = parse_url($tmp_uri, PHP_URL_PATH);
+      if ($path) {
+        $values[$delta]['fileloc_filename'] = basename($path);
       }
     }
   }
