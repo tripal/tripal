@@ -38,34 +38,77 @@ manage tripal data collections:
   description: 'Allows users to manage their own Tripal data collections.'
 
 ##
-# Tripal Content and Tripal Content Types.
+# Tripal Content (TripalEntity).
 #
-# Additional permissions are dynamic.
+# Specifically,
+# - Tripal Content Listing: 'access tripal content overview'
+# - Publish Tripal Content: 'publish tripal content'
+# - Add Tripal Content Listing: ANY 1+ 'create TYPE content' permission(s)
+# The following forms will have TYPE in the route and need the matching
+# dynamic permission with that TYPE as follows:
+# - Tripal Entity Add Form: 'create TYPE content'
+# - Tripal Entity Edit Form: 'edit TYPE content'
+# - Tripal Entity Unpublish Form: 'unpublish TYPE content'
+# - Tripal Entity Delete Form: 'delete TYPE content'
+#
+# Any user with the 'administer tripal content' can access any of the above
+# pages without needing any other permission.
+#
+# Dynamic permissions are handled by the following controller.
 # @see Drupal\tripal\AccessTripalEntityAccessControlHandler
 ##
 administer tripal content:
   title: 'Administer Tripal Content'
-  description: 'Allows users to access the Tripal Content listing and add, edit, delete Tripal content of any type.'
+  description: 'Allows users to use all aspects of Tripal Content management including the administrative listing, publishing and per type create/edit/delete/unpublish.'
   restrict access: true
 
 access tripal content overview:
   title: 'Access Tripal Content listing'
-  description: 'Allows the user to access the Tripal content listing.'
-
-manage tripal content types:
-  title: 'Manage Tripal content types'
-  description: 'Allows users to access the Tripal Content Types listing and add, edit or delete items listed.'
-  restrict access: true
+  description: 'Allows the user to access the Tripal content listing in the administration pages.'
 
 publish tripal content:
   title: 'Publish Tripal Content'
-  description: 'Allows the user to publish Tripal content of all Tripal Content Types for online access.'
-
+  description: 'Allows the user to generate Tripal content pages for existing records in backend storage (e.g. Chado) for any Tripal Content Type.'
 
 ##
-# The core Trpal Importers permissions.
+# Tripal Content Type (TripalEntityType).
 #
-# Additional permissions are dynamic.
+# Specifically, Tripal content types are managed via two permissions:
+# 1. 'Manage Tripal content types' for someone who can tweak existing types
+# 2. 'Administer Tripal content types' for the main site builder.
+# Where the administer permission can do everything the manage can plus more.
+#
+# Manage OR Administer:
+# - Tripal Content Type listing
+# - Manage Fields for TripalEntityType
+# - Manage Form for TripalEntityType
+# - Manage Display for TripalEntityType
+# Administer Only:
+# - TripalEntityType Add Form
+# - TripalEntityType Edit Form
+# - TripalEntityType Delete Form
+# - Import Content Type Collections
+# - Add fields to a content type
+# - Find Fields for a content type
+##
+manage tripal content types:
+  title: 'Manage Tripal content types'
+  description: 'Allows users to see the list of Tripal Content Types and manage their fields, forms and display.'
+  restrict access: true
+
+administer tripal content types:
+  title: 'Manage Tripal content types'
+  description: 'Allows users to administer all aspects of Tripal content types including adding/deleting content types, adding new fields to content types and managing Title and URL formats, as well as, all permissions given to those "Managing" Tripal content types.'
+  restrict access: true
+
+##
+# Tripal Loader Permissions (TripalImporter).
+#
+# There are access permissions for each importer which are created dynamically.
+# You need the dynamic permission + 'allow tripal import' to use any of the
+# loaders. Additionally, if the loader has a Tripal HTML5 file upload then
+# you need the permissions indicated above for that element.
+#
 # @see TripalImporterPermissionsController:permissions()
 ##
 allow tripal import:
@@ -73,20 +116,10 @@ allow tripal import:
   description: 'Allow access to the listing of importers available through Tripal.'
 
 ##
-# The core Trpal Content permissions.
-#
-# Additional permissions are dynamic.
-# @see TripalEntityPermissions::tripalContentTypePermissions()
-##
-allow tripal entity:
-  title: 'Access Tripal Content'
-  description: 'Allow access to the listing of content available through Tripal.'
-
-##
 # Callbacks for Dynamic permissions.
 #
 # The following class methods provide additional permissions that depend on
-# runtime conditions or site-specific content types + importers.
+# site-specific content types + importers.
 ##
 permission_callbacks:
   - 'Drupal\tripal\Controller\TripalImporterPermissionsController::permissions'
