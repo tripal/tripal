@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
@@ -11,7 +11,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of Default Tripal field for sequence length.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_sequence_length_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Feature Sequence Length'),
@@ -27,6 +27,15 @@ class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
+    return 'seqlen';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'seqlen';
   }
 

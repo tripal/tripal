@@ -168,7 +168,7 @@ tripal_chado.dbxref_autocomplete:
 tripal_chado.organism_autocomplete:
   path: 'chado/organism/autocomplete/{match_limit}'
   defaults:
-    _controller: '\Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController::handleAutocomplete'
+    _controller: '\Drupal\tripal_chado\Controller\ChadoOrganismFormElementController::handleAutocomplete'
     _title: 'Chado Organism Autocomplete'
     _format: 'json'
   requirements:

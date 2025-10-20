@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
@@ -14,7 +14,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of default Tripal publication field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_pub_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Publication'),
@@ -32,7 +32,15 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'
+    // The property that indicates if this field is empty.
+    return self::$object_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'pub_title';
   }
 
@@ -81,12 +89,11 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
     // Object table
     $object_table = self::$object_table;
-    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_schema_def = self::getChadoTableDef($object_table, $schema);
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Columns specific to the object table
@@ -112,7 +119,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $pubplace_len = $object_schema_def['fields']['pubplace']['size'];
 
     // Cvterm table, to retrieve the name for the publication type
-    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $cvterm_schema_def = self::getChadoTableDef('cvterm', $schema);
     $type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $type_len = $cvterm_schema_def['fields']['name']['size'];
 
@@ -121,7 +128,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
       $linker_pkey_col = $linker_schema_def['primary key'];
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
       $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);

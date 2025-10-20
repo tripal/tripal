@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
@@ -12,7 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 /**
  * Plugin implementation of the 'text' field type for Chado.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_text_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Text Field Type'),
@@ -56,9 +56,8 @@ class ChadoTextTypeDefault extends ChadoFieldItemBase {
     // Get the base table columns needed for this field.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
     $base_column = $settings['base_column'];
-    $base_pkey_col = $base_schema_def['primary key'];
 
     // Get the property terms by using the Chado table columns they map to.
     $value_term = self::getColumnTermId($base_table, $base_column, 'NCIT:C25712');

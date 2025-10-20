@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
@@ -14,7 +14,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of default Tripal stock field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_stock_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Stock'),
@@ -49,7 +49,15 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'.
+    // The property that indicates if this field is empty.
+    return self::$object_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'stock_name';
   }
 
@@ -100,13 +108,12 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     $schema = $chado->schema();
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
-    // Base table.
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    // Base table
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
     // Object table.
     $object_table = self::$object_table;
-    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_schema_def = self::getChadoTableDef($object_table, $schema);
     $object_pkey_col = $object_schema_def['primary key'];
     $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
     // Text.
@@ -119,12 +126,12 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     // Columns from linked tables.
     $dbxref_term = self::getColumnTermId('dbxref', 'accession', 'data:2091');
     $db_term = self::getColumnTermId('db', 'name', 'ERO:0001716');
-    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $cvterm_schema_def = self::getChadoTableDef('cvterm', $schema);
     $stock_type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $stock_type_len = $cvterm_schema_def['fields']['name']['size'];
     $infraspecific_type_term = self::getColumnTermId('cvterm', 'name', 'local:infraspecific_type');
     $infraspecific_type_len = $cvterm_schema_def['fields']['name']['size'];
-    $organism_schema_def = $schema->getTableDef('organism', ['format' => 'Drupal']);
+    $organism_schema_def = self::getChadoTableDef('organism', $schema);
     $genus_term = self::getColumnTermId('organism', 'genus', 'TAXRANK:0000005');
     $genus_len = $organism_schema_def['fields']['genus']['size'];
     $species_term = self::getColumnTermId('organism', 'species', 'TAXRANK:0000006');
@@ -141,7 +148,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
       $linker_pkey_col = $linker_schema_def['primary key'];
       // The following should be the same as $base_pkey_col.
       // @todo make sure it is.

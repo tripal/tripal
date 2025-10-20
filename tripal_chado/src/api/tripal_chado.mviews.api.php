@@ -99,12 +99,24 @@ function chado_add_mview($name, $modulename, $mv_schema, $query,
  * @param $mv_schema
  *   If using the newer Schema API array to define the materialized view then
  *   this variable should contain the array.
+ * @param Drupal\tripal_chado\Database\ChadoConnection|null $chado
+ *   A tripaldbx connection to the chado database.
  *
  * @ingroup tripal_mviews_api
  */
-function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
-    $indexed, $query, $special_index, $comment = NULL,
-    $mv_schema = NULL, ChadoConnection $chado = NULL) {
+function chado_edit_mview(
+  $mview_id,
+  $name,
+  $modulename,
+  $mv_table,
+  $mv_specs,
+  $indexed,
+  $query,
+  $special_index,
+  $comment = NULL,
+  $mv_schema = NULL,
+  ?ChadoConnection $chado = NULL,
+) {
 
     $logger = \Drupal::service('tripal.logger');
 

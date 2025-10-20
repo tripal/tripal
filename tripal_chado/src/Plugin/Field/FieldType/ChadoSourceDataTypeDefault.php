@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
@@ -12,7 +12,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of Default Tripal field for data source.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_source_data_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Data Source'),
@@ -28,14 +28,23 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function mainPropertyName()  {
+  public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
     return 'sourcename';
   }
 
   /**
-   * {@inheritdoc}
+   * {@inheritdoc}
    */
-  public static function defaultFieldSettings()  {
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
+    return 'sourcename';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultFieldSettings() {
     $settings = parent::defaultFieldSettings();
     $settings['termIdSpace'] = 'local';
     $settings['termAccession'] = 'source_data';

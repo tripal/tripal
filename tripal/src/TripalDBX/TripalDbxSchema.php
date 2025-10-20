@@ -628,7 +628,18 @@ EOD;
     // If they didn't supply the column, then we can look it up.
     if ($column === NULL) {
       $parameters = ['source' => 'database', 'format' => 'Drupal',];
-      $table_schema = $this->getTableDef($table, $parameters);
+
+      // Cache the table schema so we don't fetch it thousands of times.
+      $cache_id = 'table_def_' . $table . '_' . $parameters;
+      // Check if this table definition is cached.
+      if ($cache = \Drupal::cache()->get($cache_id)) {
+        $table_schema = $cache->data;
+      }
+      else {
+        $table_schema = $this->getTableDef($table, $parameters);
+        // Cache the table definition for an hour.
+        \Drupal::cache()->set($cache_id, $table_schema, \Drupal::time()->getRequestTime() + (3600));
+      }
       $column = $table_schema['primary key'][0];
     }
 
@@ -856,7 +867,9 @@ EOD;
    *   An array of key-value parameters:
    *   - 'source': either 'database' to extract data from database or 'file' to
    *     get the data from a static YAML file or 'tripal' to get the data from
-   *     Tripal records.
+   *     Tripal records. This can be an array if more than one source is to be
+   *     checked, and the lookup will be done in the specified order,
+   *     e.g. ['file', 'database'].
    *     Default: 'file'.
    *   - 'version': version of the Tripal DBX managed schema to fetch from a file.
    *     Ignored fot 'database' source.
@@ -877,8 +890,9 @@ EOD;
    */
   public function getTableDef(string $table, array $parameters) :array {
     static $table_structures = [];
+    $table_def = [];
 
-    $source = $parameters['source'] ?? 'file';
+    $sources = (array) ($parameters['source'] ?? 'file');
     $format = strtolower($parameters['format'] ?? '');
     $version = $parameters['version']
       ?? $this->connection->getVersion()
@@ -890,59 +904,69 @@ EOD;
       return [];
     }
 
-    if ('file' == $source) {
-      // Use Connection to get the whole schema definition from a file.
-      $schema_parameters = [
-        'source' => 'file',
-        'format' => 'drupal',
-        'version' => $version,
-      ];
-      // Adds 'clear' and 'none' if needed.
-      $schema_parameters += $parameters;
-      $schema_def = $this->getSchemaDef($schema_parameters);
-      if (array_key_exists($table, $schema_def)) {
-        $table_def = $schema_def[$table];
-        if (array_key_exists('referring_tables', $table_def) && is_string($table_def['referring_tables'])) {
-          $table_def['referring_tables'] = array_map('trim', explode(',', $table_def['referring_tables']));
-        }
-      }
-      else {
-        $table_def = [];
-      }
-    }
-    elseif ('tripal' == $source) {
-      $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = :table_name;";
-      $results = $this->connection->query($sql, [':table_name' => $table]);
-      $custom = $results->fetchObject();
-      if (!$custom) {
-        $table_def = [];
-      }
-      else {
-        $table_def = unserialize($custom->schema);
-      }
-    }
-    elseif ('database' == $source) {
-      $cache_key = $this->defaultSchema . '/' . $table . '/' . $format;
-      if (!isset($table_structures[$cache_key])) {
-        $table_ddl = $this->getTableDdl($table);
-        if ('sql' == $format) {
-          $table_structures[$cache_key] = [$table_ddl];
-        }
-        elseif ('drupal' == $format) {
-          $table_structures[$cache_key] =
-            $this->tripalDbxApi->parseTableDdlToDrupal($table_ddl);
+    foreach ($sources as $source) {
+      $valid_source = FALSE;
+      if (!$table_def && 'file' == $source) {
+        $valid_source = TRUE;
+        // Use Connection to get the whole schema definition from a file.
+        $schema_parameters = [
+          'source' => 'file',
+          'format' => 'drupal',
+          'version' => $version,
+        ];
+        // Adds 'clear' and 'none' if needed.
+        $schema_parameters += $parameters;
+        $schema_def = $this->getSchemaDef($schema_parameters);
+        if (array_key_exists($table, $schema_def)) {
+          $table_def = $schema_def[$table];
+          if (array_key_exists('referring_tables', $table_def) && is_string($table_def['referring_tables'])) {
+            $table_def['referring_tables'] = array_map('trim', explode(',', $table_def['referring_tables']));
+          }
         }
         else {
-          $table_structures[$cache_key] =
-            $this->tripalDbxApi->parseTableDdl($table_ddl);
-          $referencing_tables = $this->getReferencingTables($table);
-          $table_structures[$cache_key]['referenced_by'] = $referencing_tables;
+          $table_def = [];
         }
       }
-      $table_def = $table_structures[$cache_key];
+      if (!$table_def && 'tripal' == $source) {
+        $valid_source = TRUE;
+        $table_def = [];
+        $query = $this->connection->select('tripal_custom_tables','ct');
+        $query->fields('ct', ['schema']);
+        $query->condition('ct.table_name', $table);
+        $schema = $query->execute()->fetchField();
+        if ($schema) {
+          $table_def = unserialize($schema);
+        }
+      }
+      if (!$table_def && 'database' == $source) {
+        $valid_source = TRUE;
+        $cache_key = $this->defaultSchema . '/' . $table . '/' . $format;
+        if (!isset($table_structures[$cache_key])) {
+          $table_ddl = $this->getTableDdl($table);
+          if ('sql' == $format) {
+            $table_structures[$cache_key] = [$table_ddl];
+          }
+          elseif ('drupal' == $format) {
+            $table_structures[$cache_key] =
+              $this->tripalDbxApi->parseTableDdlToDrupal($table_ddl);
+          }
+          else {
+            $table_structures[$cache_key] =
+              $this->tripalDbxApi->parseTableDdl($table_ddl);
+            $referencing_tables = $this->getReferencingTables($table);
+            $table_structures[$cache_key]['referenced_by'] = $referencing_tables;
+          }
+        }
+        $table_def = $table_structures[$cache_key];
+      }
+      if (!$table_def && !$valid_source) {
+        throw new SchemaException("Invalid table definition source: '$source'.");
+      }
     }
-    else {
-      throw new SchemaException("Invalid table definition source: '$source'.");
+    // The primary key will be an array for some sources. For consistency,
+    // make it always be a scalar.
+    if (is_array($table_def['primary key'] ?? NULL)) {
+      $table_def['primary key'] = $table_def['primary key'][array_key_first($table_def['primary key'])];
     }
     return $table_def;
   }

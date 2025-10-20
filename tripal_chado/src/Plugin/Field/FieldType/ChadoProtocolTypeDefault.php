@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
@@ -13,7 +13,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of default Tripal protocol field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_protocol_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Protocol'),
@@ -31,7 +31,15 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'
+    // The property that indicates if this field is empty.
+    return self::$object_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'protocol_name';
   }
 
@@ -80,12 +88,11 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
     // Object table
     $object_table = self::$object_table;
-    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_schema_def = self::getChadoTableDef($object_table, $schema);
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Columns specific to the object table
@@ -96,7 +103,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
     $softwaredescription_term = self::getColumnTermId($object_table, 'softwaredescription', 'SWO:0000001');  // text
 
     // Columns from linked tables
-    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $cvterm_schema_def = self::getChadoTableDef('cvterm', $schema);
     $protocol_type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $protocol_type_len = $cvterm_schema_def['fields']['name']['size'];
     $pub_title_term = self::getColumnTermId('pub', 'title', 'schema:publication');
@@ -108,7 +115,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];

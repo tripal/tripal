@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
@@ -12,7 +12,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of default Tripal contact by role field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_contact_by_role_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Contacts: Specific Role'),
@@ -30,7 +30,15 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'
+    // The property that indicates if this field is empty.
+    return self::$object_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'contact_name';
   }
 

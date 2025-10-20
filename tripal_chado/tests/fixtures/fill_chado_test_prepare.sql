@@ -164,7 +164,7 @@ INSERT INTO chado.db VALUES (35, 'BS', '', NULL, '');
 INSERT INTO chado.db VALUES (36, 'RNAMOD', '', NULL, '');
 INSERT INTO chado.db VALUES (37, 'MOD', '', NULL, '');
 INSERT INTO chado.db VALUES (38, 'wikipedia', '', NULL, '');
-INSERT INTO chado.db VALUES (41, 'PBO', 'Plant Breeding Ontology (PBO): an ontology for the plant breeding community which captures more than 2200 entries where 80 represent the core terms.', 'http://purl.obolibrary.org/obo/PBO/PBO_{accession}', 'http://purl.obolibrary.org/obo/PBO');
+INSERT INTO chado.db VALUES (41, 'PBO', 'Plant Breeding Ontology (PBO): an ontology for the plant breeding community which captures more than 2200 entries where 80 represent the core terms.', 'https://agroportal.lirmm.fr/ontologies/PBO/PBO_{accession}', 'https://agroportal.lirmm.fr/ontologies/PBO');
 INSERT INTO chado.dbxref VALUES (1, 1, 'local:null', '', NULL);
 INSERT INTO chado.dbxref VALUES (2, 1, 'chado_properties:version', '', NULL);
 INSERT INTO chado.dbxref VALUES (3, 2, '0000044', '', NULL);

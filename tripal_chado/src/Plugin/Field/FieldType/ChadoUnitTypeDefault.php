@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
@@ -12,7 +12,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of Default Tripal field for unit of measurement.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_unit_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Unit'),
@@ -26,9 +26,18 @@ class ChadoUnitTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritdoc}
-  */
+   */
   public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
     return 'unittype_id';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
+    return 'cv_name';
   }
 
   /**
@@ -65,7 +74,7 @@ class ChadoUnitTypeDefault extends ChadoFieldItemBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
 
-    $cvterm_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $cvterm_def = self::getChadoTableDef('cvterm', $schema);
     $cv_name_len = $cvterm_def['fields']['name']['size'];
 
     $unittype_id_term = self::getColumnTermId('featuremap', 'unittype_id', 'UO:0000000');

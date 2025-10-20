@@ -2,22 +2,61 @@
 
 namespace Drupal\tripal_chado\TripalStorage;
 
+use Drupal\pgsql\Driver\Database\pgsql\Select;
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\Database\ChadoSchema;
 use Drupal\tripal_chado\Services\ChadoFieldDebugger;
 use Symfony\Component\Validator\ConstraintViolation;
 
 /**
  * A helper class for use by the ChadoStorage Plugin.
- *
  */
-class ChadoRecords  {
+class ChadoRecords {
 
   /**
-   * An associative array that holds the information needed to
-   * perform a variety of queries for the ChadoStorage plugin
+   * Data records.
    *
    * @var array
+   *   An associative array describing the records to be managed.
+   *   Specifically, it follows this structure:
+   *   - 1st level: keyed by base table name
+   *   - 2nd level:
+   *     - record_id: the primary key for this base table.
+   *     - tables: all ancillary tables associated with this base table with
+   *       each value (3rd level) describing the records for this table.
+   *   - 3rd level (tables): keyed by table alias where each value has a
+   *     - chado_table: the un-aliased name of this table.
+   *     - items: keyed by delta with the value (4th level) being the records
+   *       for this table.
+   *   - 4th level (items):
+   *     - columns (array): a simple list of columns for this table that
+   *       should be included in the record.
+   *     - field_columns (array): an array mapping which Tripal fields want
+   *       which Chado column values. The key is the column alias and the value
+   *       is an array, one entry for each field/property that uses the value.
+   *     - conditions (array): conditions for this table when performing a
+   *       query. See addCondition() for more details.
+   *     - joins (array): joins that should be made with this table. The keys in
+   *       this array is the full join point from the root table. It will
+   *       contain two sub keys: 'on' (providing details about how to do the
+   *       join) and 'columns' with information about which columns from the
+   *       join to include in the final values set.
+   *     - delete_if_empty (array): helps indicate if a record should be
+   *       removed if it's empty. This only applies to ancillary tables.
+   *     - link_columns (array): indicates the list of columns that store the
+   *       base table record_id.
+   *     - column_aliases (array): aliases for columns. This is indexed by the
+   *       column alias. The value is a set of key value pairs indicating the
+   *       chado_table, table_alias, and chado column names.
+   *     - values (array): combine all of the columns from the table, and any
+   *       columns from joined tables.  There is no guarnatee that fields won't
+   *       give the same name to the same fields in the same tables so these
+   *       values will be indexed by the field and key they belong to.
+   *     - has_values (boolean): Indicates if any values have been set. We can't
+   *       rely on checking if all values are empty because it could be possible
+   *       that all values are meant to be empty. This value will get set when
+   *       a query is successful for the table and values have been set.
    */
   protected array $records = [];
 
@@ -29,6 +68,8 @@ class ChadoRecords  {
   protected array $violations = [];
 
   /**
+   * Join alias hashes for easy lookup.
+   *
    * Holds the aliases for tables in joins. We keep track of aliases for joins
    * via their join paths, but converting a join path to an alias for each
    * table will be too long for SQL. Instead, we store the hashes here
@@ -58,16 +99,19 @@ class ChadoRecords  {
   /**
    * The TripalLogger for logging messages.
    *
-   * @var TripalLogger
+   * @var \Drupal\tripal\Services\TripalLogger
    */
   protected TripalLogger $logger;
 
-
-
   /**
-   * Constructor
+   * Constructor.
    *
-   * @param ChadoFieldDebugger $field_debugger
+   * @param \Drupal\tripal_chado\Services\ChadoFieldDebugger $field_debugger
+   *   The chado field debugger object.
+   * @param Drupal\tripal\Services\TripalLogger $logger
+   *   The Tripal logger object for logging debugging messages.
+   * @param Drupal\tripal_chado\Database\ChadoConnection $connection
+   *   The current connection to chado.
    */
   public function __construct(ChadoFieldDebugger $field_debugger, TripalLogger $logger, ChadoConnection $connection) {
     $this->field_debugger = $field_debugger;
@@ -79,13 +123,14 @@ class ChadoRecords  {
    * A helper function used to check incoming $elements for various functions.
    *
    * @param array $elements
-   *   The array of elements to check
+   *   The array of elements to check.
    * @param string $key
-   *   The array key to check
+   *   The array key to check.
    * @param string $method
    *   The method being formed (e.g.. Initalzing, Adding, Setting, etc.)
    * @param string $what
    *   The type of element being added (e.g., 'field', 'condition', etc.)
+   *
    * @throws \Exception
    */
   protected function checkElement($elements, $key, $method, $what) {
@@ -103,7 +148,7 @@ class ChadoRecords  {
    *
    * @throws \Exception
    *
-   * @return book:
+   * @return bool
    *   TRUE if the table and delta were initalized. FALSE otherwise. The
    *   base table can only be initialized once. This function will
    *   return FALSE if there is an attempt to initalize it with a delta
@@ -111,7 +156,7 @@ class ChadoRecords  {
    */
   protected function initTable($elements) : bool {
 
-    // Make sure all of the required elements are present
+    // Make sure all of the required elements are present.
     $this->checkElement($elements, 'base_table', 'Initializing', 'table');
     $this->checkElement($elements, 'root_table', 'Initializing', 'table');
     $this->checkElement($elements, 'root_alias', 'Initializing', 'table');
@@ -139,7 +184,7 @@ class ChadoRecords  {
     // field has a cardinality > 1 then it can pass a delta value > 0. That
     // delta value is for the item not for the base table.  There can only
     // be one base table record.
-    if ($base_table == $chado_table and $delta > 0)  {
+    if ($base_table == $chado_table and $delta > 0) {
       return FALSE;
     }
 
@@ -154,14 +199,14 @@ class ChadoRecords  {
         'tables' => [],
         'record_id' => 0,
       ];
-      // The base table doesn't have an alias so make sure we have an entry for it..
+      // The base table doesn't have an alias so make sure we have an entry.
       $this->records[$base_table]['tables'][$base_table] = [
         'chado_table' => $base_table,
         'items' => [],
       ];
     }
 
-    // if the table has not been initialized then do so.  The tables
+    // If the table has not been initialized then do so. The tables
     // are indexed using their alias. The top-level keys are the true
     // table name and it's list of items.
     if (!array_key_exists($table_alias, $this->records[$base_table]['tables'])) {
@@ -179,7 +224,7 @@ class ChadoRecords  {
     // it's empty and a mapping array for column aliases.
     if (!array_key_exists($delta, $this->records[$base_table]['tables'][$table_alias]['items'])) {
       $this->records[$base_table]['tables'][$table_alias]['items'][$delta] = [
-        // columns for this table. This is just a simple list of columns
+        // Columns for this table. This is just a simple list of columns
         // for the base table that should be included in the record.
         'columns' => [],
 
@@ -206,8 +251,8 @@ class ChadoRecords  {
         'link_columns' => [],
 
         // Aliases for columns. This is indexed by the column alias. The value
-        // is a set of key value pairs indicating the chado_table, table_alias and
-        // chado column names.
+        // is a set of key value pairs indicating the chado_table, table_alias,
+        // and chado column names.
         'column_aliases' => [],
 
         // The values. It will combine all of the columns from the table, and
@@ -234,7 +279,6 @@ class ChadoRecords  {
    *
    * @param array $elements
    *   The list of key/value pairs describing the element.
-   *
    *   These keys are required:
    *   - base_table: the base table the field should be added to.
    *   - chado_table: the chado table the field should be added to. This
@@ -246,19 +290,16 @@ class ChadoRecords  {
    *   - column_alias: an alias for the column.
    *   - value: a value for the column.  If the value is not known this should
    *     be NULL.
-   *
    *   These keys are optional:
    *   - delete_if_empty: for updates, if the "value" is empty then delete the
    *     item.
    *   - empty_value: only used if "delete_if_empty" is used.  It indicates the
    *     value to use to determine if the field is empty.
-   *
    * @param bool $is_link
    *   Indicates if this field stores a link (or foreign key) to the base
    *   table. If TRUE, and if the "value" key is NULL then a placeholder will
    *   be used to fill in the record.  The value will be set automatically
    *   once it's known. Defaults to FALSE.
-   *
    * @param bool $read_only
    *   If the column requested has a read-only value then we want to make
    *   sure that the column is present in the query and we get results for it
@@ -271,7 +312,7 @@ class ChadoRecords  {
 
     // Initialize the table. If the function returns FALSE
     // then the caller is trying to re-initialize the base table so just quit.
-    if(!$this->initTable($elements)){
+    if (!$this->initTable($elements)) {
       return;
     }
 
@@ -281,7 +322,6 @@ class ChadoRecords  {
     $this->checkElement($elements, 'value', 'Setting', 'field');
     $this->checkElement($elements, 'field_name', 'Setting', 'field');
     $this->checkElement($elements, 'property_key', 'Setting', 'field');
-
 
     // Get the elements needed to add a field.
     $base_table = $elements['base_table'];
@@ -301,7 +341,7 @@ class ChadoRecords  {
       $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['column_aliases'][$column_alias] = [
         'chado_table' => $chado_table,
         'table_alias' => $table_alias,
-        'chado_column' => $chado_column
+        'chado_column' => $chado_column,
       ];
     }
 
@@ -309,7 +349,7 @@ class ChadoRecords  {
       'chado_column' => $chado_column,
       'column_alias' => $column_alias,
       'field_name' => $field_name,
-      'property_key' => $property_key
+      'property_key' => $property_key,
     ];
 
     // If this is a read-only field then don't set the value. It will get set
@@ -319,18 +359,17 @@ class ChadoRecords  {
     }
 
     // If the value is set (i.e., not null) then don't reset it.
-    if ($this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] !== NULL)  {
+    if ($this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] !== NULL) {
       return;
     }
     $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] = $value;
-
 
     // Add the optional delete_if_empty.
     if (array_key_exists('delete_if_empty', $elements) and $elements['delete_if_empty'] === TRUE) {
       $this->checkElement($elements, 'empty_value', 'Adding', 'field');
       $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['delete_if_empty'][] = [
         'chado_column' => $column_alias,
-        'empty_value' => $elements['empty_value']
+        'empty_value' => $elements['empty_value'],
       ];
     }
 
@@ -345,7 +384,6 @@ class ChadoRecords  {
       }
     }
   }
-
 
   /**
    * Adds a condition to this ChadoRecords object.
@@ -367,23 +405,22 @@ class ChadoRecords  {
    *   - value: a value for the column to use as the condition.
    * @param bool $is_or_condition
    *   Indicates that this condition should be wrapped inside an OR condition
-   *   group along with any others with this flag set
+   *   group along with any others with this flag set.
    *
    * @throws \Exception
    *   If the any required fields are missing an error is thrown.
    */
-  public function addCondition(array $elements, bool $is_or_condition=FALSE) {
+  public function addCondition(array $elements, bool $is_or_condition = FALSE) {
 
     // Initialize the table. If the function returns FALSE
     // then the caller is trying to re-initialize the base table so just quit.
-    if(!$this->initTable($elements)){
+    if (!$this->initTable($elements)) {
       return;
     }
 
-    // Make sure all of the required elements are present
+    // Make sure all of the required elements are present.
     $this->checkElement($elements, 'column_alias', 'Setting', 'condition');
     $this->checkElement($elements, 'value', 'Setting', 'condition');
-
 
     // Get the elements needed to add a condition.
     $base_table = $elements['base_table'];
@@ -397,7 +434,7 @@ class ChadoRecords  {
     $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['conditions'][$column_alias] = [
       'value' => $value,
       'operation' => $operation,
-      'condition_type' => $is_or_condition?'or':'and',
+      'condition_type' => $is_or_condition ? 'or' : 'and',
     ];
   }
 
@@ -417,9 +454,9 @@ class ChadoRecords  {
    * @param string $column_alias
    *   The alias for the column.
    * @param mixed $value
-   *   The value to set for the condition
+   *   The value to set for the condition.
    * @param bool $is_or_condition
-   *   True if part of an OR condition group
+   *   True if part of an OR condition group.
    *
    * @throws \Exception
    *   If the item has not yet been added for the base table, table alias and
@@ -478,11 +515,11 @@ class ChadoRecords  {
 
     // Initialize the table. If the function returns FALSE
     // then the caller is trying to re-initialize the base table so just quit.
-    if (!$this->initTable($elements)){
+    if (!$this->initTable($elements)) {
       return;
     }
 
-    // Make sure all of the required elements are present
+    // Make sure all of the required elements are present.
     $this->checkElement($elements, 'join_path', 'Setting', 'join');
     $this->checkElement($elements, 'join_type', 'Setting', 'join');
     $this->checkElement($elements, 'left_table', 'Setting', 'join');
@@ -492,9 +529,8 @@ class ChadoRecords  {
     $this->checkElement($elements, 'left_alias', 'Setting', 'join');
     $this->checkElement($elements, 'right_alias', 'Setting', 'join');
 
-    // Get the elements needed to add a join..
+    // Get the elements needed to add a join.
     $base_table = $elements['base_table'];
-    $chado_table = $elements['chado_table'];
     $table_alias = $elements['table_alias'];
     $delta = $elements['delta'];
     $join_path = $elements['join_path'];
@@ -528,7 +564,7 @@ class ChadoRecords  {
       $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['joins'][$join_path]['columns'] = [];
     }
 
-    // Set the elements array
+    // Set the elements array.
     $elements['left_alias'] = $left_alias;
     $elements['right_alias'] = $right_alias;
   }
@@ -540,7 +576,8 @@ class ChadoRecords  {
    * provide them.
    *
    * @param array $elements
-   *   The array of elements passed to the addJoin() function
+   *   The array of elements passed to the addJoin() function.
+   *
    * @return array
    *   An array of two strings: the left table alias and the right table alias.
    */
@@ -560,7 +597,7 @@ class ChadoRecords  {
     // each join path table/column to ensure the SQL won't break.
     // We only do this if the user didn't provide an alias.
     if ($right_alias == $right_table) {
-      // The right path is everything up to the final column
+      // The right path is everything up to the final column.
       $right_path = preg_replace('/^(.+)\..+$/', '$1', $join_path);
       if (!array_key_exists($right_path, $this->join_aliases)) {
         $this->join_aliases[$right_path] = $this->generateJoinHash();
@@ -589,6 +626,7 @@ class ChadoRecords  {
    *   The length of the unique string.
    *
    * @return string
+   *   A hash that uniquely identifies the join.
    */
   protected function generateJoinHash(int $length = 20) {
 
@@ -640,11 +678,11 @@ class ChadoRecords  {
 
     // Initialize the table. If the function returns FALSE
     // then the caller is trying to re-initialize the base table so just quit.
-    if(!$this->initTable($elements)){
+    if (!$this->initTable($elements)) {
       return;
     }
 
-    // Make sure all of the required elements are present
+    // Make sure all of the required elements are present.
     $this->checkElement($elements, 'join_path', 'Setting', 'join column');
     $this->checkElement($elements, 'chado_column', 'Setting', 'join column');
     $this->checkElement($elements, 'column_alias', 'Setting', 'join column');
@@ -653,7 +691,6 @@ class ChadoRecords  {
 
     // Get the elements needed to add a join column.
     $base_table = $elements['base_table'];
-    $chado_table = $elements['chado_table'];
     $table_alias = $elements['table_alias'];
     $delta = $elements['delta'];
     $join_path = $elements['join_path'];
@@ -667,11 +704,11 @@ class ChadoRecords  {
       'chado_column' => $chado_column,
       'column_alias' => $column_alias,
       'field_name' => $field_name,
-      'property_key' => $property_key
+      'property_key' => $property_key,
     ];
 
-    // We need to add a value to the 'values' arrah with an empty value as this will
-    // get filled in after a load.
+    // We need to add a value to the 'values' arrah with an empty value as
+    // this will get filled in after a load.
     $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] = NULL;
   }
 
@@ -700,7 +737,8 @@ class ChadoRecords  {
       foreach ($items as $delta => $record) {
         foreach (array_keys($record['values']) as $column_alias) {
 
-          // if this column is an ID field and links to this base table then add the value.
+          // If this column is an ID field and links to this base table then
+          // add the value.
           if (array_key_exists($column_alias, $record['link_columns'])) {
             $base_table = $record['link_columns'][$column_alias];
             $current_value = $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] ?? NULL;
@@ -761,7 +799,7 @@ class ChadoRecords  {
   }
 
   /**
-   * Indicates if the given base table has a record ID
+   * Indicates if the given base table has a record ID.
    *
    * @param string $base_table
    *   The name of the Chado table used as a base table.
@@ -781,11 +819,11 @@ class ChadoRecords  {
    * Returns the list of base tables.
    *
    * @return array
+   *   a list of base tables.
    */
   public function getBaseTables() {
     return array_keys($this->records);
   }
-
 
   /**
    * Gets the true Chado table name from an alias.
@@ -808,7 +846,6 @@ class ChadoRecords  {
     }
     return $this->records[$base_table]['tables'][$table_alias]['chado_table'];
   }
-
 
   /**
    * For the given base table, returns non base tables.
@@ -862,6 +899,7 @@ class ChadoRecords  {
     }
     return array_keys($ret_val);
   }
+
   /**
    * Returns the list of tables currently handled by this object.
    *
@@ -967,7 +1005,6 @@ class ChadoRecords  {
     }
   }
 
-
   /**
    * Retrieves the Chado column for a given base table and table alis.
    *
@@ -1012,12 +1049,12 @@ class ChadoRecords  {
    *   base tables don't have aliases.
    * @param int $delta
    *   The numeric index of the item.
-   * @param string $column_alias
-   *   The alias for the column.
+   * @param string $chado_column
+   *   The chado column to retrieve an alias for.
    *
    * @return array
-   *   An array containing all of the alias mappings for fields in the table whose
-   *   column namthces the $chado_column provided.
+   *   An array containing all of the alias mappings for fields in the table
+   *   whose column name matches the $chado_column provided.
    */
   public function getColumnFieldAliases(string $base_table, string $table_alias, int $delta, string $chado_column) {
 
@@ -1060,6 +1097,9 @@ class ChadoRecords  {
    *   The alias for the column.
    * @param mixed $value
    *   The value to set for the field.
+   * @param bool $set_value
+   *   The value that is being set is a valid value. Set to FALSE when
+   *   clearing a value by setting it to zero.
    *
    * @throws \Exception
    *   If the base_table, table_alias or delta don't exist then an error is
@@ -1068,8 +1108,14 @@ class ChadoRecords  {
    * @return bool
    *   TRUE if the value was set, FALSE otherwise
    */
-  protected function setColumnValue(string $base_table, string $table_alias,
-      int $delta, string $column_alias, $value) : bool {
+  protected function setColumnValue(
+    string $base_table,
+    string $table_alias,
+    int $delta,
+    string $column_alias,
+    $value,
+    $set_value = TRUE,
+  ) : bool {
 
     if (!array_key_exists($base_table, $this->records)) {
       throw new \Exception("ChadoRecords::setColumnValue(): The base table has not been added to the ChadoRecords object: $base_table.");
@@ -1090,7 +1136,9 @@ class ChadoRecords  {
 
     // Set the value.
     $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] = $value;
-    $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['has_values'] = TRUE;
+    if ($set_value) {
+      $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['has_values'] = TRUE;
+    }
     return TRUE;
   }
 
@@ -1127,7 +1175,7 @@ class ChadoRecords  {
       return NULL;
     }
 
-    // If the values were set then return it, otherwise return NULL;
+    // If the values were set then return it, otherwise return NULL.
     if ($items[$delta]['has_values'] === TRUE) {
       return $items[$delta]['values'][$column_alias];
     }
@@ -1135,13 +1183,13 @@ class ChadoRecords  {
     return NULL;
   }
 
-
-
   /**
    * Returns the records object as an array.
    *
    * @return array
    *   An array representation of this ChadoRecords object.
+   *
+   * @see self::records
    */
   public function getRecordsArray() : array {
     return $this->records;
@@ -1151,7 +1199,6 @@ class ChadoRecords  {
    * Allows the caller to copy the records from another ChadoRecords object.
    *
    * @param ChadoRecords $records
-   *
    *   The ChadoRecords object whose records should be copied.
    */
   public function copyRecords(ChadoRecords $records) {
@@ -1159,12 +1206,13 @@ class ChadoRecords  {
   }
 
   /**
-   *  Provides a series of validation checks on the ChadoRecord records.
+   * Provides a series of validation checks on the ChadoRecord records.
    *
    *  If any of the records do not pass a validation check then these are
    *  returned as an array of violations.
    *
-   *  @return  array of ConstraintViolation
+   * @return array
+   *   An array of ConstraintViolation objects.
    */
   public function validate() {
 
@@ -1206,12 +1254,11 @@ class ChadoRecords  {
    * @param int $record_id
    *   The record ID for the base table.
    * @param array $record
-   *   The field item to validate
+   *   The field item to validate.
    */
   protected function validateFKs($base_table, $delta, $record_id, $record) {
 
-    $schema = $this->connection->schema();
-    $table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
+    $table_def = $this->getChadoTableDef($base_table);
 
     $bad_fks = [];
     if (!array_key_exists('foreign keys', $table_def)) {
@@ -1254,7 +1301,7 @@ class ChadoRecords  {
 
       $params = [];
       foreach ($bad_fks as $col) {
-        $message .=  ucfirst($col) . ", ";
+        $message .= ucfirst($col) . ", ";
       }
       $message = substr($message, 0, -1) . '.';
       $this->violations[] = new ConstraintViolation(t($message, $params)->render(),
@@ -1272,12 +1319,11 @@ class ChadoRecords  {
    * @param int $record_id
    *   The record ID for the base table.
    * @param array $record
-   *   The field item to validate
+   *   The field item to validate.
    */
   protected function validateTypes($base_table, $delta, $record_id, $record) {
 
-    $schema = $this->connection->schema();
-    $table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
+    $table_def = $this->getChadoTableDef($base_table);
 
     $bad_types = [];
     foreach ($table_def['fields'] as $col => $info) {
@@ -1298,21 +1344,21 @@ class ChadoRecords  {
           $bad_types[$col] = 'Integer';
         }
       }
-      else if ($info['type'] == 'boolean') {
+      elseif ($info['type'] == 'boolean') {
         if (!is_bool($col_val) and !preg_match('/^[01]$/', $col_val)) {
           $bad_types[$col] = 'Boolean';
         }
       }
-      else if ($info['type'] == 'timestamp without time zone' or $info['type'] == 'date') {
-        if (!is_integer($col_val)) {
+      elseif ($info['type'] == 'timestamp without time zone' or $info['type'] == 'date') {
+        if (!is_int($col_val)) {
           $bad_types[$col] = 'Timestamp';
         }
       }
-      else if ($info['type'] == 'character varying' or $info['type'] == 'character' or
+      elseif ($info['type'] == 'character varying' or $info['type'] == 'character' or
         $info['type'] == 'text') {
         // Do nothing.
       }
-      else if ($info['type'] == 'double precision' or $info['type'] == 'real') {
+      elseif ($info['type'] == 'double precision' or $info['type'] == 'real') {
         if (!is_numeric($col_val)) {
           $bad_types[$col] = 'Number';
         }
@@ -1324,7 +1370,7 @@ class ChadoRecords  {
         $message = 'The item cannot be saved because the following values are of the wrong type: ';
         $params = [];
         foreach ($bad_types as $col => $col_type) {
-          $message .=  ucfirst($col) . " should be $col_type. " ;
+          $message .= ucfirst($col) . " should be $col_type. ";
         }
         $this->violations[] = new ConstraintViolation(t($message, $params)->render(),
             $message, $params, '', NULL, '', 1, 0, NULL, '');
@@ -1332,9 +1378,8 @@ class ChadoRecords  {
     }
   }
 
-
   /**
-   * Checks that size of the value isn't too large
+   * Checks that size of the value isn't too large.
    *
    * @param string $base_table
    *   The name of the Chado table used as a base table.
@@ -1343,12 +1388,11 @@ class ChadoRecords  {
    * @param int $record_id
    *   The record ID for the base table.
    * @param array $record
-   *   The field item to validate
+   *   The field item to validate.
    */
   protected function validateSize($base_table, $delta, $record_id, $record) {
 
-    $schema = $this->connection->schema();
-    $table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
+    $table_def = $this->getChadoTableDef($base_table);
 
     $bad_sizes = [];
     foreach ($table_def['fields'] as $col => $info) {
@@ -1370,10 +1414,10 @@ class ChadoRecords  {
         if ($info['type'] == 'character varying' or
             $info['type'] == 'character' or
             $info['type'] == 'text') {
-              if (strlen($col_val) > $info['size']) {
-                $bad_sizes[$col] = $info['size'];
-              }
-            }
+          if (strlen($col_val) > $info['size']) {
+            $bad_sizes[$col] = $info['size'];
+          }
+        }
       }
     }
 
@@ -1383,7 +1427,7 @@ class ChadoRecords  {
       $message = 'The item cannot be saved because the following values are too large. ';
       $params = [];
       foreach ($bad_sizes as $col => $size) {
-        $message .=  ucfirst($col) . " should be less than $size characters long. " ;
+        $message .= ucfirst($col) . " should be less than $size characters long. ";
       }
       $this->violations[] = new ConstraintViolation(t($message, $params)->render(),
           $message, $params, '', NULL, '', 1, 0, NULL, '');
@@ -1400,23 +1444,24 @@ class ChadoRecords  {
    * @param int $record_id
    *   The record ID for the base table.
    * @param array $record
-   *   The field item to validate
+   *   The field item to validate.
    */
-  protected function validateUnique($base_table, $delta, $record_id,  $record) {
+  protected function validateUnique($base_table, $delta, $record_id, $record) {
 
-    $schema = $this->connection->schema();
-    $table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
+    $table_def = $this->getChadoTableDef($base_table);
 
     // Check if we are violating a unique constraint (if it's an insert)
-    if (array_key_exists('unique keys',  $table_def)) {
+    if (array_key_exists('unique keys', $table_def)) {
       $pkey = $table_def['primary key'];
 
       // Iterate through the unique constraints and see if the record
       // violates it.
       $ukeys = $table_def['unique keys'];
       foreach ($ukeys as $ukey_name => $ukey_cols) {
-        $ukey_cols = explode(',', $ukey_cols);
-        $query = $this->connection->select('1:'. $base_table, $base_table);
+        if (!is_array($ukey_cols)) {
+          $ukey_cols = explode(',', $ukey_cols);
+        }
+        $query = $this->connection->select('1:' . $base_table, $base_table);
         $query->fields($base_table);
         foreach ($ukey_cols as $col) {
           $col = trim($col);
@@ -1430,16 +1475,16 @@ class ChadoRecords  {
           // as either NULL or as an empty string in the database
           // table. Create a condition that checks for both. For
           // other types, e.g. integer, just check for null.
-          if ($table_def['fields'][$col]['not null'] == FALSE and !$col_val) {
+          if (($table_def['fields'][$col]['not null'] ?? FALSE) == FALSE and !$col_val) {
             if (in_array($table_def['fields'][$col]['type'],
                 ['character', 'character varying', 'text'])) {
-                  $query->condition($query->orConditionGroup()
-                        ->condition($col, '', '=')
-                        ->isNull($col));
-                }
-                else {
-                  $query->isNull($col);
-                }
+              $query->condition($query->orConditionGroup()
+                ->condition($col, '', '=')
+                ->isNull($col));
+            }
+            else {
+              $query->isNull($col);
+            }
           }
           else {
             $query->condition($col, $col_val);
@@ -1469,7 +1514,7 @@ class ChadoRecords  {
                 $col_val = $record['values'][$col];
               }
               $params["@$col"] = $col_val;
-              $message .=  ucfirst($col) . ": '@$col'" . (count($ukey_cols) == count($params)?'. ':', ');
+              $message .= ucfirst($col) . ": '@$col'" . (count($ukey_cols) == count($params) ? '. ' : ', ');
             }
             // Explanation of the unique violation.
             if (count($params) > 1) {
@@ -1488,7 +1533,6 @@ class ChadoRecords  {
     }
   }
 
-
   /**
    * Checks that required fields have values.
    *
@@ -1499,12 +1543,11 @@ class ChadoRecords  {
    * @param int $record_id
    *   The record ID for the base table.
    * @param array $record
-   *   The field item to validate
+   *   The field item to validate.
    */
   protected function validateRequired($base_table, $delta, $record_id, $record) {
 
-    $schema = $this->connection->schema();
-    $table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
+    $table_def = $this->getChadoTableDef($base_table);
     $pkey = $table_def['primary key'];
 
     $missing = [];
@@ -1514,14 +1557,14 @@ class ChadoRecords  {
         $col_val = $record['values'][$col];
       }
 
-      // Don't check the pkey
+      // Don't check the pkey.
       if ($col == $pkey) {
         continue;
       }
 
       // If the field requires a value but doesn't have one then it may be
       // a problem.
-      if ($info['not null'] == TRUE and (!isset($col_val) or ($col_val == ''))) {
+      if (($info['not null'] ?? FALSE) == TRUE and (!isset($col_val) or ($col_val == ''))) {
         // If the column  has a default value then it's not a problem.
         if (array_key_exists('default', $info)) {
           continue;
@@ -1537,7 +1580,7 @@ class ChadoRecords  {
         . '"' . $base_table . '" table are missing. ';
       $params = [];
       foreach ($missing as $col) {
-        $message .=  $col . ", ";
+        $message .= $col . ", ";
       }
       $message = substr($message, 0, -2) . '.';
       $this->violations[] = new ConstraintViolation(t($message, $params)->render(),
@@ -1552,6 +1595,7 @@ class ChadoRecords  {
    *
    * @param array $record
    *   The record being considered for insertion.
+   *
    * @return bool
    *   Returns TRUE if the record should be skipped, FALSE otherwise.
    */
@@ -1569,7 +1613,6 @@ class ChadoRecords  {
     }
     return $skip_record;
   }
-
 
   /**
    * Inserts all records for a single Chado table.
@@ -1591,9 +1634,7 @@ class ChadoRecords  {
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
 
     // Get information about this Chado table.
-    $schema = $this->connection->schema();
-    $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
-    $pkey = $table_def['primary key'];
+    $pkey = $this->getPrimaryKey($chado_table);
 
     // Iterate through each item of the table and perform an insert.
     $items = $this->getTableItems($base_table, $table_alias);
@@ -1631,7 +1672,7 @@ class ChadoRecords  {
 
       // Update the field with the record id.
       $column_aliases = $this->getColumnFieldAliases($base_table, $table_alias, $delta, $pkey);
-      if (!$column_aliases){
+      if (!$column_aliases) {
         throw new \Exception("Failed to insert a record in the Chado \"$chado_table\" because the primary key is missing as a field. Alias: $table_alias, Record: "
             . print_r($record, TRUE));
       }
@@ -1653,8 +1694,8 @@ class ChadoRecords  {
    * @param string $base_table_alias
    *   The alias of the base table.
    * @param array $record_ids
-   *   When specified, only return records where the primary key is present in this array.
-   *   Used by publish to publish in batches.
+   *   When specified, only return records where the primary key is present in
+   *   this array. Used by publish to publish in batches.
    *
    * @return array
    *   An array of \Drupal\tripal_chado\TripalStorage\ChadoRecords objects.
@@ -1672,7 +1713,7 @@ class ChadoRecords  {
     $items = $this->getTableItems($base_table, $base_table_alias);
     foreach ($items as $delta => $record) {
 
-      // Start the select
+      // Start the select.
       $select = $this->connection->select('1:' . $chado_table, $base_table_alias);
 
       // Add the fields in the chado table.
@@ -1693,7 +1734,7 @@ class ChadoRecords  {
           $left_alias = $join_info['on']['left_alias'];
           $left_column = $join_info['on']['left_column'];
 
-          $select->leftJoin('1:' . $right_table, $right_alias, $left_alias . '.' .  $left_column . '=' .  $right_alias . '.' . $right_column);
+          $select->leftJoin('1:' . $right_table, $right_alias, $left_alias . '.' . $left_column . '=' . $right_alias . '.' . $right_column);
 
           foreach ($join_info['columns'] as $column) {
             $join_column = $column['chado_column'];
@@ -1703,9 +1744,10 @@ class ChadoRecords  {
         }
       }
 
-      // Add the select condition
+      // Add the select condition.
       foreach ($record['conditions'] as $column_alias => $value) {
-        // If we don't have a primary key for the base table then skip the condition.
+        // If we don't have a primary key for the base table
+        // then skip the condition.
         if (array_key_exists($column_alias, $record['link_columns']) and !$this->getRecordID($base_table)) {
           continue;
         }
@@ -1715,8 +1757,7 @@ class ChadoRecords  {
       // If limiting results to a set of primary keys, restrict the
       // query by adding this as a condition.
       if ($record_ids) {
-        $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
-        $chado_table_pkey = $chado_table_def['primary key'];
+        $chado_table_pkey = $this->getPrimaryKey($chado_table);
         $select->condition($base_table_alias . '.' . $chado_table_pkey, $record_ids, 'IN');
       }
 
@@ -1790,7 +1831,7 @@ class ChadoRecords  {
       }
 
       // Start the update.
-      $update = $this->connection->update('1:'. $chado_table);
+      $update = $this->connection->update('1:' . $chado_table);
 
       // Add the fields to update.
       $fields = [];
@@ -1844,9 +1885,7 @@ class ChadoRecords  {
     $items = $this->getTableItems($base_table, $table_alias);
     foreach ($items as $delta => $record) {
 
-      $schema = $this->connection->schema();
-      $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
-      $pkey = $table_def['primary key'];
+      $pkey = $this->getPrimaryKey($chado_table);
 
       // Don't delete if we don't have any conditions set.
       if (!$this->hasValidConditions($record)) {
@@ -1867,8 +1906,7 @@ class ChadoRecords  {
         continue;
       }
 
-
-      $delete = $this->connection->delete('1:'. $chado_table);
+      $delete = $this->connection->delete('1:' . $chado_table);
       foreach ($record['conditions'] as $column_alias => $cond_value) {
         $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
         $delete->condition($chado_column, $cond_value['value']);
@@ -1888,7 +1926,7 @@ class ChadoRecords  {
       }
 
       // Unset the record Id for this deleted record.
-      $this->setColumnValue($base_table, $table_alias, $delta, $pkey, 0);
+      $this->setColumnValue($base_table, $table_alias, $delta, $pkey, 0, FALSE);
     }
   }
 
@@ -1982,7 +2020,7 @@ class ChadoRecords  {
             $field_cardinality = $cardinalities[$right_table];
           }
           $select->leftJoin('1:' . $right_table, $right_alias,
-            $left_alias . '.' .  $left_column . '=' .  $right_alias . '.' . $right_column);
+            $left_alias . '.' . $left_column . '=' . $right_alias . '.' . $right_column);
 
           foreach ($join_info['columns'] as $column) {
             $join_column = $column['chado_column'];
@@ -1992,8 +2030,8 @@ class ChadoRecords  {
         }
       }
 
-      // Add OR conditions to select, if more than one is present and has a value,
-      // otherwise all remaining conditions are effectively added as AND.
+      // Add OR conditions to select, if more than one is present and has a
+      // value, otherwise all remaining conditions are effectively added as AND.
       $this->addConditions($select, $record, $table_alias, $column_alias);
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
 
@@ -2066,21 +2104,24 @@ class ChadoRecords  {
   }
 
   /**
+   * Adds conditions to the join.
+   *
    * Checks if there is more than one OR condition with a value,
    * and if so creates an or condition group. If only one, and for
    * remaining conditions with a value, added directly, i.e. as an
    * AND condition.
    *
    * @param \Drupal\pgsql\Driver\Database\pgsql\Select &$select
-   *   An existing database select query
+   *   An existing database select query.
    * @param array $record
-   *   The record being considered
+   *   The record being considered.
    * @param string $table_alias
+   *   The alias of the table used in the condition.
    *
    * @return void
    *   Changes are made to the select.
    */
-  protected function addConditions(\Drupal\pgsql\Driver\Database\pgsql\Select &$select, array $record, string $table_alias): void {
+  protected function addConditions(Select &$select, array $record, string $table_alias): void {
     $or_condition_group = NULL;
 
     // Get a count of all the non empty OR condition values. Only create an
@@ -2113,7 +2154,6 @@ class ChadoRecords  {
     if ($or_condition_group) {
       $select->condition($or_condition_group);
     }
-    return;
   }
 
   /**
@@ -2123,12 +2163,12 @@ class ChadoRecords  {
    * one condition, and the value on which that condition relies is not empty.
    *
    * @param array $record
-   *   The field item to validate
+   *   The field item to validate.
    *
    * @return bool
    *   Return TRUE if the conditions are valid. FALSE otherwise.
    */
-  protected function hasValidConditions($record) : bool{
+  protected function hasValidConditions($record) : bool {
 
     $num_conditions = 0;
     foreach ($record['conditions'] as $details) {
@@ -2146,7 +2186,7 @@ class ChadoRecords  {
    * Indicates if we should keep this record for inserts/updates.
    *
    * @param array $record
-   *   The field item to validate
+   *   The field item to validate.
    *
    * @return bool
    *   Return TRUE if the record is empty. FALSE otherwise.
@@ -2161,4 +2201,41 @@ class ChadoRecords  {
     }
     return FALSE;
   }
+
+  /**
+   * Get a table definition from the chado schema.
+   *
+   * @param string $table_name
+   *   The table name.
+   *
+   * @return array
+   *   The table schema.
+   */
+  public function getChadoTableDef(string $table_name): array {
+    $parameters = [
+      'format' => 'Drupal',
+      'source' => [
+        'file',
+        'tripal',
+        'database'
+      ],
+    ];
+    $table_def = $this->connection->schema()->getTableDef($table_name, $parameters);
+    return $table_def;
+  }
+
+  /**
+   * Retrieves the name of the primary key for a Chado table.
+   *
+   * @param string $table_name
+   *   The chado table to look up the primary key for.
+   *
+   * @return string|null
+   *   The table primary key name.
+   */
+  public function getPrimaryKey(string $table_name): ?string {
+    $table_def = $this->getChadoTableDef($table_name);
+    return $table_def['primary key'] ?? NULL;
+  }
+
 }
