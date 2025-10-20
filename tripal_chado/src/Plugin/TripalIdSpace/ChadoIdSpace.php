@@ -281,7 +281,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
       return NULL;
     }
 
-    $cache_id = 'chado_id_space_term_' . $accession;
+    $cache_id = 'chado_id_space_term_' . $this->getName() . '_' . $accession;
     if ($cache = \Drupal::cache()->get($cache_id)) {
       return $cache->data;
     }
