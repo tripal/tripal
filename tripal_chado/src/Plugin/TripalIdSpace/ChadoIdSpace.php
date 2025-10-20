@@ -555,7 +555,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     $term->setInternalId($cvterm->cvterm_id);
 
     // Invalidate the cache for this term.
-    $cache_id = 'chado_id_space_term_' . $this->getName() . '_' . $term->getAccession();
+    $cache_id = 'chado_id_space_term_' . $term->getIdSpace() . '_' . $term->getAccession();
     \Drupal::cache()->invalidate($cache_id);
 
     return TRUE;
