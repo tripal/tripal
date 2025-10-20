@@ -280,7 +280,6 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     if (!$this->is_valid) {
       return NULL;
     }
-
     $cache_id = 'chado_id_space_term_' . $this->getName() . '_' . $accession;
     if ($cache = \Drupal::cache()->get($cache_id)) {
       return $cache->data;
@@ -556,7 +555,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     $term->setInternalId($cvterm->cvterm_id);
 
     // Invalidate the cache for this term.
-    $cache_id = 'chado_id_space_term_' . $term->getAccession();
+    $cache_id = 'chado_id_space_term_' . $this->getName() . '_' . $term->getAccession();
     \Drupal::cache()->invalidate($cache_id);
 
     return TRUE;
