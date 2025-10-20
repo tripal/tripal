@@ -140,7 +140,7 @@ entity.tripal_entity.add_page:
   options:
     _admin_route: true
   requirements:
-    _permission: 'administer tripal content'
+    _permission: 'allow tripal entity'
 
 # tripal_publish_content_form
 tripal.content_bio_data_publish_form:
@@ -620,7 +620,7 @@ tripal.import_tripalentitytype_collection:
     _title: 'Import Tripal Entity Type Collection'
     _form: 'Drupal\tripal\Form\ImportTripalEntityTypeCollection'
   requirements:
-    _permission: 'manage tripal content types'
+    _permission: 'allow tripal entity'
 
 # Manage Pub Search Queries
 tripal.data_loaders.publication_loaders.manage_publication_search_queries:
