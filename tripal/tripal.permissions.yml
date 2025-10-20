@@ -73,6 +73,16 @@ allow tripal import:
   description: 'Allow access to the listing of importers available through Tripal.'
 
 ##
+# The core Trpal Content permissions.
+#
+# Additional permissions are dynamic.
+# @see TripalEntityPermissions::tripalContentTypePermissions()
+##
+allow tripal entity:
+  title: 'Access Tripal Content'
+  description: 'Allow access to the listing of content available through Tripal.'
+
+##
 # Callbacks for Dynamic permissions.
 #
 # The following class methods provide additional permissions that depend on
