@@ -51,8 +51,7 @@ class ChadoSchema extends TripalDbxSchema {
           \Drupal::service('extension.list.module')->getPath('tripal_chado')
           . '/chado_schema/schema-definition/version-'
           . $version
-          . '.yml'
-        ;
+          . '.yml';
 
         // Make sure we got a valid version format.
         if (!preg_match('/^\d\.\d\.?\d?\.?\d*$/', $version)
@@ -91,13 +90,14 @@ class ChadoSchema extends TripalDbxSchema {
    * function retrieves only the list of tables that are considered 'base'
    * tables.
    *
-   * @return
+   * @return array
    *   An array of base table names.
    */
-  public function getMainTables() {
+  public function getMainTables(): array {
 
     // Initialize the base tables with those tables that are missing a type.
-    // Ideally they should have a type, but that's for a future version of Chado.
+    // Ideally they should have a type, but that's for a future version
+    // of Chado.
     $base_tables = [
       'organism',
       'project',
@@ -107,9 +107,9 @@ class ChadoSchema extends TripalDbxSchema {
       'assay',
     ];
 
-    // We'll use the cvterm table to guide which tables are base tables. Typically
-    // base tables (with a few exceptions) all have a type.  Iterate through the
-    // referring tables.
+    // We'll use the cvterm table to guide which tables are base tables.
+    // Typically base tables (with a few exceptions) all have a type.
+    // Iterate through the referring tables.
     $schema = $this->getTableDef('cvterm', []);
     if (isset($schema['referring_tables']) && is_array($schema['referring_tables'])) {
       foreach ($schema['referring_tables'] as $tablename) {
@@ -117,7 +117,8 @@ class ChadoSchema extends TripalDbxSchema {
         $is_base_table = TRUE;
 
         // Ignore the cvterm tables + chadoprop tables.
-        if (in_array($tablename, ['cvterm_dbxref', 'cvterm_relationship', 'cvtermpath', 'cvtermprop', 'chadoprop', 'cvtermsynonym'])) {
+        if (in_array($tablename,
+            ['cvterm_dbxref', 'cvterm_relationship', 'cvtermpath', 'cvtermprop', 'chadoprop', 'cvtermsynonym'])) {
           $is_base_table = FALSE;
         }
         // Ignore relationship linked tables.
@@ -147,7 +148,7 @@ class ChadoSchema extends TripalDbxSchema {
     // Remove any linker tables that have snuck in.  Linker tables are those
     // whose foreign key constraints link to two or more base table.
     $final_list = [];
-    foreach ($base_tables as $i => $tablename) {
+    foreach ($base_tables as $tablename) {
       // A few tables break our rule and seems to look
       // like a linking table, but we want to keep it as a base table.
       if ($tablename == 'biomaterial' or $tablename == 'assay' or $tablename == 'arraydesign') {
@@ -163,7 +164,7 @@ class ChadoSchema extends TripalDbxSchema {
       $num_links = 0;
       $schema = $this->getTableDef($tablename, []);
       $fkeys = $schema['foreign keys'] ?? [];
-      foreach ($fkeys as $fkid => $details) {
+      foreach ($fkeys as $details) {
         $fktable = $details['table'];
         if (in_array($fktable, $base_tables)) {
           $num_links++;
@@ -207,11 +208,12 @@ class ChadoSchema extends TripalDbxSchema {
    *   An object containing the chado_table and chado_field properties or NULL
    *   if if no mapping was found for the term.
    *
-  public function getCvtermMapping($params) {
-    return chado_get_cvterm_mapping($params);
-  }*/
+   * public function getCvtermMapping($params) {
+   *   return chado_get_cvterm_mapping($params);
+   * }
+   */
 
-   /***
+  /**
    * Retrieve the default chado schema.
    *
    * This method ensures that we support multiple chado instances
