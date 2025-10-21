@@ -74,14 +74,17 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
 
     // Allow administrator permission to bypass per content type permissions.
     if ($account->hasPermission('administer tripal content')) {
-      return AccessResult::allowed()->cachePerPermissions();
+      return AccessResult::allowed();
     }
 
     // Check 'create TYPE content' permission.
     // Always return allow if has permission in order to allow other
     // implementations to override this functionality.
     if (!$account->hasPermission("create $entity_bundle content")) {
-      return AccessResult::forbidden("You do not have permission to create this Tripal Content. Have your administrator give you the 'Create new content' permission for this type of Tripal Content specifically.")->cachePerPermissions();
+      return AccessResult::forbidden("You do not have permission to create this Tripal Content. Have your administrator give you the 'Create new content' permission for this type of Tripal Content specifically.");
+    }
+    else {
+      return AccessResult::allowed();
     }
   }
 
