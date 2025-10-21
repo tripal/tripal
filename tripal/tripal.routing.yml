@@ -140,7 +140,7 @@ entity.tripal_entity.add_page:
   options:
     _admin_route: true
   requirements:
-    _permission: 'access tripal content overview'
+    _custom_access: '\Drupal\tripal\Access\TripalEntityAccessControlHandler::checkHasAnyCreateAccess'
 
 # tripal_publish_content_form
 tripal.content_bio_data_publish_form:
@@ -152,7 +152,7 @@ tripal.content_bio_data_publish_form:
   options:
     _admin_route: true
   requirements:
-    _permission: 'publish tripal content+administer tripal content'
+    _custom_access: '\Drupal\tripal\Access\TripalEntityAccessControlHandler::checkHasPublishOrAdminAccess'
 
 
 # tripal_unpublish_form
@@ -163,7 +163,7 @@ tripal.content_type_unpublish_multiple:
     _title: 'Unpublish Tripal Content'
     _description: 'Unpublish previously published content.'
   requirements:
-    _permission: 'publish tripal content+administer tripal content'
+    _custom_access: '\Drupal\tripal\Access\TripalEntityAccessControlHandler::checkHasPublishOrAdminAccess'
 
 # Bio Data Ajax Callbacks
 tripal.content_type_field_attach:
