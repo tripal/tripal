@@ -62,6 +62,6 @@ RUN service apache2 start \
   && if [ "$installchado" = "TRUE" ]; then \
   vendor/bin/drush trp-import-types --collection_id=general_chado --username=drupaladmin; \
   fi \
-  && curl https://qlty.sh | sh \
+  && curl https://qlty.sh | sh || true \
   && service apache2 stop \
   && service postgresql stop
