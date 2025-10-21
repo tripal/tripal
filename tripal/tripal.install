@@ -1070,3 +1070,29 @@ function tripal_update_10403() {
     ])->save();
   }
 }
+
+/**
+ * Add uuid column to tripal_entity and populate existing rows.
+ */
+function tripal_update_10404() {
+  $schema = Database::getConnection()->schema();
+  if (!$schema->fieldExists('tripal_entity', 'uuid')) {
+    $schema->addField('tripal_entity', 'uuid', [
+      'type' => 'varchar',
+      'length' => 128,
+      'not null' => TRUE,
+      'default' => '',
+    ]);
+  }
+
+  $uuid_service = \Drupal::service('uuid');
+  $result = Database::getConnection()->select('tripal_entity', 't')
+    ->fields('t', ['id'])
+    ->execute();
+  foreach ($result as $row) {
+    Database::getConnection()->update('tripal_entity')
+      ->fields(['uuid' => $uuid_service->generate()])
+      ->condition('id', $row->id)
+      ->execute();
+  }
+}
