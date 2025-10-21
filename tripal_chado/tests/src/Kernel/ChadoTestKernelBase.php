@@ -2,10 +2,8 @@
 namespace Drupal\Tests\tripal_chado\Kernel;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\tripal\TripalDBX\TripalDbx;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
-use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\Tests\tripal_chado\Traits\ChadoTestTrait;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * This is a base class for Chado tests.
@@ -27,6 +25,8 @@ use Drupal\Tests\tripal_chado\Traits\ChadoTestTrait;
  * @group Tripal
  * @group Tripal Chado
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
 abstract class ChadoTestKernelBase extends TripalTestKernelBase {
 
   use ChadoTestTrait;
@@ -95,7 +95,7 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
   }
 
   /**
-   * Prepare kernel environments to suppor specific functionality.
+   * Prepare kernel environments to support specific functionality.
    *
    * This method is foccused on making it easier to write kernel test for Tripal
    * functionality. Simply pass in the parts of Tripal core you need in your
@@ -145,6 +145,11 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
       $this->installEntitySchema('file');
       $this->installSchema('file', ['file_usage']);
       $this->installSchema('tripal', ['tripal_import', 'tripal_jobs']);
+      // Get services used by importers.
+      $this->messenger = \Drupal::messenger();
+      $this->logger = \Drupal::service('tripal.logger');
+      $this->fileretriever = \Drupal::service('tripal.fileretriever');
+      $this->publish_manager = \Drupal::service('tripal.backend_publish');
     }
   }
 }

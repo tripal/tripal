@@ -3,21 +3,22 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Plugin implementation of Default Tripal field formatter for sequence data 
- *
- * @FieldFormatter(
- *   id = "chado_sequence_checksum_formatter_default",
- *   label = @Translation("Chado Sequence checksum Formatter"),
- *   description = @Translation("A chado sequence checksum formatter"),
- *   field_types = {
- *     "chado_sequence_checksum_type_default"
- *   }
- * )
+ * Plugin implementation of Default Tripal field formatter for sequence data.
  */
+#[TripalFieldFormatter(
+  id: 'chado_sequence_checksum_formatter_default',
+  label: new TranslatableMarkup('Chado Sequence checksum Formatter'),
+  description: new TranslatableMarkup('A chado sequence checksum formatter'),
+  field_types: [
+    'chado_sequence_checksum_type_default',
+  ],
+)]
 class ChadoSequenceChecksumFormatterDefault extends ChadoFormatterBase {
 
   /**

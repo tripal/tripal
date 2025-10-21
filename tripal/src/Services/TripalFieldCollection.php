@@ -1,7 +1,6 @@
 <?php
 namespace Drupal\tripal\Services;
 
-use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager;
 use Drupal\field\Entity\FieldConfig;
@@ -578,7 +577,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    *   - display: Provides details for display of the field. By default it
    *     should provide the following keys:
    *     - view: an array of settings for the "view" display.  The keys of this
-   *       array should be the names of the available view modes. By deafult it
+   *       array should be the names of the available view modes. By default it
    *       should always provide a 'default' key.  Each display mode can
    *       then have the following key/value pairs:
    *       - weight: indicates the weight (or position) of the field in the
@@ -590,7 +589,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    *         placed in relationship to the value. Valid values include 'above',
    *         'inline' or 'hidden'.
    *     - form: an array of settings for the "form" display.  The keys of this
-   *       array should be the names of the available form modes. By deafult it
+   *       array should be the names of the available form modes. By default it
    *       should always provide a 'default' key.  Each display mode can
    *       then have the following key/value pairs:
    *       - weight: indicates the weight (or position) of the field in the

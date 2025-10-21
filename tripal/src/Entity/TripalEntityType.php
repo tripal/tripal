@@ -3,10 +3,70 @@
 namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
+use Drupal\Core\Entity\EntityViewBuilder;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use Drupal\tripal\ListBuilders\TripalEntityTypeListBuilder;
+use Drupal\tripal\Form\TripalEntityTypeForm;
+use Drupal\tripal\Form\TripalEntityTypeDeleteForm;
+use Drupal\tripal\Routing\TripalEntityTypeHtmlRouteProvider;
 
 /**
  * Defines the Tripal Content type entity.
+ */
+#[ConfigEntityType(
+  id: 'tripal_entity_type',
+  label: new TranslatableMarkup('Tripal Content Type'),
+  label_collection: new TranslatableMarkup('Tripal Content Types'),
+  label_singular: new TranslatableMarkup('Tripal Content Type'),
+  label_plural: new TranslatableMarkup('Tripal Content Types'),
+  label_count: [
+    'singular' => '@count Tripal Content Type',
+    'plural' => '@count Tripal Content Types',
+  ],
+  handlers: [
+    'list_builder' => TripalEntityTypeListBuilder::class,
+    'view_builder' => EntityViewBuilder::class,
+    'form' => [
+      'add' => TripalEntityTypeForm::class,
+      'edit' => TripalEntityTypeForm::class,
+      'delete' => TripalEntityTypeDeleteForm::class,
+    ],
+    'route_provider' => [
+      'html' => TripalEntityTypeHtmlRouteProvider::class,
+    ],
+  ],
+  config_prefix: 'content_type',
+  admin_permission: 'manage tripal content types',
+  bundle_of: 'tripal_entity',
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'label',
+  ],
+  links: [
+    'add-form' => '/admin/structure/bio_data/add',
+    'edit-form' => '/admin/structure/bio_data/manage/{tripal_entity_type}',
+    'delete-form' => '/admin/structure/bio_data/manage/{tripal_entity_type}/delete',
+    'collection' => '/admin/structure/bio_data',
+  ],
+  config_export: [
+    'id',
+    'label',
+    'termIdSpace',
+    'termAccession',
+    'help_text',
+    'category',
+    'title_format',
+    'url_format',
+    'hide_empty_field',
+    'ajax_field',
+  ],
+)]
+/**
+ * Defines the Tripal Content type entity.
+ *
+ * @todo Remove this annotation when we no longer support Drupal 10.x.
  *
  * @ConfigEntityType(
  *   id = "tripal_entity_type",
@@ -63,7 +123,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   /**
    * The Tripal Content type ID.
    *
-   * @var integer
+   * @var int
    */
   protected $id;
 
@@ -119,30 +179,32 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   /**
    * Indicates that empty fields should be hidden.
    *
-   * @var boolean
+   * @var bool
    */
   protected $hide_empty_field;
 
   /**
    * Indicates that AJAX should be used to load fields.
    *
-   * @var boolean
+   * @var bool
    */
   protected $ajax_field;
 
-  // --------------------------------------------------------------------------
-  //                             CREATE + SAVE
-  //
-  // Tripal Entity Types are created using the Drupal Entity API.
-  // To create new type, you will use the static create function we extended
-  // below to pass in the info for the new type and then call the save method on
-  // the created object to permanently save it to your site.
-  //
-  //    $new_entityType = TripalEntityType::create($details);
-  //    if (is_object($entityType)) {
-  //      $new_entityType->save();
-  //    }
-  // --------------------------------------------------------------------------
+  /**
+   * Methods related to creating and saving content.
+   *
+   * @section CREATE + SAVE
+   *
+   * Tripal Entity Types are created using the Drupal Entity API.
+   * To create new type, you will use the static create function we extended
+   * below to pass in the info for the new type and then call the save method on
+   * the created object to permanently save it to your site.
+   *
+   * $new_entityType = TripalEntityType::create($details);
+   * if (is_object($entityType)) {
+   *   $new_entityType->save();
+   * }
+   */
 
   /**
    * Contructs a new TripalEntityType object without permanently saving it.
@@ -150,10 +212,11 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * Extends EntityBase::create() with support for TripalTerm as a value.
    *
    * @param array $values
-   *    An array of values to set, keyed by property name. Supported keys are:
-   *      -
+   *   An array of values to set, keyed by property name. Supported keys are:
+   *      -.
+   *
    * @return TripalEntityType
-   *    An TripalEntityType with the values passed in set appropriately.
+   *   A TripalEntityType with the values passed in set appropriately.
    */
   public static function create(array $values = []) {
 
@@ -181,10 +244,9 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     // Let the parent implementation finish creating the object.
     // NOTE: We do things in this order because a configuration entity cannot
     // save an object to its storage. Thus we need to extract the term strings
-    // for storage and retrieve the Term object later if requested via getTerm().
+    // for storage and retrieve the Term object later if requested.
     return parent::create($values);
   }
-
 
   /**
    * Saves the new TripalEntityType permanently.
@@ -198,20 +260,20 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * @return int
    *   Either SAVED_NEW or SAVED_UPDATED, depending on the operation performed.
    */
-   public function save() {
+  public function save() {
 
-     // Set defaults for anything not already set.
-     $this->setDefaults();
+    // Set defaults for anything not already set.
+    $this->setDefaults();
 
-     // Validate the values before trying to save.
-     $this->validate();
+    // Validate the values before trying to save.
+    $this->validate();
 
-     // Save the rest of the entity using the parent implementation.
-     // This is when the id is assigned.
-     $return_status = parent::save();
+    // Save the rest of the entity using the parent implementation.
+    // This is when the id is assigned.
+    $return_status = parent::save();
 
-     return $return_status;
-   }
+    return $return_status;
+  }
 
   /**
    * Validate the expected values before saving.
@@ -239,16 +301,17 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
     // Check that the TripalTerm exists with the ID Space and Accession
     // added to this type when it was created.
-
     // If not, then create the TripalTerm, TripalIDSpace and TripalVocabulary.
   }
 
-  // --------------------------------------------------------------------------
-  //                            FIELD MANAGEMT
-  //
-  // TripalEntity uses mostly TripalFields and any entity-wide functions needed
-  // for TripalFields are below.
-  // --------------------------------------------------------------------------
+  /**
+   * Methods related to managing fields.
+   *
+   * @section FIELD MANAGEMT
+   *
+   * TripalEntity uses mostly TripalFields and any entity-wide functions needed
+   * for TripalFields are below.
+   */
 
   /**
    * Update Drupal field schema to match that defined by each field.
@@ -286,7 +349,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     $drupal_table_mapping = $sql_storage->getTableMapping();
 
     // Now for each field instance...
-    foreach ($field_instances as $key => $field_def) {
+    foreach ($field_instances as $field_def) {
       $field_name = $field_def->getName();
       $field_storage_def = $field_def->getFieldStorageDefinition();
 
@@ -304,7 +367,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
       // Now for each property of the current field, check to see if the
       // corresponding drupal table column exists.
-      foreach($current_schema_columns as $property_name => $column_schema) {
+      foreach ($current_schema_columns as $property_name => $column_schema) {
         $property_column_name = $drupal_table_mapping->getFieldColumnName($field_storage_def, $property_name);
         $column_exists = $schema->fieldExists($drupal_table, $property_column_name);
 
@@ -325,13 +388,15 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     return $columns_added;
   }
 
-  // --------------------------------------------------------------------------
-  //                          MAIN SETTER / GETTERS
-  //
-  // The following methods allow the main properties of the Tripal Entity Type
-  // to be set or retrieved. These properties include machine name, term
-  // help text and category.
-  // --------------------------------------------------------------------------
+  /**
+   * Methods related to getting and setting properties.
+   *
+   * @section MAIN SETTER / GETTERS
+   *
+   * The following methods allow the main properties of the Tripal Entity Type
+   * to be set or retrieved. These properties include machine name, term
+   * help text and category.
+   */
 
   /**
    * Set defaults of values which are not yet set.
@@ -468,15 +533,17 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     $this->category = $category;
   }
 
-  // --------------------------------------------------------------------------
-  //                              TITLE FORMATS
-  //
-  // The following methods all pertain to setting titles for Tripal Content
-  // Pages. Specifically, curators can set the title of a specific page or
-  // allow the default pattern to generate the title. The pattern is specified
-  // for all pages of a given Tripal Entity Type and is known as a
-  // "Title Format" and can be set when the type is created or edited.
-  // --------------------------------------------------------------------------
+  /**
+   * Methods related to generating titles via a format with tokens.
+   *
+   * @section TITLE FORMATS
+   *
+   * The following methods all pertain to setting titles for Tripal Content
+   * Pages. Specifically, curators can set the title of a specific page or
+   * allow the default pattern to generate the title. The pattern is specified
+   * for all pages of a given Tripal Entity Type and is known as a
+   * "Title Format" and can be set when the type is created or edited.
+   */
 
   /**
    * {@inheritdoc}
@@ -499,6 +566,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
   /**
    * {@inheritdoc}
+   *
    * @todo add to docs
    */
   public function getDefaultTitleFormat() {
@@ -512,8 +580,8 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     $format = 'Unknown ' . date('Ymd-h:i:sA');
 
     // A) Check to see if more informed modules have suggested a title for this
-    //    type. Invoke hook_tripal_default_title_format() to get all suggestions
-    //    from other modules.
+    // type. Invoke hook_tripal_default_title_format() to get all suggestions
+    // from other modules.
     $suggestions = \Drupal::moduleHandler()->invokeAll(
       'tripal_default_title_format',
       [$this, $tokens]
@@ -532,8 +600,8 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       $format = $suggestions[$lightest_key]['format'];
     }
     // B) Generate our own ugly title by simply using the entity ID to
-    //    guarantee uniqueness. This will happen when a site admin is
-    //    creating a new content type through the UI.
+    // guarantee uniqueness. This will happen when a site admin is
+    // creating a new content type through the UI.
     else {
       $format = 'Entity [TripalEntity__entity_id]';
     }
@@ -541,14 +609,16 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     return $format;
   }
 
-  // --------------------------------------------------------------------------
-  //                             URL ALIAS FORMATS
-  //
-  // The following methods all pertain to setting aliases for Tripal Content
-  // Pages. This allows administrators to set readable, more friendly URLs
-  // for their biological content in bulk through the use of tokens and
-  // patterns.
-  // --------------------------------------------------------------------------
+  /**
+   * Methods related to generating URL alias' via a format with tokens.
+   *
+   * @section URL ALIAS FORMATS
+   *
+   * The following methods all pertain to setting aliases for Tripal Content
+   * Pages. This allows administrators to set readable, more friendly URLs
+   * for their biological content in bulk through the use of tokens and
+   * patterns.
+   */
 
   /**
    * {@inheritdoc}
@@ -569,16 +639,19 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     $this->url_format = $url_format;
   }
 
-  // --------------------------------------------------------------------------
-  //                                  TOKENS
-  //
-  // The following methods relate to Tripal Entity Type tokens. These tokens
-  // are based on the fields for a given Tripal Entity Type and can be used
-  // to indicate general patterns to allow bulk assignment of titles and URLs.
-  // --------------------------------------------------------------------------
+  /**
+   * Methods related to handling tokens.
+   *
+   * @section TOKENS
+   *
+   * The following methods relate to Tripal Entity Type tokens. These tokens
+   * are based on the fields for a given Tripal Entity Type and can be used
+   * to indicate general patterns to allow bulk assignment of titles and URLs.
+   */
 
   /**
    * {@inheritdoc}
+   *
    * @todo add to docs.
    */
   public function getTokens($options = []) {
@@ -593,7 +666,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     $token = 'TripalEntityType__entity_id';
     $tokens[$token] = [
       'label' => 'Content Type/Bundle ID',
-      'description' => 'The machine name for this Tripal Content Type. By default this will be similar to the label you entered. For example, if you created a content type with the label "Genome Annoation" then it\'s machine name/id would be "genome_annotation".',
+      'description' => 'The machine name for this Tripal Content Type. By default this will be similar to the label you entered. For example, if you created a content type with the label "Genome Annotation" then its machine name/id would be "genome_annotation".',
       'token' => $token,
       'field_name' => NULL,
       'required' => TRUE,
@@ -646,7 +719,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     ];
 
     $instances = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->id);
-    foreach ($instances as $instance_name => $instance) {
+    foreach ($instances as $instance) {
 
       $use_field = TRUE;
       $field_name = $instance->getName();
@@ -665,7 +738,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       // Iterate through the TripalEntity fields and see if they have
       // sub-elements, if so, add those as tokens too.
       // @todo handle sub-elements once TripalField's are implemented.
-
       // If we have no elements to add then just add the field as is.
       if ($use_field) {
         // Build the token from the field information.
@@ -683,13 +755,15 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     return $tokens;
   }
 
-  // --------------------------------------------------------------------------
-  //                             FIELD DISPLAY
-  //
-  // The following methods pertain to what fields are displayed and how they
-  // are loaded. For example, administrators can choose to hide empty fields
-  // or have all fields loaded by AJAX to speed up page loading times.
-  // --------------------------------------------------------------------------
+  /**
+   * Methods related to field display.
+   *
+   * @section FIELD DISPLAY
+   *
+   * The following methods pertain to what fields are displayed and how they
+   * are loaded. For example, administrators can choose to hide empty fields
+   * or have all fields loaded by AJAX to speed up page loading times.
+   */
 
   /**
    * {@inheritdoc}
@@ -733,18 +807,20 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     return $this->hide_empty_field;
   }
 
-  // --------------------------------------------------------------------------
-  //                             TYPE SORTING
-  //
-  // The following methods pertain to sorting Tripal Entity Types for listing.
-  // --------------------------------------------------------------------------
+  /**
+   * Methods relating to sorting of types.
+   *
+   * @section TYPE SORTING
+   *
+   * The following methods pertain to sorting Tripal Entity Types for listing.
+   */
 
   /**
    * Sorts Tripal Entity Types first by category and then by Label.
    *
-   * @param $a
+   * @param TripalEntityTypeInterface $a
    *   The first Tripal Entity Type object.
-   * @param $b
+   * @param TripalEntityTypeInterface $b
    *   The second Tripal Entity Type object.
    */
   public static function sortByCategory(TripalEntityTypeInterface $a, TripalEntityTypeInterface $b) {

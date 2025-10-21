@@ -2,24 +2,30 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
 /**
  * Tree Generator implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "chado_tree_generator",
- *    label = @Translation("Taxonomy Tree Generator"),
- *    description = @Translation("Generate a taxonomy tree from organisms stored in Chado"),
- *    use_analysis = False,
- *    require_analysis = False,
- *    button_text = @Translation("Generate Taxonomy Tree"),
- *    file_upload = FALSE,
- *    file_local = FALSE,
- *    file_remote = FALSE,
- *    file_required = FALSE,
- *  )
  */
+#[TripalImporter(
+  id: 'chado_tree_generator',
+  label: new TranslatableMarkup('Taxonomy Tree Generator'),
+  description: new TranslatableMarkup('Generate a taxonomy tree from organisms stored in Chado'),
+  use_analysis: false,
+  require_analysis: false,
+  button_text: new TranslatableMarkup('Generate Taxonomy Tree'),
+  file_upload: false,
+  file_remote: false,
+  file_local: false,
+  file_required: false,
+  publish: [
+    'bundle' => [
+      'speciestree',
+    ],
+  ],
+)]
 class TreeGenerator extends ChadoImporterBase {
 
   /**
@@ -56,9 +62,10 @@ class TreeGenerator extends ChadoImporterBase {
       '#type' => 'fieldset',
       '#title' => 'INSTRUCTIONS',
       '#description' => t('This form is used to generate a phylogenetic
-        tree for organisms at exist on this site. The organisms need to
+        tree for organisms that exist on this site. The organisms need to
         have been previously prepared using the Taxonomy Importer in order
         to have the lineage properties in place.'),
+      '#weight' => -90,
     ];
 
     $site_name = \Drupal::config('system.site')->get('name');
@@ -149,7 +156,9 @@ class TreeGenerator extends ChadoImporterBase {
     $this->tree = $this->rebuildTree($root_taxon);
 
     // Clean out the phylonodes for this tree in the event this is a reload.
-    chado_delete_record('phylonode', ['phylotree_id' => $this->phylotree->phylotree_id], NULL, $this->chado_schema_main);
+    $query = $chado->delete('1:phylonode');
+    $query->condition('phylotree_id', $this->phylotree->phylotree_id, '=');
+    $query->execute();
 
     // Set the number of items to handle.
     $this->setTotalItems(count($this->all_orgs));
@@ -178,7 +187,11 @@ class TreeGenerator extends ChadoImporterBase {
       $options['message_opts']['job'] = $this->job;
     }
 
-    // This importer imports only species (taxonomy) trees.
+    // This importer generates only species (taxonomy) trees.
+    // These trees will be stored with the 'Species Tree' type.
+    // Vocab: EDAM, Term: Species tree (data:3272).
+    // Let's set the leaf type to taxonomy so that the API knows these
+    // are species trees.
     $options['leaf_type'] = 'taxonomy';
 
     // Now import the tree.
@@ -244,7 +257,10 @@ class TreeGenerator extends ChadoImporterBase {
   protected function initTree($tree_name) {
     // Add the taxonomy tree record into the phylotree table. If the tree
     // already exists then don't insert it again.
-    $phylotree = chado_select_record('phylotree', ['*'], ['name' => $tree_name], NULL, $this->chado_schema_main);
+    $query = $this->connection->select('1:phylotree', 't');
+    $query->fields('t');
+    $query->condition('t.name', $tree_name, '=');
+    $phylotree = $query->execute()->fetchAll();
     if (count($phylotree) == 0) {
       // Add the taxonomic tree.
       $phylotree = [
@@ -274,9 +290,12 @@ class TreeGenerator extends ChadoImporterBase {
    * Used when tree generation is cancelled due to lack of any valid organisms.
    */
   protected function removeTree($tree_name) {
-    $phylotree = chado_select_record('phylotree', ['*'], ['name' => $tree_name], NULL, $this->chado_schema_main);
-    if ($phylotree) {
-      chado_delete_phylotree($phylotree[0]->phylotree_id, $this->chado_schema_main);
+    $query = $this->connection->select('1:phylotree', 't');
+    $query->condition('t.name', $tree_name, '=');
+    $query->addField('t', 'phylotree_id', 'phylotree_id');
+    $phylotree_id = $query->execute()->fetchField();
+    if ($phylotree_id) {
+      chado_delete_phylotree($phylotree_id, $this->chado_schema_main);
     }
   }
 
@@ -384,6 +403,7 @@ class TreeGenerator extends ChadoImporterBase {
     $parent = $tree;
     $i = 1;
     $lineage_good = TRUE;
+    $lineage_nodes = [];
     foreach ($lineage_elements as $element) {
 
       // If we have lineageex available from NCBI, it will include rank terms (order, family, etc.)
@@ -440,12 +460,11 @@ class TreeGenerator extends ChadoImporterBase {
       }
     }
     else {
-      $node_values = [
-        'phylotree_id' => $phylotree_id,
-        'label' => $node_name,
-      ];
-      $columns = ['*'];
-      $phylonode = chado_select_record('phylonode', $columns, $node_values, NULL, $this->chado_schema_main);
+      $query = $this->connection->select('1:phylonode', 'n');
+      $query->condition('n.phylotree_id', $phylotree_id, '=');
+      $query->condition('n.label', $node_name, '=');
+      $query->fields('n');
+      $phylonode = $query->execute()->fetchAll();
       if (count($phylonode) == 0) {
         $lineage_nodes[$node_name] = NULL;
         $lineage_good = FALSE;
@@ -454,12 +473,12 @@ class TreeGenerator extends ChadoImporterBase {
         $phylonode = $phylonode[0];
         $lineage_nodes[$node_name] = $phylonode;
 
-        $prop_values = [
-          'phylonode_id' => $phylonode->phylonode_id,
-          'type_id' => $this->rank_cvterm_id,
-        ];
-        $columns = ['*'];
-        $phylonodeprop = chado_select_record('phylonodeprop', $columns, $prop_values, NULL, $this->chado_schema_main);
+        $query = $this->connection->select('1:phylonodeprop', 'np');
+        $query->condition('np.phylonode_id', $phylonode->phylonode_id, '=');
+        $query->condition('np.type_id', $this->rank_cvterm_id, '=');
+        $query->fields('np');
+        $phylonodeprop = $query->execute()->fetchAll();
+
         return $phylonodeprop;
       }
     }
@@ -667,13 +686,6 @@ class TreeGenerator extends ChadoImporterBase {
       }
     }
     return $lineage_elements;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postRun() {
-
   }
 
   /**

@@ -2,24 +2,24 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of Tripal string field type.
- *
- * @FieldType(
- *   id = "tripal_string_type",
- *   category = "tripal",
- *   label = @Translation("Tripal String Field Type"),
- *   description = @Translation("A text field with a maximum length."),
- *   default_widget = "default_tripal_string_type_widget",
- *   default_formatter = "default_tripal_string_type_formatter"
- * )
  */
+#[TripalFieldType(
+  id: 'tripal_string_type',
+  category: 'tripal',
+  label: new TranslatableMarkup('Tripal String Field Type'),
+  description: new TranslatableMarkup('A text field with a maximum length.'),
+  default_widget: 'default_tripal_string_type_widget',
+  default_formatter: 'default_tripal_string_type_formatter',
+)]
 class TripalStringTypeItem extends TripalFieldItemBase {
 
   public static $id = "tripal_string_type";

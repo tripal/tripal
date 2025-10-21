@@ -2,25 +2,25 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
-use Drupal\tripal\Services\TripalFieldCollection;
 
 /**
  * Plugin implementation of default Tripal organism field type.
- *
- * @FieldType(
- *   id = "chado_organism_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Organism"),
- *   description = @Translation("A chado organism reference"),
- *   default_widget = "chado_organism_widget_default",
- *   default_formatter = "chado_organism_formatter_default",
- * )
  */
+#[TripalFieldType(
+  id: 'chado_organism_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Organism'),
+  description: new TranslatableMarkup('A chado organism reference'),
+  default_widget: 'chado_organism_widget_default',
+  default_formatter: 'chado_organism_formatter_default',
+)]
 class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_organism_type_default';
@@ -31,7 +31,15 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'
+    // The property that indicates if this field is empty.
+    return self::$object_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'organism_scientific_name';
   }
 
@@ -76,15 +84,15 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     // Get the various tables and columns needed for this field.
     // We will get the property terms by using the Chado table columns they map to.
     $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table
-    $base_schema_def = $chado->schema()->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
     // Object table
     $object_table = self::$object_table;
-    $object_schema_def = $chado->schema()->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_schema_def = self::getChadoTableDef($object_table, $schema);
     $object_pkey_col = $object_schema_def['primary key'];
     $genus_term = self::getColumnTermId($object_table, 'genus', 'TAXRANK:0000005');
     $genus_len = $object_schema_def['fields']['genus']['size'];
@@ -99,7 +107,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     $comment_term = self::getColumnTermId($object_table, 'comment', 'schema:description');
 
     // Cvterm table, to retrieve the name for the organism type
-    $cvterm_schema_def = $chado->schema()->getTableDef('cvterm', ['format' => 'Drupal']);
+    $cvterm_schema_def = self::getChadoTableDef('cvterm', $schema);
     $infraspecific_type_term = self::getColumnTermId('organism', 'type_id', 'local:infraspecific_type');
     $infraspecific_type_len = $cvterm_schema_def['fields']['name']['size'];
 
@@ -112,7 +120,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = $chado->schema()->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];

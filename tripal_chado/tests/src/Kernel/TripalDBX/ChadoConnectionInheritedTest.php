@@ -3,9 +3,9 @@
 namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
-use Drupal\tripal_chado\Database\ChadoConnection;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for ChadoConnection.
@@ -15,6 +15,10 @@ use Drupal\tripal_chado\Database\ChadoConnection;
  * @group ChadoDBX
  * @group ChadoConnection
  */
+#[Group('Tripal Chado')]
+#[Group('TripalDBX')]
+#[Group('ChadoDBX')]
+#[Group('ChadoConnection')]
 class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
 
   /**
@@ -88,6 +92,7 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
    * @param string $version
    *   The version of chado to test against.
    */
+  #[DataProvider('provideChadoSchemaVersions')]
   public function testConnectionGettersSetters(string $version) {
     $chado_connection = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY, $version);
 
@@ -136,6 +141,7 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
    * @param string $version
    *   The version of chado to test against.
    */
+  #[DataProvider('provideChadoSchemaVersions')]
   public function testConnectionExtraSchemas(string $version) {
     $chado_connection = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY, $version);
 
@@ -235,6 +241,7 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
    * @param string $version
    *   The version of chado to test against.
    */
+  #[DataProvider('provideChadoSchemaVersions')]
   public function testConnectionExtraSchemasExceptions(string $version) {
     $chado_connection = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY, $version);
     $extra_schema = $this->createTestSchema(ChadoTestKernelBase::CREATE_SCHEMA);

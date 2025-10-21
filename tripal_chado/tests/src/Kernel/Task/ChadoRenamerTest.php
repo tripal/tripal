@@ -4,6 +4,9 @@ namespace Drupal\Tests\tripal_chado\Kernel\Task;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\Task\ChadoRenamer;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -15,14 +18,21 @@ use Drupal\tripal_chado\Task\ChadoRenamer;
  * @group Tripal Chado
  * @group Tripal Chado Task
  * @group Tripal Chado Renamer
+ *
+ * @covers ::setParameters
+ * @covers ::performTask
  */
+#[CoversClass(ChadoRenamer::class)]
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal Chado Task')]
+#[Group('Tripal Chado Renamer')]
+#[CoversMethod(ChadoRenamer::class, 'setParameters')]
+#[CoversMethod(ChadoRenamer::class, 'performTask')]
 class ChadoRenamerTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
-   *
-   * @cover ::setParameters
-   * @cover ::performTask
    */
   public function testPerformTaskRenamer() {
     // Create a temporary schema.

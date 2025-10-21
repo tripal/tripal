@@ -2,20 +2,21 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalVocabulary;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal\TripalVocabTerms\Attribute\TripalVocabulary;
 use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Chado implementation of the TripalVocabularyBase.
- *
- *  @TripalVocabulary(
- *    id = "chado_vocabulary",
- *    label = @Translation("Vocabulary in Chado"),
- *  )
  */
+#[TripalVocabulary(
+  id: 'chado_vocabulary',
+  label: new TranslatableMarkup('Vocabulary in Chado'),
+)]
 class ChadoVocabulary extends TripalVocabularyBase implements ContainerFactoryPluginInterface {
 
   /**
@@ -31,6 +32,15 @@ class ChadoVocabulary extends TripalVocabularyBase implements ContainerFactoryPl
    * @var array
    */
   protected $cv_def = NULL;
+
+  /**
+   * A record in the chado.cv table for this Vocab.
+   *
+   * @see Drupal\tripal_chado\Plugin\TripalVocabulary\ChadoVocabulary::loadVocab().
+   *
+   * @var array|null
+   */
+  protected array|null $chado_record = NULL;
 
   /**
    * The logger for reporting warnings and errors to admin.
@@ -58,7 +68,7 @@ class ChadoVocabulary extends TripalVocabularyBase implements ContainerFactoryPl
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
    * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the contructor.
+   * this method is used to determine the parameters to pass to the constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    * @param array $configuration
@@ -117,7 +127,7 @@ class ChadoVocabulary extends TripalVocabularyBase implements ContainerFactoryPl
    * {@inheritdoc}
    */
   public function recordExists() {
-   $cv = $this->loadVocab();
+   $cv = $this->loadVocab(TRUE);
    if ($cv and $cv['name'] == $this->getName()) {
       return True;
     }
@@ -161,21 +171,36 @@ class ChadoVocabulary extends TripalVocabularyBase implements ContainerFactoryPl
    * This function queries the `cv` table of Chado to get the values
    * for the vocabulary.
    *
+   * @param bool $force_reload
+   *   If true the record will always be loaded from chado, if false the cache
+   *   will be used if it exists.
+   *
    * @return
    *   An associative array containing the columns of the `db1 table
    *   of Chado or NULL if the db could not be found.
    */
-  protected function loadVocab() {
+  protected function loadVocab(bool $force_reload = TRUE) {
 
-    // Get the Chado `db` record for this ID space.
-    $query = $this->connection->select('1:cv', 'cv')
-      ->condition('cv.name', $this->getName(), '=')
-      ->fields('cv', ['name', 'definition']);
-    $result = $query->execute();
-    if ($result) {
-      return $result->fetchAssoc();
+    if ($force_reload or $this->chado_record === NULL) {
+      // Get the Chado `db` record for this ID space.
+      $query = $this->connection->select('1:cv', 'cv')
+        ->condition('cv.name', $this->getName(), '=')
+        ->fields('cv', ['name', 'definition']);
+      $result = $query->execute();
+      if (!$result) {
+        $this->chado_record = NULL;
+      }
+
+      $record = $result->fetchAssoc();
+      if (is_array($record)) {
+        $this->chado_record = $record;
+      }
+      else {
+        $this->chado_record = NULL;
+      }
     }
-    return NULL;
+
+    return $this->chado_record;
   }
 
   /**

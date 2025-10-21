@@ -2,23 +2,24 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- * Plugin implementation of Default Tripal field for sequence data.
- *
- * @FieldType(
- *   id = "chado_sequence_checksum_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Feature Sequence Checksum"),
- *   description = @Translation("A chado feature sequence md5 checksum"),
- *   default_widget = "chado_sequence_checksum_widget_default",
- *   default_formatter = "chado_sequence_checksum_formatter_default"
- * )
+ * Plugin implementation of Default Tripal field for sequence checksum.
  */
+#[TripalFieldType(
+  id: 'chado_sequence_checksum_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Feature Sequence Checksum'),
+  description: new TranslatableMarkup('A chado feature sequence md5 checksum'),
+  default_widget: 'chado_sequence_checksum_widget_default',
+  default_formatter: 'chado_sequence_checksum_formatter_default',
+)]
 class ChadoSequenceChecksumTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_sequence_checksum_type_default";
@@ -27,6 +28,15 @@ class ChadoSequenceChecksumTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
+    return 'md5checksum';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'md5checksum';
   }
 
@@ -63,7 +73,7 @@ class ChadoSequenceChecksumTypeDefault extends ChadoFieldItemBase {
     // Get the length of the database fields so we don't go over the size limit.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $feature_def = $schema->getTableDef('feature', ['format' => 'Drupal']);
+    $feature_def =  self::getChadoTableDef('feature', $schema);
     $md5_checksum_len = $feature_def['fields']['md5checksum']['size'];
 
     // Return the properties for this field.
@@ -98,6 +108,29 @@ class ChadoSequenceChecksumTypeDefault extends ChadoFieldItemBase {
       $compatible = TRUE;
     }
     return $compatible;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
+
+    // Specific settings for this field
+    $options += [
+      'id' => self::$id,
+      'base_table' => 'feature',
+      'base_column' => 'md5checksum',
+      'label' => 'Sequence MD5 Checksum',
+      'termIdSpace' => 'data',
+      'termAccession' => '2190',
+      'description' => 'The 32-character checksum of the sequence, calculated using the MD5 algorithm.',
+    ];
+
+    // Call the parent discover() with this field's specific options
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+    return $field_list;
   }
 
 }

@@ -3,8 +3,8 @@
 namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\tripal\TripalDBX\TripalDbx;
-use Drupal\tripal_chado\Database\ChadoConnection;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests for ChadoConnection.
@@ -14,6 +14,10 @@ use Drupal\tripal_chado\Database\ChadoConnection;
  * @group ChadoDBX
  * @group ChadoSchema
  */
+#[Group('Tripal Chado')]
+#[Group('TripalDBX')]
+#[Group('ChadoDBX')]
+#[Group('ChadoSchema')]
 class ChadoSchemaTest extends ChadoTestKernelBase {
 
   /**
@@ -93,6 +97,7 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
    * @param int $init_level
    *   The init level to create the test database with.
    */
+  #[DataProvider('provideChadoSchemaVersions')]
   public function testGetMainTables(string $version, int $init_level) {
 
     // Get Chado in place.
@@ -139,6 +144,7 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
    * @param int $init_level
    *   The init level to create the test database with.
    */
+  #[DataProvider('provideChadoSchemaVersions')]
   public function testGetDefault(string $version, int $init_level) {
 
     // Get Chado in place.
@@ -219,6 +225,7 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
    * @param array $options
    *   Parameters to use when testing ChadoSchema::getSchemaDef().
    */
+  #[DataProvider('provideSchemaDefParams')]
   public function testGetChadoSchemaDef(string $version, int $init_level, array $options) {
 
     // Get Chado in place.

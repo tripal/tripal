@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use \Drupal\Tests\user\Traits\UserCreationTrait;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the base functionality for importers.
@@ -13,6 +14,7 @@ use \Drupal\Tests\user\Traits\UserCreationTrait;
  *
  * @group TripalImporter
  */
+#[Group('TripalImporter')]
 class TripalImporterBaseTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 
@@ -77,6 +79,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
    *
    * @group tripal_importer
    */
+  #[Group('tripal_importer')]
   public function testTripalImporterManager() {
 
     // Test the Tripal Importer Plugin Manager.
@@ -100,6 +103,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
    *
    * @group tripal_importer
    */
+  #[Group('tripal_importer')]
   public function testTripalImporterBase() {
 
     // CASE --- Valid
@@ -110,7 +114,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
 
     // Execute createImportJob, file not required so expected to succeed.
@@ -137,7 +141,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
     $importerTestLoad->load($import_id);
     $retrieved_args = $importerTestLoad->getArguments();
@@ -154,7 +158,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
 
     // Execute createImportJob, file required so expected to FAIL.
@@ -184,7 +188,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
 
     // Execute createImportJob, file not required so expected to succeed.
@@ -211,7 +215,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
     $importerTestLoad->load($import_id);
     $retrieved_args = $importerTestLoad->getArguments();
@@ -232,7 +236,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
 
     // Execute createImportJob, file not required so expected to succeed.
@@ -259,7 +263,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
     $importerTestLoad->load($import_id);
     $retrieved_args = $importerTestLoad->getArguments();
@@ -283,7 +287,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
 
     // Execute createImportJob, file not required so expected to succeed.
@@ -310,7 +314,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
     $importerTestLoad->load($import_id);
     $retrieved_args = $importerTestLoad->getArguments();
@@ -337,7 +341,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
 
     // Execute createImportJob, file not required so expected to succeed.
@@ -364,7 +368,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
     $importerTestLoad->load($import_id);
     $retrieved_args = $importerTestLoad->getArguments();
@@ -380,7 +384,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
 
     $exception_msg = NULL;
@@ -404,7 +408,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
 
     $mismatched_import_id = $public->insert('tripal_import')
@@ -437,6 +441,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
    *
    * @group tripal_importer
    */
+  #[Group('tripal_importer')]
   public function testTripalImporterBaseJobs() {
 
     // CASE --- Valid
@@ -447,7 +452,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
     $run_args = [];
     $file_details = [];
@@ -466,7 +471,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $this->plugin_definition]
+      [$configuration, $plugin_id, $this->plugin_definition, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
 
     $exception_msg = NULL;
@@ -489,6 +494,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
    *
    * @group tripal_importer
    */
+  #[Group('tripal_importer')]
   public function testTripalImporterBaseFiles() {
 
     // CASE --- Valid
@@ -503,7 +509,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
     $run_args = [];
     $file_details = ['file_remote' => $test_file_path];
@@ -530,7 +536,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_defn]
+      [$configuration, $plugin_id, $plugin_defn, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
     $run_args = [];
     $file_details = ['file_remote' => $test_file_path];
@@ -556,6 +562,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
    *
    * @group tripal_importer
    */
+  #[Group('tripal_importer')]
   public function testTripalImporterBaseProgress() {
 
     // We need to mock the logger to test the progress reporting.
@@ -574,7 +581,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $this->plugin_definition]
+      [$configuration, $plugin_id, $this->plugin_definition, $this->messenger, $mock_logger, $this->fileretriever, $this->publish_manager]
     );
 
     // Note: These methods are protected and not called elsewhere in the base

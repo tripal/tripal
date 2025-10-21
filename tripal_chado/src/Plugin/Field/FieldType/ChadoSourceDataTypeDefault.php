@@ -2,24 +2,25 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- * Plugin implementation of Default Tripal field for sequence data.
- *
- * @FieldType(
- *   id = "chado_source_data_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Data Source"),
- *   description = @Translation("The source and version of data used for this analysis"),
- *   default_widget = "chado_source_data_widget_default",
- *   default_formatter = "chado_source_data_formatter_default",
- *   cardinality = 1,
- * )
+ * Plugin implementation of Default Tripal field for data source.
  */
+#[TripalFieldType(
+  id: 'chado_source_data_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Data Source'),
+  description: new TranslatableMarkup('The source and version of data used for this analysis'),
+  default_widget: 'chado_source_data_widget_default',
+  default_formatter: 'chado_source_data_formatter_default',
+  cardinality: 1,
+)]
 class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_source_data_type_default";
@@ -27,14 +28,23 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function mainPropertyName()  {
+  public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
     return 'sourcename';
   }
 
   /**
-   * {@inheritdoc}
+   * {@inheritdoc}
    */
-  public static function defaultFieldSettings()  {
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
+    return 'sourcename';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultFieldSettings() {
     $settings = parent::defaultFieldSettings();
     $settings['termIdSpace'] = 'local';
     $settings['termAccession'] = 'source_data';

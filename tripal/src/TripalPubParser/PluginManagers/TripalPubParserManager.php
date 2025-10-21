@@ -5,8 +5,6 @@ namespace Drupal\tripal\TripalPubParser\PluginManagers;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\ReplaceCommand;
 
 /**
  * Provides a tripal importer plugin manager.
@@ -204,9 +202,10 @@ class TripalPubParserManager extends DefaultPluginManager {
       ];
       $row["search_terms-$i"] = [
         '#type' => 'textfield',
-        '#description' => t('<span style="white-space: normal">Please provide a list of words for searching. You may use
-          conjunctions such as "AND" or "OR" to separate words if they are expected in
-          the same scope, but do not mix ANDs and ORs. Check the "Is Phrase" checkbox to use conjunctions as part of the text to search</span>'),
+        '#description' => t('<span style="white-space: normal">Please provide a list of words
+          for searching. You may use conjunctions such as "AND" or "OR" to separate words if
+          they are expected in the same scope, but do not mix ANDs and ORs. Check the
+          "Is Phrase" checkbox to use conjunctions as part of the text to search</span>'),
         '#description_display' => 'after',
         '#default_value' => $search_terms,
         '#required' => TRUE,
@@ -227,52 +226,12 @@ class TripalPubParserManager extends DefaultPluginManager {
             '#type' => 'button',
             '#name' => 'remove',
             '#value' => t('Remove'),
-            '#ajax' => [
-              'callback' => 'tripal_pub_setup_form_ajax_update',
-              'wrapper' => 'tripal-pub-importer-setup',
-              'effect' => 'fade',
-              'method' => 'replace',
-              'prevent' => 'click',
-            ],
-            // When this button is clicked, the form will be validated and submitted.
-            // Therefore, we set custom submit and validate functions to override the
-            // default form submit. In the validate function we set the form_state to
-            // rebuild the form so that the submit function never actually gets called,
-            // but we need it or Drupal will run the default validate anyway.
-            // We also set #limit_validation_errors to empty so fields that are
-            // required that don't have values won't generate warnings.
-
-            // RISH REMOVED FOR TESTING (9/23/2023)
-            // '#submit' => ['tripal_pub_setup_form_ajax_button_submit'],
-            // '#validate' => ['tripal_pub_setup_form_ajax_button_validate'], 
-            // '#limit_validation_errors' => [],
           ];
         }
         $row["add-$i"] = [
           '#type' => 'button',
           '#name' => 'add',
           '#value' => t('Add'),
-          '#ajax' => [
-            'callback' => 'tripal_pub_setup_form_ajax_update',
-            'wrapper' => 'tripal-pub-importer-setup',
-            'effect' => 'fade',
-            'method' => 'replace',
-            'prevent' => 'click',
-          ],
-          // When this button is clicked, the form will be validated and submitted.
-          // Therefore, we set custom submit and validate functions to override the
-          // default form submit. In the validate function we set the form_state to
-          // rebuild the form so that the submit function never actually gets called,
-          // but we need it or Drupal will run the default validate anyway.
-          // we also set #limit_validation_errors to empty so fields that
-          // are required that don't have values won't generate warnings.
-
-          //@to-do this submit function is not being called - why?
-
-          // RISH REMOVED FOR TESTING (9/23/2023)
-          // '#submit' => ['tripal_pub_setup_form_ajax_button_submit'],
-          // '#validate' => ['tripal_pub_setup_form_ajax_button_validate'],
-          // '#limit_validation_errors' => [],
         ];
       }
       $form['pub_parser']['table'][$i] = $row;
@@ -281,40 +240,4 @@ class TripalPubParserManager extends DefaultPluginManager {
     return $form;
   }
 
-  /**
-   * This function is used to rebuild the form if an ajax call is made via a
-   * button. The button causes the form to be submitted. We don't want this so we
-   * override the validate and submit routines on the form button. Therefore,
-   * this function only needs to tell Drupal to rebuild the form
-   *
-   * @ingroup tripal_pub
-   */
-  public function tripal_pub_setup_form_ajax_button_validate($form, &$form_state) {
-    $trigger = $form_state->getTriggeringElement()['#name'];
-    dpm($trigger, "tripal_pub_setup_form_ajax_button_validate() called, not yet implemented");
-    $form_state->setRebuild(TRUE);
-  }
-
-  /**
-   * This function is just a dummy to override the default form submit on ajax
-   * calls for buttons
-   *
-   * @ingroup tripal_pub
-   */
-  public function tripal_pub_setup_form_ajax_button_submit($form, &$form_state) {
-    $trigger = $form_state->getTriggeringElement()['#name'];
-    dpm($trigger, "tripal_pub_setup_form_ajax_button_submit() called, not yet implemented");
-    // do nothing
-  }
-
-  /**
-   * This function received ajax calls from the add button in the criteria table
-   */
-  public function tripal_pub_setup_form_ajax_update($form, &$form_state) {
-    // dpm('hmmm');
-    $response = new AjaxResponse();
-    // $response->addCommand(new ReplaceCommand('#tripal-pub-importer-setup', $form['pub_parser']['table']));
-
-    return $response;
-  }
 }

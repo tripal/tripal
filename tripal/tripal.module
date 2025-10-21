@@ -10,12 +10,16 @@ use Drupal\user\Entity\User;
 use Drupal\Core\Entity\EntityBase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 // use Drupal\shortcut\Entity\ShortcutSet;
-use Drupal\Core\Render\Element;
+use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\Hook\Attribute\LegacyHook;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
+use Drupal\tripal\Services\TripalJob;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
+use Drupal\views\ViewEntityInterface;
 use Drupal\views\ViewExecutable;
+use Drupal\views\ViewsConfigUpdater;
 
 require_once 'src/api/tripal.api.php';
 require_once 'src/api/tripal.entities.api.php';
@@ -608,8 +612,10 @@ function tripal_rebuild() {
  *       An array where each found collection has a key entry and only the chosen
  *       ones have a value the same as the key. All collections not chosen to be
  *       installed will have a value of 0.
+ * @param Drupal\tripal\Services\TripalJob|null $job
+ *   An optional Job object.
  */
-function import_tripalentitytype_collection(array $options, \Drupal\tripal\Services\TripalJob $job = NULL) {
+function import_tripalentitytype_collection(array $options, ?TripalJob $job = NULL) {
 
   // We need to ensure that we only submit the chosen collections.
   $collection_ids = $options['collection_ids'];
@@ -622,7 +628,6 @@ function import_tripalentitytype_collection(array $options, \Drupal\tripal\Servi
 
   $fields = \Drupal::service('tripal.tripalfield_collection');
   $fields->install($chosen_collection_ids);
-
 }
 
 /**
@@ -728,4 +733,32 @@ function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) 
       throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException();
     }
   }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave().
+ */
+#[Hook('view_presave')]
+function tripal_view_presave(ViewEntityInterface $view): void {
+  // A new views 'class' setting was introduced in Drupal 11.2, but it has
+  // not been added to our yaml views configurations so that we maintain
+  // backward compatibility. We do the update here before Drupal does it
+  // in order to avoid a deprecation notice in unit tests.
+  /** @var \Drupal\views\ViewsConfigUpdater $config_updater */
+  $config_updater = \Drupal::classResolver(ViewsConfigUpdater::class);
+  if (method_exists($config_updater, 'processTableCssClassUpdate')) {
+    $config_updater->setDeprecationsEnabled(FALSE);
+    $config_updater->processTableCssClassUpdate($view);
+  }
+}
+
+/**
+ * Legacy implementation for TripalEntityHooks::tripalEntityStorageLoad().
+ *
+ * @param array $entities
+ *   Entities to be loaded.
+ */
+#[LegacyHook]
+function tripal_tripal_entity_storage_load(&$entities) {
+  \Drupal::service('tripal.entity_hooks')->tripalEntityStorageLoad($entities);
 }

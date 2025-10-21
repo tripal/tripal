@@ -2,11 +2,8 @@
 
 namespace Drupal\Tests\tripal\Functional\Plugin;
 
-use Drupal\Core\Database\Database;
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
-use Drupal\Core\Test\FunctionalTestSetupTrait;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
-
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -15,6 +12,8 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  * @group Tripal
  * @group TripalDefaultIdSpace
  */
+#[Group('Tripal')]
+#[Group('TripalDefaultIdSpace')]
 class TripalDefaultIdSpaceTest extends TripalTestBrowserBase {
 
 

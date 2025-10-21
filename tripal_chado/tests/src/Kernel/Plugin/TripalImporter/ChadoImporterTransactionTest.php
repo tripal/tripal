@@ -2,9 +2,9 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalImporter;
 
-use Drupal\Core\Url;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the Chado Importer base class transaction functionality.
@@ -12,6 +12,8 @@ use Drupal\Tests\user\Traits\UserCreationTrait;
  * @group TripalImporter
  * @group ChadoImporter
  */
+#[Group('TripalImporter')]
+#[Group('ChadoImporter')]
 class ChadoImporterTransactionTest extends ChadoTestKernelBase {
 
   use UserCreationTrait;
@@ -69,7 +71,7 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $this->importer = $this->getMockForAbstractClass(
       '\Drupal\tripal_chado\TripalImporter\ChadoImporterBase',
-      [$configuration, $plugin_id, $plugin_defn, $this->connection]
+      [$configuration, $plugin_id, $plugin_defn, $this->connection, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
     );
     $import_id = $this->importer->createImportJob(['schema_name' => $this->connection->getSchemaName()]);
     $this->assertIsNumeric($import_id, "We were unable to create a tripal import record during setup.");

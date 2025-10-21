@@ -3,7 +3,6 @@
 namespace Drupal\tripal\TripalPubParser\Interfaces;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
-use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Defines an interface for tripal importer plugins.
@@ -56,7 +55,7 @@ interface TripalPubParserInterface extends PluginInspectionInterface {
    * Performs the import.
    *
    * @param array $criteria
-   *   The criteria used by the parser to retreive and parse results.
+   *   The criteria used by the parser to retrieve and parse results.
    *
    * @return array
    *   The uniform publication information array.

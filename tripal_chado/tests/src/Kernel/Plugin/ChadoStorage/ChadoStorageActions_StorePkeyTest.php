@@ -2,13 +2,11 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
-
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
-use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests that specific ChadoStorage actions perform as expected.
@@ -18,14 +16,28 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * @group ChadoStorage
  * @group ChadoStorage Actions
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('ChadoStorage')]
+#[Group('ChadoStorage Actions')]
 class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test
-  // with fields specific to that test.
+  /**
+   * With fields specific to that test.
+   *
+   * Note: We will populate this variable at the start of each test.
+   *
+   * @var array
+   */
   protected $fields = [];
 
+  /**
+   * The file describing the testing environment.
+   *
+   * @var string
+   */
   protected $yaml_file = __DIR__ . "/ChadoStorageActions-FieldDefinitions.yml";
 
   /**
@@ -39,16 +51,16 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
 
     // We need to mock the logger to test the progress reporting.
     $container = \Drupal::getContainer();
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['warning', 'error'])
       ->getMock();
     $mock_logger->method('warning')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
     $mock_logger->method('error')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
@@ -68,7 +80,7 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
     return [
       [
         'testStorePKeyAction',
-        'test_field'
+        'test_field',
       ],
       // NOTE: We can test an alias on the pkey action here
       // because the action is not on the base table for the field
@@ -76,8 +88,8 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
       // table the store_pkey is on.
       [
         'testStorePKeyActionTableAlias',
-        'test_chado_alias'
-      ]
+        'test_chado_alias',
+      ],
     ];
   }
 
@@ -94,14 +106,15 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
    *  - has the value set on load
    *  - does not get changed on update
    */
-  public function testStorePKeyAction($top_level_key, $field_name) {
+  #[DataProvider('provideFieldNames')]
+  public function testStorePkeyAction($top_level_key, $field_name) {
 
     // Set the fields for this test and then re-populate the storage arrays.
     $this->setFieldsFromYaml($this->yaml_file, $top_level_key);
     $this->cleanChadoStorageValues();
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
-    // ---------------------------------------------------------
+    // ---------------------------------------------------------.
     $insert_values = [
       $field_name => [
         [
@@ -129,11 +142,13 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // First we want to reset all the chado storage arrays to ensure we are
     // doing a clean test. The values will purposefully remain in Chado but the
-    // Property Types, Property Values and Data Values will be built from scratch.
+    // Property Types, Property Values and Data Values will be built from
+    // scratch.
     $this->cleanChadoStorageValues();
 
     // For loading only the store id/pkey/link items should be populated.
-    // Since the id is passed in we're just checking it was set to the value property.
+    // Since the id is passed in we're just checking it was set to the value
+    // property.
     $load_values = [
       $field_name => [
         [
@@ -182,4 +197,5 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
     $this->assertCount(1, $records,
       "There should only be a single db with this name");
   }
+
 }

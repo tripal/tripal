@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\tripal_chado\Functional;
 
+use PHPUnit\Framework\Attributes\Group;
+
 class TripalPubLibraryTest extends ChadoTestBrowserBase {
 
   /**
@@ -11,6 +13,9 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
    * @group ChadoImporter
    * @group PubImporter
    */
+  #[Group('TripalImporter')]
+  #[Group('ChadoImporter')]
+  #[Group('PubImporter')]
   public function testTripalPubLibraryTestSimpleTest() {
 
     // Installs up the chado with the test chado data

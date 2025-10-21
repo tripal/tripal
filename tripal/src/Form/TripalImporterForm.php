@@ -5,14 +5,17 @@
  */
 namespace Drupal\tripal\Form;
 
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Messenger\MessengerInterface;
 
 /**
- * Provides a test form object.
+ * Provides the base form specification for tripal importers.
  */
 class TripalImporterForm implements FormInterface {
+
+  use StringTranslationTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -120,6 +123,26 @@ class TripalImporterForm implements FormInterface {
       }
     }
 
+    // Adds a checkbox to indicate whether or not to publish the imported
+    // content. The default will be to publish (checked), uncheck to opt-out.
+    // An importer attribute can specify a list of bundles to publish,
+    // e.g. both 'gene' and 'mrna' for GFF importer.
+    if ($importer_def['publish']['bundle'] ?? FALSE) {
+      $bundles = (array) $importer_def['publish']['bundle'];
+      $form['publish'] = [
+        '#type' => 'fieldset',
+        '#title' => $this->t('Specify publishing behavior after importing'),
+        '#weight' => 8,
+      ];
+      foreach ($bundles as $bundle) {
+        $form['publish']['publish_' . $bundle] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Publish imported %bundle records', ['%bundle' => $bundle]),
+          '#default_value' => 1,
+        ];
+      }
+    }
+
     // Add the importer custom form elements
     $importer_form = $importer->form($form, $form_state);
     if (is_array($importer_form)) {
@@ -184,6 +207,18 @@ class TripalImporterForm implements FormInterface {
     // not add a job.
     if ($form_state->isRebuilding() == TRUE) {
       return;
+    }
+
+    // Provide a list of any bundles that should be published.
+    $run_args['publish'] = [];
+    foreach ($run_args as $key => $value) {
+      if (preg_match('/^publish_(.+)$/', $key, $matches)) {
+        $bundle = $matches[1];
+        if ($value) {
+          // If checkbox is set ($value is TRUE), then add bundle to list.
+          $run_args['publish'][] = $bundle;
+        }
+      }
     }
 
     // Remove the file_local and file_upload args. We'll add in a new

@@ -250,6 +250,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: qtl_sequence
         content_type: QTL
@@ -383,6 +384,35 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: qtl_relationship
+        content_type: QTL
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Sequence features related to this QTL. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current QTL is the subject; chose Reverse if the object is the current QTL."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+                linker_table: feature_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: qtl_contact
         content_type: QTL
@@ -626,6 +656,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: sequence_variant_sequence
         content_type: sequence_variant
@@ -758,6 +789,35 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: sequence_variant_relationship
+        content_type: sequence_variant
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Sequence features related to this variant. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current variant is the subject; chose Reverse if the object is the current variant."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+                linker_table: feature_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: sequence_variant_contact
         content_type: sequence_variant
@@ -1001,6 +1061,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: genetic_marker_sequence
         content_type: genetic_marker
@@ -1133,6 +1194,35 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: genetic_marker_relationship
+        content_type: genetic_marker
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Sequence features related to this genetic marker. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current genetic marker is the subject; chose Reverse if the object is the current genetic marker."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+                linker_table: feature_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: genetic_marker_contact
         content_type: genetic_marker
@@ -1376,6 +1466,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: phenotypic_marker_sequence
         content_type: phenotypic_marker
@@ -1508,6 +1599,35 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: phenotypic_marker_relationship
+        content_type: phenotypic_marker
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Sequence features related to this heritable phenotypic marker. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current heritable phenotypic marker is the subject; chose Reverse if the object is the current heritable phenotypic marker."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+                linker_table: feature_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: phenotypic_marker_contact
         content_type: phenotypic_marker

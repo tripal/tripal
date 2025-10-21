@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalImporter;
 
-use Drupal\Core\Url;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the functionality of various importer forms.
@@ -11,6 +11,8 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  * @group TripalImporter
  * @group ChadoImporter
  */
+#[Group('TripalImporter')]
+#[Group('ChadoImporter')]
 class ImporterFormTest extends ChadoTestKernelBase {
 
   protected $defaultTheme = 'stark';
@@ -20,7 +22,7 @@ class ImporterFormTest extends ChadoTestKernelBase {
   protected $connection;
 
   /**
-   * This specifies which inporter forms to test, and special settings to confirm.
+   * This specifies which importer forms to test, and special settings to confirm.
    */
   protected $forms_to_test = [
     ['plugin_id' => 'chado_fasta_loader',

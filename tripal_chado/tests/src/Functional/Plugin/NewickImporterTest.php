@@ -1,19 +1,7 @@
 <?php
 namespace Drupal\Tests\tripal_chado\Functional;
 
-use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
-use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
-
-// FROM OLD CODE:
-use Drupal\Core\Url;
-use Drupal\Tests\BrowserTestBase;
-use Drupal\Core\Database\Database;
-use Drupal\tripal_chado\api\ChadoSchema;
-use NewickImporter;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for the NewickImporter class
@@ -22,6 +10,9 @@ use NewickImporter;
  * @group Tripal Chado
  * @group Tripal Chado ChadoStorage
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal Chado ChadoStorage')]
 class NewickImporterTest extends ChadoTestBrowserBase
 {
 
@@ -30,6 +21,7 @@ class NewickImporterTest extends ChadoTestBrowserBase
    *
    * @group gff
    */
+  #[Group('gff')]
   public function testNewickImporterSimpleTest()
   {
     // Public schema connection
@@ -167,21 +159,21 @@ class NewickImporterTest extends ChadoTestBrowserBase
     }
     $this->assertGreaterThan(0, $count, "Should have created at least one phylotree but did not.");
 
+    // We need to get the type for 'Phylogenetic tree type', this is used
+    // as the type_id to store the property of the name of the type of tree
+    // (leaf_type for the importer), which for this tree is 'polypeptide'.
+    // Vocab: EDAM, Term: Phylogenetic tree type (data:1122).
+    $bundle_id = $this->getCvtermID('data','1122');
 
-    // We need to get the type id - polypeptide
-    $results = $chado->query('SELECT * FROM {1:cvterm} WHERE name = :name', [
-      'name' => 'polypeptide'
-    ]);
-    $type_id = NULL;
-    foreach ($results as $row) {
-      $type_id = $row->cvterm_id;
-    }
-
-
-    // Check for phylotree based on name and also type_id which should be there as well
-    $results = $chado->query('SELECT COUNT(*) as c1 FROM {1:phylotree} WHERE name = :name and type_id = :type_id', [
+    // Check for phylotree based on name and property with the type.
+    $results = $chado->query('SELECT COUNT(*) as c1 FROM {1:phylotree} T'
+        . ' LEFT JOIN {1:phylotreeprop} P ON T.phylotree_id = P.phylotree_id'
+        . ' WHERE T.name = :name'
+        . ' AND P.type_id = :bundle_id'
+        . ' AND P.value = :value', [
       ':name' => 'Tree 2',
-      ':type_id' => $type_id
+      ':bundle_id' => $bundle_id,
+      ':value' => 'polypeptide',
     ]);
     $count = 0;
     foreach ($results as $row) {

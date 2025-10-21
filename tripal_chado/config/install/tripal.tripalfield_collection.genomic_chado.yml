@@ -59,6 +59,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: gene_sequence
         content_type: gene
@@ -191,6 +192,35 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: gene_relationship
+        content_type: gene
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Sequence features related to this gene. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current gene is the subject; chose Reverse if the object is the current gene."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+                linker_table: feature_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: gene_contact
         content_type: gene
@@ -491,6 +521,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: mrna_sequence
         content_type: mrna
@@ -623,6 +654,35 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: mrna_relationship
+        content_type: mrna
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Sequence features related to this mRNA. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current mRNA is the subject; chose Reverse if the object is the current mRNA."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+                linker_table: feature_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: mrna_contact
         content_type: mrna
@@ -841,137 +901,166 @@ fields:
 
 ## Phylogenetic Tree ##
 
-    -   name: phylotree_name
-        content_type: phylotree
-        label: Name
-        type: chado_string_type_default
-        description: The name of the item.
+    -   name: 'phylotree_name'
+        content_type: 'phylotree'
+        label: 'Name'
+        type: 'chado_string_type_default'
+        description: 'The name of the phylogenetic tree'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: phylotree
-                base_column: name
+                base_table: 'phylotree'
+                base_column: 'name'
             max_length: 255
         settings:
-            termIdSpace: schema
-            termAccession: name
+            termIdSpace: 'schema'
+            termAccession: 'name'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 10
           form:
             default:
-              region: content
+              region: 'content'
               weight: 10
 
-    -   name: phylotree_type
-        content_type: phylotree
-        label: Type
-        type: chado_additional_type_type_default
-        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+    -   name: 'phylotree_type'
+        content_type: 'phylotree'
+        label: 'Type of phylogenetic tree'
+        type: 'chado_additional_type_type_default'
+        description: 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: phylotree
-                type_table: phylotree
-                type_column: type_id
+                base_table: 'phylotree'
+                type_table: 'phylotree'
+                type_column: 'type_id'
         settings:
-            termIdSpace: data
+            termIdSpace: 'data'
             termAccession: '0872'
-            fixed_value: data:0872
+            fixed_value: 'data:0872'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 20
           form:
             default:
-              region: content
+              region: 'content'
               weight: 20
 
-    -   name: phylotree_analysis
-        content_type: phylotree
-        label: Analysis
-        type: chado_analysis_type_default
-        description: The analysis from which the tree was generated.
+    -   name: 'phylotree_tree_type'
+        content_type: 'phylotree'
+        label: 'Phylogenetic Tree Type'
+        type: 'chado_property_type_default'
+        description: 'The type of phylogenetic tree, usually a term from the sequence ontology.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: phylotree
-                base_column: analysis_id
+                base_table: 'phylotree'
+                prop_table: 'phylotreeprop'
         settings:
-            termIdSpace: operation
+            termIdSpace: 'data'
+            termAccession: '1122'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 21
+          form:
+            default:
+              region: 'content'
+              weight: 21
+              settings:
+                filter_format: 'plain_text'
+                num_rows: 1
+
+    -   name: 'phylotree_analysis'
+        content_type: 'phylotree'
+        label: 'Analysis'
+        type: 'chado_analysis_type_default'
+        description: 'The analysis from which the tree was generated.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'phylotree'
+                base_column: 'analysis_id'
+        settings:
+            termIdSpace: 'operation'
             termAccession: '2945'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 25
           form:
             default:
-              region: content
+              region: 'content'
               weight: 25
 
-    -   name: phylotree_comment
-        content_type: phylotree
-        label: Notes
-        type: chado_text_type_default
-        description: Comments, typically from users.
+    -   name: 'phylotree_comment'
+        content_type: 'phylotree'
+        label: 'Notes'
+        type: 'chado_text_type_default'
+        description: 'Comments about this phylogenetic tree.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: phylotree
-                base_column: comment
+                base_table: 'phylotree'
+                base_column: 'comment'
         settings:
-            termIdSpace: schema
-            termAccession: comment
+            termIdSpace: 'schema'
+            termAccession: 'comment'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 30
           form:
             default:
-              region: content
+              region: 'content'
               weight: 30
 
-    -   name: phylotree_dbxref
-        content_type: phylotree
-        label: Primary Database Reference
-        type: chado_dbxref_type_default
-        description: The ID where this record may be available in an external online database.
+    -   name: 'phylotree_dbxref'
+        content_type: 'phylotree'
+        label: 'Primary Database Reference'
+        type: 'chado_dbxref_type_default'
+        description: 'The ID where this record may be available in an external online database.'
         cardinality: 1
         required: true
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: phylotree
-                base_column: dbxref_id
+                base_table: 'phylotree'
+                base_column: 'dbxref_id'
         settings:
-            termIdSpace: SBO
-            termAccession: "0000554"
+            termIdSpace: 'SBO'
+            termAccession: '0000554'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 68
           form:
             default:
-              region: content
+              region: 'content'
               weight: 68
 
 ## Physical Map ##
@@ -1221,6 +1310,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: dna_library_type
         content_type: dna_library
@@ -1601,6 +1691,7 @@ fields:
               weight: 45
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: genome_assembly_type
         content_type: genome_assembly
@@ -1629,6 +1720,35 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: genome_assembly_relationship
+        content_type: genome_assembly
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Analyses related to this genome assembly. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current genome assembly is the subject; chose Reverse if the object is the current genome assembly."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: name
+                linker_table: analysis_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: genome_assembly_dbxref_ann
         content_type: genome_assembly
@@ -1901,6 +2021,7 @@ fields:
               weight: 45
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: genome_annotation_type
         content_type: genome_annotation
@@ -1929,6 +2050,35 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: genome_annotation_relationship
+        content_type: genome_annotation
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Analyses related to this genome annotation. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current genome annotation is the subject; chose Reverse if the object is the current genome annotation."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: name
+                linker_table: analysis_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: genome_annotation_dbxref_ann
         content_type: genome_annotation
@@ -2093,6 +2243,35 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: genome_project_relationship
+        content_type: genome_project
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Projects related to this genome project. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current genome project is the subject; chose Reverse if the object is the current genome project."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                base_column: name
+                linker_table: project_relationship
+                subject_column: subject_project_id
+                object_column: object_project_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: genome_project_dbxref_ann
         content_type: genome_project

@@ -1,75 +1,87 @@
-name: Composer Install
+name: 'Composer Install'
 on:
   workflow_dispatch:
   push:
     branches:
-      - 4.x
-      - tv4g0-2138-installIssues
+      - '4.x'
   # Allows us to schedule when this workflow is run.
   # This ensures we pick up any new changes in Drupal.
   schedule:
     # Run at 2am every night.
     - cron: '0 2 * * *'
 
+permissions: read-all
+
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: 'ubuntu-latest'
 
     strategy:
       fail-fast: false
       matrix:
         php-version:
-          - "8.1"
-          - "8.2"
-          - "8.3"
+          - '8.1'
+          - '8.2'
+          - '8.3'
+          - '8.4'
         pgsql-version:
-          - "13"
-          - "17"
+          - '13'
+          - '17'
         drupal-version:
-          - "10.3.x-dev"
-          - "10.4.x-dev"
-          - "10.5.x-dev"
-          - "11.0.x-dev"
-          - "11.1.x-dev"
+          - '10.4.x-dev'
+          - '10.5.x-dev'
+          - '11.1.x-dev'
+          - '11.2.x-dev'
         exclude:
+          # Only Drupal 11.x supports PHP 8.4
+          - php-version: '8.4'
+            drupal-version: '10.4.x-dev'
+          - php-version: '8.4'
+            drupal-version: '10.5.x-dev'
           # Drupal 11+ requires at least php 8.3.
-          - php-version: "8.1"
-            drupal-version: "11.0.x-dev"
-          - php-version: "8.2"
-            drupal-version: "11.0.x-dev"
-          - php-version: "8.1"
-            drupal-version: "11.1.x-dev"
-          - php-version: "8.2"
-            drupal-version: "11.1.x-dev"
+          - php-version: '8.1'
+            drupal-version: '11.1.x-dev'
+          - php-version: '8.2'
+            drupal-version: '11.1.x-dev'
+          - php-version: '8.1'
+            drupal-version: '11.2.x-dev'
+          - php-version: '8.2'
+            drupal-version: '11.2.x-dev'
           # Drupal 11+ requires at least Postgresql 16.
-          - php-version: "8.3"
-            pgsql-version: "13"
-            drupal-version: "11.0.x-dev"
-          - php-version: "8.3"
-            pgsql-version: "13"
-            drupal-version: "11.1.x-dev"
+          - php-version: '8.3'
+            pgsql-version: '13'
+            drupal-version: '11.1.x-dev'
+          - php-version: '8.4'
+            pgsql-version: '13'
+            drupal-version: '11.1.x-dev'
+          - php-version: '8.3'
+            pgsql-version: '13'
+            drupal-version: '11.2.x-dev'
+          - php-version: '8.4'
+            pgsql-version: '13'
+            drupal-version: '11.2.x-dev'
           # Exclude higher postgresql version from middle Drupal versions
           # This is done to reduce combinations; higher postgresql version
           # will be tested on merge to 4.x.
-          # Note: Drupal 11.0 is already only tested on one postgresql 
+          # Note: Drupal 11.1 is already only tested on one postgresql
           # version since it requires 16+.
-          - pgsql-version: "17"
-            drupal-version: "10.4.x-dev"
-          - pgsql-version: "17"
-            drupal-version: "10.5.x-dev"
+          - pgsql-version: '17'
+            drupal-version: '10.4.x-dev'
+          - pgsql-version: '17'
+            drupal-version: '10.5.x-dev'
     steps:
       # Spin up docker container with Drupal pre-requisites installed but not Tripal yet.
-      - name: Setup Drupal docker container
+      - name: 'Setup Drupal docker container'
         env:
-          DOCKER_IMAGE: "tripalproject/tripaldocker-drupal:drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}"
+          DOCKER_IMAGE: 'tripalproject/tripaldocker-drupal:drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}'
         run: |
           docker run --publish=80:80 --name=drupaldocker -tid $DOCKER_IMAGE
       # Now download Tripal using composer and install it in the docker.
-      - name: Install Tripal via docker
+      - name: 'Install Tripal via docker'
         env:
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+          BRANCH_NAME: '${{ github.head_ref || github.ref_name }}'
         run: |
-          if [ "$BRANCH_NAME" = "4.x" ]; then
+          if [ "$BRANCH_NAME" = '4.x' ]; then
             docker exec --workdir=/var/www/drupal drupaldocker composer require --dev tripal/tripal:4.x-dev --no-interaction --with-all-dependencies
           else
             docker exec --workdir=/var/www/drupal drupaldocker composer require --dev "tripal/tripal:dev-$BRANCH_NAME" --no-interaction --with-all-dependencies

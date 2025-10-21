@@ -2,9 +2,8 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\api;
 
-use Drupal\Core\Database\Database;
-use Drupal\tripal_chado\api\ChadoSchema;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the current Chado Database is compliant with the schema definition
@@ -14,6 +13,9 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
  * @group Tripal Chado
  * @group Tripal Database
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal Database')]
 class ChadoComplianceTest extends ChadoTestBrowserBase {
 
   protected $defaultTheme = 'stark';
@@ -51,6 +53,9 @@ class ChadoComplianceTest extends ChadoTestBrowserBase {
    * @group chado
    * @group chado-compliance
    */
+  #[Group('api')]
+  #[Group('chado')]
+  #[Group('chado-compliance')]
   public function testTableCompliance() {
 
     // FOR EVERY CHADO TABLE!

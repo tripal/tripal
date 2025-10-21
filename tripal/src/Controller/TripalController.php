@@ -6,7 +6,6 @@ use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
-use Drupal\Core\Render\Markup;
 use Drupal\file\Entity\File;
 use Drupal\user\Entity\User;
 /**
@@ -90,14 +89,8 @@ class TripalController extends ControllerBase{
     ];
   }
 
-  public function tripalContentUnpublishOrphans() {
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
-
   /**
-   * Provides contents for the File Usgae page.
+   * Provides contents for the File Usage page.
    */
   public function tripalFilesUsage() {
 

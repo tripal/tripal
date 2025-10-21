@@ -1,11 +1,42 @@
 <?php
+
 namespace Drupal\tripal_layout\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\tripal_layout\Entity\TripalLayoutConfigEntityTrait;
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Defines the Default Layout entity controlling the form layout.
+ */
+#[ConfigEntityType(
+  id: 'tripal_layout_default_form',
+  label: new TranslatableMarkup('Tripal Default Form Layout'),
+  handlers: [
+    'list_builder' => 'Drupal\tripal_layout\ListBuilders\TripalLayoutDefaultFormListBuilder',
+    'form' => [
+      'delete' => 'Drupal\tripal_layout\Form\TripalLayoutDefaultFormDeleteForm',
+    ],
+  ],
+  config_prefix: 'tripal_layout_default_form',
+  admin_permission: 'administer tripal',
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'label',
+  ],
+  config_export: [
+    'id',
+    'label',
+    'description',
+    'layouts',
+  ],
+  links: [
+    'delete-form' => '/admin/tripal/config/tripal-layout-default-form/{tripal_layout_default_form}/delete',
+    'layouts' => '/admin/tripal/config/tripal-layout-default-form',
+  ],
+)]
+/**
+ * @todo Remove this annotation when we no longer support Drupal 10.x.
  *
  * @ConfigEntityType(
  *   id = "tripal_layout_default_form",
@@ -46,7 +77,7 @@ class TripalLayoutDefaultForm extends ConfigEntityBase {
   protected string $id;
 
   /**
-   * A label to provide to the admin identifying this collection of form layouts.
+   * A label to identify this collection of form layouts.
    *
    * @var string
    */
@@ -71,6 +102,7 @@ class TripalLayoutDefaultForm extends ConfigEntityBase {
    * Retrieves the description of this form layout collection.
    *
    * @return string
+   *   The description of the layout collection.
    */
   public function description() {
     return $this->description;
@@ -85,4 +117,5 @@ class TripalLayoutDefaultForm extends ConfigEntityBase {
   public function getLayouts() {
     return $this->layouts;
   }
+
 }

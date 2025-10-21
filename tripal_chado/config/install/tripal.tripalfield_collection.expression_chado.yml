@@ -32,6 +32,7 @@ fields:
               weight: 10
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: biosample_description
         content_type: biosample
@@ -112,6 +113,35 @@ fields:
             default:
               region: content
               weight: 25
+
+    -   name: biosample_relationship
+        content_type: biosample
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Samples related to this sample. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current sample is the subject; chose Reverse if the object is the current sample."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: biomaterial
+                base_column: name
+                linker_table: biomaterial_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: biosample_dbxref
         content_type: biosample
@@ -195,6 +225,7 @@ fields:
               weight: 10
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: assay_description
         content_type: assay
@@ -329,6 +360,9 @@ fields:
             default:
               region: content
               weight: 35
+              settings:
+                filter_format: 'plain_text'
+                num_rows: 1
 
     -   name: assay_arraybatchidentifier
         content_type: assay
@@ -355,6 +389,9 @@ fields:
             default:
               region: content
               weight: 40
+              settings:
+                filter_format: 'plain_text'
+                num_rows: 1
 
     -   name: assay_operator
         content_type: assay
@@ -492,6 +529,7 @@ fields:
               weight: 10
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: array_design_description
         content_type: array_design
@@ -652,6 +690,9 @@ fields:
             default:
               region: content
               weight: 45
+              settings:
+                filter_format: 'plain_text'
+                num_rows: 1
 
     -   name: array_design_dimensions
         content_type: array_design
@@ -678,6 +719,9 @@ fields:
             default:
               region: content
               weight: 50
+              settings:
+                filter_format: 'plain_text'
+                num_rows: 1
 
     -   name: array_design_element_dims
         content_type: array_design
@@ -704,6 +748,9 @@ fields:
             default:
               region: content
               weight: 51
+              settings:
+                filter_format: 'plain_text'
+                num_rows: 1
 
     -   name: array_design_num_of_elements
         content_type: array_design

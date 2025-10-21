@@ -2,24 +2,23 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of the 'text' field type.
- *
- * @FieldType(
- *   id = "tripal_text_type",
- *   category = "tripal",
- *   label = @Translation("Tripal Text Field Type"),
- *   description = @Translation("A text field with no length limit."),
- *   default_widget = "default_tripal_text_type_widget",
- *   default_formatter = "default_tripal_text_type_formatter"
- * )
  */
+#[TripalFieldType(
+  id: 'tripal_text_type',
+  category: 'tripal',
+  label: new TranslatableMarkup('Tripal Text Field Type'),
+  description: new TranslatableMarkup('A text field with no length limit.'),
+  default_widget: 'default_tripal_text_type_widget',
+  default_formatter: 'default_tripal_text_type_formatter',
+)]
 class TripalTextTypeItem extends TripalFieldItemBase {
 
   public static $id = "tripal_text_type";

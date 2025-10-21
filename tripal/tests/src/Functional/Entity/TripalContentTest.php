@@ -3,7 +3,7 @@
 namespace Drupal\Tests\tripal\Functional\Entity;
 
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
-use Drupal\Core\Url;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the basic functions of Tripal Content.
@@ -11,6 +11,8 @@ use Drupal\Core\Url;
  * @group Tripal
  * @group Tripal Content
  */
+#[Group('Tripal')]
+#[Group('Tripal Content')]
 class TripalContentTest extends TripalTestBrowserBase {
 
   protected static $modules = ['user', 'path', 'tripal'];
@@ -40,9 +42,9 @@ class TripalContentTest extends TripalTestBrowserBase {
     $term_accession = $random->sentences(3,TRUE);
     $term = $this->createMock('\Drupal\tripal\TripalVocabTerms\TripalTerm');
     $term->expects($this->any())
-      ->method('getIdSpace')->will($this->returnValue($term_idspace));
+      ->method('getIdSpace')->willReturn($term_idspace);
     $term->expects($this->any())
-      ->method('getAccession')->will($this->returnValue($term_accession));
+      ->method('getAccession')->willReturn($term_accession);
     $values['term'] = $term;
 
     // Actually creating the type.

@@ -3,9 +3,7 @@
 namespace Drupal\Tests\tripal\Functional;
 
 use Drupal\Tests\BrowserTestBase;
-use Drupal\file\Entity\File;
-use Drupal\user\Entity\Role;
-use Drupal\Core\Url;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the basic functions of the TripalTerm Entity Type.
@@ -14,6 +12,9 @@ use Drupal\Core\Url;
  * @group Tripal Chado
  * @group Tripal Chado Permissions
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal Chado Permissions')]
 class TripalChadoRoutePermissionsTest extends BrowserTestBase {
 
   protected $defaultTheme = 'stark';

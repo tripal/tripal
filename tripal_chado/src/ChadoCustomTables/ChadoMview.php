@@ -20,11 +20,11 @@ class ChadoMview extends ChadoCustomTable {
    *
    * @param string $table_name
    *   The name of the custom table.
-   * @param string $chado_schema
+   * @param string|null $chado_schema
    *   Optional. The chado schema where the custom table will live. If no
    *   schema is specified then the default schema is used.
    */
-  public function __construct($table_name, string $chado_schema = NULL) {
+  public function __construct($table_name, ?string $chado_schema = NULL) {
 
     parent::__construct($table_name, $chado_schema);
 
@@ -103,7 +103,7 @@ class ChadoMview extends ChadoCustomTable {
    * {@inheritDoc}
    * @see \Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable::setTableSchema()
    */
-  public function setTableSchema(array $table_schema, bool $force = False) {
+  public function setTableSchema(array $table_schema, bool $force = False): bool {
     $success = parent::setTableSchema($table_schema, $force);
     if ($success) {
       $this->setTableValue('name', $table_schema['table']);
@@ -261,7 +261,7 @@ class ChadoMview extends ChadoCustomTable {
    * from Chado. After this function is executed this object is no longer
    * usable.
    *
-   * Note: if the materialized view exists in multiple Chado instnaces then it
+   * Note: if the materialized view exists in multiple Chado instances then it
    * will only be removed from the default instance and will not be removed
    * in any other instance. Be sure to call the setSchemaName() on the
    * ChadoConnection object to ensure the view is deleted in the

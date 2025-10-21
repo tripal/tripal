@@ -262,6 +262,145 @@ fields:
               region: content
               weight: 68
 
+## Species (taxonomy) Tree ##
+## Chado Table: phylotree
+## Required Columns: dbxref_id (bigint)
+## Optional columns: name (varchar 255), type_id (cvterm FK), analysis_id (analysis FK), comment (text)
+## Related: phylotreeprop, phylotree_pub, phylonode
+
+    -   name: 'speciestree_name'
+        content_type: 'speciestree'
+        label: 'Name'
+        type: 'chado_string_type_default'
+        description: 'The name of the phylogenetic tree'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'phylotree'
+                base_column: 'name'
+            max_length: 255
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'name'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 10
+          form:
+            default:
+              region: 'content'
+              weight: 10
+
+    -   name: 'speciestree_type'
+        content_type: 'speciestree'
+        label: 'Type of phylogenetic tree'
+        type: 'chado_additional_type_type_default'
+        description: 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'phylotree'
+                type_table: 'phylotree'
+                type_column: 'type_id'
+        settings:
+            termIdSpace: 'data'
+            termAccession: '3272'
+            fixed_value: 'data:3272'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 20
+          form:
+            default:
+              region: 'content'
+              weight: 20
+
+    -   name: 'speciestree_analysis'
+        content_type: 'speciestree'
+        label: 'Analysis'
+        type: 'chado_analysis_type_default'
+        description: 'The analysis from which the tree was generated.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'phylotree'
+                base_column: 'analysis_id'
+        settings:
+            termIdSpace: 'operation'
+            termAccession: '2945'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 25
+          form:
+            default:
+              region: 'content'
+              weight: 25
+
+    -   name: 'speciestree_comment'
+        content_type: 'speciestree'
+        label: 'Notes'
+        type: 'chado_text_type_default'
+        description: 'Comments about this phylogenetic tree.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'phylotree'
+                base_column: 'comment'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'comment'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 30
+          form:
+            default:
+              region: 'content'
+              weight: 30
+
+    -   name: 'speciestree_dbxref'
+        content_type: 'speciestree'
+        label: 'Primary Database Reference'
+        type: 'chado_dbxref_type_default'
+        description: 'The ID where this record may be available in an external online database.'
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'phylotree'
+                base_column: 'dbxref_id'
+        settings:
+            termIdSpace: 'SBO'
+            termAccession: '0000554'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 68
+          form:
+            default:
+              region: 'content'
+              weight: 68
+
 ## Analysis ##
 ## Chado Table: analysis
 ## Required Columns: program (varchar 255), programversion(varchar 255), timeexecuted (timestamp)
@@ -486,6 +625,36 @@ fields:
               weight: 45
               settings:
                 filter_format: plain_text
+                num_rows: 1
+
+    -   name: analysis_relationship
+        content_type: analysis
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Analyses related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current analysis is the subject; chose Reverse if the object is the current analysis."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: name
+                linker_table: analysis_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: analysis_pub
         content_type: analysis
@@ -708,6 +877,35 @@ fields:
             default:
               region: content
               weight: 30
+
+    -   name: project_relationship
+        content_type: project
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Projects related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current project is the subject; chose Reverse if the object is the current project."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                base_column: name
+                linker_table: project_relationship
+                subject_column: subject_project_id
+                object_column: object_project_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: project_dbxref
         content_type: project
@@ -964,6 +1162,35 @@ fields:
               region: content
               weight: 20
 
+    -   name: contact_relationship
+        content_type: contact
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Contacts related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current contact is the subject; chose Reverse if the object is the current contact."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: contact
+                base_column: name
+                linker_table: contact_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
+
     -   name: contact_project
         content_type: contact
         label: Project
@@ -1052,6 +1279,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: protocol_description
         content_type: protocol
@@ -1104,6 +1332,9 @@ fields:
             default:
               region: content
               weight: 25
+              settings:
+                filter_format: 'plain_text'
+                num_rows: 1
 
     -   name: protocol_software
         content_type: protocol
@@ -1130,6 +1361,9 @@ fields:
             default:
               region: content
               weight: 30
+              settings:
+                filter_format: 'plain_text'
+                num_rows: 1
 
     -   name: protocol_type
         content_type: protocol
@@ -1280,6 +1514,33 @@ fields:
               region: content
               weight: 12
 
+    -   name: 'pub_publication_type'
+        content_type: 'pub'
+        label: 'Additional Publication Type(s)'
+        type: 'chado_property_type_default'
+        description: 'Additional terms further describing the type of publication. This should not include the primary term which is indicated in the "Publication Type" field.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'pub'
+                prop_table: 'pubprop'
+        settings:
+            termIdSpace: 'TPUB'
+            termAccession: '0000015'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 13
+          form:
+            default:
+              region: 'content'
+              weight: 13
+              type: 'chado_property_string_widget_default'
+
     -   name: pub_series_name
         content_type: pub
         label: Series Name
@@ -1359,6 +1620,9 @@ fields:
             default:
               region: content
               weight: 18
+              settings:
+                filter_format: 'plain_text'
+                num_rows: 1
 
     -   name: pub_pyear
         content_type: pub
@@ -1523,6 +1787,7 @@ fields:
             default:
               region: content
               weight: 30
+              type: chado_property_string_widget_default
 
     -   name: pub_journal_abbreviation
         content_type: pub
@@ -1549,6 +1814,7 @@ fields:
             default:
               region: content
               weight: 31
+              type: chado_property_string_widget_default
 
     -   name: pub_eissn
         content_type: pub
@@ -1575,6 +1841,7 @@ fields:
             default:
               region: content
               weight: 32
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_publication_date
         content_type: pub
@@ -1601,6 +1868,7 @@ fields:
             default:
               region: content
               weight: 33
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_citation
         content_type: pub
@@ -1653,6 +1921,7 @@ fields:
             default:
               region: content
               weight: 36
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_language_abbr
         content_type: pub
@@ -1679,32 +1948,7 @@ fields:
             default:
               region: content
               weight: 37
-
-    -   name: pub_publication_type
-        content_type: pub
-        label: Publication Type
-        type: chado_property_type_default
-        description:
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: pub
-                prop_table: pubprop
-        settings:
-            termIdSpace: TPUB
-            termAccession: "0000015"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 38
-          form:
-            default:
-              region: content
-              weight: 38
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_publication_model
         content_type: pub
@@ -1731,6 +1975,7 @@ fields:
             default:
               region: content
               weight: 39
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_authors
         content_type: pub
@@ -1783,6 +2028,7 @@ fields:
             default:
               region: content
               weight: 41
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_elocation
         content_type: pub
@@ -1809,6 +2055,7 @@ fields:
             default:
               region: content
               weight: 42
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_url
         content_type: pub
@@ -1835,6 +2082,7 @@ fields:
             default:
               region: content
               weight: 42
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_journal_country
         content_type: pub
@@ -1861,6 +2109,7 @@ fields:
             default:
               region: content
               weight: 43
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_abstract
         content_type: pub
@@ -1913,6 +2162,7 @@ fields:
             default:
               region: content
               weight: 45
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_miniref
         content_type: pub
@@ -1968,6 +2218,35 @@ fields:
               weight: 34
               settings:
                 filter_format: plain_text
+
+    -   name: pub_relationship
+        content_type: pub
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Publications related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current publication is the subject; chose Reverse if the object is the current publication."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: uniquename
+                linker_table: pub_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 67
+          form:
+            default:
+              region: content
+              weight: 67
 
     -   name: pub_dbxref
         content_type: pub

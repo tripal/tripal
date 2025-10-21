@@ -4,20 +4,22 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
+use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;
 
 /**
  * Plugin implementation of default Chado organism widget.
- *
- * @FieldWidget(
- *   id = "chado_organism_widget_default",
- *   label = @Translation("Chado Organism Widget"),
- *   description = @Translation("The default organism widget."),
- *   field_types = {
- *     "chado_organism_type_default"
- *   }
- * )
  */
+#[TripalFieldWidget(
+  id: 'chado_organism_widget_default',
+  label: new TranslatableMarkup('Chado Organism Widget'),
+  description: new TranslatableMarkup('The default organism widget.'),
+  field_types: [
+    'chado_organism_type_default',
+  ],
+)]
 class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
 
   /**
@@ -32,9 +34,6 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
       ?? $storage_settings['base_column'] ?? 'organism_id';
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
-
-    // Get the list of organisms. Second parameter true includes common names.
-    $organisms = chado_get_organism_select_options(FALSE, TRUE);
 
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
@@ -55,7 +54,7 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $link,
     ];
-    // pass the foreign key name through the form for massageFormValues()
+    // pass the foreign key name through the form for massageFormValues().
     $elements['linker_fkey_column'] = [
       '#type' => 'value',
       '#default_value' => $linker_fkey_column,
@@ -65,12 +64,20 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $organisms,
-      '#default_value' => $organism_id,
-      '#empty_option' => '- Select -',
-    ];
+
+    // Insert the select element, either a select or an autocomplete depending
+    // on the number of options.
+    $options = [];
+
+     // Set some defaults to keep each of the fields simpler.
+    $options['select_limit'] = $this->getSelectLimit($options['select_limit'] ?? NULL);
+    $options['match_operator'] ??= $this->getSetting('match_operator') ?? 'CONTAINS';
+    $options['match_limit'] ??= $this->getSetting('match_limit') ?? 10;
+    $options['size'] ??= $this->getSetting('size');
+    $options['placeholder'] ??= $this->getSetting('placeholder');
+
+    $select_element = ChadoOrganismFormElementController::getFormElement($elements, $organism_id, $options);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
@@ -95,6 +102,29 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('organism_id', $values);
     return $this->massageLinkingFormValues('organism_id', $values, $form_state);
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return self::defaultSelectSettings() + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    return $this->selectSettingsForm($form, $form_state) + parent::settingsForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    return $this->selectSettingsSummary() + parent::settingsSummary();
+  }
+
 }

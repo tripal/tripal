@@ -4,20 +4,21 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
- * Plugin implementation of default Chado Data Source widget.
- *
- * @FieldWidget(
- *   id = "chado_unit_widget_default",
- *   label = @Translation("Chado Unit Widget Default"),
- *   description = @Translation("The default unit widget which allows curators to enter unit on the Gene Map content edit page."),
- *   field_types = {
- *     "chado_unit_type_default"
- *   }
- * )
+ * Plugin implementation of default Chado Unit widget.
  */
+#[TripalFieldWidget(
+  id: 'chado_unit_widget_default',
+  label: new TranslatableMarkup('Chado Unit Widget Default'),
+  description: new TranslatableMarkup('The default unit widget which allows curators to enter unit on the Gene Map content edit page.'),
+  field_types: [
+    'chado_unit_type_default',
+  ],
+)]
 class ChadoUnitWidgetDefault extends ChadoWidgetBase {
 
   /**

@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
@@ -9,26 +11,33 @@ use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of Default Tripal field for unit of measurement.
- *
- * @FieldType(
- *   id = "chado_unit_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Unit"),
- *   description = @Translation("Provide unit of measurement of content, for example, Genetic Map."),
- *   default_widget = "chado_unit_widget_default",
- *   default_formatter = "chado_unit_formatter_default"
- * )
  */
-
+#[TripalFieldType(
+  id: 'chado_unit_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Unit'),
+  description: new TranslatableMarkup('Provide unit of measurement of content, for example, Genetic Map.'),
+  default_widget: 'chado_unit_widget_default',
+  default_formatter: 'chado_unit_formatter_default',
+)]
 class ChadoUnitTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_unit_type_default";
 
   /**
    * {@inheritdoc}
-  */
+   */
   public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
     return 'unittype_id';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
+    return 'cv_name';
   }
 
   /**
@@ -65,7 +74,7 @@ class ChadoUnitTypeDefault extends ChadoFieldItemBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
 
-    $cvterm_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $cvterm_def = self::getChadoTableDef('cvterm', $schema);
     $cv_name_len = $cvterm_def['fields']['name']['size'];
 
     $unittype_id_term = self::getColumnTermId('featuremap', 'unittype_id', 'UO:0000000');
@@ -107,6 +116,29 @@ class ChadoUnitTypeDefault extends ChadoFieldItemBase {
       $compatible = TRUE;
     }
     return $compatible;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
+
+    // Specific settings for this field
+    $options += [
+      'id' => self::$id,
+      'base_table' => 'featuremap',
+      'base_column' => 'unittype_id',
+      'label' => 'Unit Type',
+      'termIdSpace' => 'UO',
+      'termAccession' => '0000000',
+      'description' => 'A unit of measurement is a standardized quantity of a physical quality.',
+    ];
+
+    // Call the parent discover() with this field's specific options
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+    return $field_list;
   }
 
 }

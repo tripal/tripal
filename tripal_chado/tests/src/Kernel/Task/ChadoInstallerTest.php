@@ -4,6 +4,10 @@ namespace Drupal\Tests\tripal_chado\Kernel\Task;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\Task\ChadoInstaller;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -15,14 +19,21 @@ use Drupal\tripal_chado\Task\ChadoInstaller;
  * @group Tripal Chado
  * @group Tripal Chado Task
  * @group Tripal Chado Installer
+ *
+ * @covers ::setParameters
+ * @covers ::performTask
  */
+#[CoversClass(ChadoInstaller::class)]
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal Chado Task')]
+#[Group('Tripal Chado Installer')]
+#[CoversMethod(ChadoInstaller::class, 'setParameters')]
+#[CoversMethod(ChadoInstaller::class, 'performTask')]
 class ChadoInstallerTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
-   *
-   * @cover ::setParameters
-   * @cover ::performTask
    */
   public function testPerformTaskInstaller() {
     // Get a temporary schema name.
@@ -106,9 +117,8 @@ class ChadoInstallerTest extends ChadoTestKernelBase {
    * Tests task.
    *
    * @dataProvider provideInvalidParameters
-   *
-   * @cover ::setParameters
    */
+  #[DataProvider('provideInvalidParameters')]
   public function testPerformTaskInstallerParameters($test_name, $paramset, $expected_message) {
 
     $this->tripal_dbx->createSchema('testchadoschemaexists');

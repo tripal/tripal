@@ -3,8 +3,8 @@
 namespace Drupal\Tests\tripal\Functional\Entity;
 
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
-use Drupal\Core\Url;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -14,6 +14,9 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  * @group Tripal Content
  * @group Discover
  */
+#[Group('Tripal')]
+#[Group('Tripal Content')]
+#[Group('Discover')]
 class TripalFieldCollectionTest extends TripalTestBrowserBase {
 
   /**

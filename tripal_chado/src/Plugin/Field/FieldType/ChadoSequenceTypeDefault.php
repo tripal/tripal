@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
@@ -10,17 +12,16 @@ use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of Default Tripal field for sequence data.
- *
- * @FieldType(
- *   id = "chado_sequence_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Sequence Residues"),
- *   description = @Translation("Manages sequence residues for content types storing data in the chado feature table."),
- *   default_widget = "chado_sequence_widget_default",
- *   default_formatter = "chado_sequence_formatter_default",
- *   cardinality = 1,
- * )
  */
+#[TripalFieldType(
+  id: 'chado_sequence_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Sequence Residues'),
+  description: new TranslatableMarkup('Manages sequence residues for content types storing data in the chado feature table.'),
+  default_widget: 'chado_sequence_widget_default',
+  default_formatter: 'chado_sequence_formatter_default',
+  cardinality: 1,
+)]
 class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_sequence_type_default";
@@ -29,6 +30,15 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
+    return 'residues';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'residues';
   }
 
@@ -104,6 +114,29 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
       $compatible = TRUE;
     }
     return $compatible;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
+
+    // Specific settings for this field
+    $options += [
+      'id' => self::$id,
+      'base_table' => 'feature',
+      'base_column' => 'residues',
+      'label' => 'Sequence Residues',
+      'termIdSpace' => 'data',
+      'termAccession' => '2044',
+      'description' => 'One or more molecular sequences, possibly with associated annotation.',
+    ];
+
+    // Call the parent discover() with this field's specific options
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+    return $field_list;
   }
 
 }

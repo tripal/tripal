@@ -4,20 +4,21 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
  * Plugin implementation of default Chado Sequence Coordinates widget.
- *
- * @FieldWidget(
- *   id = "chado_sequence_coordinates_widget_default",
- *   label = @Translation("Chado Sequence Coordinates Widget"),
- *   description = @Translation("The default chado sequence coordinates widget."),
- *   field_types = {
- *     "chado_sequence_coordinates_type_default"
- *   }
- * )
  */
+#[TripalFieldWidget(
+  id: 'chado_sequence_coordinates_widget_default',
+  label: new TranslatableMarkup('Chado Sequence Coordinates Widget'),
+  description: new TranslatableMarkup('The default chado sequence coordinates widget.'),
+  field_types: [
+    'chado_sequence_coordinates_type_default',
+  ],
+)]
 class ChadoSequenceCoordinatesWidgetDefault extends ChadoWidgetBase {
 
   /**

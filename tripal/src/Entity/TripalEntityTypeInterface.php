@@ -9,7 +9,6 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
  */
 interface TripalEntityTypeInterface extends ConfigEntityInterface {
 
-
   /**
    * Gets the Tripal Entity Type label (e.g. gene).
    *
@@ -41,7 +40,7 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
    * Sets the Tripal Entity Type CV Term ID Space.
    *
    * @param string $termIdSpace
-   *   The new Tripal Controlled Vocabulary Term ID Space
+   *   The new Tripal Controlled Vocabulary Term ID Space.
    *
    * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
    *   The called Tripal Entity Type entity.
@@ -60,7 +59,7 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
    * Sets the Tripal Entity Type CV Term Accession.
    *
    * @param string $termAccession
-   *   The new Tripal Controlled Vocabulary Term Accession
+   *   The new Tripal Controlled Vocabulary Term Accession.
    *
    * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
    *   The called Tripal Entity Type entity.
@@ -68,7 +67,7 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
   public function setTermAccession(string $termAccession);
 
   /**
-   * Gets the Tripal Entity Type CV Term Object based off its CV Term ID Space and Accession.
+   * Gets the TripalTerm describing the type this TripalEntityType represents.
    *
    * @return \Drupal\tripal\TripalVocabTerms\TripalTerm
    *   The Tripal Controlled Vocabulary Term Object.
@@ -164,26 +163,33 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
   /**
    * Retrieves the indicator for whether to hide empty fields or not.
    *
-   * @return
+   * @return bool
    *   true if empty fields should be hidden and false otherwise.
    */
   public function getEmptyFieldDisplay();
 
   /**
-   * Configures the entity such that fields will be loaded via AJAX after page load.
+   * Indicates that fields will be loaded via AJAX after page load.
+   *
+   * @todo this functionality is not yet implemented.
    */
   public function enableAJAXLoading();
 
   /**
-   * Configures the entity such that fields will be loaded on page load.
+   * Indicates that fields will be loaded on page load.
+   *
+   * @todo this functionality is not yet implemented.
    */
   public function disableAJAXLoading();
 
   /**
    * Retrieves the indicator for whether to load fields using AJAX or not.
    *
-   * @return
+   * @todo this functionality is not yet implemented.
+   *
+   * @return bool
    *   true if AJAX should be used to load fields and false otherwise.
    */
   public function getAJAXLoadingStatus();
+
 }

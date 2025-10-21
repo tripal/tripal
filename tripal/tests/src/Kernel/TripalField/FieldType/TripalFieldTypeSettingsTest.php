@@ -2,23 +2,33 @@
 
 namespace Drupal\Tests\tripal\Kernel\TripalField;
 
-use Drupal\tripal\Plugin\Field\FieldType\TripalStringTypeItem;
+use Drupal\Core\Form\FormState;
+use Drupal\field_ui\Form\FieldStorageConfigEditForm;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
-use Drupal\Core\Entity\Entity\EntityViewDisplay;
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\tripal\Entity\TripalEntity;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\Core\Form\FormState;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TripalFieldItemBase class indirectly.
  *
  * @group TripalField
  */
+#[Group('TripalField')]
 class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
+
+  /**
+   * The theme to use when testing.
+   *
+   * @var string
+   */
   protected $defaultTheme = 'stark';
 
+  /**
+   * The modules to install when testing.
+   *
+   * @var array
+   */
   protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'datetime', 'tripal'];
 
   use TripalEntityFieldTestTrait;
@@ -32,10 +42,13 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
     $this->setupEntityFieldTestEnvironment();
   }
 
+  /**
+   * Fields to be used in testing.
+   */
   public static function provideFieldsToTest() {
-    $senarios =  [];
+    $senarios = [];
 
-    // BOOLEAN
+    // BOOLEAN.
     $senarios['boolean'] = [
       'field_info' => [
         'field_type_id' => 'tripal_boolean_type',
@@ -48,7 +61,7 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
       ],
     ];
 
-    // INTEGER
+    // INTEGER.
     $senarios['integer'] = [
       'field_info' => [
         'field_type_id' => 'tripal_integer_type',
@@ -61,7 +74,7 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
       ],
     ];
 
-    // STRING
+    // STRING.
     $senarios['string'] = [
       'field_info' => [
         'field_type_id' => 'tripal_string_type',
@@ -81,9 +94,9 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
       ],
     ];
 
-    // TEXT
+    // TEXT.
     $senarios['text'] = [
-      'field_info' =>[
+      'field_info' => [
         'field_type_id' => 'tripal_text_type',
         'field_type_class' => 'Drupal\tripal\Plugin\Field\FieldType\TripalTextTypeItem',
         'widget_id' => 'default_tripal_text_type_widget',
@@ -102,6 +115,7 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
    *
    * @dataProvider provideFieldsToTest
    */
+  #[DataProvider('provideFieldsToTest')]
   public function testStorageSettingsFormBuild($field_info, $expectations) {
 
     // Setup the field to be tested based on the data provider values.
@@ -118,9 +132,9 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
     $fieldStorage = reset($this->fieldStorage);
 
     // Build the form using the Drupal form builder.
-    $formBuilder = \Drupal\field_ui\Form\FieldStorageConfigEditForm::create($this->container);
+    $formBuilder = FieldStorageConfigEditForm::create($this->container);
     $formBuilder->setEntity($fieldStorage);
-    $form_state = new \Drupal\Core\Form\FormState();
+    $form_state = new FormState();
     $form_state->set('field_config', $fieldConfig);
     $form_state->set('entity_type_id', 'tripal_entity');
     $form_state->set('bundle', $bundle_name);
@@ -130,7 +144,7 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
       'We were not able to build the field storage settings form.'
     );
     // All TripalField Storage Settings forms should have:
-    // - Tripal Storage Plugin ID
+    // - Tripal Storage Plugin ID.
     $this->assertArrayHasKey('storage_plugin_id', $form['settings'],
       "All Tripal field storage settings forms should have a element for the Tripal Storage Plugin ID");
     // - Storage Settings Summary
@@ -174,4 +188,5 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
       }
     }
   }
+
 }

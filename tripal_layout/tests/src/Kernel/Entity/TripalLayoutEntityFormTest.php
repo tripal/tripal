@@ -2,10 +2,11 @@
 
 namespace Drupal\Tests\tripal_layout\Kernel\Entity;
 
+use Drupal\Core\Form\FormState;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
-use Drupal\tripal_layout\Entity\TripalLayoutDefaultView;
-use Drupal\tripal_layout\Entity\TripalLayoutDefaultForm;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TripalLayoutDefaultView and TripalLayoutDefaultForm entities.
@@ -13,6 +14,8 @@ use Drupal\tripal_layout\Entity\TripalLayoutDefaultForm;
  * @group TripalLayoutDisplay
  * @group TripalLayoutDisplayEntity
  */
+#[Group('TripalLayoutDisplay')]
+#[Group('TripalLayoutDisplayEntity')]
 class TripalLayoutEntityFormTest extends TripalTestKernelBase {
 
   use TripalLayoutTestTrait;
@@ -33,6 +36,12 @@ class TripalLayoutEntityFormTest extends TripalTestKernelBase {
     $this->installEntitySchema('tripal_layout_default_view');
   }
 
+  /**
+   * Provides scenarios for testing configuration entities.
+   *
+   * @return array
+   *   The provided scenarios.
+   */
   public static function provideConfigEntities() {
     $scenarios = [];
 
@@ -43,7 +52,7 @@ class TripalLayoutEntityFormTest extends TripalTestKernelBase {
       'expectations' => [
         'title_type' => 'Display Layout',
         'title_name' => 'TEST VIEW',
-        'description' => 'how tripal content pages should be organized by default'
+        'description' => 'how tripal content pages should be organized by default',
       ],
     ];
 
@@ -54,7 +63,7 @@ class TripalLayoutEntityFormTest extends TripalTestKernelBase {
       'expectations' => [
         'title_type' => 'Form Layout',
         'title_name' => 'TEST FORM',
-        'description' => 'how tripal content edit forms should be organized by default'
+        'description' => 'how tripal content edit forms should be organized by default',
       ],
     ];
 
@@ -62,13 +71,17 @@ class TripalLayoutEntityFormTest extends TripalTestKernelBase {
   }
 
   /**
-   * Tests the delete form for the TripalLayoutDefaultView and
+   * Tests the delete form.
+   *
+   * This tests the delete form for the TripalLayoutDefaultView and
    * TripalLayoutDefaultForm entities.
    *
    * @dataProvider provideConfigEntities
    *
    * @return void
+   *   No return value.
    */
+  #[DataProvider('provideConfigEntities')]
   public function testDeleteForm(string $form_class, string $config_entity_type, string $yaml_file, array $expectations) {
 
     // Create layout entity to be used in testing.
@@ -82,7 +95,7 @@ class TripalLayoutEntityFormTest extends TripalTestKernelBase {
     $form_object = $form_class::create($this->container);
     $form_object->setEntity($config_entity);
     $form_object->setModuleHandler($this->container->get('module_handler'));
-    $form_state = new \Drupal\Core\Form\FormState();
+    $form_state = new FormState();
     $form_state->addBuildInfo('args', [$config_entity_type]);
     $form = $form_object->buildForm([], $form_state);
 
@@ -105,7 +118,7 @@ class TripalLayoutEntityFormTest extends TripalTestKernelBase {
     $form_object->submitForm($form, $form_state);
 
     // And do some basic checks to ensure there were no errors.
-    //   Looking for form validation errors
+    // Looking for form validation errors.
     $form_validation_messages = $form_state->getErrors();
     $helpful_output = [];
     foreach ($form_validation_messages as $element => $markup) {
@@ -116,7 +129,7 @@ class TripalLayoutEntityFormTest extends TripalTestKernelBase {
       $form_validation_messages,
       "We should not have any validation errors when deleting $config_entity_type but instead we have: " . implode(" AND ", $helpful_output)
     );
-    //   Looking for drupal message errors.
+    // Looking for drupal message errors.
     $messages = \Drupal::messenger()->all();
     $this->assertIsArray(
       $messages,
@@ -133,4 +146,5 @@ class TripalLayoutEntityFormTest extends TripalTestKernelBase {
     $ret_config_entity = \Drupal::entityTypeManager()->getStorage($config_entity_type)->load($config_entity_id);
     $this->assertNull($ret_config_entity, "We should not have been able to retrieve the config entity we just deleted via the form.");
   }
+
 }

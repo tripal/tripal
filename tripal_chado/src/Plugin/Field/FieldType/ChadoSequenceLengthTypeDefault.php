@@ -2,24 +2,23 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- * Plugin implementation of Default Tripal field for sequence data.
- *
- * @FieldType(
- *   id = "chado_sequence_length_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Feature Sequence Length"),
- *   description = @Translation("A chado feature sequence length"),
- *   default_widget = "chado_sequence_length_widget_default",
- *   default_formatter = "chado_sequence_length_formatter_default"
- * )
+ * Plugin implementation of Default Tripal field for sequence length.
  */
-
-
+#[TripalFieldType(
+  id: 'chado_sequence_length_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Feature Sequence Length'),
+  description: new TranslatableMarkup('A chado feature sequence length'),
+  default_widget: 'chado_sequence_length_widget_default',
+  default_formatter: 'chado_sequence_length_formatter_default',
+)]
 class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_sequence_length_type_default";
@@ -28,6 +27,15 @@ class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
+    return 'seqlen';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'seqlen';
   }
 
@@ -88,6 +96,29 @@ class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
       $compatible = TRUE;
     }
     return $compatible;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
+
+    // Specific settings for this field
+    $options += [
+      'id' => self::$id,
+      'base_table' => 'feature',
+      'base_column' => 'seqlen',
+      'label' => 'Sequence Length',
+      'termIdSpace' => 'data',
+      'termAccession' => '1249',
+      'description' => 'The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.',
+    ];
+
+    // Call the parent discover() with this field's specific options
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+    return $field_list;
   }
 
 }

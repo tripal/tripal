@@ -5,40 +5,40 @@
 
 ## Compatibility
 
-![Target Drupal Version 11.1.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-11.1.x-informational)
+![Target Drupal Version 11.2.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-11.2.x-informational)
 
 Tested on ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success) - ![PostgreSQL 17](https://img.shields.io/badge/PostreSQL-17-success)
 
 The following table proves the compatibility for the current development version of Tripal.
 
-| Drupal      | 10.3.x              | 10.4.x              | 10.5.x              | 11.0.x              | 11.1.x              |
-|-------------|---------------------|---------------------|---------------------|---------------------|---------------------|
-| **PHP 8.1** | ![Grid81-103-Badge] | ![Grid81-104-Badge] | ![Grid81-105-Badge] |                     |                     |
-| **PHP 8.2** | ![Grid82-103-Badge] | ![Grid82-104-Badge] | ![Grid82-105-Badge] |                     |                     |
-| **PHP 8.3** | ![Grid83-103-Badge] | ![Grid83-104-Badge] | ![Grid83-105-Badge] | ![Grid83-110-Badge] | ![Grid83-111-Badge] |
+| Drupal      | 10.4.x              | 10.5.x              | 11.1.x              | 11.2.x              |
+|-------------|---------------------|---------------------|---------------------|---------------------|
+| **PHP 8.1** | ![Grid81-104-Badge] | ![Grid81-105-Badge] |                     |                     |
+| **PHP 8.2** | ![Grid82-104-Badge] | ![Grid82-105-Badge] |                     |                     |
+| **PHP 8.3** | ![Grid83-104-Badge] | ![Grid83-105-Badge] | ![Grid83-111-Badge] | ![Grid83-112-Badge] |
+| **PHP 8.4** |                     |                     | ![Grid84-111-Badge] | ![Grid84-112-Badge] |
 
-[Grid81-103-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_3x.yml/badge.svg
 [Grid81-104-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_4x.yml/badge.svg
 [Grid81-105-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_5x.yml/badge.svg
 
-[Grid82-103-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_3x.yml/badge.svg
 [Grid82-104-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_4x.yml/badge.svg
 [Grid82-105-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_5x.yml/badge.svg
 
-[Grid83-103-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D10_3x.yml/badge.svg
 [Grid83-104-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D10_4x.yml/badge.svg
 [Grid83-105-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D10_5x.yml/badge.svg
-
-[Grid83-110-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_0x.yml/badge.svg
 [Grid83-111-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_1x.yml/badge.svg
+[Grid83-112-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_2x.yml/badge.svg
+
+[Grid84-111-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.4_D11_1x.yml/badge.svg
+[Grid84-112-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.4_D11_2x.yml/badge.svg
 
 ### Code Coverage
 
-This project uses Code Climate to determine the quality of our codebase and the coverage of our test suite. Compatibility above is based on passing of this test suite.
+This project uses QLTY Cloud to determine the quality of our codebase and the coverage of our test suite. Compatibility above is based on passing of this test suite.
 
-[![Test Coverage](https://api.codeclimate.com/v1/badges/994fcd39a0eef9cff742/test_coverage)](https://codeclimate.com/github/tripal/tripal/test_coverage)
+[![Code Coverage](https://qlty.sh/gh/tripal/projects/tripal/coverage.svg)](https://qlty.sh/gh/tripal/projects/tripal)
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/994fcd39a0eef9cff742/maintainability)](https://codeclimate.com/github/tripal/tripal/maintainability)
+[![Maintainability](https://qlty.sh/gh/tripal/projects/tripal/maintainability.svg)](https://qlty.sh/gh/tripal/projects/tripal)
 
 ### Compatibility of past Tripal versions
 
@@ -46,15 +46,15 @@ This project uses Code Climate to determine the quality of our codebase and the 
 
 | Tripal     | Drupal              | PHP         | PostgreSQL |
 |------------|---------------------|-------------|------------|
-| 4.0-alpha1 | >=9.2 <=10.0        | >=8.0 <=8.1 | 13         |
-| 4.0-alpha2 | >=10.0 <= 10.1      | >=8.1 <=8.2 | 13         |
+| 4.0-alpha1 | >=9.2 <=10.0        | >=8.0 <=8.1 | >=13 <=16  |
+| 4.0-alpha2 | >=10.0 <= 10.1      | >=8.1 <=8.2 | >=13 <=16  |
+| 4.0-alpha3 | >=10.4 <= 11.2      | >=8.1 <=8.3 | >=13 <=17  |
 
 ## Current Timeline
 
-### Required for Tripal 4.alpha3 Release
+### Required for Tripal 4.alpha4 Release
 
 - Display suite / page work (partially complete; needs default layouts for existing content types + auto application).
-- ✅ Importers: Publications
 - Search via Views (partially complete; waiting on default views for existing content types)
 
 ## How to get involved!

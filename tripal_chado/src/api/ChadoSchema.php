@@ -19,7 +19,7 @@ use Drupal\Core\Database\Database;
  * @endcode
  *
  * where the variable $table contains the name of the table you want to
- * retireve.  The getTableSchema method determines the appropriate version of
+ * retrieve.  The getTableSchema method determines the appropriate version of
  * Chado and uses the Drupal hook infrastructure to call the appropriate
  * hook function to retrieve the table schema.
  *
@@ -215,14 +215,14 @@ class ChadoSchema {
     $schema = $this->getSchemaDetails();
     $tables = array_keys($schema);
 
-    // now add in the custom tables too if requested
+    // Now add in the custom tables too if requested.
     // @todo change this to the variable once custom tables are supported.
     if (FALSE) {
-      $sql = "SELECT table FROM {tripal_custom_tables}";
+      $sql = "SELECT table_name FROM {0:tripal_custom_tables}";
       $resource = $this->connection->query($sql);
 
       foreach ($resource as $r) {
-        $tables[$r->table] = $r->table;
+        $tables[$r->table_name] = $r->table_name;
       }
     }
 
@@ -307,7 +307,7 @@ class ChadoSchema {
    */
   public function getCustomTableSchema($table) {
 
-    $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = :table_name";
+    $sql = "SELECT schema FROM {0:tripal_custom_tables} WHERE table_name = :table_name";
     $results = $this->connection->query($sql, [':table_name' => $table]);
     $custom = $results->fetchObject();
     if (!$custom) {
@@ -637,8 +637,8 @@ class ChadoSchema {
       tripal_report_error(
         'ChadoSchema',
         TRIPAL_WARNING,
-        'Unable to check the type of !table!column since it doesn\'t appear to exist in your site database.',
-        ['!column' => $column, '!table' => $table]
+        'Unable to check the type of @table.@column since it doesn\'t appear to exist in your site database.',
+        ['@column' => $column, '@table' => $table]
       );
       return FALSE;
     }
@@ -654,8 +654,8 @@ class ChadoSchema {
         tripal_report_error(
           'ChadoSchema',
           TRIPAL_WARNING,
-          'Unable to check the type of !table!column due to being unable to find the schema definition.',
-          ['!column' => $column, '!table' => $table]
+          'Unable to check the type of @table.@column due to being unable to find the schema definition.',
+          ['@column' => $column, '@table' => $table]
         );
         return FALSE;
       }

@@ -2,12 +2,11 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Entity;
 
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\field\Entity\FieldConfig;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
-use Drupal\tripal\Entity\TripalEntityType;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TripalEntity Class with Chado Fields attached.
@@ -16,6 +15,9 @@ use Drupal\tripal\Entity\TripalEntityType;
  * @group ChadoFields
  * @group TripalTokenParser
  */
+#[Group('TripalEntity')]
+#[Group('ChadoFields')]
+#[Group('TripalTokenParser')]
 class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
 
   use TripalEntityFieldTestTrait;
@@ -110,7 +112,7 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
     // Adds contact which will be referred to by linker field in some scenarios.
     $values = [
       'name' => 'Zhanna Beissekova',
-      'description' => 'Enjoys grading and is fascinated by how each stone is different, even within the same species'
+      'description' => 'Enjoys grading and is fascinated by how each stone is different, even within the same species',
     ];
     $this->chado_connection->insert('1:contact')
       ->fields($values)
@@ -146,13 +148,14 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
   /**
    * Tests that TripalEntity::save() handles URL alias' with substitutions.
    *
-   * @dataProvider provideScenarios
-   *
    * @param int $current_scenario_key
    *   The key of the scenario in the YAML.
    * @param string $current_scenario_label
    *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
    */
+  #[DataProvider('provideScenarios')]
   public function testTripalChadoEntitySaveUrlAlias(int $current_scenario_key, string $current_scenario_label) {
     $current_scenario = $this->scenarios[$current_scenario_key];
     $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
@@ -200,4 +203,5 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
     $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['edit']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
   }
+
 }

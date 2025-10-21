@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
@@ -10,16 +12,15 @@ use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal assay field type.
- *
- * @FieldType(
- *   id = "chado_assay_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Assay"),
- *   description = @Translation("Add a Chado assay to the content type."),
- *   default_widget = "chado_assay_widget_default",
- *   default_formatter = "chado_assay_formatter_default",
- * )
  */
+#[TripalFieldType(
+  id: 'chado_assay_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Assay'),
+  description: new TranslatableMarkup('Add a Chado assay to the content type.'),
+  default_widget: 'chado_assay_widget_default',
+  default_formatter: 'chado_assay_formatter_default',
+)]
 class ChadoAssayTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_assay_type_default';
@@ -30,7 +31,15 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'
+    // The property that indicates if this field is empty.
+    return self::$object_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'assay_name';
   }
 
@@ -79,12 +88,11 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
     // Object table
     $object_table = self::$object_table;
-    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_schema_def = self::getChadoTableDef($object_table, $schema);
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Columns specific to the object table
@@ -96,7 +104,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     // Columns from linked tables
     $arraydesign_term = self::getColumnTermId('arraydesign', 'name', 'schema:name');
     $protocol_term = self::getColumnTermId('protocol', 'name', 'sep:00101');
-    $contact_schema_def = $schema->getTableDef('contact', ['format' => 'Drupal']);
+    $contact_schema_def = self::getChadoTableDef('contact', $schema);
     $operator_term = self::getColumnTermId('contact', 'name', 'schema:name');
     $operator_len = $contact_schema_def['fields']['name']['size'];
     $dbxref_term = self::getColumnTermId('dbxref', 'accession', 'data:2091');
@@ -107,7 +115,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];

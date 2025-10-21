@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Traits;
 use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Symfony\Component\Yaml\Yaml;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * This is a PHP Trait for Chado tests.
@@ -14,6 +15,8 @@ use Symfony\Component\Yaml\Yaml;
  * @group Tripal
  * @group Tripal Chado
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
 
 trait ChadoTestTrait  {
 
@@ -70,7 +73,6 @@ trait ChadoTestTrait  {
    * This is completely independant of Tripal terms.
    */
   protected function getCvtermID($idspace, $accession) {
-
     $connection = $this->getTestSchema();
 
     $query = $connection->select('1:cvterm', 'cvt');
@@ -83,6 +85,79 @@ trait ChadoTestTrait  {
 
     return $result->fetchField();
 
+  }
+
+  /**
+   * Retrieve a record in the testchado.cv table based on it's name.
+   *
+   * @param string $cvname
+   *   The name of the cv to lookup.
+   *
+   * @return object
+   *   An object containing the columns of the cv table (e.g. name, definition).
+   *   Returns FALSE if the cv record doesn't exist.
+   */
+  protected function getChadoCvRecord(string $cvname): FALSE|object {
+    $chado = $this->getTestSchema();
+
+    $query = $chado->select('1:cv', 'cv')
+      ->condition('cv.name', $cvname, '=')
+      ->fields('cv');
+    $result = $query->execute();
+    if (!$result) {
+      return FALSE;
+    }
+    return $result->fetch();
+  }
+
+  /**
+   * Retrieve a record in the testchado.db table based on it's name.
+   *
+   * @param string $dbname
+   *   The name of the database to lookup.
+   *
+   * @return object|FALSE
+   *   An object containing the columns of the db table (e.g. name).
+   *   Returns FALSE if the db record doesn't exist.
+   */
+  protected function getChadoDbRecord($dbname): FALSE|object {
+    $chado = $this->getTestSchema();
+
+    $query = $chado->select('1:db', 'db')
+      ->condition('db.name', $dbname, '=')
+      ->fields('db');
+    $result = $query->execute();
+    if (!$result) {
+      return FALSE;
+    }
+    return $result->fetch();
+  }
+
+  /**
+   * Retrieve a record in the testchado.cvterm table based on it's name + cv.
+   *
+   * @param string $cvname
+   *   The name of the cv the cvterm is part of.
+   * @param string $cvterm_name
+   *   The name of the cvterm to lookup.
+   *
+   * @return object|FALSE
+   *   An object containing the columns of the cvterm table (e.g. name).
+   *   Returns FALSE if the cvterm record doesn't exist.
+   */
+  protected function getChadoCvtermRecord(string $cvname, string $cvterm_name): FALSE|object {
+    $chado = $this->getTestSchema();
+
+    $query = $chado->select('1:cvterm', 'CVT');
+    $query->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
+    $query->fields('CVT')
+      ->condition('CVT.name', $cvterm_name, '=')
+      ->condition('CV.name', $cvname, '=');
+    $result = $query->execute();
+    if (!$result) {
+      return FALSE;
+    }
+    return $result->fetch();
   }
 
   /**

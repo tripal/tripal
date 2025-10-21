@@ -3,9 +3,8 @@
 namespace Drupal\Tests\tripal\Kernel\Services\TripalEntityTypeCollection;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\Core\Url;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
-use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -15,6 +14,9 @@ use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
  * @group Tripal Content
  * @group TripalEntityTypeCollection
  */
+#[Group('Tripal')]
+#[Group('Tripal Content')]
+#[Group('TripalEntityTypeCollection')]
 class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
 
 

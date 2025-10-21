@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalImporter;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Component\FileCache\FileCacheFactory;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the base functionality for chado importers.
@@ -12,6 +13,8 @@ use Drupal\Component\FileCache\FileCacheFactory;
  * @group TripalImporter
  * @group ChadoImporter
  */
+#[Group('TripalImporter')]
+#[Group('ChadoImporter')]
 class ChadoImporterBaseTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
@@ -48,6 +51,7 @@ class ChadoImporterBaseTest extends ChadoTestKernelBase {
    *
    * @group tripal_importer
    */
+  #[Group('tripal_importer')]
   public function testTripalImporterManagerForChadoImporters() {
 
     // These are the importers we expect to have.

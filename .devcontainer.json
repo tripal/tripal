@@ -4,12 +4,12 @@
     "dockerfile": "Dockerfile",
     "args": {
       "drupalversion": "11.x-dev",
-      "phpversion": "8.3",
+      "phpversion": "8.4",
       "postgresqlversion": "17",
       "chadoschema": "teapot"
     }
   },
-  "initializeCommand": "docker pull tripalproject/tripaldocker-drupal:drupal11.x-dev-php8.3-pgsql17",
+  "initializeCommand": "docker pull tripalproject/tripaldocker-drupal:drupal11.x-dev-php8.4-pgsql17",
   "workspaceMount": "source=${localWorkspaceFolder},target=/var/www/drupal/web/modules/contrib/tripal,type=bind",
   "workspaceFolder": "/var/www/drupal/web/modules/contrib/tripal",
   "customizations": {
@@ -23,7 +23,10 @@
         "DEVSENSE.composer-php-vscode",
         "mblode.twig-language-2",
         "redhat.vscode-yaml",
-        "ms-azuretools.vscode-docker"
+        "ms-azuretools.vscode-docker",
+        "github.vscode-github-actions",
+        "GitHub.vscode-pull-request-github",
+        "valeryanm.vscode-phpsab"
       ],
       "settings": {
         // This turns off basic PHP suggestions provided by Visual Studio Code (in lieu of Intelephense's).
@@ -88,9 +91,9 @@
         /* PHP Linting */
         "php.validate.enable": true,
         "php.validate.executablePath": "/usr/local/bin/php",
-        "php.validate.run": "onType",
+        "php.validate.run": "onSave",
         "[php]": {
-          "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
+          "editor.defaultFormatter": "valeryanm.vscode-phpsab"
         },
         /* PHP DocBlocker */
         "php-docblocker.gap": true,
@@ -115,7 +118,21 @@
         /* Composer */
         "composer.bin": "/usr/local/bin/composer",
         "tws.trimOnSave": true,
-        "tws.highlightTrailingWhiteSpace": true
+        "tws.highlightTrailingWhiteSpace": true,
+        /* PHP Sniffer & Beautifier */
+        "phpsab.snifferEnable": true,
+        "phpsab.executablePathCS": "/var/www/drupal/vendor/bin/phpcs",
+        "phpsab.fixerEnable": true,
+        "phpsab.executablePathCBF": "/var/www/drupal/vendor/bin/phpcbf",
+        "phpsab.standard": "/var/www/drupal/web/modules/contrib/tripal/codingstandards.xml",
+        "phpsab.snifferMode": "onSave",
+        "phpsab.debug": false,
+        "phpsab.fixerArguments": [
+          "--extensions=inc,theme,install,module,profile,php,phtml"
+        ],
+        "phpsab.snifferArguments": [
+          "--extensions=inc,theme,install,module,profile,php,phtml"
+        ]
       }
     }
   },

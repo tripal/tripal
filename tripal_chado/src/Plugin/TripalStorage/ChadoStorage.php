@@ -6,6 +6,8 @@ use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalStorage\Attribute\TripalStorage;
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Services\ChadoFieldDebugger;
@@ -14,13 +16,12 @@ use Drupal\tripal_chado\TripalStorage\ChadoRecords;
 
 /**
  * Chado implementation of the TripalStorageInterface.
- *
- * @TripalStorage(
- *   id = "chado_storage",
- *   label = @Translation("Chado Storage"),
- *   description = @Translation("Interfaces with GMOD Chado for field values."),
- * )
  */
+#[TripalStorage(
+  id: 'chado_storage',
+  label: new TranslatableMarkup('Chado Storage'),
+  description: new TranslatableMarkup('Interfaces with GMOD Chado for field values.'),
+)]
 class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
   /**
@@ -47,14 +48,19 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * Implements ContainerFactoryPluginInterface->create().
    *
-   * Since we have implemented the ContainerFactoryPluginInterface this static function
-   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the constructor.
+   * Since we have implemented the ContainerFactoryPluginInterface this static
+   * function will be called behind the scenes when a Plugin Manager uses
+   * createInstance(). Specifically this method is used to determine the
+   * parameters to pass to the constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container for the current page load.
    * @param array $configuration
+   *   Configuration for the current plugin instance.
    * @param string $plugin_id
+   *   Unique ID for the current plugin instance.
    * @param mixed $plugin_definition
+   *   The definition for the current plugin instance.
    *
    * @return static
    */
@@ -72,17 +78,23 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * Implements __construct().
    *
-   * Since we have implemented the ContainerFactoryPluginInterface, the constructor
-   * will be passed additional parameters added by the create() function. This allows
-   * our plugin to use dependency injection without our plugin manager service needing
-   * to worry about it.
+   * Since we have implemented the ContainerFactoryPluginInterface, the
+   * constructor will be passed additional parameters added by the create()
+   * function. This allows our plugin to use dependency injection without our
+   * plugin manager service needing to worry about it.
    *
    * @param array $configuration
+   *   The configuration for this plugin instance.
    * @param string $plugin_id
+   *   The unique id for this plugin instance.
    * @param mixed $plugin_definition
+   *   The definition for this plugin instance.
    * @param \Drupal\tripal\Services\TripalLogger $logger
+   *   The logger to provide feedback to the admin.
    * @param \Drupal\tripal_chado\Database\ChadoConnection $connection
+   *   The current connection to chado.
    * @param \Drupal\tripal_chado\Services\ChadoFieldDebugger $field_debugger
+   *   The field debugger.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection, ChadoFieldDebugger $field_debugger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $logger);
@@ -92,14 +104,17 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
+   * Add field definition for the current field.
+   *
    * @{inheritdoc}
    */
   public function addFieldDefinition(string $field_name, object $field_definition) {
     parent::addFieldDefinition($field_name, $field_definition);
 
-    // Now check if the field debugger should be enabled for this particular field.
+    // Now check if the field debugger should be enabled for this
+    // particular field.
     $settings = $field_definition->getSettings();
-    if (array_key_exists('debug', $settings) AND $settings['debug']) {
+    if (array_key_exists('debug', $settings) and $settings['debug']) {
       $this->field_debugger->addFieldToDebugger($field_name);
       $this->logger->notice('Debugging has been enabled for @name field.',
         ['@name' => $field_name],
@@ -109,8 +124,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
-   *
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::getStoredTypes()
    */
   public function getStoredTypes() {
@@ -118,8 +133,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
-   *
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::getNonStoredTypes()
    */
   public function getNonStoredTypes() {
@@ -145,8 +160,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $storage_settings = $property_type->getStorageSettings();
 
     // In chado, all table columns containing sequence are named 'residues'.
-    // We want to exclude sequences from drupal storage even if the default is TRUE
-    // because this field can contain a very large string, for example an entire chromosome.
+    // We want to exclude sequences from drupal storage even if the default is
+    // TRUE because this field can contain a very large string, for example an
+    // entire chromosome.
     if (array_key_exists('path', $storage_settings) and str_ends_with($storage_settings['path'], 'residues')) {
       $is_required = FALSE;
     }
@@ -178,6 +194,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
+   * Insert values into chado.
+   *
    * @{inheritdoc}
    */
   public function insertValues(&$values) : bool {
@@ -219,6 +237,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
+   * Update values in chado.
+   *
    * @{inheritdoc}
    */
   public function updateValues(&$values) : bool {
@@ -230,7 +250,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // Build the ChadoRecords object.
     $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
     $this->buildChadoRecords($values);
-
 
     $transaction_chado = $this->connection->startTransaction();
     try {
@@ -250,7 +269,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         // by only calling this once per base_table.
         $tables = $this->records->getAncillaryTables($base_table);
 
-
         foreach ($tables as $table_alias) {
           $this->records->deleteRecords($base_table, $table_alias, TRUE);
           $this->records->insertRecords($base_table, $table_alias);
@@ -268,17 +286,36 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
+   * Load values from Chado.
+   *
    * @{inheritdoc}
    */
-  public function loadValues(&$values) : bool {
+  public function loadValues(&$values, bool $ignore_cached_fields = TRUE) : bool {
 
     // Setup field debugging.
     $this->field_debugger->printHeader('Load');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::loadValues');
 
+    // We can actually skip this entire process if all the fields are 100%
+    // cached. The cached_fields indicates for each field (key) if it is fully
+    // cached (TRUE) or not (FALSE). Thus if no fields in this variable are
+    // false then all the fields are cached!
+    if ($ignore_cached_fields and (array_search(FALSE, $this->cached_fields, TRUE) === FALSE)) {
+      return TRUE;
+    }
+
     // Build the ChadoRecords object.
     $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
-    $this->buildChadoRecords($values);
+
+    if ($ignore_cached_fields) {
+      // Parameters indicate this is not a find action and that we should not
+      // add any properties for fields which are 100% cached in drupal to
+      // ChadoRecords.
+      $this->buildChadoRecords($values, TRUE, TRUE);
+    }
+    else {
+      $this->buildChadoRecords($values, TRUE);
+    }
 
     $transaction_chado = $this->connection->startTransaction();
     try {
@@ -286,7 +323,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $base_tables = $this->records->getBaseTables();
       foreach ($base_tables as $base_table) {
 
-        // Do the select for the base tables
+        // Do the select for the base tables.
         $this->records->selectItems($base_table, $base_table);
 
         // Then do the selects for the ancillary tables.
@@ -307,6 +344,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
+   * Delete values from Chado.
+   *
    * @{inheritdoc}
    */
   public function deleteValues($values) : bool {
@@ -333,7 +372,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $this->records->deleteRecords($base_table, $table);
         }
 
-        // Second, delete the record in the base talbe.
+        // Second, delete the record in the base table.
         $this->records->deleteRecords($base_table, $base_table);
       }
 
@@ -347,15 +386,24 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
-   * @{inheritdoc}
+   * Find values in Chado based on a number of records.
    *
+   * @param array $values
+   *   An array of values indicating which records to find in chado.
    * @param array $main_property_names
-   *   Associative array where key is field name, value is name of the main property.
+   *   Associative array where key is field name, value is name of the main
+   *   property.
    * @param array $record_ids
-   *   When specified, only return records where the primary key is present in this array.
-   *   Used by publish to publish in batches.
+   *   When specified, only return records where the primary key is present in
+   *   this array. Used by publish to publish in batches.
+   * @param array $options
+   *   - global_max_delta = Maximum number of linked records from a single table
+   *     to return, zero for no limit.
+   *   - cardinalities = associative array of cardinalities on a per-table
+   *     basis, key is table name. If present, these override global_max_delta.
+   *   - inhibit = Publish no records if the number exceeds max_delta.
    */
-  public function findValues($values, array $main_property_names = [], array $record_ids = []) {
+  public function findValues($values, array $main_property_names = [], array $record_ids = [], array $options = []) {
 
     // Setup field debugging.
     $this->field_debugger->printHeader('Find');
@@ -394,7 +442,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           foreach ($tables as $table_alias) {
 
             // Now find any items for this linked table.
-            $num_items_found = $match->selectItems($base_table, $table_alias);
+            $num_items_found = $match->selectItems($base_table, $table_alias, $options);
             if ($num_items_found == 0) {
               continue;
             }
@@ -435,23 +483,18 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     return $found_list;
   }
 
-
   /**
    * Sets the property values using the records returned from Chado.
    *
    * @param array $values
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
-   *
-   * @param ChadoRecords $records
+   * @param \Drupal\tripal_chado\TripalStorage\ChadoRecords $records
    *   An instance of a ChadoRecords object from which values will be pulled.
    *   We don't use the built in member variable and instead allow it to
    *   be passed in because the findValues() function can generate copies
    *   of the $records array and use that to set multiple values.
    */
   protected function setPropValues(&$values, ChadoRecords $records) {
-
-    $schema = $this->connection->schema();
-
     $replace = [];
     $function = [];
 
@@ -477,8 +520,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           if ($action == 'replace') {
             $replace[] = [$field_name, $delta, $key, $info];
           }
-          else if ($action == 'function') {
-            // Create a context array to pass information to the callback function.
+          elseif ($action == 'function') {
+            // Create a context array to pass info to the callback function.
             $context = [
               'field_name' => $field_name,
               'delta' => $delta,
@@ -501,8 +544,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             // Get the value column information for this property.
             $base_table = $storage_plugin_settings['base_table'];
             $value_col_info = $this->getPathValueColumn($path_array);
-            $table_alias  = $value_col_info['table_alias'];
-            $column_alias  = $value_col_info['column_alias'];
+            $table_alias = $value_col_info['table_alias'];
+            $column_alias = $value_col_info['column_alias'];
 
             // For values that come from joins, we need to use the root table
             // because this is the table that will have the value.
@@ -564,12 +607,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       // can access other non-function fields if it needs to.
       $context['values'] = $values;
 
-      // Retrieve the needed keys for the $values array
+      // Retrieve the needed keys for the $values array.
       $field_name = $context['field_name'];
       $delta = $context['delta'];
       $key = $context['key'];
 
-      // Retrieve the call back function
+      // Retrieve the call back function.
       $prop_storage_settings = $context['prop_type']->getStorageSettings();
       $namespace = $prop_storage_settings['namespace'];
       $callback_function = $prop_storage_settings['function'];
@@ -594,7 +637,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
   }
 
-
   /**
    * Checks if a field has all necessary elements to be considered 'found'.
    *
@@ -615,14 +657,15 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *
    * @param string $field_name
    *   The name of the field.
-   * @param integer $delta
+   * @param int $delta
    *   The field item's delta value.
    * @param string $main_property_name
    *   The name of the field's main property.
    * @param array $values
    *   An array of field values.
-   * @return boolean
-   *   returns TRUE if the field has all necessary elements for inserting
+   *
+   * @return bool
+   *   Returns TRUE if the field has all necessary elements for inserting
    *   into the Drupal tables for publishing. FALSE otherwise.
    */
   protected function isFieldValid($field_name, $delta, $main_property_name, $values) {
@@ -661,13 +704,25 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   will be set in the StoragePropertyValue object.
    * @param bool $is_find
    *   Set to TRUE if we are building the record array for finding records.
+   * @param bool $ignore_cached
+   *   If this is set to TRUE then any values that are part of a field where
+   *   all properties are cached in Drupal are not added to ChadoRecords.
    */
-  protected function buildChadoRecords($values, bool $is_find = FALSE) {
+  protected function buildChadoRecords($values, bool $is_find = FALSE, bool $ignore_cached = FALSE) {
 
     $this->field_debugger->reportValues($values, 'The values submitted to ChadoStorage');
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
+
+      // Check if this field is 100% cached in drupal.
+      $field_cached = (array_key_exists($field_name, $this->cached_fields)) ? $this->cached_fields[$field_name] : FALSE;
+
+      // If we are supposed to ignore cached fields and the current field is
+      // 100% cached, then we can skip this field.
+      if ($ignore_cached and $field_cached) {
+        continue;
+      }
 
       // Retrieve the field configuration.
       $definition = $this->getFieldDefinition($field_name);
@@ -682,7 +737,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         foreach ($keys as $key => $info) {
 
           // Ensure we have a value to work with.
-          if (!array_key_exists('value', $info) OR !is_object($info['value'])) {
+          if (!array_key_exists('value', $info) or !is_object($info['value'])) {
             $this->logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the StoragePropertyValue object.',
               ['@field' => $field_name]));
             continue;
@@ -696,8 +751,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Make sure we have an action for this property.
           if (!array_key_exists('action', $prop_storage_settings)) {
             $this->logger->error($this->t('Cannot store the property, @field.@prop ("@label"), in Chado. The property is missing an action in the property settings: @settings',
-                ['@field' => $field_name, '@prop' => $key,
-                 '@label' => $definition->getLabel(), '@settings' => print_r($prop_storage_settings, TRUE)]));
+                [
+                  '@field' => $field_name,
+                  '@prop' => $key,
+                  '@label' => $definition->getLabel(),
+                  '@settings' => print_r($prop_storage_settings, TRUE),
+                ]));
             continue;
           }
           $action = $prop_storage_settings['action'];
@@ -724,10 +783,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $context['delta'] = $delta;
           $context['action'] = $action;
 
-          // Get the path array for this field and add any joins if any are needed.
+          // Get the path array for this field and add any joins.
           if (array_key_exists('path', $prop_storage_settings)) {
 
-            // First parse the path
+            // First parse the path.
             $path = $prop_storage_settings['path'];
             $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : '';
             $table_alias_mapping = array_key_exists('table_alias_mapping', $prop_storage_settings) ? $prop_storage_settings['table_alias_mapping'] : [];
@@ -757,22 +816,28 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             case 'store_id':
               $this->handleStoreID($context, $prop_value);
               break;
+
             case 'store_pkey':
               $this->handleStorePkey($context, $prop_value);
               break;
+
             case 'store_link':
               $this->handleStoreLink($context, $prop_value);
               break;
+
             case 'store':
               $this->handleStore($context, $prop_value);
               break;
+
             case 'read_value':
               $this->handleReadValue($context, $prop_value);
               break;
+
             case 'replace':
               // Do nothing here for properties that need replacement
               // since the values are provided by other properties.
               break;
+
             case 'function':
               // Do nothing here for properties that require post-processing
               // with a function as determining the value is handled by
@@ -801,10 +866,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *
    * @param array $context
    *   The field/property context provided by the buildChadoRecords() function.
-   * @param StoragePropertyValue $prop_value
+   * @param \Drupal\tripal\TripalStorage\StoragePropertyValue $prop_value
    *   The value object for the property we are adding records for.
    *   Note: We will always have a StoragePropertyValue for a property even if
-   *   the value is not set. This method is expected to check if the value is empty or not.
+   *   the value is not set. This method is expected to check if the value is
+   *   empty or not.
    */
   protected function handleStoreID(array $context, StoragePropertyValue $prop_value) {
 
@@ -827,25 +893,22 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     ];
 
     // The store_id action should only be used for the base table...
-    // @todo: I think these checks should go into a field validation test rather than here.
+    // @todo I think these checks should go into a field validation test rather than here.
     if ($elements['chado_table'] !== $elements['base_table']) {
-      $this->logger->error($this->t('The @field.@key property type uses the '
-        . 'store_id action type but is not associated with the base table of the field. '
-        . 'Either change the base_table of this field or use store_pkey instead.  @chado_table != @base_table',
-         ['@field' => $context['field_name'],
-          '@key' => $context['property_key'],
-          '@base_table' => $elements['base_table'],
-          '@chado_table' => $elements['chado_table']
-        ]));
+      $this->logger->error($this->t('The @field.@key property type uses the store_id action type but is not associated with the base table of the field. Either change the base_table of this field or use store_pkey instead.  @chado_table != @base_table',
+         [
+           '@field' => $context['field_name'],
+           '@key' => $context['property_key'],
+           '@base_table' => $elements['base_table'],
+           '@chado_table' => $elements['chado_table'],
+         ]));
     }
 
     // Now determine the primary key for the chado table.
-    $chado_table_def = $this->connection->schema()->getTableDef($elements['chado_table'], ['format' => 'drupal']);
-    $chado_table_pkey = $chado_table_def['primary key'];
+    $chado_table_pkey = $this->records->getPrimaryKey($base_table, $this->connection->schema());
+
     if ($elements['chado_column'] !== $chado_table_pkey) {
-      $this->logger->error($this->t('The @field.@key property type uses the '
-          . 'store_id action and the column specified in the "path" settings is not '
-          . 'the primary key for base table. ',
+      $this->logger->error($this->t('The @field.@key property type uses the store_id action and the column specified in the "path" settings is not the primary key for base table.',
           ['@field' => $context['field_name'], '@key' => $context['property_key']]));
     }
 
@@ -872,10 +935,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *
    * @param array $context
    *   The field/property context provided by the buildChadoRecords() function.
-   * @param StoragePropertyValue $prop_value
+   * @param \Drupal\tripal\TripalStorage\StoragePropertyValue $prop_value
    *   The value object for the property we are adding records for.
    *   Note: We will always have a StoragePropertyValue for a property even if
-   *   the value is not set. This method is expected to check if the value is empty or not.
+   *   the value is not set. This method is expected to check if the value is
+   *   empty or not.
    */
   protected function handleStorePkey(array $context, StoragePropertyValue $prop_value) {
 
@@ -903,7 +967,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
-   *
    * A helper function for the buildChadoRecords() function.
    *
    * Add chado record information for a specific ChadoStorageProperty
@@ -918,16 +981,26 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *
    * @param array $context
    *   The field/property context provided by the buildChadoRecords() function.
-   * @param StoragePropertyValue $prop_value
+   * @param \Drupal\tripal\TripalStorage\StoragePropertyValue $prop_value
    *   The value object for the property we are adding records for.
    *   Note: We will always have a StoragePropertyValue for a property even if
-   *   the value is not set. This method is expected to check if the value is empty or not.
+   *   the value is not set. This method is expected to check if the value is
+   *   empty or not.
    */
   protected function handleStoreLink(array $context, StoragePropertyValue $prop_value) {
 
     $base_table = $context['base_table'];
     $value_col_info = $this->getPathValueColumn($context['path_array']);
-    $link_id = $this->records->getRecordID($base_table);
+    $link_id = $prop_value->getValue();
+    if (!$link_id) {
+      // Setting the value to NULL and indicating this field contains a link
+      // to the base table will cause the value to be set automatically by
+      // ChadoRecord once it's available.
+      $link_id = $this->records->getRecordID($base_table);
+      if (!$link_id) {
+        $link_id = NULL;
+      }
+    }
     $elements = [
       'base_table' => $base_table,
       'root_table' => $context['root_table'],
@@ -939,7 +1012,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       // Setting the value to NULL and indicating this field contains a link
       // to the base table will cause the value to be set automatically by
       // ChadoRecord once it's available.
-      'value' => $link_id ? $link_id : NULL,
+      'value' => $link_id,
       'operation' => $context['operation'],
       'delta' => $context['delta'],
       'field_name' => $context['field_name'],
@@ -947,11 +1020,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     ];
     $this->records->addColumn($elements, TRUE);
 
-    $this->records->addCondition($elements);
+    // Setting the second parameter to TRUE indicates that conditions will be
+    // wrapped in an OR condition group if there is more than one condition.
+    $this->records->addCondition($elements, TRUE);
   }
 
   /**
-   *
    * A helper function for the buildChadoRecords() function.
    *
    * Add chado record information for a specific ChadoStorageProperty
@@ -962,10 +1036,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *
    * @param array $context
    *   The field/property context provided by the buildChadoRecords() function.
-   * @param StoragePropertyValue $prop_value
+   * @param \Drupal\tripal\TripalStorage\StoragePropertyValue $prop_value
    *   The value object for the property we are adding records for.
    *   Note: We will always have a StoragePropertyValue for a property even if
-   *   the value is not set. This method is expected to check if the value is empty or not.
+   *   the value is not set. This method is expected to check if the value is
+   *   empty or not.
    */
   protected function handleStore(array $context, StoragePropertyValue $prop_value) {
 
@@ -1012,14 +1087,15 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *
    * @param array $context
    *   The field/property context provided by the buildChadoRecords() function.
-   * @param StoragePropertyValue $prop_value
+   * @param \Drupal\tripal\TripalStorage\StoragePropertyValue $prop_value
    *   The value object for the property we are adding records for.
    *   Note: We will always have a StoragePropertyValue for a property even if
-   *   the value is not set. This method is expected to check if the value is empty or not.
+   *   the value is not set. This method is expected to check if the value is
+   *   empty or not.
    */
   protected function handleReadValue(array $context, StoragePropertyValue $prop_value) {
 
-    // Adding of fields via a join are handled by the ChadoRecord::setJoin() functino.
+    // Adding of fields via a join are handled by the ChadoRecord::setJoin().
     if (array_key_exists('join', $context['path_array'])) {
       return;
     }
@@ -1046,35 +1122,43 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
-   * Takes a path string for a field property and converts it to an array structure.
+   * Parses a field property path string into an array structure.
    *
    * @param string $field_name
    *   The name of the field.
    * @param string $base_table
    *   The name of the base table for thie field.
    * @param mixed $path
-   *   A string continaining the path.  Note: this is a recursive function and on
-   *   recursive calls this variable will be n array. Hence, the type is "mixed".*
+   *   A string continaining the path. Note: this is a recursive function and on
+   *   recursive calls this variable will be an array.
    * @param array $aliases
    *   Optional. The list of table aliases provdied by the `table_alias_mapping`
-   *   argument of a field.  If this variable is an empty array then the function
-   *   will use the table name provided in the path.
+   *   argument of a field.  If this variable is an empty array then the
+   *   function will use the table name provided in the path.
    * @param string $as
-   *   An alias to be used for the Chado table column that contains the value. This
-   *   argument will rename the column.
+   *   An alias to be used for the Chado table column that contains the value.
+   *   This argument will rename the column.
    * @param string $full_path
-   *   This argument is used by recursion to build the string path for each level.
-   *   It should not be set by the callee.
-   * @return array
+   *   This argument is used by recursion to build the string path for each
+   *   level. It should not be set by the callee.
    *
+   * @return array
+   *   An array describing the path.
    */
-  protected function parsePath(string $field_name, string $base_table, mixed $path,
-      array $aliases = [], string $as = '', string $full_path = '') {
+  protected function parsePath(
+    string $field_name,
+    string $base_table,
+    mixed $path,
+    array $aliases = [],
+    string $as = '',
+    string $full_path = '',
+  ) {
 
     // If the path is a string then split it.
     $path_arr = [];
     if (is_string($path)) {
-      // For sanity sake, remove any trailing semicolons that might be there by accident.
+      // For sanity's sake, remove any trailing semicolons that might be there
+      // by accident.
       $trimmed_path = trim($path, ';');
       $path_arr = explode(";", $trimmed_path);
     }
@@ -1097,9 +1181,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     if (preg_match('/>/', $curr_path)) {
 
       // Get the left column and the right table join infor.
-      list($left, $right) = explode(">", $curr_path);
-      list($left_alias, $left_column) = explode(".", $left);
-      list($right_alias, $right_column) = explode(".", $right);
+      [$left, $right] = explode(">", $curr_path);
+      [$left_alias, $left_column] = explode(".", $left);
+      [$right_alias, $right_column] = explode(".", $right);
 
       // Get the true Chado tables from the alias array.  Otherwise use
       // the table provided.  If the developer gave a bad Chado table or
@@ -1149,34 +1233,37 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         $ret_array['join']['value_alias'] = $as ? $as : $right_column;
       }
 
-      // If we have a value column in the return value then this means that it hit
-      // the end of the join and the value column in which the value is stored
-      // will be at the end.  We can just merge that information with the current
-      // return array.
+      // If we have a value column in the return value then this means that it
+      // hit the end of the join and the value column in which the value is
+      // stored will be at the end.  We can just merge that information with
+      // the current return array.
       if (array_key_exists('value_column', $sub_path_arr)) {
         $ret_array['join'] = array_merge($ret_array['join'], $sub_path_arr);
       }
       // Otherwise this is another join.
-      else if (array_key_exists('chado_table', $sub_path_arr)) {
+      elseif (array_key_exists('chado_table', $sub_path_arr)) {
         $ret_array['join']['join'] = $sub_path_arr['join'];
       }
 
       return $ret_array;
     }
 
-    // If the path is not a join but has a period then this specifices
+    // If the path is not a join but has a period then this specifies
     // the table and the column with the value.
-    else if (preg_match('/\./', $curr_path)) {
+    elseif (preg_match('/\./', $curr_path)) {
 
       // Get the table/column at the end.
-      list($table_alias, $value_column) = explode(".", $path);
+      if (is_array($path)) {
+        $path = $path[array_key_first($path)];
+      }
+      [$table_alias, $value_column] = explode(".", $path);
       $chado_table = $table_alias;
       if (array_key_exists($table_alias, $aliases)) {
         $chado_table = $aliases[$table_alias];
       }
 
       // If the base table is not the same as the root table then
-      // we should add the field name to the colun alias. Otherwise
+      // we should add the field name to the column alias. Otherwise
       // we may have conflicts if mutiple fields use the same alias.
       $value_alias = $as ? $as : $value_column;
       if ($base_table != $root_table) {
@@ -1190,7 +1277,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         'chado_table' => $chado_table,
         'table_alias' => $table_alias,
         'value_column' => $value_column,
-        'value_alias' => $value_alias
+        'value_alias' => $value_alias,
       ];
     }
 
@@ -1208,7 +1295,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         'root_table' => $root_table,
         'root_alias' => $root_alias,
         'value_column' => $curr_path,
-        'value_alias' => $value_alias
+        'value_alias' => $value_alias,
       ];
     }
   }
@@ -1232,7 +1319,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         'column_alias' => $path['value_alias'],
       ];
     }
-    else if (array_key_exists('join', $path)) {
+    elseif (array_key_exists('join', $path)) {
       return $this->getPathValueColumn($path['join']);
     }
     // We shouldn't get here.
@@ -1245,7 +1332,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * Adds the joins to the ChadoRecord object.
    *
    * @param array $path_array
-   *   The join path array
+   *   The join path array.
    * @param array $context
    *   The field/property context provided by the buildChadoRecords() function.
    */
@@ -1288,7 +1375,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         'delta' => $context['delta'],
         'join_path' => $path_array['join']['path'],
         'chado_column' => $path_array['join']['value_column'],
-        'column_alias' =>  $path_array['join']['value_alias'],
+        'column_alias' => $path_array['join']['value_alias'],
         'field_name' => $context['field_name'],
         'property_key' => $context['property_key'],
       ];
@@ -1297,7 +1384,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
-   *
    * {@inheritDoc}
    */
   public function validateValues($values) {
@@ -1319,9 +1405,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
-   *
    * {@inheritDoc}
-   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::publishFrom()
+   *
+   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::publishForm()
    */
   public function publishForm($form, FormStateInterface &$form_state) {
 
@@ -1336,7 +1422,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       '#type' => 'select',
       '#title' => 'Chado Schema Name',
       '#required' => TRUE,
-      '#description' => 'Select one of the installed Chado schemas to import into.',
+      '#description' => $this->t('Select one of the installed Chado schemas to import into.'),
       '#options' => $chado_schemas,
       '#default_value' => $default_chado,
     ];
@@ -1355,8 +1441,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function findAllRecordIds(string $bundle_id) {
     $records = [];
+    $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
 
-    // Retrieve relevant information from the bundle
+    // Retrieve relevant information from the bundle.
     $entity_type_manager = \Drupal::entityTypeManager();
     $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle_id);
     if (!$entity_type) {
@@ -1370,10 +1457,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // Get the name of the primary key column.
     $schema = $this->connection->schema();
-    $table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
-    $pkey_column = $table_def['primary key'];
+    $pkey_column = $this->records->getPrimaryKey($base_table, $schema);
 
-    // Set up the query
+    // Set up the query.
     $query = $this->connection->select('1:' . $base_table, 'BT', []);
     $query->addField('BT', $pkey_column, 'pkey');
 
@@ -1405,7 +1491,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
-   * A callback function to allow linking fields to include the Drupal entity ID.
+   * Looks up the Drupal entity ID for fields.
    *
    * @param array $context
    *   Values that a callback function might need in order
@@ -1415,7 +1501,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   The Drupal entity ID, or -1 if it doesn't exist.
    *   We use -1 because Tripal preSave will flag a zero for deletion.
    */
-  static public function drupalEntityIdLookupCallback($context) {
+  public static function drupalEntityIdLookupCallback($context) {
 
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
     $delta = $context['delta'];
@@ -1429,7 +1515,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $prop_storage_settings = $context['prop_type']->getStorageSettings();
     $fkey = $prop_storage_settings['fkey'] ?? NULL;
     if (!$fkey) {
-      // Maybe throw an exception here so developers know they forgot the 'fkey'
+      // @todo Throw an exception so developers know they forgot the 'fkey'.
       return -1;
     }
 
@@ -1443,9 +1529,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       return -1;
     }
 
-    // Given the Chado record ID and bundle term, we can lookup the Drupal entity ID,
-    // but some tables have multiple bundles. To support those, we can pass a NULL
-    // term and let the entity lookup manager find the bundle(s).
+    // Given the Chado record ID and bundle term, we can lookup the Drupal
+    // entity ID, but some tables have multiple bundles. To support those, we
+    // can pass a NULL term and let the entity lookup manager find the bundle.
     $ftable = $prop_storage_settings['ftable'] ?? NULL;
     if ($ftable) {
       $entity_id = $lookup_manager->getEntityId(
@@ -1472,4 +1558,5 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     return $entity_id;
   }
+
 }

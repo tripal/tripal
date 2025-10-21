@@ -4,7 +4,8 @@ namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\TripalDBX\TripalDbxSchema;
-use Drupal\tripal\TripalDBX\TripalDbxConnection;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for Tripal DBX schema on a real database.
@@ -16,7 +17,64 @@ use Drupal\tripal\TripalDBX\TripalDbxConnection;
  * @group Tripal
  * @group TripalDBX
  * @group TripalDbxSchema
+ *
+ * @covers ::__construct
+ * @covers ::getPrefixInfo
+ * @covers ::getSchemaName
+ * @covers ::schemaExists
+ * @covers ::createSchema
+ * @covers ::getSchemaSize
+ * @covers ::findTables
+ * @covers ::tableExists
+ * @covers ::fieldExists
+ * @covers ::indexExists
+ * @covers ::constraintExists
+ * @covers ::primaryKeyExists
+ * @covers ::foreignKeyConstraintExists
+ * @covers ::sequenceExists
+ * @covers ::functionExists
+ * @covers ::createTable
+ * @covers ::renameTable
+ * @covers ::changeField
+ * @covers ::addIndex
+ * @covers ::dropTable
+ * @covers ::getTables
+ * @covers ::getTableDef
+ * @covers ::getTableDdl
+ * @covers ::renameSchema
+ * @covers ::cloneSchema
+ * @covers ::dropSchema
  */
+#[CoversClass(TripalDbxSchema::class)]
+#[Group('Tripal')]
+#[Group('TripalDBX')]
+#[Group('TripalDbxSchema')]
+#[CoversMethod(TripalDbxSchema::class, '__construct')]
+#[CoversMethod(TripalDbxSchema::class, 'getPrefixInfo')]
+#[CoversMethod(TripalDbxSchema::class, 'getSchemaName')]
+#[CoversMethod(TripalDbxSchema::class, 'schemaExists')]
+#[CoversMethod(TripalDbxSchema::class, 'createSchema')]
+#[CoversMethod(TripalDbxSchema::class, 'getSchemaSize')]
+#[CoversMethod(TripalDbxSchema::class, 'findTables')]
+#[CoversMethod(TripalDbxSchema::class, 'tableExists')]
+#[CoversMethod(TripalDbxSchema::class, 'fieldExists')]
+#[CoversMethod(TripalDbxSchema::class, 'indexExists')]
+#[CoversMethod(TripalDbxSchema::class, 'constraintExists')]
+#[CoversMethod(TripalDbxSchema::class, 'primaryKeyExists')]
+#[CoversMethod(TripalDbxSchema::class, 'foreignKeyConstraintExists')]
+#[CoversMethod(TripalDbxSchema::class, 'sequenceExists')]
+#[CoversMethod(TripalDbxSchema::class, 'functionExists')]
+#[CoversMethod(TripalDbxSchema::class, 'createTable')]
+#[CoversMethod(TripalDbxSchema::class, 'renameTable')]
+#[CoversMethod(TripalDbxSchema::class, 'changeField')]
+#[CoversMethod(TripalDbxSchema::class, 'addIndex')]
+#[CoversMethod(TripalDbxSchema::class, 'dropTable')]
+#[CoversMethod(TripalDbxSchema::class, 'getTables')]
+#[CoversMethod(TripalDbxSchema::class, 'getTableDef')]
+#[CoversMethod(TripalDbxSchema::class, 'getTableDdl')]
+#[CoversMethod(TripalDbxSchema::class, 'renameSchema')]
+#[CoversMethod(TripalDbxSchema::class, 'cloneSchema')]
+#[CoversMethod(TripalDbxSchema::class, 'dropSchema')]
 class SchemaTest extends TripalTestKernelBase {
 
   /**
@@ -194,8 +252,6 @@ class SchemaTest extends TripalTestKernelBase {
 
   /**
    * Tests constructor.
-   *
-   * @cover ::__construct
    */
   public function testTripalDbxSchemaConstructor() {
     $scmock = $this->getTripalDbxSchemaMock('test');
@@ -204,8 +260,6 @@ class SchemaTest extends TripalTestKernelBase {
 
   /**
    * Tests getPrefixInfo.
-   *
-   * @cover ::getPrefixInfo
    */
   public function testTripalDbxSchemaPrefixInfo() {
     $this->allowTestSchemas();
@@ -230,31 +284,6 @@ class SchemaTest extends TripalTestKernelBase {
 
   /**
    * Test a scenario.
-   *
-   * @cover ::getSchemaName
-   * @cover ::schemaExists
-   * @cover ::createSchema
-   * @cover ::getSchemaSize
-   * @cover ::findTables
-   * @cover ::tableExists
-   * @cover ::fieldExists
-   * @cover ::indexExists
-   * @cover ::constraintExists
-   * @cover ::primaryKeyExists
-   * @cover ::foreignKeyConstraintExists
-   * @cover ::sequenceExists
-   * @cover ::functionExists
-   * @cover ::createTable
-   * @cover ::renameTable
-   * @cover ::changeField
-   * @cover ::addIndex
-   * @cover ::dropTable
-   * @cover ::getTables
-   * @cover ::getTableDef
-   * @cover ::getTableDdl
-   * @cover ::renameSchema
-   * @cover ::cloneSchema
-   * @cover ::dropSchema
    */
   public function testTripalDbxSchemaScenario1() {
     $db = \Drupal::database();

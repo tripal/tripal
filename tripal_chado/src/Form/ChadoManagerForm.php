@@ -6,9 +6,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
-use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
-use Drupal\tripal_chado\Task\ChadoInstaller;
 
 /**
  * Class ChadoManagerForm.
@@ -90,7 +88,7 @@ class ChadoManagerForm extends FormBase {
           $form_state->set(
             'confirm_message',
             $this->t(
-              "Are you sure you want to remove schema '@schema_name'? This operation cannot be undone. We recommand you backup your data first.",
+              "Are you sure you want to remove schema '@schema_name'? This operation cannot be undone. We recommend you backup your data first.",
               [
                 '@schema_name' => $schema_name,
               ]

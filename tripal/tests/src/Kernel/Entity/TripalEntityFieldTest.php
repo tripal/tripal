@@ -2,12 +2,11 @@
 
 namespace Drupal\Tests\tripal\Kernel\Entity;
 
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\field\Entity\FieldConfig;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
-use Drupal\tripal\Entity\TripalEntityType;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TripalEntity Class.
@@ -15,6 +14,8 @@ use Drupal\tripal\Entity\TripalEntityType;
  * @group TripalEntity
  * @group TripalTokenParser
  */
+#[Group('TripalEntity')]
+#[Group('TripalTokenParser')]
 class TripalEntityFieldTest extends TripalTestKernelBase {
 
   use TripalEntityFieldTestTrait;
@@ -114,6 +115,11 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
 
     $scenarios[] = [
       1,
+      "Use format for title + URL with HTML included",
+    ];
+
+    $scenarios[] = [
+      2,
       "User submitted alias when creating",
     ];
 
@@ -123,13 +129,14 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
   /**
    * Tests that TripalEntity::save() handles URL alias' with substitutions.
    *
-   * @dataProvider provideScenarios
-   *
    * @param int $current_scenario_key
    *   The key of the scenario in the YAML.
    * @param string $current_scenario_label
    *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
    */
+  #[DataProvider('provideScenarios')]
   public function testTripalEntitySaveTitleUrlBasic(int $current_scenario_key, string $current_scenario_label) {
     $current_scenario = $this->scenarios[$current_scenario_key];
     $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
@@ -177,4 +184,5 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
     $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['edit']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
   }
+
 }

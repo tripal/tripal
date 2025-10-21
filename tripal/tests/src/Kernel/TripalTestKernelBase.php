@@ -3,6 +3,7 @@ namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\tripal\Traits\TripalTestTrait;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * This is a base class for Tripal Kernel tests.
@@ -12,11 +13,40 @@ use Drupal\Tests\tripal\Traits\TripalTestTrait;
  *
  * @group Tripal
  */
+#[Group('Tripal')]
 abstract class TripalTestKernelBase extends KernelTestBase {
 
   use TripalTestTrait;
 
   protected static $modules = ['tripal'];
+
+  /**
+   * An instance of the Drupal messenger.
+   *
+   * @var ?Drupal\Core\Messenger\Messenger
+   */
+  protected $messenger = NULL;
+
+  /**
+   * The drupal logger for tripal, allowing importers to log messages.
+   *
+   * @var ?Drupal\tripal\Services\TripalLogger
+   */
+  protected $logger = NULL;
+
+  /**
+   * An instance of the Tripal file retriever service
+   *
+   * @var ?Drupal\tripal\Services\TripalFileRetriever
+   */
+  protected $fileretriever = NULL;
+
+  /**
+   * An instance of the Tripal publish service.
+   *
+   * @var ?Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager
+   */
+  protected $publish_manager = NULL;
 
   /**
    * {@inheritdoc}
@@ -26,7 +56,7 @@ abstract class TripalTestKernelBase extends KernelTestBase {
   }
 
   /**
-   * Prepare kernel environments to suppor specific functionality.
+   * Prepare kernel environments to support specific functionality.
    *
    * This method is focused on making it easier to write kernel test for Tripal
    * functionality. Simply pass in the parts of Tripal core you need in your
@@ -77,6 +107,11 @@ abstract class TripalTestKernelBase extends KernelTestBase {
       $this->installEntitySchema('file');
       $this->installSchema('file', ['file_usage']);
       $this->installSchema('tripal', ['tripal_import', 'tripal_jobs']);
+      // Get services used by importers.
+      $this->messenger = \Drupal::messenger();
+      $this->logger = \Drupal::service('tripal.logger');
+      $this->fileretriever = \Drupal::service('tripal.fileretriever');
+      $this->publish_manager = \Drupal::service('tripal.backend_publish');
     }
   }
 }

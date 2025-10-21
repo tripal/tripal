@@ -3,10 +3,10 @@
 namespace Drupal\Tests\tripal\Functional;
 
 use Drupal\Tests\BrowserTestBase;
-use Drupal\Core\Database\Database;
 
 // Needed for TripalTerm related tests.
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the basic functions of the Bulk PostgreSQL Schema Installer.
@@ -14,6 +14,8 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  * @group Tripal
  * @group Tripal Database
  */
+#[Group('Tripal')]
+#[Group('Tripal Database')]
 class TripalVocabTermPluginTest extends BrowserTestBase {
 
   // protected $htmlOutputEnabled = TRUE;
@@ -26,6 +28,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
    *
    * @group TripalVocabTerms
    */
+  #[Group('TripalVocabTerms')]
   public function testTripalVocabPlugin() {
 
 		// Test the Vocabulary Plugin Manager.
@@ -58,6 +61,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
    *
    * @group TripalVocabTerms
    */
+  #[Group('TripalVocabTerms')]
   public function testTripalIdSpacePlugin() {
 
 		// Test the Id Space Plugin Manager.
@@ -112,6 +116,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
    *
    * @group TripalVocabTerms
    */
+  #[Group('TripalVocabTerms')]
   public function testTripalTerm() {
 
     // Create Collection managers.
