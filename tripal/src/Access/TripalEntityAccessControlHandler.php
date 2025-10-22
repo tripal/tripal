@@ -79,8 +79,18 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
           return AccessResult::allowed()->addCacheableDependency($cacheability);
         }
 
-        // @todo figure out how to catch unpublish :thinking: is it available as
-        // an operation?
+      case 'unpublish':
+
+        if ($account->hasPermission("unpublish any $entity_bundle content")) {
+          return AccessResult::allowedIfHasPermission($account, "unpublish any $entity_bundle content");
+        }
+        elseif ($account->hasPermission("unpublish own $entity_bundle content")) {
+          $cacheability->addCacheContexts(['user.permissions']);
+          if ($account->id() != $entity->getOwnerId()) {
+            return AccessResult::neutral();
+          }
+          return AccessResult::allowed()->addCacheableDependency($cacheability);
+        }
     }
 
     // Unknown operation, no opinion.

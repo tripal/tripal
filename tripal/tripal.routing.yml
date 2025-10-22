@@ -194,11 +194,14 @@ entity.tripal_entity.unpublish_form:
     _form: '\Drupal\tripal\Form\TripalEntityUnpublishForm'
     _title: 'Unpublish'
   options:
+    _access_checks:
+      - 'access_check.entity'
     parameters:
       tripal_entity:
         type: 'entity:tripal_entity'
   requirements:
-    _permission: 'administer tripal content'
+    _entity_access: 'tripal_entity.unpublish'
+    tripal_entity: '\d+'
 
 ##
 # Controlled Vocabularies.

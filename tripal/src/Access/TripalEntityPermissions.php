@@ -66,6 +66,13 @@ class TripalEntityPermissions implements ContainerInjectionInterface {
       "edit any $type_id content" => [
         'title' => $this->t('%type_name: Edit any content', $type_params),
       ],
+      "unpublish own $type_id content" => [
+        'title' => $this->t('%type_name: Unpublish own content', $type_params),
+        'description' => $this->t('Note that anonymous users with this permission are able to delete any content created by any anonymous user.'),
+      ],
+      "unpublish any $type_id content" => [
+        'title' => $this->t('%type_name: Unpublish any content', $type_params),
+      ],
       "delete own $type_id content" => [
         'title' => $this->t('%type_name: Delete own content', $type_params),
         'description' => $this->t('Note that anonymous users with this permission are able to delete any content created by any anonymous user.'),
