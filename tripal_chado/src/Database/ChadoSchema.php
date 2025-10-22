@@ -233,4 +233,37 @@ class ChadoSchema extends TripalDbxSchema {
     return \Drupal::config('tripal_chado.settings')->get('default_schema');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function createTableSql($name, $table) {
+    $statements = parent::createTableSql($name, $table);
+
+    // Create any specified foreign keys in the postgresql database.
+    if (array_key_exists('foreign keys', $table)) {
+      foreach ($table['foreign keys'] as $table => $def) {
+        $foreign_table = $def['table'];
+        // Defaults here reflect the most common chado usage.
+        $on_delete = $def['on delete'] ?? 'ON DELETE CASCADE';
+        $deferrable = $def['deferrable'] ?? 'DEFERRABLE INITIALLY DEFERRED';
+        foreach ($def['columns'] as $this_column => $foreign_column) {
+          $fk_name = $name . '_' . $this_column . '_fkey';
+          $statement = 'ALTER TABLE ONLY ' . $name
+            . ' ADD CONSTRAINT ' . $fk_name
+            . ' FOREIGN KEY (' . $this_column . ')'
+            . ' REFERENCES ' . $foreign_table . '(' . $foreign_column . ')';
+          if ($on_delete) {
+            $statement .= ' ' . $on_delete;
+          }
+          if ($deferrable) {
+            $statement .= ' ' . $deferrable;
+          }
+          $statements[] = $statement;
+        }
+      }
+    }
+
+    return $statements;
+  }
+
 }
