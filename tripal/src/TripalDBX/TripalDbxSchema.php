@@ -276,7 +276,7 @@ abstract class TripalDbxSchema extends PgSchema {
    *     - 'blob_fields' that lists all the blob fields in the table.
    *     - 'sequences' that lists the sequences used in that table.
    */
-  public function queryTableInformation(string $table) {
+  public function queryTableInformation($table) {
 
     // Generate a key to reference this table's information on.
     $key = $this->connection
@@ -376,7 +376,7 @@ EOD;
    * @return bool
    *   TRUE if the given index exists, otherwise FALSE.
    */
-  public function indexExists(string $table, string $index_name, bool $exact_name = FALSE) :bool {
+  public function indexExists($table, $index_name, bool $exact_name = FALSE) :bool {
     if ($exact_name) {
       return (bool) $this->connection
         ->query("SELECT 1 FROM pg_indexes WHERE indexname = '{$index_name}'")
@@ -1195,6 +1195,100 @@ EOD;
           WHERE schemaname=:schema AND tablename = :table',
           [':table' => $table, ':schema' => $this->getSchemaName()])
       ->fetchField();
+  }
+
+  /**
+   * Update the schema of an existing table.
+   *
+   * To support schema changes without data loss, the following
+   * steps are performed:
+   * 1. Start a transaction.
+   * 2. Get current sequence values.
+   * 3. Create a temporary table to hold the existing data.
+   * 4. Delete the original table. This is done now so that there
+   *    is no conflict with existing sequence or constraint names
+   *    when we create the new table under the original name.
+   * 5. Create the updated table under the original table name,
+   *    using the new schema.
+   * 6. Copy data from the temporary to the new table.
+   * 7. Set sequence values.
+   * 8. Delete the temporary table.
+   * 9. Release the transaction.
+   *
+   * @param string $table_name
+   *   The name of the table to be updated.
+   * @param array $table_schema
+   *   The table definition array.
+   *
+   * @return void
+   *   No return value.
+   *
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
+   *   If $table_name does not exist.
+   */
+  public function updateTableSchema(string $table_name, array $table_schema): void {
+
+    $temp_table_name = $table_name . '_' . uniqid();
+
+    // Get the schema of the existing table.
+    $old_schema = $this->connection->schema()->getTableDef($table_name, ['source' => 'database', 'format' => 'drupal']);
+    if (!$old_schema) {
+      throw new SchemaException("Table \"$table_name\" has no schema");
+    }
+
+    // Generate a list of columns to copy to the updated table.
+    // If a column is dropped in the new schema, then don't copy it.
+    $old_columns = array_keys($old_schema['fields']);
+    $new_columns = array_keys($table_schema['fields']);
+    $copy_columns = array_intersect($old_columns, $new_columns);
+
+    // 1. Start a transaction.
+    $this->connection->addSavepoint();
+    try {
+
+      // 2. Get sequence values
+      $sql = "SELECT SPLIT_PART(c.column_default, '''', 2) AS sequence_name"
+        . " FROM information_schema.columns AS c"
+        . " WHERE c.table_name = 'stock_analysis' AND c.column_default LIKE 'nextval(%'";
+      $results = $this->connection->query($sql, []);
+      $sequences = [];
+      foreach ($results as $r) {
+        $sql = 'SELECT nextval(:id)';
+        $value = $this->connection->query($sql, [':id' => $r->sequence_name])->fetchField();
+        // SELECT nextval increments the counter.
+        $sequences[$r->sequence_name] = $value - 1;
+      }
+      // 3. Create a temporary table to hold the existing data.
+      $sql = "CREATE TABLE $temp_table_name AS TABLE $table_name";
+      $this->connection->query($sql, []);
+
+      // 4. Delete the original table.
+      $this->dropTable($table_name);
+
+      // 5. Create the updated table under the original table name,
+      // using the new schema.
+      $this->createTable($table_name, $table_schema);
+
+      // 6. Copy data from the temporary to the new table.
+      $columns = implode(',', $copy_columns);
+      $sql = "INSERT INTO $table_name SELECT $columns FROM $temp_table_name";
+      $this->connection->query($sql, []);
+
+      // 7. Set sequence values.
+      foreach ($sequences as $id => $value) {
+        $sql = 'SELECT setval(:id, :value)';
+        $this->connection->query($sql, [':id' => $id, ':value' => $value]);
+      }
+
+      // 8. Delete the temporary table.
+      $this->dropTable($temp_table_name);
+    }
+    catch (\Throwable $e) {
+      $this->connection->rollbackSavepoint();
+      throw $e;
+    }
+    // 9. Release the transaction
+    $this->connection->releaseSavepoint();
   }
 
 }
