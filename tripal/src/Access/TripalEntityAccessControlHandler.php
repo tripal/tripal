@@ -46,7 +46,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
         if ($account->hasPermission("view all $entity_bundle content")) {
           return AccessResult::allowedIfHasPermission($account, "view all $entity_bundle content");
         }
-        else if ($account->hasPermission("view own $entity_bundle content")) {
+        elseif ($account->hasPermission("view own $entity_bundle content")) {
           $cacheability->addCacheContexts(['user.permissions']);
           if ($account->id() != $entity->getOwnerId()) {
             return AccessResult::neutral();
@@ -58,7 +58,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
         if ($account->hasPermission("edit any $entity_bundle content")) {
           return AccessResult::allowedIfHasPermission($account, "edit any $entity_bundle content");
         }
-        else if ($account->hasPermission("edit own $entity_bundle content")) {
+        elseif ($account->hasPermission("edit own $entity_bundle content")) {
           $cacheability->addCacheContexts(['user.permissions']);
           if ($account->id() != $entity->getOwnerId()) {
             return AccessResult::neutral();
@@ -67,10 +67,11 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
         }
 
       case 'delete':
+
         if ($account->hasPermission("delete any $entity_bundle content")) {
           return AccessResult::allowedIfHasPermission($account, "delete any $entity_bundle content");
         }
-        else if ($account->hasPermission("delete own $entity_bundle content")) {
+        elseif ($account->hasPermission("delete own $entity_bundle content")) {
           $cacheability->addCacheContexts(['user.permissions']);
           if ($account->id() != $entity->getOwnerId()) {
             return AccessResult::neutral();
@@ -78,8 +79,8 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
           return AccessResult::allowed()->addCacheableDependency($cacheability);
         }
 
-      // @todo figure out how to catch unpublish :thinking: is it available as
-      // an operation?
+        // @todo figure out how to catch unpublish :thinking: is it available as
+        // an operation?
     }
 
     // Unknown operation, no opinion.
@@ -129,8 +130,35 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
    */
   public static function checkHasAnyCreateAccess(AccountInterface $account): AccessResult {
 
-    // @todo this needs to be implemented.
-    return AccessResult::allowed();
+    // Ensure that the Tripal Content Admin permission bypasses
+    // the following permissions.
+    if ($account->hasPermission('administer tripal content')) {
+      return AccessResult::allowed();
+    }
+
+    // Get the permissions provided by Tripal with 'create TYPE content'.
+    $permission_list = \Drupal::service('user.permissions')->getPermissions();
+    $create_tripal_permissions = array_filter($permission_list, function ($perm, $name) {
+      if ($perm['provider'] === 'tripal') {
+        if (preg_match('/^create .* content$/', $name, $matches)) {
+          return TRUE;
+        }
+      }
+      return FALSE;
+    }, ARRAY_FILTER_USE_BOTH);
+
+    // If the current user has any of the Tripal 'create TYPE content'.
+    // permissions then they should be allowed access.
+    foreach (array_keys($create_tripal_permissions) as $permission_name) {
+      if ($account->hasPermission($permission_name)) {
+        return AccessResult::allowed();
+      }
+    }
+
+    // If we get here, then the account does not have any 'create TYPE content'
+    // permnissions. We will remain neutral in case someone else wants to hook
+    // into this permission flow.
+    return AccessResult::neutral();
   }
 
   /**
