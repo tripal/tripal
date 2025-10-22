@@ -55,6 +55,15 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
         }
 
       case 'update':
+
+        $reject_anonymous = $this->denyAnonymousUserAccess(
+          $account,
+          "The anonymous user should never be allowed to edit Tripal content.",
+        );
+        if ($reject_anonymous) {
+          return $reject_anonymous;
+        }
+
         if ($account->hasPermission("edit any $entity_bundle content")) {
           return AccessResult::allowedIfHasPermission($account, "edit any $entity_bundle content");
         }
@@ -68,6 +77,14 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
 
       case 'delete':
 
+        $reject_anonymous = $this->denyAnonymousUserAccess(
+          $account,
+          "The anonymous user should never be allowed to delete Tripal content.",
+        );
+        if ($reject_anonymous) {
+          return $reject_anonymous;
+        }
+
         if ($account->hasPermission("delete any $entity_bundle content")) {
           return AccessResult::allowedIfHasPermission($account, "delete any $entity_bundle content");
         }
@@ -80,6 +97,14 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
         }
 
       case 'unpublish':
+
+        $reject_anonymous = $this->denyAnonymousUserAccess(
+          $account,
+          "The anonymous user should never be allowed to unpublish Tripal content.",
+        );
+        if ($reject_anonymous) {
+          return $reject_anonymous;
+        }
 
         if ($account->hasPermission("unpublish any $entity_bundle content")) {
           return AccessResult::allowedIfHasPermission($account, "unpublish any $entity_bundle content");
@@ -108,6 +133,14 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
    * hook_entity_create_access() or hook_ENTITY_TYPE_create_access().
    */
   protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
+
+    $reject_anonymous = $this->denyAnonymousUserAccess(
+      $account,
+      "The anonymous user should never be allowed to create Tripal content.",
+    );
+    if ($reject_anonymous) {
+      return $reject_anonymous;
+    }
 
     // Allow administrator permission to bypass per content type permissions.
     if ($account->hasPermission('administer tripal content')) {
@@ -139,6 +172,14 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
    * @see entity.tripal_entity.add_page
    */
   public static function checkHasAnyCreateAccess(AccountInterface $account): AccessResult {
+
+    $reject_anonymous = $this->denyAnonymousUserAccess(
+      $account,
+      "The anonymous user should never be allowed to create Tripal content.",
+    );
+    if ($reject_anonymous) {
+      return $reject_anonymous;
+    }
 
     // Ensure that the Tripal Content Admin permission bypasses
     // the following permissions.
@@ -185,6 +226,15 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
    * @see tripal.content_bio_data_publish_form
    */
   public static function checkHasPublishOrAdminAccess(AccountInterface $account): AccessResult {
+
+    $reject_anonymous = $this->denyAnonymousUserAccess(
+      $account,
+      "The anonymous user should never be allowed to publish Tripal content.",
+    );
+    if ($reject_anonymous) {
+      return $reject_anonymous;
+    }
+
     return self::checkWithAdminOverrideAccess($account, 'publish tripal content');
   }
 
@@ -218,6 +268,26 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
     // If neither then we opt out of deciding.
     // @todo we may need to return forbidden here.
     return AccessResult::neutral();
+  }
+
+  /**
+   * Ensures that anonymous users are denied access.
+   *
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The current user account.
+   * @param string $reason
+   *   The reason to provide for denying access.
+   *
+   * @return \Drupal\Core\Access\AccessResult|bool
+   *   The access result.
+   */
+  public function denyAnonymousUserAccess(AccountInterface $account, string $reason): AccessResult|bool {
+
+    if (!$account->isAuthenticated()) {
+      return AccessResult::forbidden($reason);
+    }
+
+    return FALSE;
   }
 
 }

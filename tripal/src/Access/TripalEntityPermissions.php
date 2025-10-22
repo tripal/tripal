@@ -61,31 +61,31 @@ class TripalEntityPermissions implements ContainerInjectionInterface {
       ],
       "edit own $type_id content" => [
         'title' => $this->t('%type_name: Edit own content', $type_params),
-        'description' => $this->t('Note that anonymous users with this permission are able to edit any content created by any anonymous user.'),
       ],
       "edit any $type_id content" => [
         'title' => $this->t('%type_name: Edit any content', $type_params),
       ],
       "unpublish own $type_id content" => [
         'title' => $this->t('%type_name: Unpublish own content', $type_params),
-        'description' => $this->t('Note that anonymous users with this permission are able to delete any content created by any anonymous user.'),
+        'description' => $this->t('Allows the %type_name page to be deleted but the data remains in the underlying Tripal Storage (e.g. Chado) and can be republished.', $type_params),
       ],
       "unpublish any $type_id content" => [
         'title' => $this->t('%type_name: Unpublish any content', $type_params),
+        'description' => $this->t('Allows the %type_name page to be deleted but the data remains in the underlying Tripal Storage (e.g. Chado) and can be republished.', $type_params),
       ],
       "delete own $type_id content" => [
         'title' => $this->t('%type_name: Delete own content', $type_params),
-        'description' => $this->t('Note that anonymous users with this permission are able to delete any content created by any anonymous user.'),
+        'description' => $this->t('WARNING: Removes data from the underlying Tripal Storage (e.g. Chado).'),
       ],
       "delete any $type_id content" => [
         'title' => $this->t('%type_name: Delete any content', $type_params),
+        'description' => $this->t('WARNING: Removes data from the underlying Tripal Storage (e.g. Chado).'),
       ],
       "view all $type_id content" => [
         'title' => $this->t('%type_name: View all content', $type_params),
       ],
       "view own $type_id content" => [
         'title' => $this->t('%type_name: View own content', $type_params),
-        'description' => $this->t('Note that anonymous users with this permission are able to view any content created by any anonymous user.'),
       ],
     ];
   }
