@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal\Access;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Session\AccountInterface;
@@ -25,6 +26,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
    * hook_entity_access() or hook_ENTITY_TYPE_access().
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
+    $cacheability = new CacheableMetadata();
 
     // Ensure that the Tripal Content Admin permission bypasses
     // the following permissions.
@@ -41,16 +43,40 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
     // implementations to override this functionality.
     switch ($operation) {
       case 'view':
-        // @todo add logic here to check 1) "all" then 2) "own".
-        return AccessResult::allowedIfHasPermission($account, "view all $entity_bundle content");
+        if ($account->hasPermission("view all $entity_bundle content")) {
+          return AccessResult::allowedIfHasPermission($account, "view all $entity_bundle content");
+        }
+        else if ($account->hasPermission("view own $entity_bundle content")) {
+          $cacheability->addCacheContexts(['user.permissions']);
+          if ($account->id() != $entity->getOwnerId()) {
+            return AccessResult::neutral();
+          }
+          return AccessResult::allowed()->addCacheableDependency($cacheability);
+        }
 
       case 'update':
-        // @todo add logic here to check 1) "any" then 2) "own".
-        return AccessResult::allowedIfHasPermission($account, "edit any $entity_bundle content");
+        if ($account->hasPermission("edit any $entity_bundle content")) {
+          return AccessResult::allowedIfHasPermission($account, "edit any $entity_bundle content");
+        }
+        else if ($account->hasPermission("edit own $entity_bundle content")) {
+          $cacheability->addCacheContexts(['user.permissions']);
+          if ($account->id() != $entity->getOwnerId()) {
+            return AccessResult::neutral();
+          }
+          return AccessResult::allowed()->addCacheableDependency($cacheability);
+        }
 
       case 'delete':
-        // @todo add logic here to check 1) "any" then 2) "own".
-        return AccessResult::allowedIfHasPermission($account, "delete any $entity_bundle content");
+        if ($account->hasPermission("delete any $entity_bundle content")) {
+          return AccessResult::allowedIfHasPermission($account, "delete any $entity_bundle content");
+        }
+        else if ($account->hasPermission("delete own $entity_bundle content")) {
+          $cacheability->addCacheContexts(['user.permissions']);
+          if ($account->id() != $entity->getOwnerId()) {
+            return AccessResult::neutral();
+          }
+          return AccessResult::allowed()->addCacheableDependency($cacheability);
+        }
 
       // @todo figure out how to catch unpublish :thinking: is it available as
       // an operation?
