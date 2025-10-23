@@ -298,10 +298,11 @@ trait ChadoTestTrait  {
 
   /**
    * Gets a new Chado schema for testing.
-   * Retrieves the current test schema.
-   * If there is not currently a test schema set-up then one will be created.
    *
-   * @param int $init_level
+   * Retrieves the current test schema. If there is not currently a test schema
+   * set-up then one will be created.
+   *
+   * @param int|null $init_level
    *   One of the constant to select the schema initialization level.
    *   If this is supplied then it forces a new connection to be made for
    *   backwards compatibility.
@@ -311,7 +312,7 @@ trait ChadoTestTrait  {
    * @return \Drupal\tripal\TripalDBX\TripalDbxConnection
    *   A bio database connection using the generated schema.
    */
-  protected function getTestSchema(int $init_level = NULL, string $version = '1.3') {
+  protected function getTestSchema(?int $init_level = NULL, string $version = '1.3') {
 
     if ($init_level !== NULL) {
       return $this->createTestSchema($init_level, $version);
