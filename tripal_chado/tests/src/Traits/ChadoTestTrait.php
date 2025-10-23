@@ -86,7 +86,7 @@ trait ChadoTestTrait {
    *
    * This is completely independant of Tripal terms.
    */
-  protected function getCvtermID($idspace, $accession) {
+  protected function getCvtermID($idspace, $accession) { // phpcs:ignore
     $connection = $this->getTestSchema();
 
     $query = $connection->select('1:cvterm', 'cvt');
