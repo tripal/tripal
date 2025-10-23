@@ -228,6 +228,46 @@ class ChadoCustomTableTest extends ChadoTestBrowserBase {
       }
     }
 
+    // Test updating schema on a table with data. First add data.
+    for ($i = 1; $i <= 5; $i++) {
+      $chado->insert('1:' . $table_name2)
+        ->fields([
+          'name' => 'name' . $i,
+          'type_id' => $i,
+          'description' => 'description' . $i,
+        ])
+        ->execute();
+    }
+    // Add a new 'rank' column to the schema.
+    $schema_array3 = $schema_array2;
+    $schema_array3['fields']['rank']['type'] = 'int';
+    $schema_array3['fields']['rank']['not null'] = FALSE;
+    // Update schema.
+    $chado->schema()->updateTableSchema($table_name2, $schema_array3);
+    // Get schema from database to verify.
+    $table_def = $chado->schema()->getTableDef($table_name2, ['source' => 'database', 'format' => 'drupal']);
+    $this->assertArrayHasKey('rank', $table_def['fields'], 'rank column was not added to table in database');
+    // Insert another row to verify sequences are updated.
+    $chado->insert('1:' . $table_name2)
+      ->fields([
+        'name' => 'name6',
+        'type_id' => 6,
+        'description' => 'description6',
+      ])
+      ->execute();
+    // Get count and values of records to verify data is retained.
+    $n = 0;
+    $results = $chado->select('1:' . $table_name2, 't')
+      ->fields('t')
+      ->execute();
+    while ($result = $results->fetchAssoc()) {
+      $n++;
+      $this->assertEquals('name' . $n, $result['name'], "Record $n name not as expected");
+      $this->assertEquals($n, $result['type_id'], "Record $n type_id not as expected");
+      $this->assertEquals('description' . $n, $result['description'], "Record $n description not as expected");
+    }
+    $this->assertEquals(6, $n, 'Did not retrieve expected number of records from table with updated schema');
+
     // Test table deletion.
     // We should be able to call delete() on a table not in chado.
     $table_name3 = 'noschemaadded';
