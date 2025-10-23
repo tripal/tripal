@@ -105,6 +105,14 @@ class ChadoCustomTableTest extends ChadoTestBrowserBase {
     $existing_schema = $custom_table_obj->getTableSchema();
     $this->assertEquals($existing_schema, $schema_array, 'Custom table schema is not as expected.');
 
+    // Test that the schema in postgresql contains foreign keys (Issue #2335).
+    $db_schema_def = $chado->schema()->getTableDef($table_name, ['source' => 'database', 'format' => 'drupal']);
+    $this->assertArrayHasKey('foreign keys', $db_schema_def, 'Custom table schema foreign keys were not saved to the database.');
+    $this->assertEquals(count($db_schema_def['foreign keys']), count($schema_array['foreign keys']), 'Custom table schema number of foreign keys in the database do not match expected.');
+    // Note that the array keys will be different, 'cvterm' in our schema
+    // vs. 'file_type_id_fkey' in the db.
+    $this->assertEquals(reset($db_schema_def['foreign keys']), reset($schema_array['foreign keys']), 'Custom table schema foreign keys in the database do not match expected.');
+
     // Test manager find by name.
     $found_id = $manager->findByName('i_do_not_exist');
     $this->assertFalse($found_id, 'Found an ID for a table that does not exist.');
