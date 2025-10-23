@@ -1211,9 +1211,10 @@ EOD;
    * 5. Create the updated table under the original table name,
    *    using the new schema.
    * 6. Copy data from the temporary to the new table.
-   * 7. Set sequence values.
+   * 7. Set sequence values unless table was empty.
    * 8. Delete the temporary table.
    * 9. Release the transaction.
+   * 10. Clear the static caches in getTableDdl() and getTableDef().
    *
    * @param string $table_name
    *   The name of the table to be updated.
@@ -1246,10 +1247,10 @@ EOD;
     $this->connection->addSavepoint();
     try {
 
-      // 2. Get sequence values
+      // 2. Get sequence values.
       $sql = "SELECT SPLIT_PART(c.column_default, '''', 2) AS sequence_name"
         . " FROM information_schema.columns AS c"
-        . " WHERE c.table_name = 'stock_analysis' AND c.column_default LIKE 'nextval(%'";
+        . " WHERE c.table_name = '$table_name' AND c.column_default LIKE 'nextval(%'";
       $results = $this->connection->query($sql, []);
       $sequences = [];
       foreach ($results as $r) {
@@ -1258,6 +1259,7 @@ EOD;
         // SELECT nextval increments the counter.
         $sequences[$r->sequence_name] = $value - 1;
       }
+
       // 3. Create a temporary table to hold the existing data.
       $sql = "CREATE TABLE $temp_table_name AS TABLE $table_name";
       $this->connection->query($sql, []);
@@ -1274,10 +1276,12 @@ EOD;
       $sql = "INSERT INTO $table_name SELECT $columns FROM $temp_table_name";
       $this->connection->query($sql, []);
 
-      // 7. Set sequence values.
+      // 7. Set sequence values unless table was empty.
       foreach ($sequences as $id => $value) {
-        $sql = 'SELECT setval(:id, :value)';
-        $this->connection->query($sql, [':id' => $id, ':value' => $value]);
+        if ($value) {
+          $sql = 'SELECT setval(:id, :value)';
+          $this->connection->query($sql, [':id' => $id, ':value' => $value]);
+        }
       }
 
       // 8. Delete the temporary table.
@@ -1287,8 +1291,15 @@ EOD;
       $this->connection->rollbackSavepoint();
       throw $e;
     }
+
     // 9. Release the transaction
     $this->connection->releaseSavepoint();
+
+    // 10. Clear the static caches in getTableDdl() and getTableDef().
+    // Unfortunately we can't clear them just for this table.
+    $this->getTableDdl($table_name, TRUE);
+    $this->getTableDef($table_name, ['clear' => TRUE, 'format' => 'none']);
+
   }
 
 }
