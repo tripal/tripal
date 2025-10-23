@@ -172,7 +172,7 @@ tripal.content_type_field_attach:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalAttachField'
     _title: 'Attach a Field to a Content Type'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'manage tripal content types'
 
 # Adds a +Check for new fields link on the 'Tripal Content Types' page.
 tripal.content_type_field_check:
@@ -185,7 +185,7 @@ tripal.content_type_field_check:
       tripal_entity_type:
         type: 'entity:tripal_entity_type'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'manage tripal content types'
 
 # Adds an unpublished link to Tripal entity pages.
 entity.tripal_entity.unpublish_form:
@@ -623,7 +623,7 @@ tripal.import_tripalentitytype_collection:
     _title: 'Import Tripal Entity Type Collection'
     _form: 'Drupal\tripal\Form\ImportTripalEntityTypeCollection'
   requirements:
-    _permission: 'administer tripal content types'
+    _permission: 'manage tripal content types'
 
 # Manage Pub Search Queries
 tripal.data_loaders.publication_loaders.manage_publication_search_queries:

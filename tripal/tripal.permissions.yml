@@ -73,17 +73,10 @@ publish tripal content:
 ##
 # Tripal Content Type (TripalEntityType).
 #
-# Specifically, Tripal content types are managed via two permissions:
-# 1. 'Manage Tripal content types' for someone who can tweak existing types
-# 2. 'Administer Tripal content types' for the main site builder.
-# Where the administer permission can do everything the manage can plus more.
-#
-# Manage OR Administer:
 # - Tripal Content Type listing
 # - Manage Fields for TripalEntityType
 # - Manage Form for TripalEntityType
 # - Manage Display for TripalEntityType
-# Administer Only:
 # - TripalEntityType Add Form
 # - TripalEntityType Edit Form
 # - TripalEntityType Delete Form
@@ -94,11 +87,6 @@ publish tripal content:
 manage tripal content types:
   title: 'Manage Tripal content types'
   description: 'Allows users to see the list of Tripal Content Types and manage their fields, forms and display.'
-  restrict access: true
-
-administer tripal content types:
-  title: 'Manage Tripal content types'
-  description: 'Allows users to administer all aspects of Tripal content types including adding/deleting content types, adding new fields to content types and managing Title and URL formats, as well as, all permissions given to those "Managing" Tripal content types.'
   restrict access: true
 
 ##
