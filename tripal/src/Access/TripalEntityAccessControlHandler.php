@@ -54,6 +54,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
           }
           return AccessResult::allowed()->addCacheableDependency($cacheability);
         }
+        return AccessResult::neutral();
 
       case 'update':
 
@@ -75,6 +76,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
           }
           return AccessResult::allowed()->addCacheableDependency($cacheability);
         }
+        return AccessResult::neutral();
 
       case 'delete':
 
@@ -96,6 +98,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
           }
           return AccessResult::allowed()->addCacheableDependency($cacheability);
         }
+        return AccessResult::neutral();
 
       case 'unpublish':
 
