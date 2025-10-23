@@ -164,7 +164,7 @@ class ChadoCustomTableForm extends FormBase {
       $form['force_drop'] = [
         '#type' => 'checkbox',
         '#title' => t('Re-create table'),
-        '#description' => t('Check this box if your table already exists and you would like to drop it and recreate it.'),
+        '#description' => t('Check this box if your table already exists and you would like to drop it and recreate it. Existing records will be copied to the new table.'),
         '#default_value' => $default_force_drop,
       ];
     }
