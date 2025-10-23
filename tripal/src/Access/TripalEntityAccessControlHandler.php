@@ -57,7 +57,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
 
       case 'update':
 
-        $reject_anonymous = $this->denyAnonymousUserAccess(
+        $reject_anonymous = self::denyAnonymousUserAccess(
           $account,
           "The anonymous user should never be allowed to edit Tripal content.",
         );
@@ -79,7 +79,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
 
       case 'delete':
 
-        $reject_anonymous = $this->denyAnonymousUserAccess(
+        $reject_anonymous = self::denyAnonymousUserAccess(
           $account,
           "The anonymous user should never be allowed to delete Tripal content.",
         );
@@ -101,7 +101,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
 
       case 'unpublish':
 
-        $reject_anonymous = $this->denyAnonymousUserAccess(
+        $reject_anonymous = self::denyAnonymousUserAccess(
           $account,
           "The anonymous user should never be allowed to unpublish Tripal content.",
         );
@@ -137,7 +137,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
    */
   protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
 
-    $reject_anonymous = $this->denyAnonymousUserAccess(
+    $reject_anonymous = self::denyAnonymousUserAccess(
       $account,
       "The anonymous user should never be allowed to create Tripal content.",
     );
@@ -176,7 +176,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
    */
   public static function checkHasAnyCreateAccess(AccountInterface $account): AccessResult {
 
-    $reject_anonymous = $this->denyAnonymousUserAccess(
+    $reject_anonymous = self::denyAnonymousUserAccess(
       $account,
       "The anonymous user should never be allowed to create Tripal content.",
     );
@@ -230,7 +230,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
    */
   public static function checkHasPublishOrAdminAccess(AccountInterface $account): AccessResult {
 
-    $reject_anonymous = $this->denyAnonymousUserAccess(
+    $reject_anonymous = self::denyAnonymousUserAccess(
       $account,
       "The anonymous user should never be allowed to publish Tripal content.",
     );
@@ -284,7 +284,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
    * @return \Drupal\Core\Access\AccessResult|bool
    *   The access result.
    */
-  public function denyAnonymousUserAccess(AccountInterface $account, string $reason): AccessResult|bool {
+  public static function denyAnonymousUserAccess(AccountInterface $account, string $reason): AccessResult|bool {
 
     if (!$account->isAuthenticated()) {
       return AccessResult::forbidden($reason);
