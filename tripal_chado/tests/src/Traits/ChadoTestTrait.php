@@ -2,7 +2,11 @@
 
 namespace Drupal\Tests\tripal_chado\Traits;
 
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Config\DatabaseStorage;
+use Drupal\Core\Database\Database;
 use Drupal\tripal\TripalDBX\TripalDbx;
+use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Symfony\Component\Yaml\Yaml;
 use PHPUnit\Framework\Attributes\Group;
@@ -208,12 +212,12 @@ trait ChadoTestTrait {
     // Then instantiate a new config factory that will use that database through
     // a new instance of config storage using that database.
     // Get Drupal real database.
-    $drupal_db = \Drupal\Core\Database\Database::getConnection(
+    $drupal_db = Database::getConnection(
       'default',
       'simpletest_original_default'
     );
     // Instantiate a new config storage.
-    $config_storage = new \Drupal\Core\Config\DatabaseStorage(
+    $config_storage = new DatabaseStorage(
       $drupal_db,
       'config'
     );
@@ -222,7 +226,7 @@ trait ChadoTestTrait {
     // Get a typed config (note: this will use the test config storage).
     $typed_config = \Drupal::service('config.typed');
     // Instanciate a new config factory.
-    $this->realConfigFactory = new \Drupal\Core\Config\ConfigFactory(
+    $this->realConfigFactory = new ConfigFactory(
       $config_storage,
       $event_dispatcher,
       $typed_config
@@ -602,7 +606,7 @@ trait ChadoTestTrait {
    * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $tripaldbx_db
    *   A bio database connection using the test schema.
    */
-  protected function freeTestSchema(\Drupal\tripal\TripalDBX\TripalDbxConnection $tripaldbx_db) {
+  protected function freeTestSchema(TripalDbxConnection $tripaldbx_db) {
     self::$testSchemas[$tripaldbx_db->getSchemaName()] = FALSE;
     try {
       $tripaldbx_db->schema()->dropSchema();
