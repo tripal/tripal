@@ -269,13 +269,15 @@ class ChadoCustomTable {
       }
 
       // If the table name is the same and the user is forcing a change then
-      // create the table if it doesn't exist. If it does exist then drop it
-      // and recreate it.
+      // create the table if it doesn't exist. If it does exist then update
+      // the schema, this preserves any records in the table.
       if ($force == TRUE and $this->table_name == $table_schema['table']) {
         if ($chado->schema()->tableExists($this->table_name)) {
-          $chado->schema()->dropTable($this->table_name);
+          $chado->schema()->updateTableSchema($this->table_name, $table_schema);
         }
-        $chado->schema()->createTable($this->table_name, $table_schema);
+        else {
+          $chado->schema()->createTable($this->table_name, $table_schema);
+        }
       }
 
       // If the table name is different in the provided schema but the user is
