@@ -309,7 +309,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     $permissions_mapping = [
       'access tripal content overview' => ['entity-collection'],
       'publish tripal content' => ['publish-content', 'unpublish-content'],
-      "create $content_type content" => ['entity-add-form'],
+      "create $content_type content" => ['entity-add-form', 'entity-add-page'],
       "edit any $content_type content" => ['entity-edit-form'],
       "delete any $content_type content" => ['entity-delete-form'],
       "view all $content_type content" => ['entity-canonical'],
@@ -490,11 +490,11 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     $this->drupalLogin($userTripalwithoutFile);
     $this->assertTrue($this->drupalUserIsLoggedIn($userTripalwithoutFile), "The unrelated privileged user should be logged in.");
     $this->assertTrue($userTripalwithoutFile->hasPermission($permission), "The unrelated riviledged user should have the '$permission' permission.");
-    // foreach ($urls as $title => $path) {
-    //   $html = $this->drupalGet($path);
-    //   $status_code = $session->getStatusCode();
-    //   $this->assertEquals(403, $status_code, "The unrelated privileged user should not be able to access this page: $title which should be at '$path'.");
-    // }
+    foreach ($urls as $title => $path) {
+      $html = $this->drupalGet($path);
+      $status_code = $session->getStatusCode();
+      $this->assertEquals(403, $status_code, "The unrelated privileged user should not be able to access this page: $title which should be at '$path'.");
+    }
 
     // Finally check all URLs with the authenticated, privileged user.
     // This checks privileged users can access these pages.
