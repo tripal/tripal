@@ -13,7 +13,7 @@ class TripalEntityAccessControlHandlerFake extends TripalEntityAccessControlHand
 		return $this->checkAccess($entity, $operation, $account);
 	}
 
-	public function returnProtectedCheckCreateAccess($account) {
-		return $this->checkCreateAccess($account, []);
+	public function returnProtectedCheckCreateAccess($account, $entity_bundle) {
+		return $this->checkCreateAccess($account, [], $entity_bundle);
 	}
 }
