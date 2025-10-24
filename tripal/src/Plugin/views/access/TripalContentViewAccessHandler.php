@@ -54,12 +54,15 @@ class TripalContentViewAccessHandler extends AccessPluginBase {
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
 
-    // @todo generate this list programatically using the TripalContentType id
-    // for the key and the label for the value.
-    $content_type_options = [
-      'organism' => $this->t('Organism'),
-      'project' => $this->t('Project'),
-    ];
+    // Get all Tripal Content Types.
+    $entity_types = \Drupal::service('entity_type.manager')
+      ->getStorage('tripal_entity_type')
+      ->loadByProperties([]);
+    $content_type_options = [];
+    foreach ($entity_types as $entity_type) {
+      $content_type_options[$entity_type->id()] = $entity_type->getLabel();
+    }
+
     // Add an options for "All" content types to support where the
     // content types change.
     $content_type_options['all'] = $this->t('ALL Existing Content Types');
