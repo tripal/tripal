@@ -307,8 +307,8 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
     else {
       // If we have a specific list of content types, then generate the
       // permissions string for each one.
-      foreach ($this->options['content_types'] as $content_type) {
-        $permission = $this->options['operation'] . ' ' . $content_type . ' content';
+      foreach ($content_types as $content_type) {
+        $permission = $operation . ' ' . $content_type . ' content';
         if ($account->hasPermission($permission)) {
           $access_granted++;
         }
@@ -316,14 +316,14 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
     }
 
     // Finally grant access depending on the mode configured.
-    switch ($this->options['mode']) {
+    switch ($mode) {
       case 'any':
         if ($access_granted > 0) {
           return AccessResult::allowed();
         }
 
       case 'all':
-        if (count($content_type) === $access_granted) {
+        if (count($content_types) === $access_granted) {
           return AccessResult::allowed();
         }
     }
@@ -348,7 +348,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
     $permission_list = \Drupal::service('user.permissions')->getPermissions();
 
     // Now filter this list based on the operation passed in.
-    $filtered_permissions = array_filter($permission_list, function ($perm, $name) {
+    $filtered_permissions = array_filter($permission_list, function ($perm, $name) use ($operation) {
       if ($perm['provider'] === 'tripal') {
         if (preg_match('/^' . $operation . ' .* content$/', $name, $matches)) {
           return TRUE;
