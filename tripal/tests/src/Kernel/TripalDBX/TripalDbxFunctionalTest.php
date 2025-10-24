@@ -278,15 +278,16 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
     // Clone schema.
     //   We fist need some mock objects for this.
     //   1. Create the Connection mock.
-    $dbmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
-     ->setConstructorArgs([$test_schema])
-     ->onlyMethods(['getTripalDbxClass', 'findVersion', 'getAvailableInstances', 'schema'])
-     ->getMockForAbstractClass();
-    //    2. Create the schema mock using the connection mock.
-    $scmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxSchema::class)
+    $dbmock = $this->getMockBuilder(TripalDbxConnection::class)
+      ->setConstructorArgs([$test_schema])
+      ->onlyMethods(['getTripalDbxClass', 'findVersion', 'getAvailableInstances', 'schema'])
+      ->getMock();
+    // 2. Create the schema mock using the connection mock.
+    $scmock = $this->getMockBuilder(TripalDbxSchema::class)
       ->setConstructorArgs([$dbmock])
-      ->getMockForAbstractClass();
-    //    3. Ensure the Connection returns the schema mock as it's schema object.
+      ->onlyMethods(['getSchemaDef'])
+      ->getMock();
+    // 3. Ensure the Connection returns the schema mock as it's schema object.
     $dbmock
       ->expects($this->any())
      ->method('schema')
