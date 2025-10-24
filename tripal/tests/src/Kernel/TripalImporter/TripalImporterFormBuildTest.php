@@ -139,10 +139,18 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $configuration = [];
     $plugin_id = 'fakeImporterName';
     $plugin_definition = $annotation['fakeImporterName'];
-    $this->mock_plugin = $this->getMockForAbstractClass(
-      '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_definition, $this->messenger, $this->logger, $this->fileretriever, $this->publish_manager]
-    );
+    $this->mock_plugin = $this->getMockBuilder('\Drupal\tripal\TripalImporter\TripalImporterBase')
+      ->setConstructorArgs([
+        $configuration,
+        $plugin_id,
+        $plugin_definition,
+        $this->messenger,
+        $this->logger,
+        $this->fileretriever,
+        $this->publish_manager,
+      ])
+      ->onlyMethods(['form', 'formValidate', 'formSubmit', 'run', 'addAnalysis'])
+      ->getMock();
     $this->mock_plugin->method('form')
       ->willReturn($this->form);
     $this->mock_plugin->method('addAnalysis')

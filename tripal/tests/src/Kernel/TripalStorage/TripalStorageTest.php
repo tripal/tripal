@@ -103,10 +103,15 @@ class TripalStorageTest extends TripalTestKernelBase {
 
     // Tripal Storage Base is an abstract class.
     // Therefore, in order to test it we need to mock the abstract methods.
-    $tripalStorage = $this->getMockForAbstractClass(
-      'Drupal\tripal\TripalStorage\TripalStorageBase',
-      [$configuration, $plugin_id, $plugin_definition, $logger]
-    );
+    $tripalStorage = $this->getMockBuilder('Drupal\tripal\TripalStorage\TripalStorageBase')
+      ->setConstructorArgs([
+        $configuration,
+        $plugin_id,
+        $plugin_definition,
+        $logger,
+      ])
+      ->onlyMethods(['getStoredTypes', 'getNonStoredTypes', 'insertValues', 'updateValues', 'loadValues', 'deleteValues', 'findValues', 'validateValues'])
+      ->getMock();
     $this->assertIsObject($tripalStorage, "Unable to create tripal storage mock object.");
 
     // This will be our set of fields to test.
@@ -170,10 +175,15 @@ class TripalStorageTest extends TripalTestKernelBase {
     $logger = \Drupal::service('tripal.logger');
     // Tripal Storage Base is an abstract class.
     // Therefore, in order to test it we need to mock the abstract methods.
-    $tripalStorage = $this->getMockForAbstractClass(
-      'Drupal\tripal\TripalStorage\TripalStorageBase',
-      [$configuration, $plugin_id, $plugin_definition, $logger]
-    );
+    $tripalStorage = $this->getMockBuilder('Drupal\tripal\TripalStorage\TripalStorageBase')
+      ->setConstructorArgs([
+        $configuration,
+        $plugin_id,
+        $plugin_definition,
+        $logger,
+      ])
+      ->onlyMethods(['getStoredTypes', 'getNonStoredTypes', 'insertValues', 'updateValues', 'loadValues', 'deleteValues', 'findValues', 'validateValues'])
+      ->getMock();
     $this->assertIsObject($tripalStorage, "Unable to create tripal storage mock object.");
 
     // This will be our set of fields to test.
