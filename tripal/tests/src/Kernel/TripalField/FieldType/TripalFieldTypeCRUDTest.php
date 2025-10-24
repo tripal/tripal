@@ -7,13 +7,15 @@ use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalFieldItemBase class indirectly.
  *
  * @group TripalField
  */
-#[Group('TripalField')]
+#[Group('tripal-field')]
+#[RunTestsInSeparateProcesses]
 class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
 
   /**

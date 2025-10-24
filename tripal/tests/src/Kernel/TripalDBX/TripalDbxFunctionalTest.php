@@ -7,6 +7,7 @@ use Drupal\tripal\TripalDBX\TripalDbx;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Tripal DBX tool on a real database.
@@ -28,9 +29,6 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers ::getSchemaSize
  */
 #[CoversClass(TripalDbx::class)]
-#[Group('Tripal')]
-#[Group('TripalDBX')]
-#[Group('TripalDbxService')]
 #[CoversMethod(TripalDbx::class, 'getDrupalSchemaName')]
 #[CoversMethod(TripalDbx::class, 'isInvalidSchemaName')]
 #[CoversMethod(TripalDbx::class, 'schemaExists')]
@@ -40,6 +38,8 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversMethod(TripalDbx::class, 'dropSchema')]
 #[CoversMethod(TripalDbx::class, 'getDatabaseSize')]
 #[CoversMethod(TripalDbx::class, 'getSchemaSize')]
+#[Group('tripal-dbx')]
+#[RunTestsInSeparateProcesses]
 class TripalDbxFunctionalTest extends TripalTestKernelBase {
 
   /**
@@ -146,7 +146,9 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
     \Drupal::getContainer()->set('config.factory', $this->configFactory);
 
     // Hack to clear TripalDbx Service cache on each run.
-    $clear = function() {TripalDbx::$drupalSchema = NULL;};
+    $clear = function () {
+      TripalDbx::$drupalSchema = NULL;
+    };
     $clear->call(new TripalDbx());
   }
 

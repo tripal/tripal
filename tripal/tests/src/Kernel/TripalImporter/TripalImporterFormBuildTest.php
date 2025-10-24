@@ -1,10 +1,12 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel;
+namespace Drupal\Tests\tripal\Kernel\TripalImporter;
 
+use Drupal\tripal\TripalImporter\PluginManagers\TripalImporterManager;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Core\Form\FormState;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the base functionality for importers.
@@ -14,14 +16,23 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group TripalImporter
  */
-#[Group('TripalImporter')]
+#[Group('tripal-importer')]
+#[RunTestsInSeparateProcesses]
 class TripalImporterFormBuildTest extends TripalTestKernelBase {
+
+  /**
+   * {@inheritdoc}
+   */
   protected $defaultTheme = 'stark';
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = ['system', 'user', 'file', 'tripal'];
 
   /**
-   * A mocked TripalImporter object
+   * A mocked TripalImporter object.
+   *
    * @var \Drupal\tripal\TripalImporter\PluginManagers\TripalImporterBase
    */
   protected $mock_plugin;
@@ -37,7 +48,8 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
    * These are the default with all base importer fields turned off.
    * Specific tests will alter these before building the form to
    * test specific cases.
-   * @var Array
+   *
+   * @var array
    */
   protected $definitions = [
     'fakeImporterName' => [
@@ -62,7 +74,8 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
 
   /**
    * A selection of form elements to be provided by our fake importer.
-   * @var Array
+   *
+   * @var array
    */
   protected $form = [
     'gemstone_composition' => [
@@ -77,7 +90,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
         'halide' => 'Halide (e.g. Fluorite)',
         'igneous' => 'Igneous Rock (e.g. obsidian, lava stone)',
         'organic' => 'Organic (e.g. Amber, Pearl)',
-        'silicate' => 'Silicate (e.g. Amazonite, Danburite, Lepidolite)'
+        'silicate' => 'Silicate (e.g. Amazonite, Danburite, Lepidolite)',
       ],
       '#empty_option' => '- Select -',
     ],
@@ -85,7 +98,8 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
 
   /**
    * An analysis form element to be provided by our fake importer.
-   * @var Array
+   *
+   * @var array
    */
   protected $analysis_form = [
     'analysis_method' => [
@@ -135,7 +149,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
       ->willReturn($this->analysis_form);
 
     // Mock Plugin Manager.
-    $manager = $this->createMock(\Drupal\tripal\TripalImporter\PluginManagers\TripalImporterManager::class);
+    $manager = $this->createMock(TripalImporterManager::class);
     $manager->method('createInstance')
       ->willReturn($this->mock_plugin);
     $manager->method('getDefinitions')
@@ -193,12 +207,12 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
       "The form should have a title set.");
     $this->assertEquals($expected['label'], $form['#title'],
       "The title should match the label annotated for our fake plugin.");
-    // the plugin_id stored in a value form element.
+    // The plugin_id stored in a value form element.
     $this->assertArrayHasKey('importer_plugin_id', $form,
       "The form should have an element to save the plugin_id.");
     $this->assertEquals($plugin_id, $form['importer_plugin_id']['#value'],
       "The importer_plugin_id[#value] should be set to our fake plugin_id.");
-    // a submit button.
+    // A submit button.
     $this->assertArrayHasKey('button', $form,
       "The form should have a submit button since we indicated a specific importer.");
     // Publish checkboxes.
@@ -223,7 +237,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
       "Our default annotation for our fake importer indicates there should not be a file element added.");
     $this->assertArrayNotHasKey('analysis_method', $form,
       "Our default annotation for our fake importer indicates there should not be an analysis element added.");
-	}
+  }
 
   /**
    * Confirm that the file-related form elements are added to the form
@@ -264,7 +278,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $this->assertStringContainsString($expected['upload_description'], $form['file']['upload_description']['#markup'],
       "The upload description should match the one provided in the plugin annotation.");
 
-    // Check the Upload file element
+    // Check the Upload file element.
     $this->assertArrayHasKey('file_upload', $form['file'],
       "The form should have a file upload form element based on our annotation.");
     $this->assertEquals('html5_file', $form['file']['file_upload']['#type'],
@@ -280,13 +294,13 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $this->assertArrayNotHasKey('file_upload_existing', $form['file'],
       "The form should NOT have an element for existing files as we have not created a user or associated files.");
 
-    // Check the local file element
+    // Check the local file element.
     $this->assertArrayHasKey('file_local', $form['file'],
       "The form should have a local file form element based on our annotation.");
     $this->assertEquals('textfield', $form['file']['file_local']['#type'],
       "The file_local element is not of the expected type.");
 
-    // Check the remote file element
+    // Check the remote file element.
     $this->assertArrayHasKey('file_remote', $form['file'],
       "The form should have a remote file form element based on our annotation.");
     $this->assertEquals('textfield', $form['file']['file_remote']['#type'],
@@ -318,7 +332,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $this->assertStringContainsString($expected['upload_description'], $form['file']['upload_description']['#markup'],
       "The upload description should match the one provided in the plugin annotation.");
 
-    // Check the Upload file element
+    // Check the Upload file element.
     $this->assertArrayHasKey('file_upload', $form['file'],
       "The form should have a file upload form element based on our annotation.");
     // But NOT the other two.
@@ -353,7 +367,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $this->assertStringContainsString($expected['upload_description'], $form['file']['upload_description']['#markup'],
       "The upload description should match the one provided in the plugin annotation.");
 
-    // Check the file element we should have
+    // Check the file element we should have.
     $this->assertArrayHasKey('file_local', $form['file'],
       "The form should  have a local file form element based on our annotation.");
     // But NOT the other two.
@@ -388,7 +402,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $this->assertStringContainsString($expected['upload_description'], $form['file']['upload_description']['#markup'],
       "The upload description should match the one provided in the plugin annotation.");
 
-    // Check the file element we should have
+    // Check the file element we should have.
     $this->assertArrayHasKey('file_remote', $form['file'],
       "The form should NOT have a remote file form element based on our annotation.");
     // But NOT the other two.
@@ -398,7 +412,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
       "The form should  have a local file form element based on our annotation.");
   }
 
-    /**
+  /**
    * Confirm that the file-related form elements are added to the form
    * as expected based on plugin annotation.
    */
@@ -423,7 +437,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
-    // check that our analysis element is in the form.
+    // Check that our analysis element is in the form.
     $this->assertArrayHasKey('analysis_method', $form,
       "Our analysis form element should be included based on the annotation.");
     $this->assertEquals('Gemstone Validation', $form['analysis_method']['#title'],
@@ -457,7 +471,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
-    // check that our analysis element is in the form.
+    // Check that our analysis element is in the form.
     $this->assertArrayNotHasKey('button', $form,
       "We should not have a submit button if our annotation sets use_button to FALSE but we do.");
 
@@ -475,7 +489,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $form_id = 'tripal_admin_form_tripalimporter';
     $form_class = 'Drupal\tripal\Form\TripalImporterForm';
 
-    // CASE 1: No Form State
+    // CASE 1: No Form State.
     $expected = $this->definitions[$plugin_id];
     $manager = $this->setMockManager([$plugin_id => $expected]);
     $container->set('tripal.importer', $manager);
@@ -492,7 +506,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
-    // check that our button element is in the form.
+    // Check that our button element is in the form.
     $this->assertArrayHasKey('button', $form,
       "We should have a submit button.");
     $this->assertArrayHasKey('#disabled', $form['button'],
@@ -511,7 +525,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
-    // check that our button element is in the form.
+    // Check that our button element is in the form.
     $this->assertArrayHasKey('button', $form,
       "We should have a submit button.");
     $this->assertArrayHasKey('#disabled', $form['button'],
@@ -530,7 +544,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
-    // check that our button element is in the form.
+    // Check that our button element is in the form.
     $this->assertArrayHasKey('button', $form,
       "We should have a submit button.");
     $this->assertArrayHasKey('#disabled', $form['button'],
@@ -551,7 +565,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $form_id = 'tripal_admin_form_tripalimporter';
     $form_class = 'Drupal\tripal\Form\TripalImporterForm';
 
-    // CASE 1: No Form State
+    // CASE 1: No Form State.
     $expected = $this->definitions[$plugin_id];
     $expected['submit_disabled'] = TRUE;
     $manager = $this->setMockManager([$plugin_id => $expected]);
@@ -569,7 +583,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
-    // check that our button element is in the form.
+    // Check that our button element is in the form.
     $this->assertArrayHasKey('button', $form,
       "We should have a submit button.");
     $this->assertArrayHasKey('#disabled', $form['button'],
@@ -588,7 +602,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
-    // check that our button element is in the form.
+    // Check that our button element is in the form.
     $this->assertArrayHasKey('button', $form,
       "We should have a submit button.");
     $this->assertArrayHasKey('#disabled', $form['button'],
@@ -607,7 +621,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
-    // check that our button element is in the form.
+    // Check that our button element is in the form.
     $this->assertArrayHasKey('button', $form,
       "We should have a submit button.");
     $this->assertArrayHasKey('#disabled', $form['button'],
@@ -616,4 +630,5 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
       "The submit button should BE DISABLED when the form is built with the form state disable_TripalImporter_submit set to TRUE.");
 
   }
+
 }

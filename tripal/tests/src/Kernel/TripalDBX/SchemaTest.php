@@ -6,6 +6,7 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\TripalDBX\TripalDbxSchema;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Tripal DBX schema on a real database.
@@ -46,9 +47,6 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers ::dropSchema
  */
 #[CoversClass(TripalDbxSchema::class)]
-#[Group('Tripal')]
-#[Group('TripalDBX')]
-#[Group('TripalDbxSchema')]
 #[CoversMethod(TripalDbxSchema::class, '__construct')]
 #[CoversMethod(TripalDbxSchema::class, 'getPrefixInfo')]
 #[CoversMethod(TripalDbxSchema::class, 'getSchemaName')]
@@ -75,6 +73,8 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversMethod(TripalDbxSchema::class, 'renameSchema')]
 #[CoversMethod(TripalDbxSchema::class, 'cloneSchema')]
 #[CoversMethod(TripalDbxSchema::class, 'dropSchema')]
+#[Group('tripal-dbx')]
+#[RunTestsInSeparateProcesses]
 class SchemaTest extends TripalTestKernelBase {
 
   /**

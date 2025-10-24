@@ -1,10 +1,11 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel;
+namespace Drupal\Tests\tripal\Kernel\TripalImporter;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use \Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\Tests\user\Traits\UserCreationTrait;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the base functionality for importers.
@@ -14,7 +15,8 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group TripalImporter
  */
-#[Group('TripalImporter')]
+#[Group('tripal-importer')]
+#[RunTestsInSeparateProcesses]
 class TripalImporterBaseTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 

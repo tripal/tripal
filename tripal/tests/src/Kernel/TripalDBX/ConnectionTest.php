@@ -7,6 +7,7 @@ use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Tripal DBX connection on a real database.
@@ -38,9 +39,6 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers ::query
  */
 #[CoversClass(TripalDbxConnection::class)]
-#[Group('Tripal')]
-#[Group('TripalDBX')]
-#[Group('TripalDbxConnection')]
 #[CoversMethod(TripalDbxConnection::class, '__construct')]
 #[CoversMethod(TripalDbxConnection::class, 'getDatabaseName')]
 #[CoversMethod(TripalDbxConnection::class, 'getDatabaseKey')]
@@ -60,6 +58,8 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversMethod(TripalDbxConnection::class, '__toString')]
 #[CoversMethod(TripalDbxConnection::class, 'executeSqlQueries')]
 #[CoversMethod(TripalDbxConnection::class, 'query')]
+#[Group('tripal-dbx')]
+#[RunTestsInSeparateProcesses]
 class ConnectionTest extends TripalTestKernelBase {
 
   /**

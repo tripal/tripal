@@ -11,6 +11,7 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Tripal Storage Base class.
@@ -18,8 +19,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal
  * @group TripalStorage
  */
-#[Group('Tripal')]
-#[Group('TripalStorage')]
+#[Group('tripal-storage')]
+#[RunTestsInSeparateProcesses]
 class TripalStorageTest extends TripalTestKernelBase {
 
   /**

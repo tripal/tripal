@@ -4,7 +4,7 @@ namespace Drupal\Tests\tripal\Kernel\Services\TripalEntityTypeCollection;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use PHPUnit\Framework\Attributes\Group;
-
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Focused on testing the create() and createContentType() methods.
@@ -13,11 +13,10 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Content
  * @group TripalEntityTypeCollection
  */
-#[Group('Tripal')]
-#[Group('Tripal Content')]
-#[Group('TripalEntityTypeCollection')]
+#[Group('tripal-entity')]
+#[Group('tripal-collection')]
+#[RunTestsInSeparateProcesses]
 class TripalEntityTypeCollectionGetCollectionsTest extends TripalTestKernelBase {
-
 
   /**
    * {@inheritdoc}
@@ -25,6 +24,8 @@ class TripalEntityTypeCollectionGetCollectionsTest extends TripalTestKernelBase 
   protected static $modules = ['tripal'];
 
   /**
+   * Collection Types.
+   *
    * A made-up set of details for some collection types to be used in testing
    * getTypeCollections. These will be written to storage in the setUp().
    */
@@ -32,17 +33,16 @@ class TripalEntityTypeCollectionGetCollectionsTest extends TripalTestKernelBase 
     'tripal.tripalentitytype_collection.monsters' => [
       'id' => 'monsters',
       'label' => 'Monsters',
-      'description' => 'Types of monsters including those who live in the water, on land, and under beds.'
+      'description' => 'Types of monsters including those who live in the water, on land, and under beds.',
     ],
     'tripal.tripalentitytype_collection.fairies' => [
       'id' => 'fairies',
       'label' => 'Fairies',
-      'description' => 'Types of fairies including those from both the Seelie and Unseelie Courts.'
+      'description' => 'Types of fairies including those from both the Seelie and Unseelie Courts.',
     ],
   ];
 
-
-    /**
+  /**
    * {@inheritdoc}
    */
   protected function setUp() :void {
@@ -62,11 +62,12 @@ class TripalEntityTypeCollectionGetCollectionsTest extends TripalTestKernelBase 
   /**
    * Tests the TripalEntityTypeCollection::getTypeCollections() method.
    */
-  public function testTripalEntityTypeCollection_getTypeCollections() {
+  public function testTripalEntityTypeCollectionGetTypeCollections() {
 
     $content_type_service = \Drupal::service('tripal.tripalentitytype_collection');
 
-    // Try retrieving collections when the config has not been loaded into the test environment.
+    // Try retrieving collections when the config has not been loaded into
+    // the test environment.
     $collections = $content_type_service->getTypeCollections();
     $this->assertIsArray($collections,
       "TripalEntityTypeCollection::getTypeCollections() should always return an array.");
@@ -85,4 +86,5 @@ class TripalEntityTypeCollectionGetCollectionsTest extends TripalTestKernelBase 
         "We expect the details returned to match those we saved.");
     }
   }
+
 }
