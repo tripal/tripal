@@ -30,7 +30,7 @@ vocabularies:
             -   id: 'schema:disambiguatingDescription'
                 name: 'disambiguatingDescription'
                 description: 'A sub property of description. A short description of the item used to disambiguate from other, similar items. Information from other properties (in particular, name) may be necessary for the description to be useful for disambiguation.'
-            -   id: 'schema:filesize'
+            -   id: 'schema:fileSize'
                 name: 'fileSize'
                 description: 'Size of the application / package (e.g. 18MB). In the absence of a unit (MB, KB etc.), KB will be assumed.'
             -   id: 'schema:itemLocation'

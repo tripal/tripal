@@ -45,7 +45,7 @@ tables:
                 term_id: 'data:2190'
                 term_name: 'Sequence checksum'
             -   name: 'size'
-                term_id: 'schema:filesize'
+                term_id: 'schema:fileSize'
                 term_name: 'fileSize'
             -   name: 'filename'
                 term_id: 'data:1050'
