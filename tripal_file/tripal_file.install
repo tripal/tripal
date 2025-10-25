@@ -179,11 +179,15 @@ function tripal_file_add_default_licenses($chado): void {
   $license_defs = Yaml::parseFile($config);
 
   // Add standard licenses if they do not exist.
+  // If either the name or the uri exists, then skip adding.
   $n_added = 0;
   foreach ($license_defs as $license_def) {
     $query = $chado->select('1:license', 'L');
     $query->addField('L', 'license_id', 'license_id');
-    $query->condition('L.name', $license_def['name'], '=');
+    $or_group = $query->orConditionGroup();
+    $or_group->condition('L.name', $license_def['name'], '=');
+    $or_group->condition('L.uri', $license_def['uri'], '=');
+    $query->condition($or_group);
     $license_id = $query->execute()->fetchField();
     if (!$license_id) {
       $chado->insert('1:license')
