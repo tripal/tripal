@@ -28,6 +28,15 @@ class ChadoSequenceChecksumTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
+    return 'md5checksum';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'md5checksum';
   }
 

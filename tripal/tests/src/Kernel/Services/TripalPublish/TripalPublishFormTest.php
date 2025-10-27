@@ -1,7 +1,8 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel;
+namespace Drupal\Tests\tripal\Kernel\Services\TripalPublish;
 
+use Drupal\Core\Form\FormState;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -12,10 +13,20 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('TripalPublish')]
 class TripalPublishFormTest extends TripalTestKernelBase {
+
+  /**
+   * The name of the default theme.
+   *
+   * @var string
+   */
   protected $defaultTheme = 'stark';
 
+  /**
+   * List of modules used for testing.
+   *
+   * @var array
+   */
   protected static $modules = ['system', 'user', 'file', 'tripal'];
-
 
   /**
    * {@inheritdoc}
@@ -47,7 +58,8 @@ class TripalPublishFormTest extends TripalTestKernelBase {
     $this->assertEquals('content_bio_data_publish_form', $form['#form_id'],
       'We did not get the form id we expected.');
 
-    // Check that our form has the basic details even with no storage backends available.
+    // Check that our form has the basic details even with no storage
+    // backends available.
     $this->assertArrayHasKey('datastore', $form,
       "The form should have a storage backend element.");
     $this->assertEquals('select', $form['datastore']['#type'],
@@ -66,8 +78,7 @@ class TripalPublishFormTest extends TripalTestKernelBase {
   public function testTripalPublishFormSubmit() {
 
     // Setup the form_state.
-    $form_state = new \Drupal\Core\Form\FormState();
-    // $form_state->setValue('datastore', 'drupal_sql_storage');
+    $form_state = new FormState();
 
     // Now try validation!
     \Drupal::formBuilder()->submitForm(
@@ -77,7 +88,7 @@ class TripalPublishFormTest extends TripalTestKernelBase {
     // And do some basic checks to check for errors.
     $this->assertTrue($form_state->isValidationComplete(),
       "We expect the form state to have been updated to indicate that validation is complete.");
-    //   Looking for form validation errors
+    // Looking for form validation errors.
     $form_validation_messages = $form_state->getErrors();
     $helpful_output = [];
     foreach ($form_validation_messages as $element => $markup) {
@@ -93,7 +104,7 @@ class TripalPublishFormTest extends TripalTestKernelBase {
       "There should be an error on the bundle element.");
     $this->assertStringContainsString('required', $form_validation_messages['bundle'],
       "The error message should indicate that the bundle element is required.");
-    //   Looking for drupal message errors.
+    // Looking for drupal message errors.
     $messages = \Drupal::messenger()->all();
     $this->assertIsArray($messages,
       "We expect to have status messages to the user on submission of the form.");
@@ -102,4 +113,5 @@ class TripalPublishFormTest extends TripalTestKernelBase {
     $this->assertCount(2, $messages['error'],
       "Specifically there should be two error messages since there were two validations errors.");
   }
+
 }

@@ -30,6 +30,15 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
+    return 'linker_synonym_fkey_id';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'name';
   }
 
