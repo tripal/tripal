@@ -362,6 +362,39 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
   }
 
   /**
+   * Returns an array of content types the user has 'create TYPE content'.
+   *
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The account of the user to check access for.
+   *
+   * @return array
+   *   An array of content types the user has create access for.
+   */
+  public static function checkCreateAccessForTypes(AccountInterface $account) : array {
+
+    // Get a list of all types.
+    $content_types = \Drupal::entityTypeManager()
+      ->getStorage('tripal_entity_type')
+      ->loadByProperties([]);
+
+    // Ensure that the Tripal Content Admin permission bypasses
+    // the following permissions.
+    if ($account->hasPermission('administer tripal content')) {
+      return $content_types;
+    }
+
+    // Now check which content types the user has create access for.
+    $access_allowed = [];
+    foreach ($content_types as $content_type) {
+      $permission = 'create ' . $content_type->id() . ' content';
+      if ($account->hasPermission($permission)) {
+        $access_allowed[] = $content_type;
+      }
+    }
+    return $access_allowed;
+  }
+
+  /**
    * Ensures that anonymous users are denied access.
    *
    * @param \Drupal\Core\Session\AccountInterface $account

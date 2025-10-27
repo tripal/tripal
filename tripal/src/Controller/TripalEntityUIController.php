@@ -5,6 +5,7 @@ namespace Drupal\tripal\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
+use Drupal\tripal\Access\TripalEntityAccessControlHandler;
 
 /**
  * Controller routines related to Tripal Entity and Tripal Entity Type UIs.
@@ -28,10 +29,8 @@ class TripalEntityUIController extends ControllerBase {
    */
   public function tripalContentAddPage() {
 
-    // Get a list of all types.
-    $bundle_entities = \Drupal::entityTypeManager()
-      ->getStorage('tripal_entity_type')
-      ->loadByProperties([]);
+    // Get the content types that the user has create access for.
+    $bundle_entities = TripalEntityAccessControlHandler::checkCreateAccessForTypes(\Drupal::currentUser());
 
     // Sort the entities using the entity class's sort() method.
     // See \Drupal\Core\Config\Entity\ConfigEntityBase::sort().
