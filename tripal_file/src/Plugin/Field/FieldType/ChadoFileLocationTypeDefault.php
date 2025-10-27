@@ -114,7 +114,7 @@ class ChadoFileLocationTypeDefault extends ChadoFieldItemBase {
     $rank_term = self::getColumnTermId($object_table, 'rank', 'OBCS:0000117');
     $md5checksum_term = self::getColumnTermId($object_table, 'md5checksum', 'data:2190');
     $md5checksum_len = $object_schema['fields']['md5checksum']['length'];
-    $size_term = self::getColumnTermId($object_table, 'size', 'schema:filesize');
+    $size_term = self::getColumnTermId($object_table, 'size', 'schema:fileSize');
     $size_len = $object_schema['fields']['size']['length'];
     $filename_term = self::getColumnTermId($object_table, 'filename', 'data:1050');
 
