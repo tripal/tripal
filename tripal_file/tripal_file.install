@@ -244,6 +244,9 @@ function tripal_file_load_EDAM_obo() {
     'schema_name' => $default_schema_name,
   ]);
 
+  // This fixes migrated Tripal 3 EDAM terms with db of 'HTTP:'.
+  tripal_file_apply_pr_2280_fix();
+
   // Submit the import job. This takes enough time that it needs to be
   // detached from the install as a separate job so that there is no
   // chance of causing a page timeout.
@@ -257,6 +260,40 @@ function tripal_file_load_EDAM_obo() {
   }
   else {
     $obo_importer->submitJob();
+  }
+}
+
+/**
+ * This fixes migrated Tripal 3 EDAM terms with db of 'HTTP:'.
+ *
+ * The Tripal 3 obo importer incorrectly created and assigned a db
+ * of 'HTTP:' to several EDAM typedef records. This function will
+ * change the dbxref db_id from 'HTTP:' to 'EDAM'.
+ * This bug was fixed for Tripal 4 in PR 2280.
+ *
+ * @return void
+ *   No return value.
+ *
+ * @see https://github.com/tripal/tripal/pull/2280
+ * @see https://github.com/tripal/tripal/issues/2344
+ */
+function tripal_file_apply_pr_2280_fix() {
+  $chado = \Drupal::service('tripal_chado.database');
+  $query = $chado->select('1:db', 'db')
+    ->fields('db', ['db_id'])
+    ->condition('db.name', 'HTTP:', '=');
+  $http_db_id = $query->execute()->fetchField();
+  if ($http_db_id) {
+    $query = $chado->select('1:db', 'db')
+      ->fields('db', ['db_id'])
+      ->condition('db.name', 'EDAM', '=');
+    $edam_db_id = $query->execute()->fetchField();
+    if ($edam_db_id) {
+      $query = $chado->update('1:dbxref')
+        ->fields(['db_id' => $edam_db_id])
+        ->condition('db_id', $http_db_id, '=')
+        ->execute();
+    }
   }
 }
 
