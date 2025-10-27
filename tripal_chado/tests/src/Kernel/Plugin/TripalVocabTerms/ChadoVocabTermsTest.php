@@ -620,7 +620,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $parents = $child->getParents();
     $this->assertEmpty($parents, 'The "biological phase" TripalTerm should not have any parents after they were removed.');
 
-    // Make sure the isVald works.
+    // Make sure the isValid works.
     $dummy = new TripalTerm();
     $this->assertFalse($dummy->isValid(), 'The dummy TripalTerm reports it is valid when it is not (Test 1).');
     $dummy->setName('dummy');
@@ -635,7 +635,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     //
     // Inserting (Saving) Terms to Chado.
     //
-    // We need to save the comment term first s this is used
+    // We need to save the comment term first as this is used
     // for a property in our new child term below.
     $rdfs_id->saveTerm($comment);
     $GO->saveTerm($parent);
@@ -1062,7 +1062,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
    * This can happen when a TripalTerm is created and then the underlying
    * cv/db is deleted.
    *
-   * Tests that loading a collection whose undelying record is gone recreates
+   * Tests that loading a collection whose underlying record is gone recreates
    * the record in the underlying backend (Issue #1354; PR #2185).
    */
   public function testIssue1354() {
@@ -1127,6 +1127,58 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
       "Vocab loaded with missing chado.cv record: "
     );
 
+  }
+
+  /**
+   * Testing caching of terms in different ID spaces but same accession.
+   *
+   * Cache key should be unique for terms with the same accession
+   * Issue #2328 PR #2330.
+   */
+  public function testIssue2328() {
+
+    $db_name_1 = 'some_db_1';
+    $db_name_2 = 'some_db_2';
+    $cv_name_1 = 'some_cv_1';
+    $cv_name_2 = 'some_cv_2';
+    $common_accession = '0000042';
+
+    $idspace_1 = $this->idsmanager->createCollection($db_name_1, 'chado_id_space');
+    $this->assertIsObject($idspace_1, 'Failure to create an id space');
+    $idspace_2 = $this->idsmanager->createCollection($db_name_2, 'chado_id_space');
+    $this->assertIsObject($idspace_2, 'Failure to create an id space');
+    $vocab_1 = $this->vmanager->createCollection($cv_name_1, 'chado_vocabulary');
+    $this->assertIsObject($vocab_1, 'Failure to create a vocabulary');
+    $vocab_2 = $this->vmanager->createCollection($cv_name_2, 'chado_vocabulary');
+    $this->assertIsObject($vocab_2, 'Failure to create a vocabulary');
+
+    $term_1 = new TripalTerm();
+    $this->assertIsObject($term_1, 'Failure to create an empty TripalTerm');
+    $term_1->setName('Name 1');
+    $term_1->setIdSpacePlugin('chado_id_space');
+    $term_1->setVocabularyPlugin('chado_vocabulary');
+    $term_1->setIdSpace($db_name_1);
+    $term_1->setVocabulary($cv_name_1);
+    $term_1->setAccession($common_accession);
+    $idspace_1->saveTerm($term_1);
+
+    $term_2 = new TripalTerm();
+    $this->assertIsObject($term_2, 'Failure to create an empty TripalTerm');
+    $term_2->setName('Name 2');
+    $term_2->setIdSpacePlugin('chado_id_space');
+    $term_2->setVocabularyPlugin('chado_vocabulary');
+    $term_2->setIdSpace($db_name_2);
+    $term_2->setVocabulary($cv_name_2);
+    $term_2->setAccession($common_accession);
+    $idspace_2->saveTerm($term_2);
+
+    // Tests caching of terms in different vocab but same accession.
+    $term_1 = $idspace_1->getTerm($common_accession, []);
+    $id_1 = $term_1->getTermId();
+    $this->assertEquals('some_db_1:0000042', $id_1, 'Did not retrieve expected term ID');
+    $term_2 = $idspace_2->getTerm($common_accession, []);
+    $id_2 = $term_2->getTermId();
+    $this->assertEquals('some_db_2:0000042', $id_2, 'Did not retrieve expected term ID');
   }
 
 }
