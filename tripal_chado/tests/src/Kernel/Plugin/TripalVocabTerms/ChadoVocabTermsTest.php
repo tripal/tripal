@@ -1117,13 +1117,13 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $ret_idspace = $this->idsmanager->loadCollection($db_name, "chado_id_space");
     $this->assertIdSpaceEquals(
       ['name' => $db_name, 'description' => '', 'chado_record' => TRUE],
-      $idspace,
+      $ret_idspace,
       "ID Space loaded with missing chado.db record: "
     );
     $ret_vocab = $this->vmanager->loadCollection($cv_name, "chado_vocabulary");
     $this->assertVocabEquals(
       ['name' => $cv_name, 'definition' => '', 'chado_record' => TRUE],
-      $vocab,
+      $ret_vocab,
       "Vocab loaded with missing chado.cv record: "
     );
 
