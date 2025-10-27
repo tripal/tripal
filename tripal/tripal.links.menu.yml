@@ -37,7 +37,7 @@ tripal.cv_lookup:
 # -- The root Tripal administration menu item.
 tripal.admin:
   route_name: 'tripal.admin'
-  title: 'Tripal Administration'
+  title: 'Tripal'
   description: 'The core administrative menu for Tripal. This menu listing provides tools to manage the behavior or Tripal and its various modules and extensions.'
   parent: 'system.admin'
 
