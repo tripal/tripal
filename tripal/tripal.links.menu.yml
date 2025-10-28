@@ -49,13 +49,21 @@ tripal.admin_register:
   parent: 'tripal.admin'
   weight: -100
 
+# -- Tripal Content admin link.
+tripal.admin_content:
+  route_name: 'entity.tripal_entity.collection'
+  title: 'Content'
+  description: 'Find biological content pages.'
+  parent: 'tripal.admin'
+  weight: -90
+
 # -- Tripal Jobs Admin link.
 tripal.jobs:
   route_name: 'tripal.jobs'
   description: 'Provides tools for managing jobs submitted to Tripal.  In some cases, long-running tasks are too slow to complete within a single browser session.  The Tripal jobs system allows long-running tasks to be submitted to a queue that can be executed manually by the site admin or automatically using extension modules (e.g. Tripal Daemon).'
   title: 'Jobs'
   parent: 'tripal.admin'
-  weight: -90
+  weight: -80
 
 # -- Data Loaders listing link.
 tripal.data_loaders:
@@ -63,7 +71,7 @@ tripal.data_loaders:
   description: 'Data importers for many biological data types and file formats can be found here. Tripal provides an API supporting data import which allows extension data importers to also appear in this listing.'
   title: 'Data Loaders'
   parent: 'tripal.admin'
-  weight: -80
+  weight: -70
 # ...... Additional links for importers are added dyncamically through this item.
 tripal.data_loaders_tripalimporterlink:
   class: 'Drupal\tripal\Plugin\Menu\TripalImporterLink'
@@ -77,7 +85,15 @@ tripal.data_collections:
   description: 'Tripal provides functionality allowing users to group data into collections. Site-wide settings for Tripal data collections can be accessed here with each user accessing their own data collections from their user profile page.'
   title: 'Data Collections'
   parent: 'tripal.admin'
-  weight: -70
+  weight: -60
+
+# -- Tripal Page Structure admin link.
+tripal.page_structure:
+  route_name: 'entity.tripal_entity_type.collection'
+  description: 'Configure the form/page display for biological content.'
+  title: 'Page Structure'
+  parent: 'tripal.admin'
+  weight: -50
 
 # -- Tripal managed files admin link.
 tripal.files:
@@ -85,7 +101,7 @@ tripal.files:
   description: 'When a user imports data using one of the provided data loaders or uploads a file using the Tripal HTML5 form element, those files are stored within a Tripal-managed quota system. You can manage maximum upload sizes and disk usage quotas, as well as, view usage reports here.'
   title: 'Tripal Managed Files'
   parent: 'tripal.admin'
-  weight: -60
+  weight: -40
 
 # -- Configuration for Tripal Content Ontology Terms link.
 entity.tripal_content_terms.collection:
