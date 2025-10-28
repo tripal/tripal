@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the base functionality for chado custom tables.
@@ -14,6 +15,7 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('chado')]
 #[Group('custom-table')]
+#[RunTestsInSeparateProcesses]
 class ChadoCustomTableTest extends ChadoTestBrowserBase {
 
   /**

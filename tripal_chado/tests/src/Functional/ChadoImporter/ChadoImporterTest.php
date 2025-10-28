@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Functional\ChadoImporter;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the base functionality for chado-focused importers.
@@ -12,6 +13,7 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
+#[RunTestsInSeparateProcesses]
 class ChadoImporterTest extends ChadoTestBrowserBase {
 
   /**

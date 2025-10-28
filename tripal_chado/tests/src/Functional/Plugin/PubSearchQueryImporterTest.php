@@ -2,10 +2,12 @@
 
 namespace Drupal\Tests\tripal_chado\Functional;
 
+use Drupal\tripal\Services\TripalLogger;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * Tests for the PubSearchQueryImporter class
+ * Tests for the PubSearchQueryImporter class.
  *
  * @group TripalImporter
  * @group ChadoImporter
@@ -15,54 +17,56 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
 #[Group('pub-importer')]
-class PubSearchQueryImporterTest extends ChadoTestBrowserBase
-{
+#[RunTestsInSeparateProcesses]
+class PubSearchQueryImporterTest extends ChadoTestBrowserBase {
 
   /**
-   * @var string $mock_error
+   * @var string
    *   The most recent error message from the mocked tripal logger
    */
   protected string $mock_error = '';
 
+  /**
+   *
+   */
   protected function setUp() :void {
     parent::setUp();
 
     // Grab the container.
     $container = \Drupal::getContainer();
 
-    // Create a mocked logger so we can access error messages from the Tripal logger
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    // Create a mocked logger so we can access error messages from the Tripal logger.
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['error'])
       ->getMock();
     $mock_logger->method('error')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
           $this->mock_error .= str_replace(array_keys($context), $context, $message);
           return NULL;
-        });
+      });
     $container->set('tripal.logger', $mock_logger);
   }
 
   /**
    * Confirm basic Publications importer functionality.
    */
-  public function testPubSearchQueryImporterSimpleTest()
-  {
-    // Public schema connection
+  public function testPubSearchQueryImporterSimpleTest() {
+    // Public schema connection.
     $public = \Drupal::database();
 
-    // Installs up the chado with the test chado data
+    // Installs up the chado with the test chado data.
     $chado = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
 
-    // Keep track of the schema name in case we need it
+    // Keep track of the schema name in case we need it.
     $schema_name = $chado->getSchemaName();
 
-    // We need to add a publication query to the database
+    // We need to add a publication query to the database.
     $sql = "INSERT INTO {tripal_pub_library_query} (name,criteria) VALUES (:name,:criteria);";
     $args = [
       ':name' => 'Populus-PHPUNIT-TEST',
-      ':criteria' => 'a:9:{s:9:"remote_db";s:4:"PMID";s:12:"num_criteria";s:1:"1";s:11:"loader_name";s:7:"Populus";s:8:"disabled";i:0;s:10:"do_contact";i:0;s:13:"pub_import_id";N;s:8:"criteria";a:1:{i:1;a:4:{s:12:"search_terms";s:7:"Populus";s:5:"scope";s:5:"title";s:9:"is_phrase";i:0;s:9:"operation";s:0:"";}}s:21:"form_state_user_input";a:12:{s:9:"plugin_id";s:23:"tripal_pub_library_PMID";s:11:"button_next";s:4:"Next";s:11:"loader_name";s:7:"Populus";s:12:"ncbi_api_key";s:0:"";s:4:"days";s:0:"";s:12:"num_criteria";s:1:"1";s:5:"table";a:1:{i:1;a:4:{s:11:"operation-1";s:0:"";s:7:"scope-1";s:5:"title";s:14:"search_terms-1";s:7:"Populus";s:11:"is_phrase-1";N;}}s:13:"form_build_id";s:48:"form-UpjBwJmfHyqAeLFwZqHbVhpvtgcBvgEez31-4KJ9jUA";s:10:"form_token";s:43:"FIxhzP6k7V1ruQoEoDzVCKVOt97wfbvGypPBPGFx13M";s:7:"form_id";s:31:"chado_new_pub_search_query_form";s:8:"disabled";N;s:10:"do_contact";N;}s:4:"days";s:0:"";}'
+      ':criteria' => 'a:9:{s:9:"remote_db";s:4:"PMID";s:12:"num_criteria";s:1:"1";s:11:"loader_name";s:7:"Populus";s:8:"disabled";i:0;s:10:"do_contact";i:0;s:13:"pub_import_id";N;s:8:"criteria";a:1:{i:1;a:4:{s:12:"search_terms";s:7:"Populus";s:5:"scope";s:5:"title";s:9:"is_phrase";i:0;s:9:"operation";s:0:"";}}s:21:"form_state_user_input";a:12:{s:9:"plugin_id";s:23:"tripal_pub_library_PMID";s:11:"button_next";s:4:"Next";s:11:"loader_name";s:7:"Populus";s:12:"ncbi_api_key";s:0:"";s:4:"days";s:0:"";s:12:"num_criteria";s:1:"1";s:5:"table";a:1:{i:1;a:4:{s:11:"operation-1";s:0:"";s:7:"scope-1";s:5:"title";s:14:"search_terms-1";s:7:"Populus";s:11:"is_phrase-1";N;}}s:13:"form_build_id";s:48:"form-UpjBwJmfHyqAeLFwZqHbVhpvtgcBvgEez31-4KJ9jUA";s:10:"form_token";s:43:"FIxhzP6k7V1ruQoEoDzVCKVOt97wfbvGypPBPGFx13M";s:7:"form_id";s:31:"chado_new_pub_search_query_form";s:8:"disabled";N;s:10:"do_contact";N;}s:4:"days";s:0:"";}',
     ];
-    $public->query($sql,$args);
+    $public->query($sql, $args);
 
     $results = $public->query("SELECT * FROM {tripal_pub_library_query} WHERE name = 'Populus-PHPUNIT-TEST';");
     $query_id = NULL;
@@ -82,26 +86,25 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
 
     $this->mock_error = '';
     $results = $plugin->retrieve($criteria, 1, 0);
-    // We will have an error message in the logger if there was an intermittent download problem
+    // We will have an error message in the logger if there was an intermittent download problem.
     if ($this->mock_error) {
       $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
     }
     else {
-      // This should return a single pub since we used the limit 1 in the retrieve function
+      // This should return a single pub since we used the limit 1 in the retrieve function.
       $pub_count = count($results['pubs']);
       $this->assertEquals($pub_count, 1, 'One publication should have been retrieved but was not');
     }
 
-
-    // Specific PMID
+    // Specific PMID.
     $criteria_serialized = 'a:9:{s:9:"remote_db";s:4:"PMID";s:12:"num_criteria";s:1:"1";s:11:"loader_name";s:13:"PMID:39125884";s:8:"disabled";i:0;s:10:"do_contact";i:0;s:13:"pub_import_id";N;s:8:"criteria";a:1:{i:1;a:4:{s:12:"search_terms";s:13:"PMID:39125884";s:5:"scope";s:2:"id";s:9:"is_phrase";i:0;s:9:"operation";s:0:"";}}s:21:"form_state_user_input";a:13:{s:9:"plugin_id";s:23:"tripal_pub_library_PMID";s:11:"button_next";s:4:"Next";s:11:"loader_name";s:13:"PMID:39125884";s:12:"ncbi_api_key";s:0:"";s:4:"days";s:0:"";s:12:"num_criteria";s:1:"1";s:5:"table";a:1:{i:1;a:4:{s:11:"operation-1";s:0:"";s:7:"scope-1";s:2:"id";s:14:"search_terms-1";s:13:"PMID:39125884";s:11:"is_phrase-1";N;}}s:13:"form_build_id";s:48:"form-aL6YIsiQvl_GAXbQwYymTZaMm4PZrWeHpNcNdSBW_84";s:10:"form_token";s:43:"_PQ4ccPhMHXx3llqAKiOvclk7BJmv0RrMvJkZAx50ws";s:7:"form_id";s:31:"chado_new_pub_search_query_form";s:8:"disabled";N;s:10:"do_contact";N;s:18:"test_results_table";N;}s:4:"days";s:0:"";}';
-    // We need to add a publication query for this specific query to the database
+    // We need to add a publication query for this specific query to the database.
     $sql = "INSERT INTO {tripal_pub_library_query} (name,criteria) VALUES (:name,:criteria);";
     $args = [
       ':name' => 'PMID:39125884-PHPUNIT-TEST',
-      ':criteria' => $criteria_serialized
+      ':criteria' => $criteria_serialized,
     ];
-    $public->query($sql,$args);
+    $public->query($sql, $args);
 
     $results = $public->query("SELECT * FROM {tripal_pub_library_query} WHERE name = 'PMID:39125884-PHPUNIT-TEST';");
     $query_id = NULL;
@@ -112,15 +115,15 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
 
     $pub_record = $pub_library_manager->getSearchQuery(intval($query_id));
     $criteria = unserialize($pub_record->criteria);
-    // Perform a lookup for the PMID:39125884
+    // Perform a lookup for the PMID:39125884.
     $this->mock_error = '';
     $results = $plugin->retrieve($criteria, 1, 0);
-    // We will have an error message in the logger if there was an intermittent download problem
+    // We will have an error message in the logger if there was an intermittent download problem.
     if ($this->mock_error) {
       $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
     }
     else {
-      // This should return a single pub since we used the limit 1 in the retrieve function
+      // This should return a single pub since we used the limit 1 in the retrieve function.
       $pub_count = count($results['pubs']);
       $this->assertEquals(1, $pub_count, 'One publication should have been retrieved but was not');
       $this->assertEquals('39125884', $results['pubs'][0]['Publication Dbxref'], 'Publication Dbxref should have been 39125884 but it is not');
@@ -144,24 +147,22 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     if ($this->mock_error) {
       $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
     }
-    $pub_records = $chado->query("SELECT * FROM {1:pub}",[]);
+    $pub_records = $chado->query("SELECT * FROM {1:pub}", []);
     $pub_record = NULL;
     foreach ($pub_records as $row) {
       $pub_record = $row;
     }
 
-
     $this->assertNotEquals($pub_record, NULL, 'No publication record could be found in the chado pub table
     even though an import was executed');
-
 
     $this->assertEquals('Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.', $pub_record->title, 'Publication title is different');
     $this->assertEquals('International journal of molecular sciences', $pub_record->series_name, 'Series name is different');
     $this->assertEquals('2024', $pub_record->pyear, 'Publication year is different');
 
     $pub_id = $pub_record->pub_id;
-    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id",[
-      ':pub_id' => $pub_id
+    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id", [
+      ':pub_id' => $pub_id,
     ]);
     $row_count = NULL;
     foreach ($pub_props as $row) {
@@ -170,9 +171,9 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
 
     $this->assertGreaterThan(0, $row_count, 'No properties were found in pubprop, this is an error');
 
-    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value",[
+    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value", [
       ':pub_id' => $pub_id,
-      ':value' => '39125884'
+      ':value' => '39125884',
     ]);
     $row_count = NULL;
     foreach ($pub_props as $row) {
@@ -180,9 +181,9 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     }
     $this->assertGreaterThan(0, $row_count, 'Publication ID was not found in pubprop table');
 
-    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value",[
+    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value", [
       ':pub_id' => $pub_id,
-      ':value' => 'International journal of molecular sciences'
+      ':value' => 'International journal of molecular sciences',
     ]);
     $row_count = NULL;
     foreach ($pub_props as $row) {
@@ -190,9 +191,9 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     }
     $this->assertGreaterThan(0, $row_count, 'Journal name was not found in pubprop table');
 
-    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value",[
+    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value", [
       ':pub_id' => $pub_id,
-      ':value' => '10.3390/ijms25158314'
+      ':value' => '10.3390/ijms25158314',
     ]);
     $row_count = NULL;
     foreach ($pub_props as $row) {
@@ -200,9 +201,9 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     }
     $this->assertGreaterThan(0, $row_count, 'Publication DOI was not found in pubprop table');
 
-    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value",[
+    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value", [
       ':pub_id' => $pub_id,
-      ':value' => 'Yang X, Zhu P, Gui J'
+      ':value' => 'Yang X, Zhu P, Gui J',
     ]);
     $row_count = NULL;
     foreach ($pub_props as $row) {
@@ -210,9 +211,9 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     }
     $this->assertGreaterThan(0, $row_count, 'Authors were not found in pubprop table');
 
-    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value",[
+    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value", [
       ':pub_id' => $pub_id,
-      ':value' => 'Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.'
+      ':value' => 'Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.',
     ]);
     $row_count = NULL;
     foreach ($pub_props as $row) {
@@ -240,7 +241,7 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
           'disabled' => 0,
           'do_contact' => 0,
           'form_state_user_input' => [
-            'plugin_id' => 'tripal_pub_library_PMID'
+            'plugin_id' => 'tripal_pub_library_PMID',
           ],
           'loader_name' => 'internal',
           'num_criteria' => 1,
@@ -250,7 +251,7 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
         'schema_name' => $schema_name,
       ],
     ];
-    // We need a clean instance for the test
+    // We need a clean instance for the test.
     $pub_search_query_loader_importer = $importer_manager->createInstance('pub_search_query_loader');
     $pub_search_query_loader_importer->setArguments($arguments);
     $this->mock_error = '';
@@ -266,4 +267,5 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     $this->assertIsObject($pub, "Publication for PMID $pmid was not imported as expected");
     $this->assertEquals('Nature', $pub->series_name, "Publication for PMID $pmid has an incorrect series_name");
   }
+
 }

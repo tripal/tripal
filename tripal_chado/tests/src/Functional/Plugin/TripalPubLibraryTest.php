@@ -3,26 +3,31 @@
 namespace Drupal\Tests\tripal_chado\Functional;
 
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
+/**
+ * Confirm basic publication importer functionality.
+ *
+ * @group TripalImporter
+ * @group ChadoImporter
+ * @group PubImporter
+ */
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
+#[Group('pub-importer')]
+#[RunTestsInSeparateProcesses]
 class TripalPubLibraryTest extends ChadoTestBrowserBase {
 
   /**
    * Confirm basic publication importer functionality.
-   *
-   * @group TripalImporter
-   * @group ChadoImporter
-   * @group PubImporter
    */
-  #[Group('tripal-importer')]
-  #[Group('chado-importer')]
-  #[Group('pub-importer')]
   public function testTripalPubLibraryTestSimpleTest() {
 
-    // Installs up the chado with the test chado data
+    // Installs up the chado with the test chado data.
     $chado = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
     $public = \Drupal::service('database');
 
-    // Keep track of the schema name in case we need it
+    // Keep track of the schema name in case we need it.
     $schema_name = $chado->getSchemaName();
 
     $pub_library_manager = \Drupal::service('tripal.pub_library');
@@ -51,14 +56,14 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       'loader_name' => 'ok',
       'disabled' => 0,
       'do_contact' => 0,
-      //'pub_import_id' => 25,
+      // 'pub_import_id' => 25,
       'criteria' => [
-        1 =>   [
+        1 => [
           'search_terms' => 'Populus trichocarpa',
           'scope' => 'abstract',
           'is_phrase' => 0,
           'operation' => '',
-        ]
+        ],
       ],
     ];
 
@@ -74,7 +79,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
 
     $this->assertNotNull($results['pubs'][0]['Title'], 'There should be a title but a title was not found');
 
-    // Test for a BOOK type
+    // Test for a BOOK type.
     $search_array = [
       'remote_db' => 'pubmed',
       'num_criteria' => 1,
@@ -83,12 +88,12 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       'do_contact' => 0,
       // 'pub_import_id' => 25,
       'criteria' => [
-        1 =>   [
+        1 => [
           'search_terms' => '30000852',
           'scope' => 'id',
           'is_phrase' => 0,
           'operation' => '',
-        ]
+        ],
       ],
     ];
 
@@ -105,14 +110,14 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       'loader_name' => 'ok',
       'disabled' => 0,
       'do_contact' => 0,
-      //'pub_import_id' => 25,
+      // 'pub_import_id' => 25,
       'criteria' => [
-        1 =>   [
+        1 => [
           'search_terms' => 'Populus trichocarpa',
           'scope' => 'abstract',
           'is_phrase' => 0,
           'operation' => '',
-        ]
+        ],
       ],
     ];
     $db_fields = [
@@ -121,7 +126,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       'disabled' => 0,
       'do_contact' => 0,
     ];
-    // Add search query
+    // Add search query.
     $pub_library_manager->addSearchQuery($db_fields);
     $query = $public->select('tripal_pub_library_query', 'tplq');
     $query = $query->condition('name', 'test-query', '=');
@@ -134,12 +139,14 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     $query_id = $row['pub_library_query_id'];
 
     // --- Get search query test
-    $row = $pub_library_manager->getSearchQuery($query_id); // returns object
+    // Returns object.
+    $row = $pub_library_manager->getSearchQuery($query_id);
     $this->assertEquals('test-query', $row->name,
       'The Tripal Pub Library Query name is not test-query, this is an error - getSearchQuery test error');
 
-    // Get all search queries test
-    $results = $pub_library_manager->getSearchQueries(); // returns results
+    // Get all search queries test.
+    // Returns results.
+    $results = $pub_library_manager->getSearchQueries();
     $this->assertNotNull($results,
       'Tripal Pub Library Query tables contains no query by test-query, this is an error - issue with getSearchQueries');
     $row = $results[0];
@@ -153,14 +160,14 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       'loader_name' => 'ok',
       'disabled' => 0,
       'do_contact' => 0,
-      //'pub_import_id' => 25,
+      // 'pub_import_id' => 25,
       'criteria' => [
-        1 =>   [
+        1 => [
           'search_terms' => 'Populus trichocarpa',
           'scope' => 'abstract',
           'is_phrase' => 0,
           'operation' => '',
-        ]
+        ],
       ],
     ];
     $db_fields = [
@@ -170,9 +177,10 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       'do_contact' => 0,
     ];
 
-    // This should update the search query
+    // This should update the search query.
     $pub_library_manager->updateSearchQuery($query_id, $db_fields);
-    $row = $pub_library_manager->getSearchQuery($query_id); // returns object
+    // Returns object.
+    $row = $pub_library_manager->getSearchQuery($query_id);
     $this->assertEquals('test-query-updated', $row->name,
        'The Tripal Pub Library Query name is not test-query-updated, this is an error - updateSearchQuery test error');
 
@@ -189,4 +197,5 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     $this->assertEquals(0, $row_count, 'Tripal Pub Library Query tables contains test-query-updated, deleteSearchQuery test error');
 
   }
+
 }

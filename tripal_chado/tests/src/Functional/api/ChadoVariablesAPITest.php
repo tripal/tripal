@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Functional\api;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Testing the tripal_chado/api/tripal_chado.variables.api.php functions.
@@ -15,6 +16,7 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
  */
 #[Group('legacy-api')]
 #[IgnoreDeprecations]
+#[RunTestsInSeparateProcesses]
 class ChadoVariablesAPITest extends ChadoTestBrowserBase {
 
   protected $defaultTheme = 'stark';
@@ -23,6 +25,7 @@ class ChadoVariablesAPITest extends ChadoTestBrowserBase {
 
   /**
    * Modules to enable.
+   *
    * @var array
    */
   protected static $modules = ['tripal', 'tripal_chado'];
@@ -33,7 +36,7 @@ class ChadoVariablesAPITest extends ChadoTestBrowserBase {
   protected function setUp(): void {
     parent::setUp();
 
-    // Open connection to Chado
+    // Open connection to Chado.
     $this->connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
   }
 
@@ -47,7 +50,8 @@ class ChadoVariablesAPITest extends ChadoTestBrowserBase {
     $org = [
       'genus' => 'Tripalus',
       'species' => 'ferox' . uniqid(),
-      'type_id' => 2, //version
+    // Version.
+      'type_id' => 2,
       'infraspecific_name' => 'Quad',
       'common_name' => 'Wild Tripal',
       'abbreviation' => 'T. ferox',
@@ -56,15 +60,16 @@ class ChadoVariablesAPITest extends ChadoTestBrowserBase {
     $organism_id = $dbq['organism_id'];
     $this->assertNotEquals(FALSE, $dbq, 'chado_insert_record() unable to insert.');
     $values = [
-      'uniquename' => 'gene'.uniqid(),
+      'uniquename' => 'gene' . uniqid(),
       'organism_id' => $dbq['organism_id'],
-      'type_id' => 2, //version
+    // Version.
+      'type_id' => 2,
       'name' => 'FakeGene1',
       'residues' => str_repeat('ATGC', 100),
     ];
     $dbq = chado_insert_record('feature', $values, [], $this->testSchemaName);
     $this->assertNotEquals(FALSE, $dbq, 'chado_insert_record() unable to insert.');
-    for ($i=1; $i<=5; $i++) {
+    for ($i = 1; $i <= 5; $i++) {
       $prop = [
         'value' => str_repeat('BOO!', $i),
         'type_id' => 2,
@@ -120,4 +125,5 @@ class ChadoVariablesAPITest extends ChadoTestBrowserBase {
     $this->assertTrue(property_exists($var, 'residues'),
       "The residues should be present once expanded.");
   }
+
 }

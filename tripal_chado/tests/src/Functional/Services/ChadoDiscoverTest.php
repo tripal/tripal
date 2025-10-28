@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the discover() functions for Chado.
@@ -15,6 +16,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal-field')]
 #[Group('chado-field')]
 #[Group('field-discovery')]
+#[RunTestsInSeparateProcesses]
 class ChadoDiscoverTest extends ChadoTestBrowserBase {
 
   /**

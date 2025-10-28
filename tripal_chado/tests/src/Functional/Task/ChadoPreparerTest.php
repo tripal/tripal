@@ -6,6 +6,7 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\tripal_chado\Task\ChadoPreparer;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Chado preparer task.
@@ -21,6 +22,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('biodb-task')]
 #[Group('preparer-task')]
 #[Group('chado-install')]
+#[RunTestsInSeparateProcesses]
 class ChadoPreparerTest extends ChadoTestBrowserBase {
 
   /**

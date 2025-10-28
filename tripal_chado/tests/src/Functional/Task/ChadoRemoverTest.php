@@ -7,6 +7,7 @@ use Drupal\tripal_chado\Task\ChadoRemover;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for remover task.
@@ -26,6 +27,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversMethod(ChadoRemover::class, 'performTask')]
 #[Group('biodb-task')]
 #[Group('remover-task')]
+#[RunTestsInSeparateProcesses]
 class ChadoRemoverTest extends ChadoTestBrowserBase {
 
   /**

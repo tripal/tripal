@@ -7,6 +7,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Testing the tripal_chado/api/tripal_chado.schema.api.php functions.
@@ -19,6 +20,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('chado')]
 #[Group('chado-schema')]
 #[Group('legacy-api')]
+#[RunTestsInSeparateProcesses]
 class SchemaAPITest extends ChadoTestBrowserBase {
 
   protected $defaultTheme = 'stark';
@@ -193,10 +195,6 @@ class SchemaAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests that the class can be initiated with or without a record specified.
-   *
-   * @group api
-   * @group chado
-   * @group chado-schema
    */
   public function testInitClass() {
 
@@ -211,10 +209,6 @@ class SchemaAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests the ChadoSchema->getVersion() method.
-   *
-   * @group api
-   * @group chado
-   * @group chado-schema
    */
   public function testGetVersion() {
 
@@ -236,10 +230,6 @@ class SchemaAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests the ChadoSchema->getSchemaName() method.
-   *
-   * @group api
-   * @group chado
-   * @group chado-schema
    */
   public function testGetSchemaName() {
 
@@ -259,10 +249,6 @@ class SchemaAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests the ChadoSchema->getSchemaDetails() method.
-   *
-   * @group api
-   * @group chado
-   * @group chado-schema
    */
   public function testGetSchemaDetails() {
 
@@ -293,10 +279,6 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * Tests ChadoSchema->getTableNames() method.
    *
    * @dataProvider knownTableProvider
-   *
-   * @group api
-   * @group chado
-   * @group chado-schema
    */
   #[DataProvider('knownTableProvider')]
   public function testGetTableNames($version, $known_tables) {

@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Functional;
 
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for the GFF3Importer class
@@ -14,6 +15,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
 #[Group('gff3-importer')]
+#[RunTestsInSeparateProcesses]
 class GFF3ImporterTest extends ChadoTestBrowserBase
 {
 

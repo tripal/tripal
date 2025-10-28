@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Functional;
 use Drupal\Core\Url;
 use Drupal\Tests\BrowserTestBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Simple test to ensure that main page loads with module enabled.
@@ -16,6 +17,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('form')]
 #[Group('chado')]
 #[Group('chado-install')]
+#[RunTestsInSeparateProcesses]
 class chadoInstallerFormTest extends BrowserTestBase {
 
   protected $defaultTheme = 'stark';
