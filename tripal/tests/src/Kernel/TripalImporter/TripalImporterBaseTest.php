@@ -78,10 +78,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
 
 	/**
    * Tests focusing on the Tripal Importer plugin system.
-   *
-   * @group tripal_importer
    */
-  #[Group('tripal_importer')]
   public function testTripalImporterManager() {
 
     // Test the Tripal Importer Plugin Manager.
@@ -102,10 +99,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
   /**
    * Tests focusing on the Tripal importer base class.
    * Specifically, createImportJob(), load(), and getArguments() methods.
-   *
-   * @group tripal_importer
    */
-  #[Group('tripal_importer')]
   public function testTripalImporterBase() {
 
     // CASE --- Valid
@@ -543,10 +537,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
     /**
    * Tests focusing on the Tripal importer base class.
    * Specifically, submitJob() and setJob() methods.
-   *
-   * @group tripal_importer
    */
-  #[Group('tripal_importer')]
   public function testTripalImporterBaseJobs() {
 
     // CASE --- Valid
@@ -612,10 +603,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
   /**
    * Tests focusing on the Tripal importer base class.
    * Specifically, prepareFiles() and cleanFile() methods.
-   *
-   * @group tripal_importer
    */
-  #[Group('tripal_importer')]
   public function testTripalImporterBaseFiles() {
 
     // CASE --- Valid
@@ -696,10 +684,7 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
   /**
    * Tests focusing on the Tripal importer base class.
    * Specifically, setTotalItems(), addItemsHandled(), setItemsHandled(), setInterval().
-   *
-   * @group tripal_importer
    */
-  #[Group('tripal_importer')]
   public function testTripalImporterBaseProgress() {
 
     // We need to mock the logger to test the progress reporting.

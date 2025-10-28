@@ -17,7 +17,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group TripalEntityTypeCollection
  */
 #[Group('tripal-entity')]
-#[Group('tripal-collection')]
+#[Group('collection-service')]
 #[RunTestsInSeparateProcesses]
 class TripalEntityTypeCollectionInstallTest extends TripalTestKernelBase {
 
