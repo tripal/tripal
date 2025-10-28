@@ -7,6 +7,7 @@ use Drupal\tripal_chado\Task\ChadoRenamer;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for renamer task.
@@ -26,6 +27,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversMethod(ChadoRenamer::class, 'performTask')]
 #[Group('biodb-task')]
 #[Group('renamer-task')]
+#[RunTestsInSeparateProcesses]
 class ChadoRenamerTest extends ChadoTestKernelBase {
 
   /**

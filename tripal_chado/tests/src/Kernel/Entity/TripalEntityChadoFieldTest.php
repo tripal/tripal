@@ -7,6 +7,7 @@ use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalEntity Class with Chado Fields attached.
@@ -18,6 +19,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal-entity')]
 #[Group('chado-field')]
 #[Group('token-parser')]
+#[RunTestsInSeparateProcesses]
 class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
 
   use TripalEntityFieldTestTrait;

@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\Api;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for API functions dealing with phylogenetic trees.
@@ -32,6 +33,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal-chado')]
 #[Group('chado-organism')]
 #[Group('chado-phylogeny')]
+#[RunTestsInSeparateProcesses]
 class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
 
   /**

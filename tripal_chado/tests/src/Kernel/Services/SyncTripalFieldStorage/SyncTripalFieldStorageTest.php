@@ -7,6 +7,7 @@ use Drupal\pgsql\Driver\Database\pgsql\Connection;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the SyncTripalFieldStorage service.
@@ -15,6 +16,7 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('tripal-storage')]
 #[Group('tripal-field')]
+#[RunTestsInSeparateProcesses]
 class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
 
   /**

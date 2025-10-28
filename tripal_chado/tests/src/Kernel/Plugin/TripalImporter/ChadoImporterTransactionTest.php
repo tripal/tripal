@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalImporter;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the Chado Importer base class transaction functionality.
@@ -14,6 +15,7 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
+#[RunTestsInSeparateProcesses]
 class ChadoImporterTransactionTest extends ChadoTestKernelBase {
 
   use UserCreationTrait;

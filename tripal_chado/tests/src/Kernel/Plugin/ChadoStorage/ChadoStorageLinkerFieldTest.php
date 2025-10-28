@@ -7,6 +7,7 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Test chado storage.
@@ -45,6 +46,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('chado-field')]
 #[Group('tripal-storage')]
 #[Group('chado-storage')]
+#[RunTestsInSeparateProcesses]
 class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;

@@ -6,6 +6,7 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Component\FileCache\FileCacheFactory;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the base functionality for chado importers.
@@ -15,6 +16,7 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
+#[RunTestsInSeparateProcesses]
 class ChadoImporterBaseTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
@@ -89,4 +91,5 @@ class ChadoImporterBaseTest extends ChadoTestKernelBase {
       }
     }
   }
+
 }

@@ -8,6 +8,7 @@ use Drupal\tripal\Services\TripalLogger;
 use Symfony\Component\Yaml\Yaml;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for the OBO ontology importer.
@@ -19,6 +20,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
 #[Group('obo-importer')]
+#[RunTestsInSeparateProcesses]
 class OboImporterTest extends ChadoTestKernelBase {
 
   use UserCreationTrait;

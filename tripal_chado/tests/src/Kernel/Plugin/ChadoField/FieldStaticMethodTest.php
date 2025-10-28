@@ -5,12 +5,14 @@ namespace Drupal\Tests\tripal_chado\Kernel\ChadoField;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the static methods of Chado Fields.
  */
 #[Group('tripal-field')]
 #[Group('chado-field')]
+#[RunTestsInSeparateProcesses]
 class FieldStaticMethodTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;

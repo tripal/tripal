@@ -7,6 +7,7 @@ use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the base functionality for Chado Buddies.
@@ -16,6 +17,7 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoBuddy
  */
 #[Group('chado-buddy')]
+#[RunTestsInSeparateProcesses]
 class ChadoBuddyBaseTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
@@ -25,7 +27,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
 
   /**
    * Annotations associated with the mock_plugin.
-   * @var Array
+   *
+   * @var array
    */
   protected $cvtermbuddy_plugin_definition = [
     'id' => "chado_cvterm_buddy",
@@ -83,8 +86,6 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     );
   }
 
-
-
   /**
    * Tests focused on basic getter/setters.
    *
@@ -101,22 +102,22 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
       "We did not have an object created when trying to create an ChadoBuddy instance."
     );
 
-      // Make protected methods accessible.
+    // Make protected methods accessible.
     $reflection = new \ReflectionClass($instance);
     $makeAlias = $reflection->getMethod('makeAlias');
-    $makeAlias->setAccessible(true);
+    $makeAlias->setAccessible(TRUE);
     $unmakeAlias = $reflection->getMethod('unmakeAlias');
-    $unmakeAlias->setAccessible(true);
+    $unmakeAlias->setAccessible(TRUE);
     $removeTablePrefix = $reflection->getMethod('removeTablePrefix');
-    $removeTablePrefix->setAccessible(true);
+    $removeTablePrefix->setAccessible(TRUE);
 
-    // Label
+    // Label.
     $label = $instance->label();
     $this->assertIsString($label, "The label is expected to be a string.");
     $this->assertEquals($label, $this->cvtermbuddy_plugin_definition['label'],
       "The label returned did not match what we expected for the Chado Cvterm Buddy.");
 
-    // Description
+    // Description.
     $description = $instance->description();
     $this->assertIsString($description, "The description is expected to be a string.");
     $this->assertEquals($description, $this->cvtermbuddy_plugin_definition['description'],
@@ -168,7 +169,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $dereferenced_values = $removeTablePrefix->invoke($instance, $referenced_values);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -181,8 +183,6 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $dereferenced_values = $removeTablePrefix->invoke($instance, $referenced_values);
     $this->assertEquals($expected_values, $dereferenced_values, 'Unexpected dereferenced values from removeTablePrefix()');
   }
-
-
 
   /**
    * Tests methods dealing with table columns: getTableColumns(),
@@ -201,13 +201,13 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // Make protected methods accessible.
     $reflection = new \ReflectionClass($instance);
     $getTableColumns = $reflection->getMethod('getTableColumns');
-    $getTableColumns->setAccessible(true);
+    $getTableColumns->setAccessible(TRUE);
     $addTableToCache = $reflection->getMethod('addTableToCache');
-    $addTableToCache->setAccessible(true);
+    $addTableToCache->setAccessible(TRUE);
     $getTableCache = $reflection->getMethod('getTableCache');
-    $getTableCache->setAccessible(true);
+    $getTableCache->setAccessible(TRUE);
     $makeUpsertConditions = $reflection->getMethod('makeUpsertConditions');
-    $makeUpsertConditions->setAccessible(true);
+    $makeUpsertConditions->setAccessible(TRUE);
 
     // CASE: getTableColumns() with no tables.
     $returned_columns = $getTableColumns->invoke($instance, []);
@@ -219,7 +219,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
       'db.name',
       'db.description',
       'db.urlprefix',
-      'db.url'
+      'db.url',
     ];
     $returned_columns = $getTableColumns->invoke($instance, ['db']);
     $retrieved_cache = $getTableCache->invoke($instance);
@@ -238,7 +238,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
       'dbxref.dbxref_id',
       'dbxref.db_id',
       'dbxref.version',
-      'dbxref.description'
+      'dbxref.description',
     ];
     $returned_columns = $getTableColumns->invoke($instance, ['db', 'dbxref']);
     $retrieved_cache = $getTableCache->invoke($instance);
@@ -316,8 +316,6 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertEqualsCanonicalizing($expected_conditions, $returned_conditions, "We did not get the conditions we expected for the analysis table when calling makeUpsertConditions()");
   }
 
-
-
   /**
    * Tests methods dealing with input: validateInput(), subsetInput(),
    * dereferenceBuddyRecord(), validateOutput().
@@ -335,13 +333,13 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // Make protected methods accessible.
     $reflection = new \ReflectionClass($instance);
     $validateInput = $reflection->getMethod('validateInput');
-    $validateInput->setAccessible(true);
+    $validateInput->setAccessible(TRUE);
     $subsetInput = $reflection->getMethod('subsetInput');
-    $subsetInput->setAccessible(true);
+    $subsetInput->setAccessible(TRUE);
     $dereferenceBuddyRecord = $reflection->getMethod('dereferenceBuddyRecord');
-    $dereferenceBuddyRecord->setAccessible(true);
+    $dereferenceBuddyRecord->setAccessible(TRUE);
     $validateOutput = $reflection->getMethod('validateOutput');
-    $validateOutput->setAccessible(true);
+    $validateOutput->setAccessible(TRUE);
 
     // CASE: valid values passed to validateInput().
     $user_values = [
@@ -356,19 +354,21 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $validateInput->invoke($instance, $user_values, $valid_columns);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
     $this->assertFalse($exception_caught, "We shouldn't get an exception when calling validateInput() with valid input.");
 
-    // CASE: calling validateInput with no user values
+    // CASE: calling validateInput with no user values.
     $valid_columns = ['analysis.name', 'analysis.program', 'analysis.programversion', 'analysis.sourcename', 'analysis.sourceversion'];
     $exception_caught = FALSE;
     $exception_message = '';
     try {
       $validateInput->invoke($instance, [], $valid_columns);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -390,7 +390,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $validateInput->invoke($instance, $user_values, $valid_columns);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -403,7 +404,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_caught = FALSE;
     try {
       $validateInput->invoke($instance, $user_values, $valid_columns);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
     }
     $this->assertFalse($exception_caught, "We should get not get an exception when calling validateInput() with missing columns in the user input.");
@@ -420,7 +422,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_caught = FALSE;
     try {
       $subsetInput->invoke($instance, $user_values, $valid_tables);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
     }
     $this->assertFalse($exception_caught, "We shouldn't get an exception when calling subsetInput() with valid input.");
@@ -432,7 +435,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $subsetInput->invoke($instance, $user_values, $valid_tables);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -445,7 +449,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_caught = FALSE;
     try {
       $subsetInput->invoke($instance, $user_values, $valid_tables);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
     }
     $this->assertFalse($exception_caught, "We should not get an exception when calling subsetInput() with multiple valid tables.");
@@ -457,7 +462,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $subsetInput->invoke($instance, $user_values, $valid_tables);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -473,7 +479,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_caught = FALSE;
     try {
       $updated_values = $dereferenceBuddyRecord->invoke($instance, $values);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
     }
     $this->assertFalse($exception_caught, 'We should not get an exception when calling dereferenceBuddyRecord with valid values not including a ChadoBuddyRecord.');
@@ -492,7 +499,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_caught = FALSE;
     try {
       $updated_values = $dereferenceBuddyRecord->invoke($instance, $values);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
     }
     $this->assertFalse($exception_caught, 'We should not get an exception when calling dereferenceBuddyRecord with valid values including a ChadoBuddyRecord.');
@@ -503,7 +511,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $should_fail = $buddy_record->getValue('non.exist');
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -516,7 +525,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_caught = FALSE;
     try {
       $updated_values = $dereferenceBuddyRecord->invoke($instance, $values);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
     }
     $this->assertFalse($exception_caught, 'We should not get an exception when calling dereferenceBuddyRecord with duplicate keys with identical values.');
@@ -528,7 +538,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $updated_values = $dereferenceBuddyRecord->invoke($instance, $values);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -542,7 +553,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $updated_values = $dereferenceBuddyRecord->invoke($instance, $values);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -564,7 +576,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $validateOutput->invoke($instance, $output_values, $sub_values);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -576,7 +589,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $validateOutput->invoke($instance, $output_values, $sub_values);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -589,7 +603,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $validateOutput->invoke($instance, $output_values, $sub_values);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -602,7 +617,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $validateOutput->invoke($instance, $output_values, $sub_values);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -615,7 +631,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $validateOutput->invoke($instance, $output_values, $sub_values);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -623,11 +640,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertStringContainsString('more than one record', $exception_message, "We did not get the exception message we expected when calling validateOutput() with multiple records.");
   }
 
-
-
-   /**
-    * Tests methods dealing with the query object: addConditions().
-    */
+  /**
+   * Tests methods dealing with the query object: addConditions().
+   */
   public function testChadoBuddyQueryMethods() {
 
     $type = \Drupal::service('tripal_chado.chado_buddy');
@@ -641,7 +656,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // Make protected methods accessible.
     $reflection = new \ReflectionClass($instance);
     $addConditions = $reflection->getMethod('addConditions');
-    $addConditions->setAccessible(true);
+    $addConditions->setAccessible(TRUE);
 
     // CASE: valid values passed to addConditions().
     $query = $this->connection->select('1:cv', 'cv');
@@ -652,14 +667,14 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_caught = FALSE;
     try {
       $addConditions->invokeArgs($instance, [&$query, $conditions, $options]);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
     }
     $this->assertFalse($exception_caught, "We shouldn't get an exception when calling addConditions() with valid conditions.");
 
     // CASE: calling addConditions() with a string as though its a query object ;-p
     // We don't bother to test this because it is a TypeError.
-
     // CASE: calling addConditions() with an empty array of conditions.
     $query = $this->connection->select('1:cv', 'cv');
     $conditions = [];
@@ -667,7 +682,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_caught = FALSE;
     try {
       $addConditions->invokeArgs($instance, [&$query, $conditions, $options]);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
     }
     $this->assertFalse($exception_caught, "We shouldn't get an exception when calling addConditions() with no conditions.");
@@ -682,7 +698,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_caught = FALSE;
     try {
       $addConditions->invokeArgs($instance, [&$query, $conditions, $options]);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
     }
     $this->assertFalse($exception_caught, "We shouldn't get an exception when calling addConditions() with valid conditions.");
@@ -694,7 +711,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_caught = FALSE;
     try {
       $addConditions->invokeArgs($instance, [&$query, $conditions, $options]);
-    } catch (ChadoBuddyException $e) {
+    }
+    catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
     }
     $this->assertFalse($exception_caught, "We shouldn't get an exception when calling addConditions() with valid conditions.");
@@ -703,4 +721,5 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertStringContainsString('LOWER(dbxref.accession)', $sql, "We did not get a query with case insensitivity for both 'db.name' and 'dbxref.accession'.");
 
   }
+
 }
