@@ -12,8 +12,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group TripalBackendPublish
  * @group ChadoPublish
  */
-#[Group('TripalBackendPublish')]
-#[Group('ChadoPublish')]
+#[Group('tripal-publish')]
+#[Group('chado-publish')]
 class ChadoPublishTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 

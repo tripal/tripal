@@ -15,10 +15,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoDBX
  * @group ChadoConnection
  */
-#[Group('Tripal Chado')]
-#[Group('TripalDBX')]
-#[Group('ChadoDBX')]
-#[Group('ChadoConnection')]
+#[Group('tripal-dbx')]
+#[Group('chado')]
 class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
 
   /**

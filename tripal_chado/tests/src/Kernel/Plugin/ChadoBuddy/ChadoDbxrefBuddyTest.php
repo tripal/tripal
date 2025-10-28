@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group ChadoBuddy
  */
-#[Group('ChadoBuddy')]
+#[Group('chado-buddy')]
 class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
 
   /**

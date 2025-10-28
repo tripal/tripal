@@ -14,9 +14,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group Organism Autocomplete Form Element
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Organism Autocomplete Form Element')]
+#[Group('autocomplete')]
+#[Group('chado-organism')]
 class ChadoOrganismFormElementControllerTest extends ChadoTestKernelBase {
   /**
    * The default theme to use for this test.

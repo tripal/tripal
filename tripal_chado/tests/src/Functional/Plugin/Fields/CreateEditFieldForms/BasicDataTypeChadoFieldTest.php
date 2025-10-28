@@ -15,7 +15,7 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group ChadoField
  */
-#[Group('ChadoField')]
+#[Group('chado-field')]
 class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
   use FieldUiTestTrait;
 

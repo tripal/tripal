@@ -13,9 +13,7 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
  * @group Tripal Chado
  * @group Tripal API
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal API')]
+#[Group('legacy-api')]
 #[IgnoreDeprecations]
 class ChadoDbAPITest extends ChadoTestBrowserBase {
 
@@ -51,12 +49,7 @@ class ChadoDbAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado.db associated functions.
-   *
-   * @group tripal-chado
-   * @group chado-db
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-db')]
   public function testDB() {
 
 		// INSERT.
@@ -110,12 +103,7 @@ class ChadoDbAPITest extends ChadoTestBrowserBase {
 
 	/**
    * Tests chado.dbxref associated functions.
-   *
-   * @group tripal-chado
-   * @group chado-db
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-db')]
   public function testDbxref() {
 
 		// INSERT.

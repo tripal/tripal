@@ -12,16 +12,12 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal
  * @group Tripal Chado
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
+#[Group('custom-table')]
 class ChadoCustomTableManagerTest extends ChadoTestBrowserBase {
 
-/**
- *  Tests that we can create, list, and get custom table objects
- *
- * @group chado
- */
-#[Group('chado')]
+  /**
+   *  Tests that we can create, list, and get custom table objects
+   */
   public function testCustomTableManager() {
     // Create and then get the existing test chado schema name.
     $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);

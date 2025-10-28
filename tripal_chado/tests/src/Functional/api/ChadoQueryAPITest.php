@@ -13,9 +13,7 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
  * @group Tripal Chado
  * @group Tripal API
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal API')]
+#[Group('legacy-api')]
 #[IgnoreDeprecations]
 class ChadoQueryAPITest extends ChadoTestBrowserBase {
 
@@ -41,12 +39,7 @@ class ChadoQueryAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado_query().
-   *
-   * @group tripal-chado
-   * @group chado-query
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-query')]
   public function testChadoQuery() {
     $drupal_connection = \Drupal\Core\Database\Database::getConnection();
     $chado_testschema = $this->testSchemaName;
@@ -131,12 +124,7 @@ class ChadoQueryAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado_insert(), chado_select(), chado_update(), and chado_delete().
-   *
-   * @group tripal-chado
-   * @group chado-query
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-query')]
   public function testChadoQueryHelpers() {
     $drupal_connection = \Drupal\Core\Database\Database::getConnection();
 
@@ -196,12 +184,7 @@ class ChadoQueryAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado_get_table_max_rank().
-   *
-   * @group tripal-chado
-   * @group chado-query
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-query')]
   public function testChadoTableMaxRank() {
     $drupal_connection = \Drupal\Core\Database\Database::getConnection();
     $this->markTestIncomplete('This test has not been implemented yet.');
@@ -209,12 +192,7 @@ class ChadoQueryAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado_set_active().
-   *
-   * @group tripal-chado
-   * @group chado-query
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-query')]
   public function testChadoSetActive() {
     $drupal_connection = \Drupal\Core\Database\Database::getConnection();
     $this->markTestIncomplete('This test has not been implemented yet.');
@@ -222,12 +200,7 @@ class ChadoQueryAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado_pager_query() and chado_pager_get_count().
-   *
-   * @group tripal-chado
-   * @group chado-query
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-query')]
   public function testChadoPagerQuery() {
     $drupal_connection = \Drupal\Core\Database\Database::getConnection();
     $this->markTestIncomplete('This test has not been implemented yet.');
@@ -235,12 +208,7 @@ class ChadoQueryAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado_schema_get_foreign_key().
-   *
-   * @group tripal-chado
-   * @group chado-query
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-query')]
   public function testChadoSchemaGetFK() {
     $drupal_connection = \Drupal\Core\Database\Database::getConnection();
     $this->markTestIncomplete('This test has not been implemented yet.');

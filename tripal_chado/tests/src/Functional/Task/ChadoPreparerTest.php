@@ -18,10 +18,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado Preparer
  */
 #[CoversClass(ChadoPreparer::class)]
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal Chado Task')]
-#[Group('Tripal Chado Preparer')]
+#[Group('biodb-task')]
+#[Group('preparer-task')]
+#[Group('chado-install')]
 class ChadoPreparerTest extends ChadoTestBrowserBase {
 
   /**
@@ -82,7 +81,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
       'tripal_gff_temp',
       'tripal_gffcds_temp',
       'tripal_gffprotein_temp',
-      'tripal_obo_temp'
+      'tripal_obo_temp',
     ];
     foreach ($expected_tables as $table_name) {
       $this->assertTrue($schema2check->tableExists($table_name),
@@ -97,7 +96,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
       'organism_feature_count',
       'analysis_organism',
       'db2cv_mview',
-      'cv_root_mview'
+      'cv_root_mview',
     ];
     foreach ($expected_tables as $table_name) {
       $this->assertTrue($schema2check->tableExists($table_name),
@@ -145,9 +144,9 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     // 6: POPULATE CHADO_SEMWEB TABLE.
     // --------------------------------
     // Functionality not complete in the prepare step yet.
-
     // 7: CHADO CVS TO TRIPAL TERMS.
     // --------------------------------
     // Functionality not complete in the prepare step yet.
   }
+
 }

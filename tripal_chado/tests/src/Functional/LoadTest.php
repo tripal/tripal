@@ -12,8 +12,7 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal
  * @group Tripal Chado
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
+#[Group('render')]
 class LoadTest extends BrowserTestBase {
 
   protected $defaultTheme = 'stark';

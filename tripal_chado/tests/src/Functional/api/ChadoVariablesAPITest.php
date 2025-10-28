@@ -13,9 +13,7 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
  * @group Tripal Chado
  * @group Tripal API
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal API')]
+#[Group('legacy-api')]
 #[IgnoreDeprecations]
 class ChadoVariablesAPITest extends ChadoTestBrowserBase {
 
@@ -41,12 +39,7 @@ class ChadoVariablesAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado_generate_var().
-   *
-   * @group tripal-chado
-   * @group chado-query
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-query')]
   public function testChadoGenerateVariables() {
 
     // TEST DATA.

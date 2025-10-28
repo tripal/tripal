@@ -23,10 +23,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers ::performTask
  */
 #[CoversClass(ChadoCloner::class)]
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal Chado Task')]
-#[Group('Tripal Chado Cloner')]
+#[Group('biodb-task')]
+#[Group('cloner-task')]
 #[CoversMethod(ChadoCloner::class, 'setParameters')]
 #[CoversMethod(ChadoCloner::class, 'performTask')]
 class ChadoClonerTest extends ChadoTestKernelBase {

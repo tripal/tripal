@@ -14,9 +14,10 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group ChadoStorage
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('ChadoStorage')]
+#[Group('tripal-field')]
+#[Group('chado-field')]
+#[Group('tripal-storage')]
+#[Group('chado-storage')]
 class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;

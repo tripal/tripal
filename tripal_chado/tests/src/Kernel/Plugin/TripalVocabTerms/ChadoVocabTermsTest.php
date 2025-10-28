@@ -19,9 +19,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group Tripal Chado ChadoVocabTerms
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal Chado ChadoVocabTerms')]
+#[Group('tripal-terms')]
+#[Group('chado-cv')]
 class ChadoVocabTermsTest extends ChadoTestKernelBase {
 
   /**

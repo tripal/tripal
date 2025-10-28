@@ -10,33 +10,26 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * Functionality for specific importers will be tested in their own test classes.
  */
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
 class ChadoImporterTest extends ChadoTestBrowserBase {
 
-	/**
+  /**
    * Tests focusing on the Tripal Importer plugin system and chado importers.
-   *
-   * @group tripal_importer
-	 * @group chado_importer
    */
-  #[Group('tripal_importer')]
-#[Group('chado_importer')]
   public function testTripalImporterManager() {
-		$this->markTestIncomplete(
+    $this->markTestIncomplete(
       'This test has not been implemented yet.'
     );
-	}
+  }
 
   /**
    * Tests focusing on the Chado importer base class.
-   *
-   * @group tripal_importer
-	 * @group chado_importer
    */
-  #[Group('tripal_importer')]
-#[Group('chado_importer')]
   public function testChadoImporterBase() {
     $this->markTestIncomplete(
       'This test has not been implemented yet.'
     );
-	}
+  }
+
 }

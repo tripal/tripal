@@ -12,9 +12,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group Tripal Chado Custom Tables
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal Chado Custom Tables')]
+#[Group('chado')]
+#[Group('custom-table')]
 class ChadoCustomTableTest extends ChadoTestBrowserBase {
 
   /**
@@ -29,7 +28,7 @@ class ChadoCustomTableTest extends ChadoTestBrowserBase {
    *
    * @group service manager
    */
-  #[Group('service manager')]
+  #[Group('service')]
   public function testChadoCustomTables() {
     $manager = \Drupal::service('tripal_chado.custom_tables');
     $this->assertIsObject($manager, 'We were not able to retrieve the custom table service manager.');

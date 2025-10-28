@@ -13,9 +13,9 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
    * @group ChadoImporter
    * @group PubImporter
    */
-  #[Group('TripalImporter')]
-  #[Group('ChadoImporter')]
-  #[Group('PubImporter')]
+  #[Group('tripal-importer')]
+  #[Group('chado-importer')]
+  #[Group('pub-importer')]
   public function testTripalPubLibraryTestSimpleTest() {
 
     // Installs up the chado with the test chado data

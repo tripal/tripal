@@ -38,10 +38,10 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoStorage
  * @group ChadoStorage Fields
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('ChadoStorage')]
-#[Group('ChadoStorage Fields')]
+#[Group('tripal-field')]
+#[Group('chado-field')]
+#[Group('tripal-storage')]
+#[Group('chado-storage')]
 class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;

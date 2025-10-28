@@ -13,9 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group Tripal Database
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal Database')]
+#[Group('chado')]
+#[Group('chado-compliance')]
 class ChadoComplianceTest extends ChadoTestBrowserBase {
 
   protected $defaultTheme = 'stark';
@@ -48,14 +47,7 @@ class ChadoComplianceTest extends ChadoTestBrowserBase {
    *   3. Each field is the type we expect.
    *   4. It has all the constraints we expect.
    *   5. Each constraint consists of the columns we expect.
-   *
-   * @group api
-   * @group chado
-   * @group chado-compliance
    */
-  #[Group('api')]
-  #[Group('chado')]
-  #[Group('chado-compliance')]
   public function testTableCompliance() {
 
     // FOR EVERY CHADO TABLE!

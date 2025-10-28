@@ -11,9 +11,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoImporter
  * @group TaxonomyImporter
  */
-#[Group('TripalImporter')]
-#[Group('ChadoImporter')]
-#[Group('TaxonomyImporter')]
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
+#[Group('taxonomy-importer')]
 class TaxonomyImporterTest extends ChadoTestBrowserBase {
 
   /**
@@ -42,10 +42,7 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
 
   /**
    * Confirm basic Taxonomy importer functionality.
-   *
-   * @group taxonomy
    */
-  #[Group('taxonomy')]
   public function testTaxonomyImporterSimpleTest() {
 
     // Installs up the chado with the test chado data

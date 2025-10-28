@@ -13,8 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group TripalImporter
  * @group ChadoImporter
  */
-#[Group('TripalImporter')]
-#[Group('ChadoImporter')]
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
 class ChadoImporterBaseTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
@@ -48,10 +48,7 @@ class ChadoImporterBaseTest extends ChadoTestKernelBase {
 
   /**
    * Tests focusing on the Tripal Importer plugin system.
-   *
-   * @group tripal_importer
    */
-  #[Group('tripal_importer')]
   public function testTripalImporterManagerForChadoImporters() {
 
     // These are the importers we expect to have.

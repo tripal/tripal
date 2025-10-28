@@ -10,7 +10,8 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group TripalEntityLookup
  */
-#[Group('TripalEntityLookup')]
+#[Group('tripal-entity')]
+#[Group('service')]
 class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 

@@ -10,18 +10,15 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group Tripal Chado ChadoStorage
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal Chado ChadoStorage')]
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
+#[Group('newick-importer')]
 class NewickImporterTest extends ChadoTestBrowserBase
 {
 
   /**
-   * Confirm basic GFF importer functionality.
-   *
-   * @group gff
+   * Confirm basic importer functionality.
    */
-  #[Group('gff')]
   public function testNewickImporterSimpleTest()
   {
     // Public schema connection

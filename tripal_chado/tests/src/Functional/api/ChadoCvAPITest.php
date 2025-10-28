@@ -13,9 +13,7 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
  * @group Tripal Chado
  * @group Tripal API
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal API')]
+#[Group('legacy-api')]
 #[IgnoreDeprecations]
 class ChadoCvAPITest extends ChadoTestBrowserBase {
 
@@ -44,12 +42,7 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado.cv associated functions.
-   *
-   * @group tripal-chado
-   * @group chado-cv
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-cv')]
   public function testcv() {
 
     // INSERT.
@@ -98,12 +91,7 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado.cvterm associated functions.
-   *
-   * @group tripal-chado
-   * @group chado-cv
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-cv')]
   public function testcvterm() {
 
     // INSERT.

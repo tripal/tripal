@@ -15,9 +15,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoFields
  * @group TripalTokenParser
  */
-#[Group('TripalEntity')]
-#[Group('ChadoFields')]
-#[Group('TripalTokenParser')]
+#[Group('tripal-entity')]
+#[Group('chado-field')]
+#[Group('token-parser')]
 class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
 
   use TripalEntityFieldTestTrait;

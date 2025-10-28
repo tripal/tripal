@@ -12,8 +12,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal
  * @group Tripal Content
  */
-#[Group('Tripal')]
-#[Group('Tripal Content')]
+#[Group('tripal-entity')]
+#[Group('tripal-publish')]
+#[Group('chado-publish')]
 class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
   /**

@@ -11,8 +11,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group TripalImporter
  * @group ChadoImporter
  */
-#[Group('TripalImporter')]
-#[Group('ChadoImporter')]
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
 class ImporterFormTest extends ChadoTestKernelBase {
 
   protected $defaultTheme = 'stark';

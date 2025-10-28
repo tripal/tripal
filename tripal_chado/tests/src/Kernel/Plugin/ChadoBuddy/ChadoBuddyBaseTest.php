@@ -15,7 +15,7 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group ChadoBuddy
  */
-#[Group('ChadoBuddy')]
+#[Group('chado-buddy')]
 class ChadoBuddyBaseTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
@@ -520,7 +520,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
       $exception_caught = TRUE;
     }
     $this->assertFalse($exception_caught, 'We should not get an exception when calling dereferenceBuddyRecord with duplicate keys with identical values.');
-    
+
     // CASE: calling dereferenceBuddyRecord() with a key=>value pair in both the
     // ChadoBuddyRecord and in the values array, but the values are different. Expect exception.
     $values['project.name'] = 'Incorrect name';

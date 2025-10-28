@@ -11,17 +11,14 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoImporter
  * @group TreeGenerator
  */
-#[Group('TripalImporter')]
-#[Group('ChadoImporter')]
-#[Group('TreeGenerator')]
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
+#[Group('tree-generator')]
 class TreeGeneratorTest extends ChadoTestBrowserBase {
 
   /**
    * Confirm basic Tree Generator functionality.
-   *
-   * @group taxonomy
    */
-  #[Group('taxonomy')]
   public function testTreeGeneratorSimpleTest() {
 
     // Installs up the chado with the test chado data
