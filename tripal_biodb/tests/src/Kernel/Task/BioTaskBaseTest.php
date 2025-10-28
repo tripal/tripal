@@ -9,6 +9,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for tasks.
@@ -27,15 +28,14 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers ::prepareSchemas
  */
 #[CoversClass(BioTaskBase::class)]
-#[Group('Tripal')]
-#[Group('Tripal BioDb')]
-#[Group('Tripal BioDb Task')]
 #[CoversMethod(BioTaskBase::class, '__construct')]
 #[CoversMethod(BioTaskBase::class, 'initId')]
 #[CoversMethod(BioTaskBase::class, 'getId')]
 #[CoversMethod(BioTaskBase::class, 'getLogger')]
 #[CoversMethod(BioTaskBase::class, 'setParameters')]
 #[CoversMethod(BioTaskBase::class, 'prepareSchemas')]
+#[Group('biodb-task')]
+#[RunTestsInSeparateProcesses]
 class BioTaskBaseTest extends TripalTestKernelBase {
 
   /**
@@ -87,7 +87,7 @@ class BioTaskBaseTest extends TripalTestKernelBase {
     // Create a mock for the abstract class, but specify not to run the
     // constructor + mention this is an abstract class.
     $tmock = $this->getMockBuilder(BioTaskBase::class)
-      ->onlyMethods(['getTripalDbxClass'])
+      ->onlyMethods(['getTripalDbxClass', 'validateParameters', 'getProgress'])
       ->getMock();
     // Ensure when getTripalDbxClass() is asked for the connection class,
     // it returns our fake class.
