@@ -70,6 +70,28 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
+   * Get a table definition from the chado schema.
+   *
+   * @param string $table_name
+   *   The table name to query.
+   *
+   * @return array
+   *   The table schema.
+   */
+  public function getChadoTableDef(string $table_name): array {
+    $parameters = [
+      'format' => 'drupal',
+      'source' => [
+        'file',
+        'tripal',
+        'database',
+      ],
+    ];
+    $def = $this->connection->schema()->getTableDef($table_name, $parameters);
+    return $def;
+  }
+
+  /**
    * Retrieve a list of table columns for one or more chado tables.
    * Schema information is cached for better performance.
    *
@@ -205,7 +227,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    */
   protected function addTableToCache(string $chado_table, array &$cached_tables) {
     $cached_tables[$chado_table] = [];
-    $table_schema = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
+    $table_schema = $this->getChadoTableDef($chado_table);
     if (!array_key_exists('fields', $table_schema)) {
       $calling_function = debug_backtrace()[2]['function'];  // two levels up
       throw new ChadoBuddyException("ChadoBuddy $calling_function error, invalid table"

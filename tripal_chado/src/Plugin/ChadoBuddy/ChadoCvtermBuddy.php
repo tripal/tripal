@@ -962,8 +962,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     // Get the primary key of the base table
     $base_pkey_col = $options['pkey'] ?? NULL;
     if (!$base_pkey_col) {
-      $schema = $this->connection->schema();
-      $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+      $base_table_def = $this->getChadoTableDef($base_table);
       $base_pkey_col = $base_table_def['primary key'];
     }
     $fields = [
@@ -1015,8 +1014,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       if ($lookup_columns) {
         // Automatic lookup is enabled.
         // Determine actual columns for this linking table.
-        $schema = $this->connection->schema();
-        $linking_table_def = $schema->getTableDef($linking_table, ['format' => 'Drupal']);
+        $linking_table_def = $this->getChadoTableDef($linking_table);
         foreach ($linking_table_def['fields'] as $field_id => $def) {
           if (array_key_exists($field_id, $defaults)) {
             // Only include if a NOT NULL constraint exists,
