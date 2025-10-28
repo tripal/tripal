@@ -161,14 +161,20 @@ class EntityAccessTest extends BrowserTestBase {
     $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with view own permission should be allowed to VIEW their own entity.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'view', $user_own_two);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit own permission should NOT be allowed to VIEW another user's entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'view', $user_view_all);
+    $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with view all permission should be allowed to VIEW another user's entity.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'update', $user_own_one);
     $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with edit own permission should be allowed to UPDATE their own entity.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'update', $user_own_two);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit own permission should NOT be allowed to UPDATE another user's entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'update', $user_edit_any);
+    $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with edit any permission should be allowed to UPDATE another user's entity.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'delete', $user_own_one);
     $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with delete own permission should be allowed to DELETE their own entity.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'delete', $user_own_two);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with delete own permission should NOT be allowed to DELETE another user's entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'delete', $user_delete_any);
+    $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with delete any permission should be allowed to DELETE another user's entity.");
   }
 
 }
