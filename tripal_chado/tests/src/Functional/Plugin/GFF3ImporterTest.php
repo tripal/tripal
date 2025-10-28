@@ -11,18 +11,15 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoImporter
  * @group GFF3Importer
  */
-#[Group('TripalImporter')]
-#[Group('ChadoImporter')]
-#[Group('GFF3Importer')]
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
+#[Group('gff3-importer')]
 class GFF3ImporterTest extends ChadoTestBrowserBase
 {
 
   /**
    * Confirm basic GFF importer functionality.
-   *
-   * @group gff
    */
-  #[Group('gff')]
   public function testGFFImporterSimpleTest()
   {
     // GFF3 Specifications document: http://gmod.org/wiki/GFF3

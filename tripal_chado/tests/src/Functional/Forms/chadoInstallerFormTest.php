@@ -13,9 +13,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group Tripal Forms
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal Forms')]
+#[Group('form')]
+#[Group('chado')]
+#[Group('chado-install')]
 class chadoInstallerFormTest extends BrowserTestBase {
 
   protected $defaultTheme = 'stark';
@@ -41,21 +41,14 @@ class chadoInstallerFormTest extends BrowserTestBase {
     parent::setUp();
     $this->user = $this->drupalCreateUser([
       'administer site configuration',
-      'administer tripal'
+      'administer tripal',
     ]);
     $this->drupalLogin($this->user);
   }
 
   /**
    * Tests that the Chado Installer form loads as expected.
-   *
-   * @group form
-   * @group chado-install
-   * @group chado-install-form
    */
-  #[Group('form')]
-  #[Group('chado-install')]
-  #[Group('chado-install-form')]
   public function testLoadInstallerForm() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');

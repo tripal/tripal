@@ -12,10 +12,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group PubImporter
  * @group PubSearchQueryImporter
  */
-#[Group('TripalImporter')]
-#[Group('ChadoImporter')]
-#[Group('PubImporter')]
-#[Group('PubSearchQueryImporter')]
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
+#[Group('pub-importer')]
 class PubSearchQueryImporterTest extends ChadoTestBrowserBase
 {
 
@@ -45,10 +44,7 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
 
   /**
    * Confirm basic Publications importer functionality.
-   *
-   * @group pub
    */
-  #[Group('pub')]
   public function testPubSearchQueryImporterSimpleTest()
   {
     // Public schema connection

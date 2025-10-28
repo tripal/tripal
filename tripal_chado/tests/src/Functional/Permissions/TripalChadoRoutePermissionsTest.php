@@ -12,9 +12,7 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group Tripal Chado Permissions
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal Chado Permissions')]
+#[Group('permission')]
 class TripalChadoRoutePermissionsTest extends BrowserTestBase {
 
   protected $defaultTheme = 'stark';

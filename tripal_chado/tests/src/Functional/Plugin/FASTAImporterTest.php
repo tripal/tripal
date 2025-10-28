@@ -10,18 +10,15 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoImporter
  * @group FASTAImporter
  */
-#[Group('TripalImporter')]
-#[Group('ChadoImporter')]
-#[Group('FASTAImporter')]
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
+#[Group('fasta-importer')]
 class FASTAImporterTest extends ChadoTestBrowserBase
 {
 
   /**
    * Confirm basic FASTA importer functionality.
-   *
-   * @group FASTA
    */
-  #[Group('FASTA')]
   public function testFASTAImporterSimpleTest()
   {
     // Public schema connection

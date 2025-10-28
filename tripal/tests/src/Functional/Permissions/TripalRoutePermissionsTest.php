@@ -18,7 +18,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Term
  * @group Tripal Entities
  */
-#[Group('permissions')]
+#[Group('permission')]
 #[RunTestsInSeparateProcesses]
 class TripalRoutePermissionsTest extends BrowserTestBase {
 
