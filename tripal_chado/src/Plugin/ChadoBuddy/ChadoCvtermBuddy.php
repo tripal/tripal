@@ -4,7 +4,6 @@ namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\Component\Annotation\Plugin;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
 use Drupal\tripal_chado\Database\ChadoConnection;
@@ -25,30 +24,35 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterface, ContainerFactoryPluginInterface {
 
   /**
-   * Used to store the manager so we can create a buddy
+   * Used to store the manager so we can create a buddy.
    */
   protected object $buddy_manager;
 
   /**
-   * Provide the dbxref instance
+   * Provide the dbxref instance.
    */
   protected object $dbxref_instance;
 
- /**
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * We are injecting an additional dependency here, the
    * ChadoBuddyPluginManager, so that this buddy can have
    * access to the Dbxref buddy.
    *
-   * Since we have implemented the ContainerFactoryPluginInterface this static function
-   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the constructor.
+   * Since we have implemented the ContainerFactoryPluginInterface this static
+   * function will be called behind the scenes when a Plugin Manager uses
+   * createInstance(). Specifically, this method is used to determine the
+   * parameters to pass to the constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The current container.
    * @param array $configuration
+   *   A configuration array.
    * @param string $plugin_id
+   *   The plugin identifier.
    * @param mixed $plugin_definition
+   *   The definition of the plugin.
    *
    * @return static
    */
@@ -65,8 +69,13 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition,
-                              ChadoConnection $connection, ChadoBuddyPluginManager $buddy_manager) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ChadoConnection $connection,
+    ChadoBuddyPluginManager $buddy_manager,
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
     $this->buddy_manager = $buddy_manager;
   }
@@ -81,8 +90,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - cv.name
    *     - cv.definition
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
-   * @param array $options (Optional)
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional)
    *   Associative array of options.
    *     - 'case_insensitive' - a single key, or an array of keys
    *                            to query case insensitively.
@@ -107,7 +117,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $query = $this->connection->select('1:cv', 'cv');
 
     // Return the joined fields aliased to the unique names
-    // as listed in this function's header
+    // as listed in this function's header.
     foreach ($valid_columns as $key) {
       $parts = explode('.', $key);
       $query->addField($parts[0], $parts[1], $this->makeAlias($key));
@@ -118,7 +128,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $results = $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy getCv database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy getCv database error ' . $e->getMessage());
     }
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
@@ -160,8 +170,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.urlprefix
    *     - db.url
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
-   * @param array $options (Optional)
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional)
    *   Associative array of options.
    *     - 'case_insensitive' - a single key, or an array of keys
    *                            to query case insensitively.
@@ -192,7 +203,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $query = $this->connection->select('1:cvterm', 'cvterm');
 
     // Return the joined fields aliased to the unique names
-    // as listed in this function's header
+    // as listed in this function's header.
     foreach ($valid_columns as $key) {
       $parts = explode('.', $key);
       $query->addField($parts[0], $parts[1], $this->makeAlias($key));
@@ -209,7 +220,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $results = $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy getCvterm database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy getCvterm database error ' . $e->getMessage());
     }
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
@@ -222,7 +233,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $buddies[] = $new_record;
     }
 
-    return $buddies;  }
+    return $buddies;
+  }
 
   /**
    * Retrieves a controlled vocabulary term.
@@ -254,8 +266,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.urlprefix
    *     - db.url
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
-   * @param array $options (Optional)
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional)
    *   Associative array of options.
    *     - 'case_insensitive' - a single key, or an array of keys
    *                            to query case insensitively.
@@ -279,17 +292,18 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   /**
    * Add a controlled vocabulary.
    *
-   * @param $values
+   * @param array $values
    *   An associative array of the values to be inserted including:
    *     - cv.cv_id
    *     - cv.name
    *     - cv.definition
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
-   * @param $options (Optional)
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional)
    *   None supported yet. Here for consistency.
    *
-   * @return ChadoBuddyRecord
+   * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
    *   exception will be thrown if an error is encountered. If the record
    *   already exists then an error will be thrown. If this is not the desired
@@ -310,7 +324,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy insertCv database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy insertCv database error ' . $e->getMessage());
     }
 
     // Retrieve the newly inserted record.
@@ -323,10 +337,11 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   }
 
   /**
-   * Add a controlled vocabulary term, including creating a
-   * dbxref entry if necessary.
+   * Add a controlled vocabulary term.
    *
-   * @param $values
+   * This includes creating a dbxref entry if necessary.
+   *
+   * @param array $values
    *   An associative array of the values to be inserted including:
    *     - cv.cv_id (either cv_id, cvterm.cv_id, or cv_name required)
    *     - cv.name
@@ -348,13 +363,13 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
-   * @param $options (Optional)
-   *     - create_dbxref - set to FALSE (default TRUE) if you do not
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   - create_dbxref - set to FALSE (default TRUE) if you do not
    *         want to automatically create a dbxref if one does not
    *         already exist.
    *
-   * @return ChadoBuddyRecord
+   * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
    *   exception will be thrown if an error is encountered. If the record
    *   already exists then an error will be thrown. If this is not the desired
@@ -369,7 +384,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
-    // There should be values sufficient to retrieve a cvterm.cv_id
+    // There should be values sufficient to retrieve a cvterm.cv_id.
     if (!array_key_exists('cvterm.cv_id', $values) or !$values['cvterm.cv_id']) {
       if (!array_key_exists('cv.cv_id', $values) or !$values['cv.cv_id']) {
         $cv_values = $this->subsetInput($values, ['cv']);
@@ -382,7 +397,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       }
     }
 
-    // Insert a new dbxref if an existing one was not specified, unless not desired.
+    // Insert a new dbxref if an existing one was not specified,
+    // unless not desired as specified by $options['create_dbxref'].
     if (!array_key_exists('cvterm.dbxref_id', $values) or !$values['cvterm.dbxref_id']) {
       if (!array_key_exists('dbxref.dbxref_id', $values) or !$values['dbxref.dbxref_id']) {
         if (array_key_exists('create_dbxref', $options) and !$options['create_dbxref']) {
@@ -399,7 +415,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       }
     }
 
-    // Insert cvterm
+    // Insert cvterm.
     $query = $this->connection->insert('1:cvterm');
 
     // Create a subset of the passed $values for just the cvterm table.
@@ -409,7 +425,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy insertCvterm database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy insertCvterm database error ' . $e->getMessage());
     }
 
     // Retrieve the newly inserted record.
@@ -422,10 +438,11 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   }
 
   /**
-   * Add a controlled vocabulary term synonym. The existing Cvterm
-   * must already exist.
+   * Add a controlled vocabulary term synonym.
    *
-   * @param $values
+   * The existing Cvterm must already exist.
+   *
+   * @param array $values
    *   An associative array of the values to be inserted including:
    *     - cv.cv_id (either cv_id, cvterm.cv_id, or cv_name required)
    *     - cv.name
@@ -451,11 +468,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
-   * @param $options (Optional)
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional)
    *   None supported yet. Here for consistency.
    *
-   * @return ChadoBuddyRecord
+   * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
    *   exception will be thrown if an error is encountered. If the record
    *   already exists then an error will be thrown. If this is not the desired
@@ -470,7 +488,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
-    // There should be values sufficient to retrieve a cvterm.cvterm_id
+    // There should be values sufficient to retrieve a cvterm.cvterm_id.
     if (!array_key_exists('cvtermsynonym.cvterm_id', $values) or !$values['cvtermsynonym.cvterm_id']) {
       if (!array_key_exists('cvterm.cvterm_id', $values) or !$values['cvterm.cvterm_id']) {
         $cvterm_values = $this->subsetInput($values, ['cv', 'cvterm']);
@@ -483,7 +501,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       }
     }
 
-    // Insert synonym
+    // Insert synonym.
     $query = $this->connection->insert('1:cvtermsynonym');
 
     // Create a subset of the passed $values for just the cvterm table.
@@ -493,7 +511,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy insertCvtermSynonym database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy insertCvtermSynonym database error ' . $e->getMessage());
     }
 
     // Retrieve the newly inserted record.
@@ -515,11 +533,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - cv.name
    *     - cv.definition
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
+   *       in place of or in addition to other keys.
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
-   * @param array $options (Optional)
+   * @param array $options
+   *   (Optional)
    *   None supported yet. Here for consistency.
    *
    * @return bool|ChadoBuddyRecord
@@ -542,9 +561,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       return FALSE;
     }
     if (count($existing_records) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy updateCv error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy updateCv error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
     }
-    // Update query will only be based on the cv.cv_id, which we get from the retrieved record.
+    // Update query will only be based on the cv.cv_id,
+    // which we get from the retrieved record.
     $cv_id = $existing_records[0]->getValue('cv.cv_id');
     // We do not support changing the cv_id.
     if (array_key_exists('cv.cv_id', $values)) {
@@ -554,10 +574,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $query->condition('cv_id', $cv_id, '=');
     $query->fields($this->removeTablePrefix($values));
     try {
-      $results = $query->execute();
+      $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy updateCv database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy updateCv database error ' . $e->getMessage());
     }
     $existing_records = $this->getCv($values, $options);
 
@@ -593,11 +613,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
+   *       in place of or in addition to other keys.
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
-   * @param array $options (Optional)
+   * @param array $options
+   *   (Optional)
    *   None supported yet. Here for consistency.
    *
    * @return bool|ChadoBuddyRecord
@@ -620,23 +641,34 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       return FALSE;
     }
     if (count($existing_records) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
     }
     // Only update the dbxref if it is being changed.
     $existing_values = $existing_records[0]->getValues();
     $update_dbxref = FALSE;
-    $check_fields = ['db.db_name', 'db.db_id', 'dbxref.db_id', 'dbxref.accession', 'dbxref.version', 'dbxref.description'];
+    $check_fields = [
+      'db.db_name',
+      'db.db_id',
+      'dbxref.db_id',
+      'dbxref.accession',
+      'dbxref.version',
+      'dbxref.description',
+    ];
     foreach ($check_fields as $field) {
       if (array_key_exists($field, $values) and ($values[$field] != $existing_values[$field])) {
         $update_dbxref = TRUE;
       }
     }
     if ($update_dbxref) {
-      $dbxref_record = $this->upsertDbxref($this->subsetInput($values, ['db', 'dbxref']),
-                                           $this->subsetInput($conditions, ['db', 'dbxref']), $options);
+      $this->upsertDbxref(
+        $this->subsetInput($values, ['db', 'dbxref']),
+        $this->subsetInput($conditions, ['db', 'dbxref']),
+        $options
+      );
     }
 
-    // Update query will only be based on the cvterm_id, which we get from the retrieved record.
+    // Update query will only be based on the cvterm_id,
+    // which we get from the retrieved record.
     $cvterm_id = $existing_values['cvterm.cvterm_id'];
     // We do not support changing the cvterm_id.
     if (array_key_exists('cvterm.cvterm_id', $values)) {
@@ -648,10 +680,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $term_values = $this->subsetInput($values, ['cvterm']);
     $query->fields($this->removeTablePrefix($term_values));
     try {
-      $results = $query->execute();
+      $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy updateCvterm database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy updateCvterm database error ' . $e->getMessage());
     }
     $existing_records = $this->getCvterm($values, $options);
 
@@ -691,11 +723,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
+   *       in place of or in addition to other keys.
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
-   * @param array $options (Optional)
+   * @param array $options
+   *   (Optional)
    *   None supported yet. Here for consistency.
    *
    * @return bool|ChadoBuddyRecord
@@ -718,10 +751,11 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       return FALSE;
     }
     if (count($existing_records) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
     }
-    // This function will only update the cvtermsynonym table
-    // Update query will only be based on the cvtermsynonym_id, which we get from the retrieved record.
+    // This function will only update the cvtermsynonym table.
+    // The update query will only be based on the cvtermsynonym_id,
+    // which we get from the retrieved record.
     $cvtermsynonym_id = $existing_records[0]->getValue('cvtermsynonym.cvtermsynonym_id');
     // We do not support changing the cvtermsynonym_id.
     if (array_key_exists('cvterm.cvtermsynonym_id', $values)) {
@@ -733,10 +767,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $synonym_values = $this->subsetInput($values, ['cvtermsynonym']);
     $query->fields($this->removeTablePrefix($synonym_values));
     try {
-      $results = $query->execute();
+      $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy updateCvtermSynonym database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy updateCvtermSynonym database error ' . $e->getMessage());
     }
     $existing_records = $this->getCvtermSynonym($synonym_values, $options);
 
@@ -747,7 +781,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   }
 
   /**
-   * Insert a controlled vocabulary if it doesn't yet exist OR update it if it does.
+   * Insert a controlled vocabulary.
+   *
+   * It is inserted if it doesn't yet exist, or updated it if it does.
    *
    * @param array $values
    *   An associative array of the values for the final record including:
@@ -755,11 +791,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - cv.name
    *     - cv.definition
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
-   * @param array $options (Optional)
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional)
    *   None supported yet. Here for consistency.
    *
-   * @return ChadoBuddyRecord
+   * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
@@ -779,7 +816,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $existing_records = $this->getCv($conditions, $options);
     if (count($existing_records) > 0) {
       if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy upsertCv error, more than one record matched the specified values\n".print_r($values, TRUE));
+        throw new ChadoBuddyException("ChadoBuddy upsertCv error, more than one record matched the specified values\n" . print_r($values, TRUE));
       }
       $new_record = $this->updateCv($values, $conditions, $options);
     }
@@ -790,7 +827,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   }
 
   /**
-   * Insert a controlled vocabulary term if it doesn't yet exist OR update it if it does.
+   * Insert a controlled vocabulary term.
+   *
+   * It is inserted if it doesn't yet exist, or updated it if it does.
    *
    * @param array $values
    *   An associative array of the values for the final record including:
@@ -814,11 +853,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
-   * @param array $options (Optional)
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional)
    *   None supported yet. Here for consistency.
    *
-   * @return ChadoBuddyRecord
+   * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
@@ -838,7 +878,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $existing_records = $this->getCvterm($conditions, $options);
     if (count($existing_records) > 0) {
       if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy upsertCvterm error, more than one record matched the specified values\n".print_r($values, TRUE));
+        throw new ChadoBuddyException("ChadoBuddy upsertCvterm error, more than one record matched the specified values\n" . print_r($values, TRUE));
       }
       $new_record = $this->updateCvterm($values, $conditions, $options);
     }
@@ -849,8 +889,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   }
 
   /**
-   * Insert a controlled vocabulary term synonym if it doesn't yet exist
-   * OR update it if it does.
+   * Insert a controlled vocabulary term synonym.
+   *
+   * It is inserted if it doesn't yet exist, or updated it if it does.
    *
    * @param array $values
    *   An associative array of the values for the final record including:
@@ -878,11 +919,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
-   * @param array $options (Optional)
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional)
    *   None supported yet. Here for consistency.
    *
-   * @return ChadoBuddyRecord
+   * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
@@ -902,7 +944,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $existing_records = $this->getCvtermSynonym($conditions, $options);
     if (count($existing_records) > 0) {
       if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy upsertCvtermSynonym error, more than one record matched the specified values\n".print_r($values, TRUE));
+        throw new ChadoBuddyException("ChadoBuddy upsertCvtermSynonym error, more than one record matched the specified values\n" . print_r($values, TRUE));
       }
       $new_record = $this->updateCvtermSynonym($values, $conditions, $options);
     }
@@ -913,27 +955,31 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   }
 
   /**
-   * Add a record to a controlled vocabulary term linking table (e.g. feature_cvterm).
+   * Add a record to a controlled vocabulary term linking table.
+   *
+   * For example, to the feature_cvterm table.
    *
    * @param string $base_table
-   *   The base table for which the cvterm should be associated. Thus to associate
-   *   a cvterm with a feature the base_table=feature and cvterm_id is added to the
-   *   feature_cvterm table.
+   *   The base table for which the cvterm should be associated. Thus to
+   *   associate a cvterm with a feature the base_table=feature and
+   *   cvterm_id is added to the feature_cvterm table.
    * @param int $record_id
    *   The primary key of the base_table to associate the cvterm with.
-   * @param ChadoBuddyRecord $cvterm
+   * @param \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord $cvterm
    *   A cvterm object returned by any of the *Cvterm() in this service.
-   * @param $options
+   * @param array $options
    *   'pkey': Looking up the primary key for the base table is costly. If it is
    *           known, then pass it in as this option for better performance.
    *
-   *   Also pass in any other columns used in the linking table, some of which may
-   *   have a NOT NULL constraint. See the table below for a list of which of
-   *   the following may be required: 'pub_id', 'is_not', 'rank', 'cvterm_type_id'.
-   *   If not specified, then they will be looked up automatically, but this will
-   *   be a slight performance hit. Disable this by specifying at least one additional
-   *   column, or by setting the option 'lookup_columns' to FALSE.
+   *   Also pass in any other columns used in the linking table, some of which
+   *   may have a NOT NULL constraint. See the table below for a list of which
+   *   of the following may be required: 'pub_id', 'is_not', 'rank',
+   *   'cvterm_type_id'. If not specified, then they will be looked up
+   *   automatically, but this will be a slight performance hit. Disable this
+   *   by specifying at least one additional column, or by setting the option
+   *   'lookup_columns' to FALSE.
    *
+   *   phpcs:disable
    *   Chado 1.3 defines these columns in the various linking tables:
    *   | table                       | pub_id   | is_not      | rank        | cvterm_type_id |
    *   +-----------------------------+----------+-------------+-------------+----------------+
@@ -948,10 +994,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *   | phenotype_cvterm            | -absent  | -absent     | has default | -absent        |
    *   | stock_cvterm                | not null | has default | has default | -absent        |
    *   | stock_relationship_cvterm   | yes null | -absent     | -absent     | -absent        |
+   *   phpcs:enable
    *
    * @return bool
    *   Returns TRUE if successful.
-   *   Both the cvterm and the chado record indicated by $record_id MUST ALREADY EXIST.
+   *   Both the cvterm and the chado record indicated by $record_id
+   *   MUST ALREADY EXIST.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
@@ -959,7 +1007,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   public function associateCvterm(string $base_table, int $record_id, ChadoBuddyRecord $cvterm, array $options = []) {
     $linking_table = $base_table . '_cvterm';
 
-    // Get the primary key of the base table
+    // Get the primary key of the base table.
     $base_pkey_col = $options['pkey'] ?? NULL;
     if (!$base_pkey_col) {
       $base_table_def = $this->getChadoTableDef($base_table);
@@ -977,18 +1025,22 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       }
     }
     try {
-      $query = $this->connection->insert('1:'.$linking_table);
+      $query = $this->connection->insert('1:' . $linking_table);
       $query->fields($fields);
       $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy associateCvterm database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy associateCvterm database error ' . $e->getMessage());
     }
 
     return TRUE;
   }
+
   /**
-   * If there are additional not NULL columns in the linking table then add them to the options.
+   * Adds not NULL columns to options.
+   *
+   * If there are additional not NULL columns in the linking table,
+   * then add them to the options.
    *
    * @param string $linking_table
    *   The name of the linking table, e.g. featureprop.
@@ -1002,7 +1054,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $lookup_columns = $options['lookup_columns'] ?? TRUE;
     if ($lookup_columns) {
       // For Chado 1.3, these are the only possible additional columns.
-      // Defaults are null pub, FALSE (encoded as zero), rank zero, null cvterm
+      // Defaults are null pub, FALSE (encoded as zero), rank zero, null cvterm.
       $defaults = ['pub_id' => 1, 'is_not' => 0, 'rank' => 0, 'cvterm_type_id' => 1];
       // If any of these were specified, we disable the automatic lookup.
       foreach (array_keys($options) as $key) {
@@ -1018,7 +1070,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
         foreach ($linking_table_def['fields'] as $field_id => $def) {
           if (array_key_exists($field_id, $defaults)) {
             // Only include if a NOT NULL constraint exists,
-            // and there is not some type of default value
+            // and there is not some type of default value.
             if ($def['not null'] and ($def['type'] != 'serial') and !($def['default'] ?? FALSE)) {
               $options[$field_id] = $defaults[$field_id];
             }
@@ -1030,21 +1082,35 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   }
 
   /**
-   * A helper function to add or update a dbxref for a cvterm, this will filter
-   * out extra non-applicable fields that the Cvterm function here may have.
+   * A helper function to add or update a dbxref for a cvterm.
+   *
+   * This function will filter out extra non-applicable fields that
+   * the Cvterm function here may have.
+   *
+   * @param array $values
+   *   An associative array of values.
+   * @param array $conditions
+   *   An associative array of values.
+   * @param array $options
+   *   (Optional)
+   *   None supported yet. Here for consistency.
+   *
+   * @return Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord
+   *   The inserted/updated ChadoBuddyRecord will be returned on success.
    */
   protected function upsertDbxref(array $values, array $conditions, array $options = []) {
-    // Use the buddy manager dependency to create a Dbxref buddy instance
+    // Use the buddy manager dependency to create a Dbxref buddy instance.
     if (!isset($this->dbxref_instance)) {
       $this->dbxref_instance = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
     }
 
-    // Remove fields not valid for the dbxref table
+    // Remove fields not valid for the dbxref table.
     $dbxref_values = $this->subsetInput($values, ['db', 'dbxref']);
     $dbxref_conditions = $this->subsetInput($conditions, ['db', 'dbxref']);
 
-    // Call the Dbxref buddy to perform the upsert
+    // Call the Dbxref buddy to perform the upsert.
     $record = $this->dbxref_instance->upsertDbxref($dbxref_values, $dbxref_conditions, $options);
     return $record;
   }
+
 }
