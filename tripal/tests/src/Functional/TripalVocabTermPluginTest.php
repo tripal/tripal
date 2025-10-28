@@ -7,15 +7,16 @@ use Drupal\Tests\BrowserTestBase;
 // Needed for TripalTerm related tests.
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * Tests the basic functions of the Bulk PostgreSQL Schema Installer.
+ * Tests the Tripal Vocab, Term and related plugins.
  *
  * @group Tripal
  * @group Tripal Database
  */
-#[Group('Tripal')]
-#[Group('Tripal Database')]
+#[Group('tripal-term')]
+#[RunTestsInSeparateProcesses]
 class TripalVocabTermPluginTest extends BrowserTestBase {
 
   // protected $htmlOutputEnabled = TRUE;
@@ -25,10 +26,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
 
 	/**
    * Basic tests for Tripal Vocabulary Plugin.
-   *
-   * @group TripalVocabTerms
    */
-  #[Group('TripalVocabTerms')]
   public function testTripalVocabPlugin() {
 
 		// Test the Vocabulary Plugin Manager.
@@ -58,10 +56,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
 
 	/**
    * Basic tests for Tripal Id Space Plugin.
-   *
-   * @group TripalVocabTerms
    */
-  #[Group('TripalVocabTerms')]
   public function testTripalIdSpacePlugin() {
 
 		// Test the Id Space Plugin Manager.
@@ -113,10 +108,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
 
 	/**
    * Basic tests for Tripal Term.
-   *
-   * @group TripalVocabTerms
    */
-  #[Group('TripalVocabTerms')]
   public function testTripalTerm() {
 
     // Create Collection managers.
