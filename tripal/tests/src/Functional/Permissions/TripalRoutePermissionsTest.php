@@ -239,10 +239,10 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    *  - administer tripal content: Allows users to access the Tripal Content listing and add, edit, delete Tripal content of any type.
    *  - access tripal content overview: Allows the user to access the Tripal content listing.
    *  - publish tripal content: Allows the user to publish Tripal content of all Tripal Content Types for online access.
-   *  - add tripal content entities: Create new Tripal Content
-   *  - edit tripal content entities: Edit Tripal Content
-   *  - delete tripal content entities: Delete Tripal Content
-   *  - view tripal content entities: View Tripal Content
+   *  - create TYPE content: Create new Tripal Content
+   *  - edit any TYPE content: Edit Tripal Content
+   *  - delete any TYPE content: Delete Tripal Content
+   *  - view all TYPE content: View Tripal Content
    *
    * @group Tripal Permissions
    * @group Tripal Content
@@ -307,12 +307,11 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     // It's assumed url keys not in the array should return 403 access denied
     // for that permission.
     $permissions_mapping = [
-      'access tripal content overview' => ['entity-collection'],
       'publish tripal content' => ['publish-content', 'unpublish-content'],
       "create $content_type content" => ['entity-add-form', 'entity-add-page'],
       "edit any $content_type content" => ['entity-edit-form'],
       "delete any $content_type content" => ['entity-delete-form'],
-      "view all $content_type content" => ['entity-canonical'],
+      "view all $content_type content" => ['entity-canonical', 'entity-collection'],
       'administer tripal content' => ['entity-canonical', 'entity-add-page',
         'entity-add-form', 'entity-edit-form', 'entity-delete-form',
         'entity-collection', 'publish-content', 'unpublish-content',
