@@ -14,10 +14,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * @group ChadoDBX
  * @group ChadoSchema
  */
-#[Group('Tripal Chado')]
-#[Group('TripalDBX')]
-#[Group('ChadoDBX')]
-#[Group('ChadoSchema')]
+#[Group('tripal-dbx')]
+#[Group('chado')]
 class ChadoSchemaTest extends ChadoTestKernelBase {
 
   /**
@@ -51,9 +49,12 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
    * @var array
    */
   protected static array $init_levels = [
-    3, // self::$INIT_CHADO_EMPTY,
-    4, // self::$INIT_CHADO_DUMMY,
-    5, // self::$PREPARE_TEST_CHADO,
+  // self::$INIT_CHADO_EMPTY,.
+    3,
+  // self::$INIT_CHADO_DUMMY,.
+    4,
+  // self::$PREPARE_TEST_CHADO,.
+    5,
   ];
 
   /**
@@ -166,7 +167,7 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
     $default_chado_schema = $chado_connection->schema()->getDefault();
 
     // Test if the reported Chado version matches the test chado format,
-    // e.g. _test_chado_h87g97hkln64vy76
+    // e.g. _test_chado_h87g97hkln64vy76.
     $this->assertMatchesRegularExpression('/(\_test\_chado\_[\w]{16})\b/', $default_chado_schema, "The default Chado schema returned did not match the format we expected within the testing environment.");
 
     // Test if the default chado schema returned matches the
@@ -341,19 +342,20 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
     /*
     $table_def = $schema_def['cvterm'];
     $this->assertArrayHasKey(
-      'description',
-      $table_def,
-      $message . " Table definition does not have a description key."
+    'description',
+    $table_def,
+    $message . " Table definition does not have a description key."
     );
     $this->assertArrayHasKey(
-      'fields',
-      $table_def,
-      $message . " Table definition does not have a fields key."
+    'fields',
+    $table_def,
+    $message . " Table definition does not have a fields key."
     );
     $this->assertIsArray(
-      $table_def['fields'],
-      $message . " Table definition fields should be an array."
+    $table_def['fields'],
+    $message . " Table definition fields should be an array."
     );
-    */
+     */
   }
+
 }

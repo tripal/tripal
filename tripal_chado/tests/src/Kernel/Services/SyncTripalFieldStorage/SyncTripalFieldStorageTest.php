@@ -13,7 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group SyncTripalFieldStorage
  */
-#[Group('SyncTripalFieldStorage')]
+#[Group('tripal-storage')]
+#[Group('tripal-field')]
 class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
 
   /**

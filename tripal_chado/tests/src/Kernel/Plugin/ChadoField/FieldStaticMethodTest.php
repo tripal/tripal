@@ -8,12 +8,9 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the static methods of Chado Fields.
- *
- * @group TripalField
- * @group ChadoField
  */
-#[Group('TripalField')]
-#[Group('ChadoField')]
+#[Group('tripal-field')]
+#[Group('chado-field')]
 class FieldStaticMethodTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;

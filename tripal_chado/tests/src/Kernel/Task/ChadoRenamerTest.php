@@ -8,7 +8,6 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
 
-
 /**
  * Tests for renamer task.
  *
@@ -23,12 +22,10 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers ::performTask
  */
 #[CoversClass(ChadoRenamer::class)]
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal Chado Task')]
-#[Group('Tripal Chado Renamer')]
 #[CoversMethod(ChadoRenamer::class, 'setParameters')]
 #[CoversMethod(ChadoRenamer::class, 'performTask')]
+#[Group('biodb-task')]
+#[Group('renamer-task')]
 class ChadoRenamerTest extends ChadoTestKernelBase {
 
   /**
@@ -58,4 +55,5 @@ class ChadoRenamerTest extends ChadoTestKernelBase {
     $this->freeTestSchema($tripaldbx_db2);
     $this->freeTestSchema($tripaldbx_db1);
   }
+
 }

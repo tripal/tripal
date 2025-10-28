@@ -17,9 +17,8 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
  * @group Tripal Chado
  * @group Autocomplete
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Autocomplete')]
+#[Group('chado')]
+#[Group('autocomplete')]
 #[IgnoreDeprecations]
 class ChadoAutocompleteControllerTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';

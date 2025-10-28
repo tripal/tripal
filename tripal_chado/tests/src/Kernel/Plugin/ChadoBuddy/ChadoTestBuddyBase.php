@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group ChadoBuddy
  */
-#[Group('ChadoBuddy')]
+#[Group('chado-buddy')]
 abstract class ChadoTestBuddyBase extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 

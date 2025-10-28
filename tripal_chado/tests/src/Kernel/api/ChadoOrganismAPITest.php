@@ -26,10 +26,8 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
  *        chado_get_organism_image_url
  *        chado_autocomplete_organism
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal API')]
-#[Group('Tripal Organism')]
+#[Group('legacy-api')]
+#[Group('chado-organism')]
 #[CoversFunction('chado_get_organism')]
 #[CoversFunction('chado_get_organism_scientific_name')]
 #[CoversFunction('chado_get_organism_id_from_scientific_name')]
@@ -60,12 +58,7 @@ class ChadoOrganismAPITest extends ChadoTestKernelBase {
 
   /**
    * Tests the following organism API functions:
-   *
-   * @group tripal-chado
-   * @group chado-organism
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-organism')]
   public function testChadoOrganismAPIFunctions() {
 
     putenv('TRIPAL_SUPPRESS_ERRORS=TRUE');

@@ -26,16 +26,17 @@ use PHPUnit\Framework\Attributes\Group;
  *   ::chado_assign_phylogeny_tree_indices
  *   ::chado_phylogeny_import_tree
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal API')]
-#[Group('Tripal Phylotree')]
 #[CoversFunction('chado_phylogeny_lookup_organism_by_name')]
 #[CoversFunction('chado_phylogeny_get_node_types_vocab')]
+#[Group('legacy-api')]
+#[Group('tripal-chado')]
+#[Group('chado-organism')]
+#[Group('chado-phylogeny')]
 class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
 
   /**
    * Modules to enable.
+   *
    * @var array
    */
   protected static $modules = ['tripal', 'tripal_biodb', 'tripal_chado'];
@@ -49,42 +50,38 @@ class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
 
   /**
    * Schema to do testing out of.
+   *
    * @var string
    */
   protected $schemaName;
 
   /**
    * Tests the following phylotree API functions:
-   *
-   * @group tripal-chado
-   * @group chado-organism
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-organism')]
   public function testChadoPhylotreeAPIFunctions() {
 
     // Create a new test schema for us to use, and retrieve its name.
     $this->chado_connection = $this->createTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
     $this->schemaName = $this->chado_connection->getSchemaName();
 
-    // Lookup cvterm_id for 'subspecies'
+    // Lookup cvterm_id for 'subspecies'.
     $query = $this->chado_connection->select('1:cvterm', 't');
     $query->condition('name', 'subspecies', '=');
     $query->addField('t', 'cvterm_id', 'cvterm_id');
     $subspecies_id = $query->execute()->fetchField();
     $this->assertNotNull($subspecies_id, 'Unable to retrieve cvterm_id for "subspecies"');
 
-    // Create two test organisms of the same genus and species
+    // Create two test organisms of the same genus and species.
     $species = 'bogusii' . uniqid();
     $organism_ids = [];
     $org = [
-            'genus' => 'Tripalus',
-            'species' => $species,
-            'type_id' => $subspecies_id,
-            'infraspecific_name' => 'sativus',
-            'common_name' => 'False Tripal',
-            'abbreviation' => 'T. ' . $species . ' subsp. sativus',
-           ];
+      'genus' => 'Tripalus',
+      'species' => $species,
+      'type_id' => $subspecies_id,
+      'infraspecific_name' => 'sativus',
+      'common_name' => 'False Tripal',
+      'abbreviation' => 'T. ' . $species . ' subsp. sativus',
+    ];
     $query = $this->chado_connection->insert('1:organism')
       ->fields($org);
     $organism_id = $query->execute();
