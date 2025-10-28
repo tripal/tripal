@@ -3,7 +3,6 @@
 namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\Component\Plugin\Attribute\Plugin;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
 use Drupal\tripal_chado\Database\ChadoConnection;
@@ -23,31 +22,35 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
 
   /**
-   * Used to store the manager so we can access the Cvterm buddy
+   * Used to store the manager so we can access the Cvterm buddy.
    */
   protected object $buddy_manager;
 
   /**
-   * Cache the cvterm instance here
+   * Cache the cvterm instance here.
    */
   protected object $cvterm_instance;
 
-
- /**
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * We are injecting an additional dependency here, the
    * ChadoBuddyPluginManager, so that this buddy can have
    * access to the Dbxref buddy.
    *
-   * Since we have implemented the ContainerFactoryPluginInterface this static function
-   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the constructor.
+   * Since we have implemented the ContainerFactoryPluginInterface this static
+   * function will be called behind the scenes when a Plugin Manager uses
+   * createInstance(). Specifically, this method is used to determine the
+   * parameters to pass to the constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The current container.
    * @param array $configuration
+   *   A configuration array.
    * @param string $plugin_id
+   *   The plugin identifier.
    * @param mixed $plugin_definition
+   *   The definition of the plugin.
    *
    * @return static
    *
@@ -67,8 +70,13 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition,
-                              ChadoConnection $connection, ChadoBuddyPluginManager $buddy_manager) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ChadoConnection $connection,
+    ChadoBuddyPluginManager $buddy_manager,
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
     $this->buddy_manager = $buddy_manager;
   }
@@ -77,21 +85,22 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    * Retrieves a chado property.
    *
    * @param string $base_table
-   *   The base table for which the property should be associated. Thus to associate
-   *   a property with a feature, the basetable=feature and a record is added to the
-   *   featureprop table.
+   *   The base table for which the property should be associated. Thus to
+   *   associate a property with a feature, the basetable=feature and a
+   *   record is added to the featureprop table.
    * @param int $record_id
    *   The primary key of the basetable to that the property is associated with.
    * @param array $conditions
    *   An array where the key is a table+dot+column to describe the
    *   name of the property table and the column desired. Examples
    *   here are for the project table:
-   *     - projectprop.projectprop_id - (optional) property table primary key value
-   *     - projectprop.project_id - (optional) base table primary key value
-   *     - projectprop.type_id - a foreign key to cvterm_id
-   *     - projectprop.value - the value of the property
-   *     - projectprop.rank - optional rank of the property
-   *     - and possibly other columns for some property tables
+   *     - projectprop.projectprop_id - (optional) property table primary key
+   *       value.
+   *     - projectprop.project_id - (optional) base table primary key value.
+   *     - projectprop.type_id - a foreign key to cvterm_id.
+   *     - projectprop.value - the value of the property.
+   *     - projectprop.rank - optional rank of the property.
+   *     - and possibly other columns for some property tables.
    *     - cv.cv_id
    *     - cv.name
    *     - cv.definition
@@ -112,12 +121,13 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.urlprefix
    *     - db.url
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
-   *
-   * @param array $options (Optional)
-   *     - property_table - if the default of $base_table . 'prop' needs to be changed
-   *     - fkey - if the default of $base_table . '_id' needs to be changed
-   *     - pkey - if the default of $property_table . '_id' needs to be changed
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional)
+   *   - property_table - if the default of $base_table . 'prop' needs to be
+   *     changed.
+   *   - fkey - if the default of $base_table . '_id' needs to be changed.
+   *   - pkey - if the default of $property_table . '_id' needs to be changed.
    *
    * @return bool|array|ChadoBuddyRecord
    *   An array of ChadoBuddyRecord objects. More specifically,
@@ -147,7 +157,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     $query->leftJoin('1:db', 'db', 'db.db_id = dbxref.db_id');
 
     // Return the joined fields aliased to the unique names
-    // as listed in this function's header
+    // as listed in this function's header.
     foreach ($valid_columns as $key) {
       $parts = explode('.', $key);
       $query->addField($parts[0], $parts[1], $this->makeAlias($key));
@@ -158,7 +168,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       $results = $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy getProperty database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy getProperty database error ' . $e->getMessage());
     }
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
@@ -175,24 +185,25 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
   }
 
   /**
-   * Adds a new property linked to the specified base table and record
+   * Adds a new property linked to the specified base table and record.
    *
    * @param string $base_table
-   *   The base table for which the property should be associated. Thus to associate
-   *   a property with a feature, the basetable=feature and a record is added to the
-   *   featureprop table.
+   *   The base table for which the property should be associated. Thus to
+   *   associate a property with a feature, the basetable=feature and a
+   *   record is added to the featureprop table.
    * @param int $record_id
    *   The primary key of the basetable to that the property is associated with.
-   * @param $values
+   * @param array $values
    *   An array where the key is a table+dot+column to describe the
    *   name of the property table and the column desired. Examples
    *   here are for the project table:
-   *     - projectprop.projectprop_id - (optional) property table primary key value
-   *     - projectprop.project_id - (optional) base table primary key value
-   *     - projectprop.type_id - a foreign key to cvterm_id
-   *     - projectprop.value - the value of the property
-   *     - projectprop.rank - optional rank of the property
-   *     - and possibly other columns for some property tables
+   *     - projectprop.projectprop_id - (optional) property table primary key
+   *       value.
+   *     - projectprop.project_id - (optional) base table primary key value.
+   *     - projectprop.type_id - a foreign key to cvterm_id.
+   *     - projectprop.value - the value of the property.
+   *     - projectprop.rank - optional rank of the property.
+   *     - and possibly other columns for some property tables.
    *     - cv.cv_id
    *     - cv.name
    *     - cv.definition
@@ -213,17 +224,18 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.urlprefix
    *     - db.url
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional)
+   *   - property_table - if the default of $base_table . 'prop' needs to be
+   *     changed.
+   *   - fkey - if the default of $base_table . '_id' needs to be changed.
+   *   - pkey - if the default of $property_table . '_id' needs to be changed.
+   *   - create_cvterm - set to TRUE (default FALSE) if you specified the
+   *     necessary fields and want to create the dbxref and cvterm when
+   *     creating this property, if they do not already exist.
    *
-   * @param array $options (Optional)
-   *     - property_table - if the default of $base_table . 'prop' needs to be changed
-   *     - fkey - if the default of $base_table . '_id' needs to be changed
-   *     - pkey - if the default of $property_table . '_id' needs to be changed
-   *     - create_cvterm - set to TRUE (default FALSE) if you specified the necessary
-   *         fields and want to create the dbxref and cvterm when creating this
-   *         property, if they do not already exist.
-   *
-   * @return ChadoBuddyRecord
+   * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
    *   exception will be thrown if an error is encountered. If the record
    *   already exists then an error will be thrown. If this is not the desired
@@ -246,9 +258,9 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
         $values["$property_table.type_id"] = $values['cvterm.cvterm_id'];
       }
       elseif ($options['create_cvterm'] ?? FALSE) {
-        // If a term was not passed, we can create it if the required fields were included.
-        // For safety, this is an opt-in setting.
-        // Use the buddy manager dependency to create a Cvterm buddy instance
+        // If a term was not passed, we can create it if the required
+        // fields were included. For safety, this is an opt-in setting.
+        // Use the buddy manager dependency to create a Cvterm buddy instance.
         if (!isset($this->cvterm_instance)) {
           $this->cvterm_instance = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
         }
@@ -264,18 +276,18 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       }
     }
 
-    // Insert the property record
+    // Insert the property record.
     $query = $this->connection->insert('1:' . $property_table);
     $property_values = $this->subsetInput($values, [$property_table]);
     $fields = $this->removeTablePrefix($property_values);
-    // The $record_id parameter is required for insert
+    // The $record_id parameter is required for insert.
     $fields[$fkey] = $record_id;
     $query->fields($fields);
     try {
       $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy insertProperty database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy insertProperty database error ' . $e->getMessage());
     }
 
     // Retrieve the newly inserted record.
@@ -291,9 +303,9 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    * Updates an existing property.
    *
    * @param string $base_table
-   *   The base table for which the property should be associated. Thus to associate
-   *   a property with a feature, the basetable=feature and a record is added to the
-   *   featureprop table.
+   *   The base table for which the property should be associated. Thus to
+   *   associate a property with a feature, the basetable=feature and a
+   *   record is added to the featureprop table.
    * @param int $record_id
    *   The primary key of the basetable to that the property is associated with.
    * @param array $values
@@ -301,7 +313,8 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   An array where the key is a table+dot+column to describe the
    *   name of the property table and the column desired. Examples
    *   here are for the project table:
-   *     - projectprop.projectprop_id - (optional) property table primary key value
+   *     - projectprop.projectprop_id - (optional) property table primary key
+   *       value.
    *     - projectprop.project_id - (optional) base table primary key value
    *     - projectprop.type_id - a foreign key to cvterm_id
    *     - projectprop.value - the value of the property
@@ -327,18 +340,18 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.urlprefix
    *     - db.url
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
-   *
+   *       in place of or in addition to other keys.
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   Although the same keys are supported as those indicated for the $values,
    *   only columns that are part of a unique constraint will be used for the
    *   database query. e.g. you can't query on the property value.
-   *
-   * @param array $options (Optional)
-   *     - property_table - if the default of $base_table . 'prop' needs to be changed
-   *     - fkey - if the default of $base_table . '_id' needs to be changed
-   *     - pkey - if the default of $property_table . '_id' needs to be changed
+   * @param array $options
+   *   (Optional)
+   *   - property_table - if the default of $base_table . 'prop' needs to be
+   *     changed.
+   *   - fkey - if the default of $base_table . '_id' needs to be changed.
+   *   - pkey - if the default of $property_table . '_id' needs to be changed.
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
@@ -349,7 +362,6 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    */
   public function updateProperty(string $base_table, int $record_id, array $values, array $conditions, array $options = []) {
     $property_table = $options['property_table'] ?? $base_table . 'prop';
-    $fkey = $options['fkey'] ?? $base_table . '_id';
     $pkey = $options['pkey'] ?? $property_table . '_id';
 
     $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
@@ -364,19 +376,19 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       return FALSE;
     }
     if (count($existing_records) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy updateProperty error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy updateProperty error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
     }
 
     $query = $this->connection->update('1:' . $property_table);
-    // We can now reduce conditions to just the property table primary key
+    // We can now reduce conditions to just the property table primary key.
     $query->condition("$property_table.$pkey", $existing_records[0]->getValue("$property_table.$pkey"), '=');
     $property_values = $this->subsetInput($values, [$property_table]);
     $query->fields($this->removeTablePrefix($property_values));
     try {
-      $results = $query->execute();
+      $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy updateProperty database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy updateProperty database error ' . $e->getMessage());
     }
     $pkey_conditions = ["$property_table.$pkey" => $existing_records[0]->getValue("$property_table.$pkey")];
     $updated_records = $this->getProperty($base_table, $record_id, $pkey_conditions, $options);
@@ -389,19 +401,20 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
   }
 
   /**
-   * Insert a property if it doesn't yet exist OR update it if does.
+   * Insert a property if it doesn't yet exist, or update it if does.
    *
    * @param string $base_table
-   *   The base table for which the property should be associated. Thus to associate
-   *   a property with a feature, the basetable=feature and a record is added to the
-   *   featureprop table.
+   *   The base table for which the property should be associated. Thus to
+   *   associate a property with a feature, the basetable=feature and a
+   *   record is added to the featureprop table.
    * @param int $record_id
    *   The primary key of the basetable to that the property is associated with.
    * @param array $values
    *   An array where the key is a table+dot+column to describe the
    *   name of the property table and the column desired. Examples
    *   here are for the project table:
-   *     - projectprop.projectprop_id - (optional) property table primary key value
+   *     - projectprop.projectprop_id - (optional) property table primary key
+   *       value.
    *     - projectprop.project_id - (optional) base table primary key value
    *     - projectprop.type_id - a foreign key to cvterm_id
    *     - projectprop.value - the value of the property
@@ -427,17 +440,18 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.urlprefix
    *     - db.url
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional)
+   *   - property_table - if the default of $base_table . 'prop' needs to be
+   *     changed.
+   *   - fkey - if the default of $base_table . '_id' needs to be changed.
+   *   - pkey - if the default of $property_table . '_id' needs to be changed.
+   *   - create_cvterm - set to TRUE (default FALSE) if you have the necessary
+   *     fields and want to create the dbxref and cvterm when creating this
+   *     property, if they do not already exist.
    *
-   * @param array $options (Optional)
-   *     - property_table - if the default of $base_table . 'prop' needs to be changed
-   *     - fkey - if the default of $base_table . '_id' needs to be changed
-   *     - pkey - if the default of $property_table . '_id' needs to be changed
-   *     - create_cvterm - set to TRUE (default FALSE) if you have the necessary fields
-   *         and want to create the dbxref and cvterm when creating this property,
-   *         if they do not already exist.
-   *
-   * @return ChadoBuddyRecord
+   * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
@@ -445,8 +459,6 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    */
   public function upsertProperty(string $base_table, int $record_id, array $values, array $options = []) {
     $property_table = $options['property_table'] ?? $base_table . 'prop';
-    $fkey = $options['fkey'] ?? $base_table . '_id';
-    $pkey = $options['pkey'] ?? $property_table . '_id';
 
     $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
     $valid_columns = $this->getTableColumns($valid_tables);
@@ -457,14 +469,14 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     // only the columns that are part of a unique constraint.
     $key_columns = $this->getTableColumns($valid_tables, 'unique');
     // If cvterm.cvterm_id was supplied instead of $property_table.type_id,
-    // it needs to also be included in the conditions
+    // it needs to also be included in the conditions.
     $key_columns[] = 'cvterm.cvterm_id';
     $conditions = $this->makeUpsertConditions($values, $key_columns);
 
     $existing_records = $this->getProperty($base_table, $record_id, $conditions, $options);
     if (count($existing_records) > 0) {
       if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy upsertProperty error, more than one record matched the specified values\n".print_r($values, TRUE));
+        throw new ChadoBuddyException("ChadoBuddy upsertProperty error, more than one record matched the specified values\n" . print_r($values, TRUE));
       }
       $new_record = $this->updateProperty($base_table, $record_id, $values, $conditions, $options);
     }
@@ -478,21 +490,22 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    * Deletes a chado property or multiple properties.
    *
    * @param string $base_table
-   *   The base table for which the property should be associated. Thus to associate
-   *   a property with a feature, the basetable=feature and a record is added to the
-   *   featureprop table.
+   *   The base table for which the property should be associated. Thus to
+   *   associate a property with a feature, the basetable=feature and a
+   *   record is added to the featureprop table.
    * @param int $record_id
    *   The primary key of the basetable to that the property is associated with.
    * @param array $conditions
    *   An array where the key is a table+dot+column to describe the
    *   name of the property table and the column desired. Examples
    *   here are for the project table:
-   *     - projectprop.projectprop_id - (optional) property table primary key value
-   *     - projectprop.project_id - (optional) base table primary key value
-   *     - projectprop.type_id - a foreign key to cvterm_id
-   *     - projectprop.value - the value of the property
-   *     - projectprop.rank - optional rank of the property
-   *     - and possibly other columns for some property tables
+   *     - projectprop.projectprop_id - (optional) property table primary key
+   *       value.
+   *     - projectprop.project_id - (optional) base table primary key value.
+   *     - projectprop.type_id - a foreign key to cvterm_id.
+   *     - projectprop.value - the value of the property.
+   *     - projectprop.rank - optional rank of the property.
+   *     - and possibly other columns for some property tables.
    *     - cv.cv_id
    *     - cv.name
    *     - cv.definition
@@ -513,15 +526,16 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.urlprefix
    *     - db.url
    *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
-   *
-   * @param array $options (Optional)
-   *     - property_table - if the default of $base_table . 'prop' needs to be changed
-   *     - fkey - if the default of $base_table . '_id' needs to be changed
-   *     - pkey - if the default of $property_table . '_id' needs to be changed
-   *     - max_delete - specifies the maximum number of properties that can be deleted.
-   *       Default is 1. Set to -1 for unlimited.
-   *       If the limit is exceeded, a ChadoBuddyException is thrown.
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional)
+   *   - property_table - if the default of $base_table . 'prop' needs to be
+   *     changed.
+   *   - fkey - if the default of $base_table . '_id' needs to be changed.
+   *   - pkey - if the default of $property_table . '_id' needs to be changed.
+   *   - max_delete - specifies the maximum number of properties that can be
+   *     deleted. Default is 1. Set to -1 for unlimited.
+   *     If the limit is exceeded, a ChadoBuddyException is thrown.
    *
    * @return int
    *   Returns a count of the number of records that were deleted.
@@ -529,9 +543,8 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
    */
-  public function deleteProperty(string $base_table, int $record_id, array $conditions, array $options = []) {
+  public function deleteProperty(string $base_table, int $record_id, array $conditions, array $options = []): int {
     $property_table = $options['property_table'] ?? $base_table . 'prop';
-    $fkey = $options['fkey'] ?? $base_table . '_id';
     $pkey = $options['pkey'] ?? $property_table . '_id';
 
     $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
@@ -554,10 +567,10 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       $query = $this->connection->delete('1:' . $property_table);
       $query->condition($pkey, $pkey_ids, 'IN');
       try {
-        $results = $query->execute();
+        $query->execute();
       }
       catch (\Exception $e) {
-        throw new ChadoBuddyException('ChadoBuddy deleteProperty database error '.$e->getMessage());
+        throw new ChadoBuddyException('ChadoBuddy deleteProperty database error ' . $e->getMessage());
       }
     }
 
