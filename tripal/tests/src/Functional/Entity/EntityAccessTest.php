@@ -45,70 +45,130 @@ class EntityAccessTest extends BrowserTestBase {
     $this->assertIsObject($content_type_obj, "Unable to create a test content type.");
     $content_type_obj->save();
     $content_type = $content_type_obj->id();
-    // -- Content Entity.
+    // -- Content Entity 1.
     $values = [];
-    $values['title'] = 'Mini Fredicity ' . uniqid();
+    $values['title'] = 'Mini Fredicity' . uniqid();
     $values['type'] = $content_type;
-    $entity = TripalEntity::create($values);
-    $this->assertIsObject($content_type_obj, "Unable to create a test entity.");
-    $entity->save();
-    $entity_id = $entity->id();
+    $entity_one = TripalEntity::create($values);
+    $this->assertIsObject($content_type_obj, "Unable to create a test entity one.");
+    $entity_one->save();
+
+    // -- Content Entity 2.
+    $values = [];
+    $values['title'] = 'Fredicity' . uniqid();
+    $values['type'] = $content_type;
+    $entity_two = TripalEntity::create($values);
+    $this->assertIsObject($content_type_obj, "Unable to create a test entity two.");
+    $entity_two->save();
 
     // Get the access check object.
     $entity_type_interface = \Drupal::entityTypeManager()->getDefinition('tripal_entity');
     $access_check_obj = new TripalEntityAccessControlHandlerFake($entity_type_interface);
 
-    $entity_bundle = $entity->getType();
+    $entity_bundle = $entity_one->getType();
 
     $user_unprivileged = $this->drupalCreateUser([]);
-    $user_view = $this->drupalCreateUser(["view all $entity_bundle content"]);
-    $user_edit = $this->drupalCreateUser(["edit any $entity_bundle content"]);
-    $user_delete = $this->drupalCreateUser(["delete any $entity_bundle content"]);
+    $user_view_all = $this->drupalCreateUser(["view all $entity_bundle content"]);
+    $user_view_own = $this->drupalCreateUser(["view own $entity_bundle content"]);
+    $user_edit_any = $this->drupalCreateUser(["edit any $entity_bundle content"]);
+    $user_edit_own = $this->drupalCreateUser(["edit own $entity_bundle content"]);
+    $user_delete_any = $this->drupalCreateUser(["delete any $entity_bundle content"]);
+    $user_delete_own = $this->drupalCreateUser(["delete own $entity_bundle content"]);
     $user_add = $this->drupalCreateUser(["create $entity_bundle content"]);
+    $user_own_one = $this->drupalCreateUser([
+      "create $entity_bundle content",
+      "view own $entity_bundle content",
+      "edit own $entity_bundle content",
+      "delete own $entity_bundle content",
+    ]);
+    $user_own_two = $this->drupalCreateUser([
+      "create $entity_bundle content",
+      "view own $entity_bundle content",
+      "edit own $entity_bundle content",
+      "delete own $entity_bundle content",
+    ]);
 
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'view', $user_unprivileged);
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_unprivileged);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unprivileged user should NOT be allowed to VIEW the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'view', $user_view);
-    $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with view permission should be allowed to VIEW the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'view', $user_edit);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit permission should NOT be allowed to VIEW the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'view', $user_delete);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with delete permission should NOT be allowed to VIEW the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'view', $user_add);
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_view_all);
+    $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with view all permission should be allowed to VIEW the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_view_own);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with view own permission should NOT be allowed to VIEW the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_edit_any);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit any permission should NOT be allowed to VIEW the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_edit_own);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit own permission should NOT be allowed to VIEW the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_delete_any);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with delete any permission should NOT be allowed to VIEW the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_delete_own);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with delete own permission should NOT be allowed to VIEW the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_add);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with add permission should NOT be allowed to VIEW the entity.");
 
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'update', $user_unprivileged);
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'update', $user_unprivileged);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unprivileged user should NOT be allowed to UPDATE the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'update', $user_view);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with view permission should NOT be allowed to UPDATE the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'update', $user_edit);
-    $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with edit permission should be allowed to UPDATE the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'update', $user_delete);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with delete permission should NOT be allowed to UPDATE the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'update', $user_add);
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'update', $user_view_all);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with view all permission should NOT be allowed to UPDATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'update', $user_view_own);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with view own permission should NOT be allowed to UPDATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'update', $user_edit_any);
+    $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with edit any permission should be allowed to UPDATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'update', $user_edit_own);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit own permission should NOT be allowed to UPDATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'update', $user_delete_any);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with delete any permission should NOT be allowed to UPDATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'update', $user_delete_own);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with delete own permission should NOT be allowed to UPDATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'update', $user_add);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with add permission should NOT be allowed to UPDATE the entity.");
 
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'delete', $user_unprivileged);
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'delete', $user_unprivileged);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unprivileged user should NOT be allowed to DELETE the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'delete', $user_view);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with view permission should be allowed to DELETE the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'delete', $user_edit);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit permission should NOT be allowed to DELETE the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'delete', $user_delete);
-    $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with delete permission should be allowed to DELETE the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'delete', $user_add);
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'delete', $user_view_all);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with view all permission should be allowed to DELETE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'delete', $user_view_own);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with view own permission should NOT be allowed to DELETE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'delete', $user_edit_any);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit any permission should NOT be allowed to DELETE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'delete', $user_edit_own);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit own permission should NOT be allowed to DELETE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'delete', $user_delete_any);
+    $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with delete any permission should be allowed to DELETE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'delete', $user_delete_own);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with delete own permission should NOT be allowed to DELETE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'delete', $user_add);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with add permission should NOT be allowed to DELETE the entity.");
 
     $result = $access_check_obj->returnProtectedCheckCreateAccess($user_unprivileged, $entity_bundle);
     $this->assertInstanceOf(AccessResultForbidden::class, $result, "An unprivileged user should NOT be allowed to CREATE the entity.");
-    $result = $access_check_obj->returnProtectedCheckCreateAccess($user_view, $entity_bundle);
-    $this->assertInstanceOf(AccessResultForbidden::class, $result, "A user with view permission should NOT be allowed to CREATE the entity.");
-    $result = $access_check_obj->returnProtectedCheckCreateAccess($user_edit, $entity_bundle);
-    $this->assertInstanceOf(AccessResultForbidden::class, $result, "A user with edit permission should NOT be allowed to CREATE the entity.");
-    $result = $access_check_obj->returnProtectedCheckCreateAccess($user_delete, $entity_bundle);
-    $this->assertInstanceOf(AccessResultForbidden::class, $result, "A user with delete permission should NOT be allowed to CREATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckCreateAccess($user_view_all, $entity_bundle);
+    $this->assertInstanceOf(AccessResultForbidden::class, $result, "A user with view all permission should NOT be allowed to CREATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckCreateAccess($user_view_own, $entity_bundle);
+    $this->assertInstanceOf(AccessResultForbidden::class, $result, "A user with view own permission should NOT be allowed to CREATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckCreateAccess($user_edit_any, $entity_bundle);
+    $this->assertInstanceOf(AccessResultForbidden::class, $result, "A user with edit any permission should NOT be allowed to CREATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckCreateAccess($user_edit_own, $entity_bundle);
+    $this->assertInstanceOf(AccessResultForbidden::class, $result, "A user with edit own permission should NOT be allowed to CREATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckCreateAccess($user_delete_any, $entity_bundle);
+    $this->assertInstanceOf(AccessResultForbidden::class, $result, "A user with delete any permission should NOT be allowed to CREATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckCreateAccess($user_delete_own, $entity_bundle);
+    $this->assertInstanceOf(AccessResultForbidden::class, $result, "A user with delete own permission should NOT be allowed to CREATE the entity.");
     $result = $access_check_obj->returnProtectedCheckCreateAccess($user_add, $entity_bundle);
     $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with add permission should be allowed to CREATE the entity.");
+
+    $entity_two->setOwner($user_own_one);
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'view', $user_own_one);
+    $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with view own permission should be allowed to VIEW their own entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'view', $user_own_two);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit own permission should NOT be allowed to VIEW another user's entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'update', $user_own_one);
+    $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with edit own permission should be allowed to UPDATE their own entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'update', $user_own_two);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit own permission should NOT be allowed to UPDATE another user's entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'delete', $user_own_one);
+    $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with delete own permission should be allowed to DELETE their own entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'delete', $user_own_two);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with delete own permission should NOT be allowed to DELETE another user's entity.");
   }
 
 }
