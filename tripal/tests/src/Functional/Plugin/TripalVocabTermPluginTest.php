@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Functional;
+namespace Drupal\Tests\tripal\Functional\Plugin;
 
 use Drupal\Tests\BrowserTestBase;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Functional\ChadoImporter;
 
 use Drupal\tripal\Services\TripalLogger;
 use PHPUnit\Framework\Attributes\Group;

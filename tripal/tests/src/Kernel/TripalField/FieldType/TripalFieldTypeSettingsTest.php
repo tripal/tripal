@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel\TripalField;
+namespace Drupal\Tests\tripal\Kernel\TripalField\FieldType;
 
 use Drupal\Core\Form\FormState;
 use Drupal\field_ui\Form\FieldStorageConfigEditForm;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel;
+namespace Drupal\Tests\tripal\Kernel\Services\SyncTripalFieldStorage;
 
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\pgsql\Driver\Database\pgsql\Connection;

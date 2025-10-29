@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Kernel\Api;
+namespace Drupal\Tests\tripal_chado\Kernel\api;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use PHPUnit\Framework\Attributes\CoversFunction;

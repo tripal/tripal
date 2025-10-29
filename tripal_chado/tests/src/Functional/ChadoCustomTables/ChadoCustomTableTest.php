@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Functional\ChadoCustomTables;
 
 use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
 use PHPUnit\Framework\Attributes\Group;

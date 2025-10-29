@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Functional\Controller;
 
 use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Symfony\Component\HttpFoundation\Request;

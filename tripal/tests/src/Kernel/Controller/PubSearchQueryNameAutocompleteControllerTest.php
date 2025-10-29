@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel\Controller\PubSearchQueryNameAutocompleteController;
+namespace Drupal\Tests\tripal\Kernel\Controller;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\Controller\PubSearchQueryNameAutocompleteController;

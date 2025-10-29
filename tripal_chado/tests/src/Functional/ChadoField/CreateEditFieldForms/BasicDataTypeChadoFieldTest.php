@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional\Plugin\Fields\CreateEditFieldForms;
+namespace Drupal\Tests\tripal_chado\Functional\ChadoField\CreateEditFieldForms;
 
 use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
@@ -16,6 +16,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  *
  * @group ChadoField
  */
+#[Group('form')]
 #[Group('chado-field')]
 #[RunTestsInSeparateProcesses]
 class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {

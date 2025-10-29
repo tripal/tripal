@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Kernel;
+namespace Drupal\Tests\tripal_chado\Kernel\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;

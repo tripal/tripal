@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Functional\Forms;
 
 use Drupal\Core\Url;
 use Drupal\Tests\BrowserTestBase;

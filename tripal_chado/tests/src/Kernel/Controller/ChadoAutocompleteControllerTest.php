@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Kernel;
+namespace Drupal\Tests\tripal_chado\Kernel\Controller;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Symfony\Component\HttpFoundation\Request;

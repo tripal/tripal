@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel;
+namespace Drupal\Tests\tripal\Kernel\Plugin\TripalBackendPublish;
 
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\Services\TripalLogger;

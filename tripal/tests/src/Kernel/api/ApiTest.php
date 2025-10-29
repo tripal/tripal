@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel\Api\TripalApi;
+namespace Drupal\Tests\tripal\Kernel\api;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use PHPUnit\Framework\Attributes\CoversFunction;

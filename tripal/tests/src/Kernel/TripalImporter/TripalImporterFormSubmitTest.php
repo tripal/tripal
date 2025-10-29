@@ -18,6 +18,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  *
  * @group TripalImporter
  */
+#[Group('form')]
 #[Group('tripal-importer')]
 #[RunTestsInSeparateProcesses]
 class TripalImporterFormSubmitTest extends TripalTestKernelBase {

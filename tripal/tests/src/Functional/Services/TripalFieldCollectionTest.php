@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Functional\Entity;
+namespace Drupal\Tests\tripal\Functional\Services;
 
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
