@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal\Functional;
 
 use Drupal\Tests\tripal\Traits\TripalTestTrait;
 use Drupal\Tests\BrowserTestBase;
+use Drupal\tripal\Entity\TripalEntity;
 use Drupal\file\Entity\File;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -241,8 +242,11 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    *  - publish tripal content: Allows the user to publish Tripal content of all Tripal Content Types for online access.
    *  - create TYPE content: Create new Tripal Content
    *  - edit any TYPE content: Edit Tripal Content
+   *  - edit own TYPE content: Edit their own Tripal Content
    *  - delete any TYPE content: Delete Tripal Content
+   *  - delete own TYPE content: Delete their own Tripal Content
    *  - view all TYPE content: View Tripal Content
+   *  - view own TYPE content: View their own Tripal Content
    *
    * @group Tripal Permissions
    * @group Tripal Content
@@ -274,23 +278,36 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     $this->assertIsObject($content_type_obj, "Unable to create a test content type.");
     $content_type_obj->save();
     $content_type = $content_type_obj->id();
-    // -- Content Entity.
+
+    // -- Content Entity 1.
     $values = [];
-    $values['title'] = 'Mini Fredicity ' . uniqid();
+    $values['title'] = 'Mini Fredicity' . uniqid();
     $values['type'] = $content_type;
-    $entity = \Drupal\tripal\Entity\TripalEntity::create($values);
-    $this->assertIsObject($content_type_obj, "Unable to create a test entity.");
-    $entity->save();
-    $entity_id = $entity->id();
+    $entity_one = TripalEntity::create($values);
+    $this->assertIsObject($content_type_obj, "Unable to create a test entity one.");
+    $entity_one->save();
+    $entity_one_id = $entity_one->id();
+
+    // -- Content Entity 2.
+    $values = [];
+    $values['title'] = 'Fredicity' . uniqid();
+    $values['type'] = $content_type;
+    $entity_two = TripalEntity::create($values);
+    $this->assertIsObject($content_type_obj, "Unable to create a test entity two.");
+    $entity_two->save();
+    $entity_two_id = $entity_two->id();
 
     // The URLs to check.
     $urls = [
-      'entity-canonical' => 'bio_data/' . $entity_id,
       'entity-add-page' => 'bio_data/add',
-      'entity-add-form' => 'bio_data/add/' . $content_type,
-      'entity-edit-form' => 'bio_data/' . $entity_id . '/edit',
-      'entity-delete-form' => 'bio_data/' . $entity_id . '/delete',
-      'entity-unpublish-form' => 'bio_data/' . $entity_id . '/unpublish',
+      'entity-one-canonical' => 'bio_data/' . $entity_one_id,
+      'entity-one-edit-form' => 'bio_data/' . $entity_one_id . '/edit',
+      'entity-one-delete-form' => 'bio_data/' . $entity_one_id . '/delete',
+      'entity-one-unpublish-form' => 'bio_data/' . $entity_one_id . '/unpublish',
+      'entity-two-canonical' => 'bio_data/' . $entity_two_id,
+      'entity-two-edit-form' => 'bio_data/' . $entity_two_id . '/edit',
+      'entity-two-delete-form' => 'bio_data/' . $entity_two_id . '/delete',
+      'entity-two-unpublish-form' => 'bio_data/' . $entity_two_id . '/unpublish',
       'entity-collection' => 'admin/content/bio_data',
       //'publish-content' => '',
       'unpublish-content' => 'admin/content/bio_data/unpublish',
@@ -309,13 +326,14 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     $permissions_mapping = [
       'publish tripal content' => ['publish-content', 'unpublish-content'],
       "create $content_type content" => ['entity-add-form', 'entity-add-page'],
-      "edit any $content_type content" => ['entity-edit-form'],
-      "delete any $content_type content" => ['entity-delete-form'],
-      "view all $content_type content" => ['entity-canonical', 'entity-collection'],
-      'administer tripal content' => ['entity-canonical', 'entity-add-page',
-        'entity-add-form', 'entity-edit-form', 'entity-delete-form',
+      "edit any $content_type content" => ['entity-one-edit-form', 'entity-two-edit-form'],
+      "delete any $content_type content" => ['entity-one-delete-form', 'entity-two-delete-form'],
+      "view all $content_type content" => ['entity-one-canonical', 'entity-two-canonical', 'entity-collection'],
+      'administer tripal content' => ['entity-one-canonical', 'entity-two-canonical', 'entity-add-page',
+        'entity-add-form', 'entity-one-edit-form', 'entity-one-delete-form',
+        'entity-two-edit-form', 'entity-two-delete-form',
         'entity-collection', 'publish-content', 'unpublish-content',
-        'entity-unpublish-form'],
+        'entity-one-unpublish-form', 'entity-two-unpublish-form'],
       'manage tripal content types' => ['entitytype-add-form', 'entitytype-edit-form', 'entitytype-delete-form', 'entitytype-collection'],
       'administer tripal_entity fields' => ['entitytype-manage-fields'],
       'administer tripal_entity form display' => ['entitytype-manage-form'],
@@ -364,8 +382,37 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
         $this->assertEquals($expected_code, $status_code, "The user with only '$permission' permission $msg_part $title ($path).");
       }
     }
-  }
 
+    // Create a second user with only 'create', 'view own', 'edit own',
+    // 'delete own' permissions.
+    $restricted_user = $this->drupalCreateUser([
+      "create $content_type content",
+      "view own $content_type content",
+      "edit own $content_type content",
+      "delete own $content_type content",
+    ]);
+
+    // Assign ownership of the second entity to this user.
+    $entity_two->setOwner($restricted_user);
+    $entity_two->save();
+
+    // Array contains pages which that permission SHOULD be able to access.
+    $restricted_permissions = ['entity-add-form', 'entity-add-page',
+      'entity-two-edit-form', 'entity-two-delete-form', 'entity-two-canonical',
+      'entity-collection',
+    ];
+
+    // Finally check all URLs with the restricted user.
+    $this->drupalLogin($restricted_user);
+    foreach ($urls as $title => $path) {
+      $html = $this->drupalGet($path);
+      $expected_code = (array_search($title, $restricted_permissions) === FALSE) ? 403 : 200;
+      $msg_part = ($expected_code === 200) ? 'should have permission to' : 'should be denied access to';
+
+      $status_code = $session->getStatusCode();
+      $this->assertEquals($expected_code, $status_code, "The user with only access to their own content $msg_part $title ($path).");
+    }
+  }
 
   /**
    * Test permissions around Administering Tripal File Usage pages.
