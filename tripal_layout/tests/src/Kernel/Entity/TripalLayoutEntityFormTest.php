@@ -7,6 +7,7 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalLayoutDefaultView and TripalLayoutDefaultForm entities.
@@ -14,8 +15,10 @@ use PHPUnit\Framework\Attributes\Group;
  * @group TripalLayoutDisplay
  * @group TripalLayoutDisplayEntity
  */
-#[Group('TripalLayoutDisplay')]
-#[Group('TripalLayoutDisplayEntity')]
+#[Group('form')]
+#[Group('collection-service')]
+#[Group('layout-display')]
+#[RunTestsInSeparateProcesses]
 class TripalLayoutEntityFormTest extends TripalTestKernelBase {
 
   use TripalLayoutTestTrait;
