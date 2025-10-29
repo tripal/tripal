@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\ChadoCustomTables;
 
+use Drupal\tripal_chado\Tests\ChadoTestBrowserBase;
 use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
