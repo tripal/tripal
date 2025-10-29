@@ -228,6 +228,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $makeUpsertConditions = $reflection->getMethod('makeUpsertConditions');
     $makeUpsertConditions->setAccessible(TRUE);
 
+    // Creates a non-core table "freezer" in chado.
+    $this->createMigratedChadoTable();
+
     // CASE: getTableColumns() with no tables.
     $returned_columns = $getTableColumns->invoke($instance, []);
     $this->assertCount(0, $returned_columns, "We should not have had any columns returned when calling getTableColumns() with an empty tables parameter.");
@@ -291,6 +294,20 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     ];
     $returned_columns = $getTableColumns->invoke($instance, ['analysis'], 'unique');
     $this->assertEqualsCanonicalizing($expected_columns, $returned_columns, 'We did not get the expected unique columns when calling getTableColumns(["analysis"], "unique").');
+
+    // CASE: getTableColumns() with a non-core chado table.
+    $expected_columns = [
+      'freezer.type_id',
+      'freezer.name',
+    ];
+    $returned_columns = $getTableColumns->invoke($instance, ['freezer'], 'unique');
+    $this->assertEqualsCanonicalizing($expected_columns, $returned_columns, 'We did not get the expected unique columns when calling getTableColumns(["freezer"], "unique").');
+
+    $expected_columns = [
+      'freezer.name',
+    ];
+    $returned_columns = $getTableColumns->invoke($instance, ['freezer'], 'required');
+    $this->assertEqualsCanonicalizing($expected_columns, $returned_columns, 'We did not get the expected required columns when calling getTableColumns(["freezer"], "required").');
 
     // CASE: addTableToCache() with a non-existent chado table.
     $expected_cache = $getTableCache->invoke($instance);
@@ -768,6 +785,28 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertStringContainsString('LOWER(db.name)', $sql, "We did not get a query with case insensitivity for both 'db.name' and 'dbxref.accession'.");
     $this->assertStringContainsString('LOWER(dbxref.accession)', $sql, "We did not get a query with case insensitivity for both 'db.name' and 'dbxref.accession'.");
 
+  }
+
+  /**
+   * Create a chado non-core non-custom table.
+   *
+   * This will simulate a table from a migrated tripal 3 site and
+   * test getting a table schema directly from the database.
+   */
+  protected function createMigratedChadoTable() {
+    $testschema = $this->connection->getSchemaName();
+    $sqlarr = [
+      "CREATE TABLE $testschema.freezer (freezer_id bigint NOT NULL, type_id bigint, name text NOT NULL, description text)",
+      "CREATE SEQUENCE $testschema.freezer_freezer_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1",
+      "ALTER SEQUENCE $testschema.freezer_freezer_id_seq OWNED BY $testschema.freezer.freezer_id",
+      "ALTER TABLE ONLY $testschema.freezer ALTER COLUMN freezer_id SET DEFAULT nextval('$testschema.freezer_freezer_id_seq'::regclass)",
+      "ALTER TABLE ONLY $testschema.freezer ADD CONSTRAINT freezer_c1 UNIQUE (name, type_id)",
+      "ALTER TABLE ONLY $testschema.freezer ADD CONSTRAINT freezer_type_id_fkey FOREIGN KEY (type_id) REFERENCES $testschema.cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED",
+      "INSERT INTO $testschema.freezer (type_id, name, description) VALUES (1, 'Ultracold #1', NULL), (1, 'Ultracold #2', 'Broken')",
+    ];
+    foreach ($sqlarr as $sql) {
+      $this->connection->query($sql, []);
+    }
   }
 
 }
