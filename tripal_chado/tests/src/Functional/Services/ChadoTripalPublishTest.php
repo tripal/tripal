@@ -682,7 +682,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $contact_id1 = $this->addChadoContact($chado, [
       'name' => 'John Doe',
       'type_id' => $person_term_id,
-      'description' => 'Bioinformaticist extrodinaire',
+      'description' => 'Bioinformaticist extraordinaire',
     ]);
     $contact_id2 = $this->addChadoContact($chado, [
       'name' => 'Lady Gaga',
