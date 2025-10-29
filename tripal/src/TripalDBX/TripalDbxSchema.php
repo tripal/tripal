@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal\TripalDBX;
 
+use Drupal\Core\Database\DatabaseExceptionWrapper;
 use Drupal\Core\Database\SchemaObjectExistsException;
 use Drupal\pgsql\Driver\Database\pgsql\Schema as PgSchema;
 use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
@@ -999,15 +1000,25 @@ EOD;
       $schema_name = $this->defaultSchema;
       $this->initialize();
 
-      $sql_query = "
-        SELECT
-          pg_temp.tripal_get_table_ddl(:schema, :table, TRUE)
-          AS \"definition\";
-      ";
-      $result = $this->connection->query(
-          $sql_query,
-          [':schema' => $schema_name, ':table' => $table_name, ]
-      );
+      $result = NULL;
+      try {
+        $sql_query = "
+          SELECT
+            pg_temp.tripal_get_table_ddl(:schema, :table, TRUE)
+            AS \"definition\";
+        ";
+        $result = $this->connection->query(
+            $sql_query,
+            [':schema' => $schema_name, ':table' => $table_name, ]
+        );
+      }
+      catch (DatabaseExceptionWrapper $e) {
+        // We will only catch the case of "table does not exist",
+        // and in that case we return an empty string.
+        if (!preg_match('/table does not exist/', $e->getMessage())) {
+          throw $e;
+        }
+      }
       $table_raw_definition = '';
       if ($result) {
         $table_raw_definition = $result->fetchObject()->definition;
