@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group TripalEntityLookup
  */
 #[Group('tripal-content')]
-#[Group('service')]
+#[Group('service-entity-lookup')]
 #[RunTestsInSeparateProcesses]
 class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';

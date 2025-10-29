@@ -27,10 +27,7 @@ class ChadoCustomTableTest extends ChadoTestBrowserBase {
 
   /**
    * Tests focusing on Chado Custom Tables.
-   *
-   * @group service manager
    */
-  #[Group('service')]
   public function testChadoCustomTables() {
     $manager = \Drupal::service('tripal_chado.custom_tables');
     $this->assertIsObject($manager, 'We were not able to retrieve the custom table service manager.');
