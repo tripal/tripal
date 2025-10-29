@@ -18,7 +18,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('tripal-content')]
 #[Group('chado-field')]
-#[Group('tripal-token-parser')]
+#[Group('service-token-parser')]
 #[RunTestsInSeparateProcesses]
 class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
 

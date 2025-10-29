@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  *
  * @group ChadoBuddy
  */
-#[Group('chado-buddy')]
+#[Group('plugin-chado-buddy')]
 #[RunTestsInSeparateProcesses]
 class ChadoBuddyBaseTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';

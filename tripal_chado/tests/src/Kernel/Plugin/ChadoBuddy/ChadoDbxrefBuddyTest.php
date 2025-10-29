@@ -13,7 +13,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  *
  * @group ChadoBuddy
  */
-#[Group('chado-buddy')]
+#[Group('bio-cv')]
+#[Group('plugin-chado-buddy')]
 #[RunTestsInSeparateProcesses]
 class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
 

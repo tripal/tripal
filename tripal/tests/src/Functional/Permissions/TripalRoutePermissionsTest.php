@@ -117,7 +117,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Jobs
    */
-  #[Group('tripal-job')]
+  #[Group('service-job')]
   public function testTripalJobPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
@@ -185,7 +185,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Dashboard
    */
-  #[Group('tripal-dashboard')]
+  #[Group('service-dashboard')]
   public function testTripalDashboardPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
@@ -374,7 +374,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Data Files
    */
-  #[Group('tripal-datafiles')]
+  #[Group('importer-datafiles')]
   public function testAdminTripalDataFilesPages() {
     $session = $this->getSession();
     $this->assertTrue(\Drupal::request()->hasSession(),
@@ -431,7 +431,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Data Files
    */
-  #[Group('tripal-datafiles')]
+  #[Group('importer-datafiles')]
   public function testTripalDataFilesPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');

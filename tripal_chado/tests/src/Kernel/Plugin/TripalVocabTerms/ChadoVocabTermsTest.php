@@ -21,6 +21,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Chado ChadoVocabTerms
  */
 #[group('tripal-term')]
+#[group('chado-term')]
 #[Group('bio-cv')]
 #[RunTestsInSeparateProcesses]
 class ChadoVocabTermsTest extends ChadoTestKernelBase {

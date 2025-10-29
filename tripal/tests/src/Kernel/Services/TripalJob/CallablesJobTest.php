@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal
  * @group TripalJobs
  */
-#[Group('tripal-job')]
+#[Group('service-job')]
 #[RunTestsInSeparateProcesses]
 class CallablesJobTest extends TripalTestKernelBase {
   use UserCreationTrait;
