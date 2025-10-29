@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\Controller;
 
+use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Symfony\Component\HttpFoundation\Request;
 use PHPUnit\Framework\Attributes\Group;

@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;

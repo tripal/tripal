@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\ChadoImporter;
 
+use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
