@@ -248,7 +248,10 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     $in_unique_constraint = [];
     if (array_key_exists('unique keys', $table_schema)) {
       foreach ($table_schema['unique keys'] as $constraint_columns) {
-        foreach (explode(', ', $constraint_columns) as $column) {
+        if (is_string($constraint_columns)) {
+          $constraint_columns = explode(', ', $constraint_columns);
+        }
+        foreach ($constraint_columns as $column) {
           $in_unique_constraint[$column] = TRUE;
         }
       }
