@@ -4,16 +4,16 @@ namespace Drupal\Tests\tripal\Functional\Plugin;
 
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
 use PHPUnit\Framework\Attributes\Group;
-
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * Tests for the TripalDefaultVocabulary classes
+ * Tests for the TripalDefaultVocabulary classes.
  *
  * @group Tripal
  * @group TripalDefaultVocabulary
  */
-#[Group('Tripal')]
-#[Group('TripalDefaultVocabulary')]
+#[Group('tripal-term')]
+#[RunTestsInSeparateProcesses]
 class TripalDefaultVocabularyTest extends TripalTestBrowserBase {
 
   /**
@@ -38,7 +38,6 @@ class TripalDefaultVocabularyTest extends TripalTestBrowserBase {
     return $result->fetchAssoc();
   }
 
-
   /**
    * A helper function to retrieve an id_space record.
    *
@@ -61,10 +60,8 @@ class TripalDefaultVocabularyTest extends TripalTestBrowserBase {
     return $result->fetchAssoc();
   }
 
-
   /**
-   * Tests the TripalDefaultIdSpace and TripalDefaultVocabulary Classes
-   *
+   * Tests the TripalDefaultIdSpace and TripalDefaultVocabulary Classes.
    */
   public function testTripalDefaultVocabulary() {
 
@@ -86,8 +83,7 @@ class TripalDefaultVocabularyTest extends TripalTestBrowserBase {
 
     //
     // Testing TripalVocabulary Functionality
-    //
-
+    // .
     // Make sure the Vocabulary does not yet exist.
     /** @var \Drupal\tripal\Plugin\TripalVocabulary\TripalDefaultVocabulary $cc */
     $cc = $vmanager->createCollection($GO_cc_namespace, "tripal_default_vocabulary");
@@ -104,7 +100,7 @@ class TripalDefaultVocabularyTest extends TripalTestBrowserBase {
     // Make sure the getter works.
     $this->assertTrue($cc->getLabel() == $GO_cc_label, "The TripalVocabulary object did not return a correct label.");
 
-    // Associate the IDSpace with the vocabulary,
+    // Associate the IDSpace with the vocabulary,.
     /** @var \Drupal\tripal\Plugin\TripalIdSpace\TripalDefaultIdSpace $GO */
     $GO = $idsmanager->createCollection($GO_idspace, "tripal_default_id_space");
     $id_spaces = $cc->getIdSpaceNames();
@@ -138,7 +134,7 @@ class TripalDefaultVocabularyTest extends TripalTestBrowserBase {
 
     //
     // Testing multiple ID spaces per Vocabulary
-    //
+    // .
     $EDAM_data_idspace = 'data';
     $EDAM_format_idspace = 'format';
     $EDAM_operation_idspace = 'operation';
@@ -202,7 +198,7 @@ class TripalDefaultVocabularyTest extends TripalTestBrowserBase {
     $this->assertTrue($edam_operation->getURLPrefix() == $EDAM_urlprefix, "The EDAM operation ID space's URL PRefix space description was not correctly returned.");
     $this->assertTrue($edam_topic->getURLPrefix() == $EDAM_urlprefix, "The EDAM topic ID space's URL PRefix space description was not correctly returned.");
 
-    // Test removing an ID space
+    // Test removing an ID space.
     $edam->removeIdSpace($EDAM_format_idspace);
     $edam->removeIdSpace($EDAM_topic_idspace);
     $id_spaces = $edam->getIdSpaceNames();
@@ -211,4 +207,5 @@ class TripalDefaultVocabularyTest extends TripalTestBrowserBase {
     $this->assertTrue(in_array($EDAM_operation_idspace, $id_spaces), "The EDAM operation ID space is missing from the vocabulary ID spaces.");
     $this->assertFalse(in_array($EDAM_topic_idspace, $id_spaces), "The EDAM topic ID space is not missing from the vocabulary ID spaces.");
   }
+
 }

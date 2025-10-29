@@ -1,16 +1,19 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel;
+namespace Drupal\Tests\tripal\Kernel\Services;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the entity lookup service for chado-based content types.
  *
  * @group TripalEntityLookup
  */
-#[Group('TripalEntityLookup')]
+#[Group('tripal-content')]
+#[Group('service')]
+#[RunTestsInSeparateProcesses]
 class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
@@ -20,7 +23,9 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
 
   protected $chado_publish;
 
-  // The terms for the content types we will be testing here
+  /**
+   * The terms for the content types we will be testing here.
+   */
   protected $project_termIdSpace = 'NCIT';
   protected $project_Accession = 'C47885';
   protected $analysis_termIdSpace = 'operation';
@@ -42,15 +47,15 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
     // Ensure we install the schema/modules we need.
-    $this->prepareEnvironment(['TripalTerm','TripalEntity']);
+    $this->prepareEnvironment(['TripalTerm', 'TripalEntity']);
     // -- additionally we need tripal_chado config to access the yaml files.
     $this->installConfig('tripal_chado');
 
-    // Get Chado in place
+    // Get Chado in place.
     $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
     // Create three projects in chado.
-    for ($i=1; $i <= 3; $i++) {
+    for ($i = 1; $i <= 3; $i++) {
       $this->connection->insert('1:project')
         ->fields([
           'name' => 'Project No. ' . $i,
@@ -58,7 +63,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     }
 
     // Create three analyses in chado.
-    for ($i=1; $i <= 3; $i++) {
+    for ($i = 1; $i <= 3; $i++) {
       $this->connection->insert('1:analysis')
         ->fields([
           'name' => 'Analysis No. ' . $i,
@@ -74,21 +79,23 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
       ])->execute();
 
     // Create one arraydesign in chado, to test the mismatched
-    // foreign key names manufacturer_id -> contact_id
+    // foreign key names manufacturer_id -> contact_id.
     $this->connection->insert('1:arraydesign')
       ->fields([
         'name' => 'ArrayDesign No. 1',
-        'platformtype_id' => 1,  // not used, whatever the very first cvterm is
-        'manufacturer_id' => 2,  // 1 is the null contact, defined by chado
+    // Not used, whatever the very first cvterm is.
+        'platformtype_id' => 1,
+    // 1 is the null contact, defined by chado
+        'manufacturer_id' => 2,
       ])->execute();
 
     // Create the terms for the field property storage types.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    foreach(['local', 'SIO', 'schema', 'data', 'NCIT', 'operation', 'OBCS', 'SWO', 'IAO', 'TPUB', 'SBO', 'sep', 'ERO', 'EFO'] as $termIdSpace) {
+    foreach (['local', 'SIO', 'schema', 'data', 'NCIT', 'operation', 'OBCS', 'SWO', 'IAO', 'TPUB', 'SBO', 'sep', 'ERO', 'EFO'] as $termIdSpace) {
       $idsmanager->createCollection($termIdSpace, "chado_id_space");
     }
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    foreach(['local', 'SIO', 'schema', 'EDAM', 'ncit', 'OBCS', 'swo', 'IAO', 'tripal_pub', 'sbo', 'sep', 'ero', 'efo'] as $termVocab) {
+    foreach (['local', 'SIO', 'schema', 'EDAM', 'ncit', 'OBCS', 'swo', 'IAO', 'tripal_pub', 'sbo', 'sep', 'ero', 'efo'] as $termVocab) {
       $vmanager->createCollection($termVocab, "chado_vocabulary");
     }
 
@@ -106,7 +113,6 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
   /**
    * We publish some Chado records that have entries in linker tables,
    * and verify that the entity record is populated with the expected entity_id.
-   *
    */
   public function testTripalEntityLookupService() {
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
@@ -132,7 +138,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     // Tests the entity lookup service directly.
     // Because this is a test environment, we know that the entity IDs
     // that we just published will start with 1.
-    for ($project_id=1; $project_id <= 3; $project_id++) {
+    for ($project_id = 1; $project_id <= 3; $project_id++) {
       $expected_entity_id = $project_id + 0;
       $entity_id = $lookup_manager->getEntityId(
         $project_id,
@@ -141,11 +147,11 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
         NULL
       );
       $this->assertEquals($expected_entity_id, $entity_id, "We did not retrieve the expected entity_id for project $project_id");
-      // Check that we can get a bundle label from an entity ID
+      // Check that we can get a bundle label from an entity ID.
       $bundle_label = $lookup_manager->getBundleLabel($entity_id);
       $this->assertEquals('Project', $bundle_label, "We did not retrieve the expected bundle label for entity_id $entity_id");
     }
-    for ($analysis_id=1; $analysis_id <= 3; $analysis_id++) {
+    for ($analysis_id = 1; $analysis_id <= 3; $analysis_id++) {
       $expected_entity_id = $analysis_id + 3;
       $entity_id = $lookup_manager->getEntityId(
         $analysis_id,
@@ -154,12 +160,12 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
         NULL
       );
       $this->assertEquals($expected_entity_id, $entity_id, "We did not retrieve the expected entity_id for analysis $analysis_id");
-      // Check that we can get a bundle label from an entity ID
+      // Check that we can get a bundle label from an entity ID.
       $bundle_label = $lookup_manager->getBundleLabel($entity_id);
       $this->assertEquals('Analysis', $bundle_label, "We did not retrieve the expected bundle label for entity_id $entity_id");
     }
 
-    // Check that we get an empty label from a non-existent entity ID
+    // Check that we get an empty label from a non-existent entity ID.
     $tids = [-2, -1, 0, 1000];
     foreach ($tids as $entity_id) {
       $bundle_label = $lookup_manager->getBundleLabel($entity_id);
@@ -205,7 +211,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     // Query a Drupal entity table to confirm that it stores the Chado record ID, and that it is correct.
     $entity_table_name = 'tripal_entity__analysis_name';
     $entity_column_name = 'analysis_name_record_id';
-    for ($entity_id=4; $entity_id <= 6; $entity_id++) {
+    for ($entity_id = 4; $entity_id <= 6; $entity_id++) {
       $chado_analysis_id = $entity_id - 3;
       $query = \Drupal::entityQuery('tripal_entity')
         ->condition('type', 'analysis')
@@ -218,13 +224,12 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     // Sometimes foreign key names are different than the object table
     // primary key, e.g. arraydesign table column manufacturer_id is
     // a foreign key to the contact table column contact_id.
-
-    // Publish the null contact entity and confirm that it has been created. Issue #1809
+    // Publish the null contact entity and confirm that it has been created. Issue #1809.
     $publish_options = ['bundle' => 'contact', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
     $published_entities = $this->chado_publish->publish($publish_options);
 
     $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'contact']);
-    // Expect 2 here instead of 1 because the null contact will also be published - Issue #1809
+    // Expect 2 here instead of 1 because the null contact will also be published - Issue #1809.
     $this->assertCount(2, $confirmed_entities,
       "We expected there to be two contacts created, including the null contact.");
 
@@ -242,8 +247,10 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     // For the fallback lookup we need to also pass the base table.
     // Note that we don't depend on the order that contacts are published in.
     $base_table = 'contact';
-    $chado_contact_id = 2;  // 1 is the null contact
-    $expected_contact_entity_ids = ['7', '8']; // 1-3: project, 4-6: analysis, 7or8: null contact, 7or8: test contact, 9: array_design
+    // 1 is the null contact
+    $chado_contact_id = 2;
+    // 1-3: project, 4-6: analysis, 7or8: null contact, 7or8: test contact, 9: array_design
+    $expected_contact_entity_ids = ['7', '8'];
     $entity_id = $lookup_manager->getEntityId(
       $chado_contact_id,
       $this->manufacturer_termIdSpace,
@@ -252,7 +259,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     );
     $this->assertContains($entity_id, $expected_contact_entity_ids, "We did not retrieve the expected entity_id for manufacturer_id $chado_contact_id");
 
-    // Likewise it should work the same if we omit the term entirely
+    // Likewise it should work the same if we omit the term entirely.
     $entity_id = $lookup_manager->getEntityId(
       $chado_contact_id,
       NULL,
@@ -261,7 +268,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     );
     $this->assertContains($entity_id, $expected_contact_entity_ids, "We did not retrieve the expected entity_id for manufacturer_id $chado_contact_id");
 
-    // Also check that the contact_id (as manufacturer_id) is in the Drupal table
+    // Also check that the contact_id (as manufacturer_id) is in the Drupal table.
     $entity_table_name = 'tripal_entity__array_design_manufacturer';
     $entity_column_name = 'array_design_manufacturer_record_id';
     $query = \Drupal::entityQuery('tripal_entity')
@@ -272,4 +279,5 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     $this->assertEquals(1, count($ids), "Expected exactly one match from array_design manufacturer query");
 
   }
+
 }
