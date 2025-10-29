@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal
  * @group Tripal Citation
  */
-#[Group('tripal-citation')]
+#[Group('service-citation')]
 #[RunTestsInSeparateProcesses]
 class TripalCitationTest extends TripalTestKernelBase {
 

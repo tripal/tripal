@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group ChadoSchema
  */
 #[Group('tripal-dbx')]
-#[Group('chado')]
+#[Group('chado-schema')]
 #[RunTestsInSeparateProcesses]
 class ChadoSchemaTest extends ChadoTestKernelBase {
 

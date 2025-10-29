@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal
  * @group TripalEntity
  */
-#[Group('tripal-entity')]
+#[Group('tripal-content')]
 #[RunTestsInSeparateProcesses]
 class TripalEntitySettingsFormTest extends TripalTestKernelBase {
 

@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal
  * @group Tripal Content
  */
-#[Group('tripal-entity')]
+#[Group('tripal-content')]
 #[Group('tripal-publish')]
 #[Group('chado-publish')]
 #[RunTestsInSeparateProcesses]

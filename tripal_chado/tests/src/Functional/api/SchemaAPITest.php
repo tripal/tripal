@@ -17,7 +17,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Database
  * @group Tripal API
  */
-#[Group('chado')]
 #[Group('chado-schema')]
 #[Group('legacy-api')]
 #[RunTestsInSeparateProcesses]

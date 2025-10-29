@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal
  * @group Tripal Config
  */
-#[Group('tripal-config')]
+#[Group('consistency')]
 #[RunTestsInSeparateProcesses]
 class ConfigTest extends TripalTestKernelBase {
 

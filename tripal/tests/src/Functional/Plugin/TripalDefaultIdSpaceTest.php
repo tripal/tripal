@@ -13,7 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group TripalDefaultIdSpace
  */
 #[Group('tripal-term')]
-#[Group('default-implementation')]
 #[RunTestsInSeparateProcesses]
 class TripalDefaultIdSpaceTest extends TripalTestBrowserBase {
 

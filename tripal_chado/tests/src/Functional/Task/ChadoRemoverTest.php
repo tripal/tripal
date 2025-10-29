@@ -26,7 +26,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversMethod(ChadoRemover::class, 'setParameters')]
 #[CoversMethod(ChadoRemover::class, 'performTask')]
 #[Group('biodb-task')]
-#[Group('remover-task')]
+#[group('task-remover')]
 #[RunTestsInSeparateProcesses]
 class ChadoRemoverTest extends ChadoTestBrowserBase {
 

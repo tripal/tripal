@@ -20,8 +20,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[CoversClass(ChadoPreparer::class)]
 #[Group('biodb-task')]
-#[Group('preparer-task')]
-#[Group('chado-install')]
+#[group('task-preparer')]
+#[Group('chado-schema')]
 #[RunTestsInSeparateProcesses]
 class ChadoPreparerTest extends ChadoTestBrowserBase {
 

@@ -13,7 +13,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group TripalDefaultVocabulary
  */
 #[Group('tripal-term')]
-#[Group('default-implementation')]
 #[RunTestsInSeparateProcesses]
 class TripalDefaultVocabularyTest extends TripalTestBrowserBase {
 

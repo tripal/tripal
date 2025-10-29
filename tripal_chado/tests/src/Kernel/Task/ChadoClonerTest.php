@@ -26,7 +26,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversMethod(ChadoCloner::class, 'setParameters')]
 #[CoversMethod(ChadoCloner::class, 'performTask')]
 #[Group('biodb-task')]
-#[Group('cloner-task')]
+#[group('task-cloner')]
 #[RunTestsInSeparateProcesses]
 class ChadoClonerTest extends ChadoTestKernelBase {
 

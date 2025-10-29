@@ -12,6 +12,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group TripalImporter
  * @group ChadoImporter
  */
+#[group('form')]
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
 #[RunTestsInSeparateProcesses]

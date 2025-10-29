@@ -18,7 +18,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Chado
  * @group Autocomplete
  */
-#[Group('chado')]
 #[Group('autocomplete')]
 #[IgnoreDeprecations]
 #[RunTestsInSeparateProcesses]

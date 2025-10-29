@@ -11,7 +11,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  *
  * @group TripalEntityLookup
  */
-#[Group('tripal-entity')]
+#[Group('tripal-content')]
 #[Group('service')]
 #[RunTestsInSeparateProcesses]
 class TripalEntityLookupServiceTest extends ChadoTestKernelBase {

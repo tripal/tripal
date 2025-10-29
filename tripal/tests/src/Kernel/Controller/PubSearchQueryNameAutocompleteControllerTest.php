@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Autocomplete
  */
 #[Group('tripal-importer')]
-#[Group('pub-importer')]
+#[group('importer-pub')]
 #[Group('autocomplete')]
 #[RunTestsInSeparateProcesses]
 class PubSearchQueryNameAutocompleteControllerTest extends TripalTestKernelBase {

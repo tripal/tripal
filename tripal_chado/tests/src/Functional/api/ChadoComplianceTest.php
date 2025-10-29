@@ -15,8 +15,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Chado
  * @group Tripal Database
  */
-#[Group('chado')]
-#[Group('chado-compliance')]
+#[Group('chado-schema')]
+#[Group('consistency')]
 #[RunTestsInSeparateProcesses]
 class ChadoComplianceTest extends ChadoTestBrowserBase {
 

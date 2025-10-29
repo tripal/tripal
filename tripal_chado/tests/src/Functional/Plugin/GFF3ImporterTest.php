@@ -14,7 +14,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
-#[Group('gff3-importer')]
+#[group('importer-gff3')]
+#[Group('bio-feature')]
 #[RunTestsInSeparateProcesses]
 class GFF3ImporterTest extends ChadoTestBrowserBase
 {

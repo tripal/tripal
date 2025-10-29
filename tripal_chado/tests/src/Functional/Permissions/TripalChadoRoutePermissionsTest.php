@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Chado
  * @group Tripal Chado Permissions
  */
-#[Group('permission')]
+#[Group('access')]
 #[RunTestsInSeparateProcesses]
 class TripalChadoRoutePermissionsTest extends BrowserTestBase {
 

@@ -14,8 +14,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Chado
  * @group Drush
  */
-#[Group('chado')]
-#[Group('chado-cv')]
+#[Group('bio-cv')]
 #[Group('drush-command')]
 #[RunTestsInSeparateProcesses]
 class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {

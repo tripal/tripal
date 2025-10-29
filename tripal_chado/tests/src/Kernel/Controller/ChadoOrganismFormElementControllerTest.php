@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Organism Autocomplete Form Element
  */
 #[Group('autocomplete')]
-#[Group('chado-organism')]
+#[Group('bio-organism')]
 #[RunTestsInSeparateProcesses]
 class ChadoOrganismFormElementControllerTest extends ChadoTestKernelBase {
   /**

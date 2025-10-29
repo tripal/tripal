@@ -16,7 +16,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
-#[Group('pub-importer')]
+#[group('importer-pub')]
+#[Group('bio-pub')]
 #[RunTestsInSeparateProcesses]
 class PubSearchQueryImporterTest extends ChadoTestBrowserBase {
 

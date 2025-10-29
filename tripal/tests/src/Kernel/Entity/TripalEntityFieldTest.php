@@ -15,8 +15,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group TripalEntity
  * @group TripalTokenParser
  */
-#[Group('tripal-entity')]
-#[Group('token-parser')]
+#[Group('tripal-content')]
+#[Group('tripal-token-parser')]
 #[RunTestsInSeparateProcesses]
 class TripalEntityFieldTest extends TripalTestKernelBase {
 

@@ -14,9 +14,9 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Content
  * @group Tripal Content Types
  */
-#[Group('tripal-entity')]
-#[Group('tripal-entity-type')]
-#[Group('collection-service')]
+#[Group('tripal-content')]
+#[Group('tripal-content')]
+#[group('service-collection')]
 #[RunTestsInSeparateProcesses]
 class TripalContentTypesTest extends TripalTestBrowserBase {
 

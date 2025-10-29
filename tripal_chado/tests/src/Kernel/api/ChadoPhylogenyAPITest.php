@@ -30,9 +30,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversFunction('chado_phylogeny_lookup_organism_by_name')]
 #[CoversFunction('chado_phylogeny_get_node_types_vocab')]
 #[Group('legacy-api')]
-#[Group('tripal-chado')]
-#[Group('chado-organism')]
-#[Group('chado-phylogeny')]
+#[Group('bio-organism')]
+#[Group('bio-phylogeny')]
 #[RunTestsInSeparateProcesses]
 class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
 

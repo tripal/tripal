@@ -27,9 +27,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversClass(ChadoInstaller::class)]
 #[CoversMethod(ChadoInstaller::class, 'setParameters')]
 #[CoversMethod(ChadoInstaller::class, 'performTask')]
-#[Group('chado')]
 #[Group('biodb-task')]
-#[Group('installer-task')]
+#[group('task-installer')]
 #[RunTestsInSeparateProcesses]
 class ChadoInstallerTest extends ChadoTestKernelBase {
 

@@ -15,7 +15,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
-#[Group('taxonomy-importer')]
+#[group('importer-taxonomy')]
+#[Group('bio-phylogeny')]
 #[RunTestsInSeparateProcesses]
 class TaxonomyImporterTest extends ChadoTestBrowserBase {
 

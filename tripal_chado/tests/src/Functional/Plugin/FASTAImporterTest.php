@@ -14,7 +14,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
-#[Group('fasta-importer')]
+#[group('importer-fasta')]
+#[Group('bio-feature')]
 #[RunTestsInSeparateProcesses]
 class FASTAImporterTest extends ChadoTestBrowserBase {
 

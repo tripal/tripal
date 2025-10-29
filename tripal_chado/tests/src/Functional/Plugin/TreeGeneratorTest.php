@@ -14,7 +14,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
-#[Group('tree-generator')]
+#[group('importer-phylotree')]
+#[Group('bio-phylogeny')]
 #[RunTestsInSeparateProcesses]
 class TreeGeneratorTest extends ChadoTestBrowserBase {
 

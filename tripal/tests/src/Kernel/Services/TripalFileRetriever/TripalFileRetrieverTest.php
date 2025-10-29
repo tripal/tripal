@@ -15,7 +15,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal FileRetriever
  */
 #[Group('tripal-importer')]
-#[Group('file-retriever')]
+#[group('service-file-retriever')]
 #[RunTestsInSeparateProcesses]
 class TripalFileRetrieverTest extends TripalTestKernelBase {
 

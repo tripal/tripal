@@ -13,8 +13,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal
  * @group Tripal Content
  */
-#[Group('tripal-entity')]
-#[Group('tripal-entity-type')]
+#[Group('tripal-content')]
+#[Group('tripal-content')]
 #[RunTestsInSeparateProcesses]
 class TripalContentTest extends TripalTestBrowserBase {
 

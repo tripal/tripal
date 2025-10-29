@@ -15,8 +15,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Forms
  */
 #[Group('form')]
-#[Group('chado')]
-#[Group('chado-install')]
+#[Group('chado-schema')]
 #[RunTestsInSeparateProcesses]
 class chadoInstallerFormTest extends BrowserTestBase {
 

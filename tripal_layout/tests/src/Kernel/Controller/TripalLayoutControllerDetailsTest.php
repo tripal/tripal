@@ -13,7 +13,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group TripalLayoutDisplay
  * @group TripalLayoutDisplayController
  */
-#[Group('layout-display')]
+#[Group('layout')]
+#[Group('render')]
 #[RunTestsInSeparateProcesses]
 class TripalLayoutControllerDetailsTest extends TripalTestKernelBase {
 

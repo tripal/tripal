@@ -14,7 +14,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Chado
  * @group Autocomplete
  */
-#[Group('chado')]
 #[Group('autocomplete')]
 #[RunTestsInSeparateProcesses]
 class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
@@ -28,7 +27,7 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
   /**
    * Test autocomplete cvterm name.
    */
-  #[Group('chado-cv')]
+  #[Group('bio-cv')]
   public function testAutocompleteCvterm() {
     // Setup registered user.
     $this->registered_user = $this->drupalCreateUser(

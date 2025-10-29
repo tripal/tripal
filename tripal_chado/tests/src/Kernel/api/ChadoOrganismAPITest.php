@@ -35,7 +35,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversFunction('chado_unabbreviate_infraspecific_rank')]
 #[IgnoreDeprecations]
 #[Group('legacy-api')]
-#[Group('chado-organism')]
+#[Group('bio-organism')]
 #[RunTestsInSeparateProcesses]
 class ChadoOrganismAPITest extends ChadoTestKernelBase {
 

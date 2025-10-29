@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('tripal-field')]
 #[Group('field-discovery')]
-#[Group('collection-service')]
+#[group('service-collection')]
 #[RunTestsInSeparateProcesses]
 class TripalFieldCollectionTest extends TripalTestBrowserBase {
 

@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal
  * @group Tripal Chado
  */
-#[Group('custom-table')]
+#[group('chado-custom-table')]
 #[RunTestsInSeparateProcesses]
 class ChadoCustomTableManagerTest extends ChadoTestBrowserBase {
 

@@ -19,7 +19,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
-#[Group('obo-importer')]
+#[group('importer-obo')]
+#[Group('bio-cv')]
 #[RunTestsInSeparateProcesses]
 class OboImporterTest extends ChadoTestKernelBase {
 

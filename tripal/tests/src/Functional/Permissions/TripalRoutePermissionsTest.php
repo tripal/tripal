@@ -18,7 +18,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Term
  * @group Tripal Entities
  */
-#[Group('permission')]
+#[Group('access')]
 #[RunTestsInSeparateProcesses]
 class TripalRoutePermissionsTest extends BrowserTestBase {
 
@@ -247,8 +247,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Content
    */
-  #[Group('tripal-entity')]
-  #[Group('entity-access')]
+  #[Group('tripal-content')]
+  #[Group('access-entity')]
   public function testTripalContentPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
@@ -512,7 +512,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Term Configuration
    */
-  #[Group('term-config')]
+  #[Group('service-collection')]
   public function testTripalTermConfigPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');

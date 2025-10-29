@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Services
  * @group TripalTokenParser
  */
-#[Group('token-parser')]
+#[Group('tripal-token-parser')]
 #[RunTestsInSeparateProcesses]
 class TripalTokenParserTest extends TripalTestKernelBase {
 

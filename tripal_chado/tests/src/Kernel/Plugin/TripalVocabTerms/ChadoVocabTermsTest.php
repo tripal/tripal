@@ -20,8 +20,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Chado
  * @group Tripal Chado ChadoVocabTerms
  */
-#[Group('tripal-terms')]
-#[Group('chado-cv')]
+#[group('tripal-term')]
+#[Group('bio-cv')]
 #[RunTestsInSeparateProcesses]
 class ChadoVocabTermsTest extends ChadoTestKernelBase {
 

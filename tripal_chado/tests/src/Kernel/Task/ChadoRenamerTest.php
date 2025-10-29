@@ -26,7 +26,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversMethod(ChadoRenamer::class, 'setParameters')]
 #[CoversMethod(ChadoRenamer::class, 'performTask')]
 #[Group('biodb-task')]
-#[Group('renamer-task')]
+#[group('task-renamer')]
 #[RunTestsInSeparateProcesses]
 class ChadoRenamerTest extends ChadoTestKernelBase {
 

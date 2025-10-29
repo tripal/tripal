@@ -14,8 +14,9 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group TripalLayoutDisplay
  * @group TripalLayoutDisplayEntity
  */
-#[Group('collection-service')]
-#[Group('layout-display')]
+#[Group('layout')]
+#[Group('render')]
+#[Group('service-collection')]
 #[RunTestsInSeparateProcesses]
 class TripalLayoutEntityListTest extends TripalTestKernelBase {
 

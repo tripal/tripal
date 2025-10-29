@@ -14,7 +14,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('tripal-importer')]
 #[Group('chado-importer')]
-#[Group('newick-importer')]
+#[group('importer-newick')]
+#[Group('bio-phylogeny')]
 #[RunTestsInSeparateProcesses]
 class NewickImporterTest extends ChadoTestBrowserBase {
 

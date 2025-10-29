@@ -20,8 +20,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal Content
  * @group Tripal Permissions
  */
-#[Group('tripal-entity')]
-#[Group('entity-access')]
+#[Group('tripal-content')]
+#[Group('access-entity')]
 #[RunTestsInSeparateProcesses]
 class EntityAccessTest extends BrowserTestBase {
   protected $defaultTheme = 'stark';

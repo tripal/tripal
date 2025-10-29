@@ -34,7 +34,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[CoversMethod(ChadoConnection::class, 'findVersion')]
 #[CoversMethod(ChadoConnection::class, 'removeAllTestSchemas')]
 #[Group('tripal-dbx')]
-#[Group('chado')]
+#[Group('chado-schema')]
 #[RunTestsInSeparateProcesses]
 class ChadoConnectionTest extends ChadoTestKernelBase {
 
