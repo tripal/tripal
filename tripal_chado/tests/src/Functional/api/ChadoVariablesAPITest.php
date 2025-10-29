@@ -50,7 +50,7 @@ class ChadoVariablesAPITest extends ChadoTestBrowserBase {
     $org = [
       'genus' => 'Tripalus',
       'species' => 'ferox' . uniqid(),
-    // Version.
+      // Version.
       'type_id' => 2,
       'infraspecific_name' => 'Quad',
       'common_name' => 'Wild Tripal',
@@ -62,7 +62,7 @@ class ChadoVariablesAPITest extends ChadoTestBrowserBase {
     $values = [
       'uniquename' => 'gene' . uniqid(),
       'organism_id' => $dbq['organism_id'],
-    // Version.
+      // Version.
       'type_id' => 2,
       'name' => 'FakeGene1',
       'residues' => str_repeat('ATGC', 100),

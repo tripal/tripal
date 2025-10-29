@@ -24,9 +24,6 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
 
   use TripalTestTrait;
 
-  /**
-   * Protected $htmlOutputEnabled = TRUE;.
-   */
   protected $defaultTheme = 'stark';
 
   protected static $modules = ['system', 'user', 'path', 'node', 'file', 'field_ui', 'tripal'];
@@ -51,7 +48,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
       // Under Drupal ~10.2, if there are no extensions present, and there aren't, then
       // we won't be able to access the 'admin/tripal/extension' menu, even as admin.
       // To test, we would have to create an extension first.
-      // 'Extensions' => 'admin/tripal/extension',.
+      // 'Extensions' => 'admin/tripal/extension'.
     ];
 
     $userAuthenticatedOnly = $this->drupalCreateUser();

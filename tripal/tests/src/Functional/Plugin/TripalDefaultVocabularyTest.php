@@ -100,7 +100,7 @@ class TripalDefaultVocabularyTest extends TripalTestBrowserBase {
     // Make sure the getter works.
     $this->assertTrue($cc->getLabel() == $GO_cc_label, "The TripalVocabulary object did not return a correct label.");
 
-    // Associate the IDSpace with the vocabulary,.
+    // Associate the IDSpace with the vocabulary.
     /** @var \Drupal\tripal\Plugin\TripalIdSpace\TripalDefaultIdSpace $GO */
     $GO = $idsmanager->createCollection($GO_idspace, "tripal_default_id_space");
     $id_spaces = $cc->getIdSpaceNames();
