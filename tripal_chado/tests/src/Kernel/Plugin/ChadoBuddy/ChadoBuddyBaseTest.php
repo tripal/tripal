@@ -60,6 +60,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
     $this->installConfig('system');
+    $this->installSchema('tripal_chado', ['tripal_custom_tables']);
 
     $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
   }
