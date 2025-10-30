@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group Tripal
  * @group Tripal Database
  */
-#[Group('service')]
+#[Group('service-installer')]
 #[RunTestsInSeparateProcesses]
 class bulkPgSchemaInstallerTest extends BrowserTestBase {
 

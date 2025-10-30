@@ -74,7 +74,7 @@ abstract class TripalTestKernelBase extends KernelTestBase {
    *   - TripalImporter.
    *
    * @return void
-   *   All changes are stored in variables rather then returned.
+   *   All changes are stored in variables rather than returned.
    */
   protected function prepareEnvironment(array $functionality) {
 

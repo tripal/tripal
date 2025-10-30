@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group TripalEntityLookup
  */
 #[Group('tripal-content')]
-#[Group('service')]
+#[Group('service-entity-lookup')]
 #[RunTestsInSeparateProcesses]
 class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
@@ -83,9 +83,9 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     $this->connection->insert('1:arraydesign')
       ->fields([
         'name' => 'ArrayDesign No. 1',
-    // Not used, whatever the very first cvterm is.
+        // Not used, whatever the very first cvterm is.
         'platformtype_id' => 1,
-    // 1 is the null contact, defined by chado
+        // 1 is the null contact, defined by chado
         'manufacturer_id' => 2,
       ])->execute();
 

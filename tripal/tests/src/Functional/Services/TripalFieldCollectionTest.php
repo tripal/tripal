@@ -162,7 +162,7 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
     $this->assertIsInt($defaults['cardinality'], 'The cardinality element is not an integer');
     $this->assertIsArray($defaults['storage_settings']['storage_plugin_settings'], 'The storage_plugin_settings element should be an array');
 
-    // Make sure the setFieldDefDefaults functions doesn't change any valid values.
+    // Make sure the setFieldDefDefaults function doesn't change any valid values.
     $new_def = $fields_service->setFieldDefDefaults($field_def);
     $this->assertTrue($field_def['name'] == $new_def['name'], "The name element changed after setting defaults.");
     $this->assertTrue($field_def['content_type'] == $new_def['content_type'], "The content_type element changed after setting defaults.");

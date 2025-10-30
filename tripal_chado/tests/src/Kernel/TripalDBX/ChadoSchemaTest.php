@@ -51,11 +51,11 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
    * @var array
    */
   protected static array $init_levels = [
-  // self::$INIT_CHADO_EMPTY,.
+    // self::$INIT_CHADO_EMPTY,.
     3,
-  // self::$INIT_CHADO_DUMMY,.
+    // self::$INIT_CHADO_DUMMY,.
     4,
-  // self::$PREPARE_TEST_CHADO,.
+    // self::$PREPARE_TEST_CHADO,.
     5,
   ];
 
