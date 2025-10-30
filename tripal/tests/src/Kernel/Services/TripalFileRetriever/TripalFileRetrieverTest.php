@@ -2,10 +2,11 @@
 
 namespace Drupal\Tests\tripal\Kernel\Services\TripalFileRetriever;
 
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
-
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests retrieval of remote or local files.
@@ -13,8 +14,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal
  * @group Tripal FileRetriever
  */
-#[Group('Tripal')]
-#[Group('Tripal FileRetriever')]
+#[Group('tripal-importer')]
+#[group('service-file-retriever')]
+#[RunTestsInSeparateProcesses]
 class TripalFileRetrieverTest extends TripalTestKernelBase {
 
   /**
@@ -22,11 +24,18 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
    */
   protected static $modules = ['user', 'tripal'];
 
+  /**
+   * Temporary file used in tests.
+   *
+   * @var string
+   */
   private string $tempfile;
 
   /**
-   * @var string $mock_error
-   *   The most recent error message from the mocked tripal logger
+   * The most recent error message from the mocked tripal logger.
+   *
+   * @var string
+   *   The most recent error message from the mocked tripal logger.
    */
   protected string $mock_error = '';
 
@@ -39,18 +48,19 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
     // Grab the container.
     $container = \Drupal::getContainer();
 
-    // Create a mocked logger so we can access error messages from the Tripal logger
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    // Create a mocked logger so we can access error messages
+    // from the Tripal logger.
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['error'])
       ->getMock();
     $mock_logger->method('error')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
           $this->mock_error .= str_replace(array_keys($context), $context, $message);
           return NULL;
-        });
+      });
     $container->set('tripal.logger', $mock_logger);
 
-    // Create a path to a temporary local file
+    // Create a path to a temporary local file.
     $fs_service = \Drupal::service('file_system');
     $this->tempfile = $fs_service->tempnam("temporary://", 'file_retriever_test_');
     $this->tempfile = $fs_service->realpath($this->tempfile);
@@ -62,7 +72,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
   protected function tearDown(): void {
     parent::tearDown();
 
-    // Remove the local temporary file if a test failed
+    // Remove the local temporary file if a test failed.
     if ($this->tempfile and file_exists($this->tempfile)) {
       unlink($this->tempfile);
     }
@@ -100,7 +110,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
         'download_status' => FALSE,
         'file_exists' => FALSE,
         'test_rate_limit' => FALSE,
-      ]
+      ],
     ];
 
     // Test retrieval of valid local file.
@@ -114,7 +124,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
         'download_status' => TRUE,
         'file_exists' => TRUE,
         'test_rate_limit' => FALSE,
-      ]
+      ],
     ];
 
     // Test retrieval of non-existent URL (invalid host).
@@ -128,7 +138,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
         'download_status' => FALSE,
         'file_exists' => FALSE,
         'test_rate_limit' => FALSE,
-      ]
+      ],
     ];
 
     // Test retrieval of non-existent URL (valid host, invalid file)
@@ -136,14 +146,15 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
       'https://github.com/vmasiufekxlkajfd.txt',
       [],
       [
-        // Expect "Invalid file", but in rare cases when host is down can get "Invalid hostname"
+        // Expect "Invalid file", but in rare cases when host is
+        // down can get "Invalid hostname".
         'error_message' => 'Invalid',
         'has_content' => FALSE,
         'skip' => FALSE,
         'download_status' => FALSE,
         'file_exists' => FALSE,
         'test_rate_limit' => FALSE,
-      ]
+      ],
     ];
 
     // Test retrieval of existing URL.
@@ -157,7 +168,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
         'download_status' => TRUE,
         'file_exists' => TRUE,
         'test_rate_limit' => TRUE,
-      ]
+      ],
     ];
 
     return $scenarios;
@@ -167,7 +178,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
    * Tests the Tripal File Retrieval service.
    *
    * @param string $url
-   *  The URL to be passed to retrieveFileContents() + downloadFile().
+   *   The URL to be passed to retrieveFileContents() + downloadFile().
    * @param array $options
    *   Any options to be passed to retrieveFileContents().
    * @param array $expectations
@@ -186,7 +197,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
    */
   #[DataProvider('provideFiles2Retrieve')]
   public function testTripalFileRetriever(string $url, array $options, array $expectations) {
-    // Get the service to be tested
+    // Get the service to be tested.
     $retrieval_service = \Drupal::service('tripal.fileretriever');
 
     // Tests retrieveFileContents()
@@ -205,7 +216,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
         "We logged an error when we did not expect one.");
     }
     // -- Skip instead of fail for certain scenarios.
-    if (is_null($content) AND $expectations['skip']) {
+    if (is_null($content) and $expectations['skip']) {
       $this->markTestSkipped("Received NULL for valid URL. Remote host might be down, so skipping this test.");
     }
     // -- Check the contents.

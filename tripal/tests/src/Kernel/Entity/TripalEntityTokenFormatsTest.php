@@ -7,6 +7,7 @@ use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalEntity URL alias system specifically.
@@ -14,8 +15,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group TripalEntity
  * @group TripalTokenParser
  */
-#[Group('TripalEntity')]
-#[Group('TripalTokenParser')]
+#[Group('tripal-content')]
+#[Group('service-token-parser')]
+#[RunTestsInSeparateProcesses]
 class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
 
   use TripalEntityFieldTestTrait;
