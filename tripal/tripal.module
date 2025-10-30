@@ -15,6 +15,7 @@ use Drupal\Core\Hook\Attribute\LegacyHook;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
+use Drupal\tripal\Services\TripalJob;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\views\ViewEntityInterface;
 use Drupal\views\ViewExecutable;
@@ -611,8 +612,10 @@ function tripal_rebuild() {
  *       An array where each found collection has a key entry and only the chosen
  *       ones have a value the same as the key. All collections not chosen to be
  *       installed will have a value of 0.
+ * @param Drupal\tripal\Services\TripalJob|null $job
+ *   An optional Job object.
  */
-function import_tripalentitytype_collection(array $options, \Drupal\tripal\Services\TripalJob $job = NULL) {
+function import_tripalentitytype_collection(array $options, ?TripalJob $job = NULL) {
 
   // We need to ensure that we only submit the chosen collections.
   $collection_ids = $options['collection_ids'];
@@ -625,7 +628,6 @@ function import_tripalentitytype_collection(array $options, \Drupal\tripal\Servi
 
   $fields = \Drupal::service('tripal.tripalfield_collection');
   $fields->install($chosen_collection_ids);
-
 }
 
 /**

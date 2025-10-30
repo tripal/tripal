@@ -1,10 +1,11 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Functional\Forms;
 
 use Drupal\Core\Url;
 use Drupal\Tests\BrowserTestBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Simple test to ensure that main page loads with module enabled.
@@ -13,9 +14,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group Tripal Forms
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal Forms')]
+#[Group('form')]
+#[Group('chado-schema')]
+#[RunTestsInSeparateProcesses]
 class chadoInstallerFormTest extends BrowserTestBase {
 
   protected $defaultTheme = 'stark';
@@ -41,21 +42,14 @@ class chadoInstallerFormTest extends BrowserTestBase {
     parent::setUp();
     $this->user = $this->drupalCreateUser([
       'administer site configuration',
-      'administer tripal'
+      'administer tripal',
     ]);
     $this->drupalLogin($this->user);
   }
 
   /**
    * Tests that the Chado Installer form loads as expected.
-   *
-   * @group form
-   * @group chado-install
-   * @group chado-install-form
    */
-  #[Group('form')]
-  #[Group('chado-install')]
-  #[Group('chado-install-form')]
   public function testLoadInstallerForm() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');

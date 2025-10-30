@@ -28,14 +28,23 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function mainPropertyName()  {
+  public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
     return 'sourcename';
   }
 
   /**
-   * {@inheritdoc}
+   * {@inheritdoc}
    */
-  public static function defaultFieldSettings()  {
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
+    return 'sourcename';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultFieldSettings() {
     $settings = parent::defaultFieldSettings();
     $settings['termIdSpace'] = 'local';
     $settings['termAccession'] = 'source_data';
