@@ -6,13 +6,16 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy\ChadoTestBuddyBase;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the Chado Property Buddy.
  *
  * @group ChadoBuddy
  */
-#[Group('ChadoBuddy')]
+#[Group('bio-metadata')]
+#[Group('plugin-chado-buddy')]
+#[RunTestsInSeparateProcesses]
 class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
 
   /**
