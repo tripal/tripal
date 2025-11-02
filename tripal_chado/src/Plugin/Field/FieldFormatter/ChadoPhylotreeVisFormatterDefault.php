@@ -169,6 +169,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#value' => '<i class="fa fa-fw fa-sort-amount-asc"></i>',
     ];
     $elements[$delta]['row']['toolbar']['sort_descending'] = [
+      '#suffix' => '</div>',
       '#type' => 'html_tag',
       '#tag' => 'button',
       '#attributes' => [
@@ -178,17 +179,18 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       ],
       '#value' => '<i class="fa fa-fw fa-sort-amount-desc"></i>',
     ];
-    $elements[$delta]['row']['toolbar']['sort_original'] = [
-      '#suffix' => '</div>',
-      '#type' => 'html_tag',
-      '#tag' => 'button',
-      '#attributes' => [
-        'class' => 'btn btn-light btn-sm',
-        'id' => 'sort_original',
-        'title' => 'Restore original order',
-      ],
-      '#value' => '<i class="fa fa-fw fa-sort"></i>',
-    ];
+// @todo this doesn't work in the example either.
+//    $elements[$delta]['row']['toolbar']['sort_original'] = [
+//      '#suffix' => '</div>',
+//      '#type' => 'html_tag',
+//      '#tag' => 'button',
+//      '#attributes' => [
+//        'class' => 'btn btn-light btn-sm',
+//        'id' => 'sort_original',
+//        'title' => 'Restore original order',
+//      ],
+//      '#value' => '<i class="fa fa-fw fa-sort"></i>',
+//    ];
 // @todo make this work.
 //    $elements[$delta]['row']['toolbar']['save_image'] = [
 //      '#suffix' => '</div>',

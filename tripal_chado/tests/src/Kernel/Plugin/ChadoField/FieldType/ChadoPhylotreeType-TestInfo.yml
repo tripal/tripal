@@ -137,7 +137,7 @@ scenarios:
           rank: 9
         phylotree_phylotreevis:
         - record_id: 1
-          tree_json: ''
+          tree_data: ''
     edit:
       user_input:
         phylotree_name:
@@ -168,4 +168,4 @@ scenarios:
           accession: 'C47885'
         phylotree_phylotreevis:
         - record_id: 1
-          tree_json: '{"phylonode_id":1,"parent_phylonode_id":0,"length":0,"cvterm_name":"phylo_root","name":"Root Node","children":[{"phylonode_id":2,"parent_phylonode_id":1,"length":0.001,"cvterm_name":"phylo_interior","name":"Internal Node","children":[{"phylonode_id":3,"parent_phylonode_id":2,"length":0.002,"cvterm_name":"phylo_leaf","name":"Leaf Node Tripalus databasica","feature_id":1,"feature_name":null,"feature_eid":0,"fo_organism_id":1,"fo_common_name":"Common tripal","fo_abbreviation":null,"fo_genus":"Tripalus","fo_species":"databasica","fo_organism_eid":null},{"phylonode_id":4,"parent_phylonode_id":2,"length":0.002,"cvterm_name":"phylo_leaf","name":"Leaf Node Tripalus bogusii","organism_id":2,"common_name":"Common false tripal","abbreviation":null,"organism_eid":null},{"phylonode_id":5,"parent_phylonode_id":2,"length":0.002,"cvterm_name":"phylo_leaf","name":"Leaf Node Tripalus fakus","feature_id":2,"feature_name":null,"feature_eid":0,"fo_organism_id":3,"fo_common_name":"Rare false tripal","fo_abbreviation":null,"fo_genus":"Tripalus","fo_species":"fakus","fo_organism_eid":null}]}]}'
+          tree_data: '(("Leaf Node Tripalus databasica"{"cvterm_name":"phylo_leaf","feature_id":1,"fo_organism_id":1,"fo_common_name":"Common tripal","fo_genus":"Tripalus","fo_species":"databasica"}:0.002,"Leaf Node Tripalus bogusii"{"cvterm_name":"phylo_leaf","organism_id":2,"common_name":"Common false tripal"}:0.002,"Leaf Node Tripalus fakus"{"cvterm_name":"phylo_leaf","feature_id":2,"fo_organism_id":3,"fo_common_name":"Rare false tripal","fo_genus":"Tripalus","fo_species":"fakus"}:0.002)"Internal Node"{"cvterm_name":"phylo_interior"}:0.001)"Root Node"{"cvterm_name":"phylo_root"}:0;'

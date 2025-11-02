@@ -213,7 +213,7 @@ class ChadoPhylotree {
     $annotations = [];
     foreach ($node as $key => $value) {
       if (!in_array($key, $exclude)) {
-        if (strlen($value)) {
+        if (isset($value) && strlen($value)) {
           $annotations[] = $this->escape($key) . ':' . $this->escape($value);
         }
       }
