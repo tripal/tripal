@@ -70,13 +70,13 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
       'path' => $base_table . '.' . $base_pkey_col,
     ]);
 
-    // This property will store the json tree representation.
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'tree_json', $tree_vis_term, [
+    // This property will store the newick tree representation.
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'tree_data', $tree_vis_term, [
       'action' => 'function',
       'drupal_store' => TRUE,
       // __CLASS__ resolves to 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPhylotreeVisTypeDefault'.
       'namespace' => __CLASS__,
-      'function' => 'getTreeJson',
+      'function' => 'getTreeNewick',
     ]);
 
     return $properties;
@@ -149,6 +149,34 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
     $phylotree = new ChadoPhylotree($chado, $lookup_manager);
     $json = $phylotree->getTreeJson($record_id);
+    return $json;
+  }
+
+  /**
+   * Retrieves all phylonodes for one phylotree and converts to newick format.
+   *
+   * @param array $context
+   *   Values that a callback function might need in order
+   *   to calculate the field's final value.
+   *
+   * @return string
+   *   A tree representation in newick format.
+   */
+  public static function getTreeNewick(array $context): string {
+
+    // This will hold each of the tripalTypes values.
+    $field_name = $context['field_name'];
+    $delta = $context['delta'];
+    $values = $context['values'][$field_name][$delta];
+
+    // This retrieves the phylotree_id value.
+    $record_id = $values['record_id']['value']->getValue();
+
+    // This will retrieve the phylonodes and convert to json format.
+    $chado = \Drupal::service('tripal_chado.database');
+    $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
+    $phylotree = new ChadoPhylotree($chado, $lookup_manager);
+    $json = $phylotree->getTreeNewick($record_id);
     return $json;
   }
 

@@ -8,11 +8,20 @@ tripal_chado.chado_table:
 tripal_chado.phylotree:
   css:
     component:
-      'css/tripal_phylogeny.css': {}
+#      'css/tripal_phylogeny.css': {}
+      'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css': { type: 'external', minified: true }
+      'https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css': { type: 'external' }
+      'css/phylotree.css': {}
   js:
-    'https://d3js.org/d3.v3.min.js': { type: 'external', minified: true }
-    'js/d3.phylogram.js': {}
-    'js/tripal_phylogeny.js': {}
+    'https://code.jquery.com/jquery.js': { type: 'external' }
+    'https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js': { type: 'external', minified: true }
+    'https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js': { type: 'external', minified: true }
+    'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js': {  type: 'external', minified: true  }
+    'https://d3js.org/d3.v6.min.js': { type: 'external', minified: true }
+    'https://phylotree.hyphy.org/dist/phylotree.js': { type: 'external' }
+    'js/phylotree.js': {}
+#    'js/phylogram.js': {}
+#    'js/tripal_phylogeny.js': {}
   dependencies:
     - 'core/drupal'
     - 'core/once'

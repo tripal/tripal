@@ -57,16 +57,19 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     foreach ($items as $delta => $item) {
       $values = [
         'record_id' => $item->get('record_id')->getString(),
-        'tree_json' => $item->get('tree_json')->getString(),
+        'tree_data' => $item->get('tree_data')->getString(),
       ];
+
+      // Adds toolbar to render array.
+      $this->toolBarElements($elements, $delta);
 
       // Placeholder for the phylogram image.
       $elements[$delta]['phylogram'] = [
-        '#markup' => '<div id="chado-phylogram"></div>',
+        '#markup' => '<div id="tree_container"></div>',
       ];
 
       // Add the variables used by the javascript.
-      $elements['#attached']['drupalSettings']['treeJSON'] = $values['tree_json'];
+      $elements['#attached']['drupalSettings']['treeData'] = $values['tree_data'];
       $elements['#attached']['drupalSettings']['treeOptions'] = $treeOptions;
     }
 
@@ -86,6 +89,170 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     $settings['phylogram_leaf_node_size'] = 6;
     $settings['phylogram_colors'] = [];
     return $settings;
+  }
+
+  /**
+   * Adds form elements for the toolbar above the phylotree.
+   *
+   * @param array &$elements
+   *   Render array to have elements added
+   * @param int $delta
+   *   Delta, but cardinality is 1, so will always be zero.
+   *
+   * @return void
+   *   No return value, changes are made to the &$elements array.
+   */
+  protected function toolBarElements(array &$elements, int $delta): void {
+    $elements[$delta]['row'] = [
+      '#prefix' => '<div class="row">',
+      '#suffix' => '</div>',
+    ];
+    $elements[$delta]['row']['toolbar'] = [
+      '#prefix' => '<div class="col-md-8 btn-toolbar" role="toolbar" id="toolbar">',
+      '#suffix' => '</div>',
+    ];
+
+    // Group 1.
+    $elements[$delta]['row']['toolbar']['vertical_plus'] = [
+      '#prefix' => '<div class="btn-group">',
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#attributes' => [
+        'class' => 'btn btn-light btn-sm',
+        'data-direction' => 'vertical',
+        'data-amount' => '1',
+        'title' => 'Expand vertical spacing',
+      ],
+      '#value' => '<i class="fa fa-fw fa-arrows-v"></i>',
+    ];
+    $elements[$delta]['row']['toolbar']['vertical_minus'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#attributes' => [
+        'class' => 'btn btn-light btn-sm',
+        'data-direction' => 'vertical',
+        'data-amount' => '-1',
+        'title' => 'Compress vertical spacing',
+      ],
+      '#value' => '<i class="fa fa-fw fa-compress fa-rotate-135"></i>',
+    ];
+    $elements[$delta]['row']['toolbar']['horizontal_plus'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#attributes' => [
+        'class' => 'btn btn-light btn-sm',
+        'data-direction' => 'horizontal',
+        'data-amount' => '1',
+        'title' => 'Expand horizontal spacing',
+      ],
+      '#value' => '<i class="fa fa-fw fa-arrows-h"></i>',
+    ];
+    $elements[$delta]['row']['toolbar']['horizontal_minus'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#attributes' => [
+        'class' => 'btn btn-light btn-sm',
+        'data-direction' => 'horizontal',
+        'data-amount' => '-1',
+        'title' => 'Compress horizontal spacing',
+      ],
+      '#value' => '<i class="fa fa-fw fa-compress fa-rotate-45"></i>',
+    ];
+    $elements[$delta]['row']['toolbar']['sort_ascending'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#attributes' => [
+        'class' => 'btn btn-light btn-sm',
+        'id' => 'sort_ascending',
+        'title' => 'Sort deepest clades to the bottom',
+      ],
+      '#value' => '<i class="fa fa-fw fa-sort-amount-asc"></i>',
+    ];
+    $elements[$delta]['row']['toolbar']['sort_descending'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#attributes' => [
+        'class' => 'btn btn-light btn-sm',
+        'id' => 'sort_descending',
+        'title' => 'Sort deepest clades to the top',
+      ],
+      '#value' => '<i class="fa fa-fw fa-sort-amount-desc"></i>',
+    ];
+    $elements[$delta]['row']['toolbar']['sort_original'] = [
+      '#suffix' => '</div>',
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#attributes' => [
+        'class' => 'btn btn-light btn-sm',
+        'id' => 'sort_original',
+        'title' => 'Restore original order',
+      ],
+      '#value' => '<i class="fa fa-fw fa-sort"></i>',
+    ];
+// @todo make this work.
+//    $elements[$delta]['row']['toolbar']['save_image'] = [
+//      '#suffix' => '</div>',
+//      '#type' => 'html_tag',
+//      '#tag' => 'button',
+//      '#attributes' => [
+//        'class' => 'btn btn-light btn-sm',
+//        'id' => 'save_image',
+//        'title' => 'Save image',
+//      ],
+//      '#value' => '<i class="fa fa-fw fa-picture-o"></i>',
+//    ];
+
+    // Group 2.
+    $elements[$delta]['row']['toolbar']['linear'] = [
+      '#prefix' => '<div class="btn-group" role="group">',
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#attributes' => [
+        'class' => 'btn btn-light btn-sm active phylotree-layout-mode',
+        'data-mode' => 'linear',
+      ],
+      '#value' => 'Linear',
+    ];
+    $elements[$delta]['row']['toolbar']['radial'] = [
+      '#suffix' => '</div>',
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#attributes' => [
+        'class' => 'btn btn-light btn-sm phylotree-layout-mode',
+        'data-mode' => 'radial',
+      ],
+      '#value' => 'Radial',
+    ];
+
+    // Group 3.
+    $elements[$delta]['row']['toolbar']['align-left'] = [
+      '#prefix' => '<div class="btn-group" role="group">',
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#attributes' => [
+        'class' => 'btn btn-light btn-sm active phylotree-align-toggler',
+        'data-align' => 'left',
+      ],
+      '#value' => '<i class="fa fa-fw fa-align-left"></i>',
+    ];
+    $elements[$delta]['row']['toolbar']['align-right'] = [
+      '#suffix' => '</div>',
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#attributes' => [
+        'class' => 'btn btn-light btn-sm phylotree-align-toggler',
+        'data-align' => 'right',
+      ],
+      '#value' => '<i class="fa fa-fw fa-align-right"></i>',
+    ];
+
+    // Selection status.
+    $elements[$delta]['row']['selected'] = [
+      '#prefix' => '<div class="col-md-4 pull-right">',
+      '#suffix' => '</div>',
+      '#markup' => '<b>Selected </b><span class="badge badge-secondary" id="selected_branch_counter">0</span>',
+    ];
+
   }
 
   /**

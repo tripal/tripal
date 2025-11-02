@@ -136,6 +136,112 @@ class ChadoPhylotree {
   }
 
   /**
+   * Generates a newick representation of all the nodes in a phylotree.
+   *
+   * @param int $phylotree_id
+   *   The ID of the phylotree table record.
+   *
+   * @return string
+   *   The phylotree encoded in newick format.
+   *   Returns an empty string if the specified tree does not
+   *   exist, or if it has no phylonodes attached.
+   */
+  public function getTreeNewick(int $phylotree_id): string {
+    $structure = $this->getTreeStructure($phylotree_id);
+#print "CP1 entire tree structure ";var_dump($structure);//@@@
+    $newick = '';
+    if ($structure) {
+      $newick = $this->getNodeNewick($structure) . ';';
+    }
+#print "CP9 newick \"". $newick . "\"\n";//@@@
+    return $newick;
+  }
+
+  /**
+   * A recursive function to process nodes into newick format.
+   *
+   * @param array $node
+   *   A leaf, internal, or root node.
+   *
+   * @return string
+   *   The tree or tree subset in newick format.
+   */
+  protected function getNodeNewick(array $node): string {
+    $newick = '';
+    if (!($node['children'] ?? [])) {
+      // Process a leaf node.
+      $newick = $this->escape($node['name']);
+    }
+    else {
+      // Process an internal node.
+      $children_strings = [];
+      foreach ($node['children'] as $child) {
+        $children_strings[] = $this->getNodeNewick($child);
+      }
+      $name = $this->escape($node['name'] ?? '');
+      $newick = '(' . implode(',', $children_strings) . ')' . $name;
+    }
+
+    // Include annotations from Chado if present.
+    $newick .= $this->getAnnotations($node);
+
+    // Include length if present.
+    if (isset($node['length'])) {
+      $newick .= ':' . $node['length'];
+    }
+
+    return $newick;
+
+  }
+
+  /**
+   * Encode any additional annotations in a json string.
+   *
+   * To be compatible with phylotree.js the json string will be
+   * enclosed in curly braces {}.
+   *
+   * Example: '{"cvterm_name":"phylo_leaf","organism_id":7,"entity_id":11}'.
+   *
+   * @param array $node
+   *   One node from the phylotree.
+   *
+   * @return string
+   *   Encoded properties, or an empty string if there are none.
+   */
+  protected function getAnnotations(array $node): string {
+    $exclude = ['length', 'phylonode_id', 'parent_phylonode_id', 'name', 'children'];
+    $annotations = [];
+    foreach ($node as $key => $value) {
+      if (!in_array($key, $exclude)) {
+        if (strlen($value)) {
+          $annotations[] = $this->escape($key) . ':' . $this->escape($value);
+        }
+      }
+    }
+    $annotation_string = '';
+    if ($annotations) {
+      $annotation_string = '{' . implode(',', $annotations) . '}';
+    }
+    return $annotation_string;
+  }
+
+  /**
+   * Quote if the string is anything other than an integer.
+   *
+   * @param string $string
+   *   The string to processed.
+   *
+   * @return string
+   *   The string with surrounding double quotes if necessary.
+   */
+  protected function escape(string $string): string {
+    if (preg_match('/[^0-9]/', $string)) {
+      $string = '"' . $string . '"';
+    }
+    return $string;
+  }
+
+  /**
    * Generates a json representation of all the nodes in a phylotree.
    *
    * @param int $phylotree_id
@@ -200,7 +306,7 @@ class ChadoPhylotree {
         else {
           $entity_id = $this->entity_lookup_manager->getEntityId($r->feature_id, NULL, NULL, 'feature');
         }
-        $node['feature_eid'] = (int) $entity_id;
+        $node['entity_id'] = (int) $entity_id;
       }
 
       // Add in the organism fields when they are available via the
@@ -209,7 +315,7 @@ class ChadoPhylotree {
         $node['organism_id'] = (int) $r->organism_id;
         $node['common_name'] = $r->common_name;
         $node['abbreviation'] = $r->abbreviation;
-        $node['organism_eid'] = $this->entity_lookup_manager->getEntityId($r->organism_id, 'OBI', '0100026', 'organism');
+        $node['entity_id'] = $this->entity_lookup_manager->getEntityId($r->organism_id, 'OBI', '0100026', 'organism');
 
         // If the node does not have a name but is linked to an organism
         // then set the name to be that of the genus and species.
@@ -226,7 +332,7 @@ class ChadoPhylotree {
         $node['fo_abbreviation'] = $r->fo_abbreviation;
         $node['fo_genus'] = $r->fo_genus;
         $node['fo_species'] = $r->fo_species;
-        $node['fo_organism_eid'] = $this->entity_lookup_manager->getEntityId($r->fo_organism_id, 'OBI', '0100026', 'organism');
+        $node['entity_id'] = $this->entity_lookup_manager->getEntityId($r->fo_organism_id, 'OBI', '0100026', 'organism');
       }
 
       // Add this node to the list, organized by ID.
@@ -252,6 +358,120 @@ class ChadoPhylotree {
     }
 
     return $json;
+  }
+
+  /**
+   * Generates a php representation of all the nodes in a phylotree.
+   *
+   * @param int $phylotree_id
+   *   The ID of the phylotree table record.
+   *
+   * @return array
+   *   The phylotree array.
+   *   Returns an empty array if the specified tree does not
+   *   exist, or if it has no phylonodes attached.
+   */
+  public function getTreeStructure(int $phylotree_id): array {
+    $json = '';
+
+    /** @var array */
+    $phylotree = $this->loadPhylotreeById($phylotree_id);
+    if (!$phylotree) {
+      return $json;
+    }
+
+    /** @var Drupal\Core\Database\StatementWrapperIterator */
+    $nodes = $this->loadPhylonodesById($phylotree_id);
+    if (!$nodes) {
+      return $json;
+    }
+
+    // Fetch all the phylonodes into an associative array indexed by
+    // phylonode_id. Convert from database query record to array,
+    // casting to appropriate datatypes.
+    $phylonodes = [];
+    $root_phylonode_ref = NULL;
+
+    while ($r = $nodes->fetchObject()) {
+      $phylonode_id = (int) $r->phylonode_id;
+
+      // Expect all nodes to have these properties.
+      $node = [
+        'phylonode_id' => $phylonode_id,
+        'parent_phylonode_id' => (int) $r->parent_phylonode_id,
+        'length' => (double) $r->length,
+        'cvterm_name' => $r->cvterm_name,
+      ];
+
+      // If the nodes are taxonomic then set an equal distance.
+      if (($phylotree['type_id'] ?? 0) == $this->cv_terms['Species tree']) {
+        $node['length'] = 0.001;
+      }
+
+      // Other properties may exist only for leaf nodes.
+      if ($r->name) {
+        $node['name'] = $r->name;
+      }
+
+      // If this node is associated with a feature, then add in the details.
+      if ($r->feature_id) {
+        $node['feature_id'] = (int) $r->feature_id;
+        $node['feature_name'] = $r->feature_name;
+        // If not linked directly to a feature, leaf nodes can also be linked to
+        // stock entities through an intermediate feature.
+        if ($r->stock_id) {
+          $entity_id = $this->entity_lookup_manager->getEntityId($r->stock_id, NULL, NULL, 'stock');
+        }
+        else {
+          $entity_id = $this->entity_lookup_manager->getEntityId($r->feature_id, NULL, NULL, 'feature');
+        }
+        $node['entity_id'] = (int) $entity_id;
+      }
+
+      // Add in the organism fields when they are available via the
+      // phylonode_organism table.
+      if ($r->organism_id) {
+        $node['organism_id'] = (int) $r->organism_id;
+        $node['common_name'] = $r->common_name;
+        $node['abbreviation'] = $r->abbreviation;
+        $node['entity_id'] = $this->entity_lookup_manager->getEntityId($r->organism_id, 'OBI', '0100026', 'organism');
+
+        // If the node does not have a name but is linked to an organism
+        // then set the name to be that of the genus and species.
+        if (!$r->name) {
+          $node['name'] = chado_get_organism_scientific_name(chado_get_organism(['organism_id' => $r->organism_id], []));
+        }
+      }
+
+      // Add in the organism fields when they are available via the
+      // phylonode.feature_id FK relationship.
+      if ($r->fo_organism_id) {
+        $node['fo_organism_id'] = (int)$r->fo_organism_id;
+        $node['fo_common_name'] = $r->fo_common_name;
+        $node['fo_abbreviation'] = $r->fo_abbreviation;
+        $node['fo_genus'] = $r->fo_genus;
+        $node['fo_species'] = $r->fo_species;
+        $node['entity_id'] = $this->entity_lookup_manager->getEntityId($r->fo_organism_id, 'OBI', '0100026', 'organism');
+      }
+
+      // Add this node to the list, organized by ID.
+      $phylonodes[$phylonode_id] = $node;
+    }
+
+    // Populate the children[] arrays for each node.
+    $root_phylonode_ref = [];
+    foreach ($phylonodes as $key => &$node) {
+      if ($node['parent_phylonode_id'] !== 0) {
+        $parent_ref = &$phylonodes[$node['parent_phylonode_id']];
+        // Append node reference to children.
+        $parent_ref['children'][] = &$node;
+      }
+      else {
+        $root_phylonode_ref = &$node;
+      }
+    }
+
+    return $root_phylonode_ref;
   }
 
 }
