@@ -4,9 +4,12 @@ namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\TripalDBX\TripalDbx;
+use Drupal\tripal\TripalDBX\TripalDbxConnection;
+use Drupal\tripal\TripalDBX\TripalDbxSchema;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Tripal DBX tool on a real database.
@@ -28,9 +31,6 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers ::getSchemaSize
  */
 #[CoversClass(TripalDbx::class)]
-#[Group('Tripal')]
-#[Group('TripalDBX')]
-#[Group('TripalDbxService')]
 #[CoversMethod(TripalDbx::class, 'getDrupalSchemaName')]
 #[CoversMethod(TripalDbx::class, 'isInvalidSchemaName')]
 #[CoversMethod(TripalDbx::class, 'schemaExists')]
@@ -40,6 +40,8 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversMethod(TripalDbx::class, 'dropSchema')]
 #[CoversMethod(TripalDbx::class, 'getDatabaseSize')]
 #[CoversMethod(TripalDbx::class, 'getSchemaSize')]
+#[Group('tripal-dbx')]
+#[RunTestsInSeparateProcesses]
 class TripalDbxFunctionalTest extends TripalTestKernelBase {
 
   /**
@@ -146,7 +148,9 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
     \Drupal::getContainer()->set('config.factory', $this->configFactory);
 
     // Hack to clear TripalDbx Service cache on each run.
-    $clear = function() {TripalDbx::$drupalSchema = NULL;};
+    $clear = function () {
+      TripalDbx::$drupalSchema = NULL;
+    };
     $clear->call(new TripalDbx());
   }
 
@@ -276,15 +280,16 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
     // Clone schema.
     //   We fist need some mock objects for this.
     //   1. Create the Connection mock.
-    $dbmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
-     ->setConstructorArgs([$test_schema])
-     ->onlyMethods(['getTripalDbxClass', 'findVersion', 'getAvailableInstances', 'schema'])
-     ->getMockForAbstractClass();
-    //    2. Create the schema mock using the connection mock.
-    $scmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxSchema::class)
+    $dbmock = $this->getMockBuilder(TripalDbxConnection::class)
+      ->setConstructorArgs([$test_schema])
+      ->onlyMethods(['getTripalDbxClass', 'findVersion', 'getAvailableInstances', 'schema'])
+      ->getMock();
+    // 2. Create the schema mock using the connection mock.
+    $scmock = $this->getMockBuilder(TripalDbxSchema::class)
       ->setConstructorArgs([$dbmock])
-      ->getMockForAbstractClass();
-    //    3. Ensure the Connection returns the schema mock as it's schema object.
+      ->onlyMethods(['getSchemaDef'])
+      ->getMock();
+    // 3. Ensure the Connection returns the schema mock as it's schema object.
     $dbmock
       ->expects($this->any())
      ->method('schema')

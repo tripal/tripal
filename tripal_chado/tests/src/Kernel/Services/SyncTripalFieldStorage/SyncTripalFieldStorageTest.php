@@ -1,22 +1,22 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel;
+namespace Drupal\Tests\tripal\Kernel\Services\SyncTripalFieldStorage;
 
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\pgsql\Driver\Database\pgsql\Connection;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the SyncTripalFieldStorage service.
  *
  * @group SyncTripalFieldStorage
  */
-#[Group('chado-storage')]
-#[Group('tripal-entity')]
-#[Group('tripal-field')]
 #[Group('tripal-storage')]
+#[Group('tripal-field')]
+#[RunTestsInSeparateProcesses]
 class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
 
   /**

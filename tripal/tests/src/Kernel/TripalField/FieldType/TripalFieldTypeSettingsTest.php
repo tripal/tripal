@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel\TripalField;
+namespace Drupal\Tests\tripal\Kernel\TripalField\FieldType;
 
 use Drupal\Core\Form\FormState;
 use Drupal\field_ui\Form\FieldStorageConfigEditForm;
@@ -8,6 +8,7 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalFieldItemBase class indirectly.
@@ -15,6 +16,7 @@ use PHPUnit\Framework\Attributes\Group;
  * @group TripalField
  */
 #[Group('tripal-field')]
+#[RunTestsInSeparateProcesses]
 class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
 
   /**

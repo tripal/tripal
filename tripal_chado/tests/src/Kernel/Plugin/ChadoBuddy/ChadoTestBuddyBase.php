@@ -3,16 +3,11 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\Database\ChadoConnection;
-use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the Chado Property Buddy.
- *
- * @group ChadoBuddy
  */
-#[Group('ChadoBuddy')]
 abstract class ChadoTestBuddyBase extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
@@ -33,18 +28,25 @@ abstract class ChadoTestBuddyBase extends ChadoTestKernelBase {
    * @param string $pkey
    *   The primary key to check in the returned values, e.g. 'cv.cv_id'.
    * @param array $description
-   *   Describes the buddy in assertions, e.g. 'db "local"', 'property "prop001"'
+   *   Describes the buddy in assertions, e.g. 'db "local"', 'property "prop001"'.
    * @param int $count
    *   The expected number of values.
+   *
    * @return array
    *   Each of the sets of record values from the supplied buddy records,
    *   i.e. the 'set' values and the 'get' values.
    */
-  protected function multiAssert(string $test_type, array $test_records,
-      string $base_table, string $pkey, string $description, int $count) {
+  protected function multiAssert(
+    string $test_type,
+    array $test_records,
+    string $base_table,
+    string $pkey,
+    string $description,
+    int $count,
+  ) {
     $values = [];
     foreach ($test_records as $mode => $chado_buddy_records) {
-      // mode 'set' will be an object, while 'get' will be an array of objects
+      // Mode 'set' will be an object, while 'get' will be an array of objects.
       if ($mode == 'get') {
         $this->assertIsArray($chado_buddy_records, "On $test_type+$mode, we do not have an array of chado buddy records for $description");
         $this->assertEquals(1, count($chado_buddy_records), "On $test_type+$mode, we do not have exactly one record for $description");

@@ -1284,7 +1284,7 @@ class ChadoRecords {
         }
 
         // Check if the id is present in the FK table.
-        $query = $this->connection->select($fk_table, 'fk');
+        $query = $this->connection->select('1:' . $fk_table, 'fk');
         $query->fields('fk', [$rcol]);
         $query->condition($rcol, $col_val);
         $fk_id = $query->execute()->fetchField();

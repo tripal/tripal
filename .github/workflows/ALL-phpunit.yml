@@ -27,6 +27,7 @@ jobs:
           - '10.5.x-dev'
           - '11.1.x-dev'
           - '11.2.x-dev'
+          - '11.x-dev'
         exclude:
           # Only Drupal 11.x supports PHP 8.4
           - php-version: '8.4'
@@ -42,6 +43,13 @@ jobs:
             drupal-version: '11.2.x-dev'
           - php-version: '8.2'
             drupal-version: '11.2.x-dev'
+          # Drupal 11.x is the bleeding edge so only run it on the latest php.
+          - php-version: '8.1'
+            drupal-version: '11.x-dev'
+          - php-version: '8.2'
+            drupal-version: '11.x-dev'
+          - php-version: '8.3'
+            drupal-version: '11.x-dev'
           # Drupal 11+ requires at least Postgresql 16.
           - php-version: '8.3'
             pgsql-version: '13'
@@ -55,6 +63,10 @@ jobs:
           - php-version: '8.4'
             pgsql-version: '13'
             drupal-version: '11.2.x-dev'
+          # Drupal 11.x is the bleeding edge so only run it on the latest pgsql.
+          - php-version: '8.4'
+            pgsql-version: '13'
+            drupal-version: '11.x-dev'
           # Exclude higher postgresql version from middle Drupal versions
           # This is done to reduce combinations; higher postgresql version
           # will be tested on merge to 4.x.
