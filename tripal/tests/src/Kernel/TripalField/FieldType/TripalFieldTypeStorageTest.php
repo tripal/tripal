@@ -7,12 +7,14 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalFieldItemBase class local caching of TripalStorage.
  */
-#[Group('tripal-entity')]
+#[Group('tripal-content')]
 #[Group('tripal-field')]
+#[RunTestsInSeparateProcesses]
 class TripalFieldTypeStorageTest extends TripalTestKernelBase {
 
   use TripalEntityFieldTestTrait;
