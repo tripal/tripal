@@ -7,7 +7,6 @@ use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\Services\TripalJob;
 use Drupal\Tests\tripal\Traits\TripalTestTrait;
 use Drupal\Tests\BrowserTestBase;
-use Drupal\tripal\Entity\TripalEntity;
 use Drupal\file\Entity\File;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
