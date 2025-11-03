@@ -5,11 +5,13 @@ namespace Drupal\Tests\tripal\Functional\Entity;
 use Drupal\Tests\tripal\Functional\Entity\Subclass\TripalEntityAccessControlHandlerFake;
 use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\Entity\TripalEntityType;
+use Drupal\tripal\Access\TripalAccessOwnContentCheck;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Access\AccessResultAllowed;
 use Drupal\Core\Access\AccessResultNeutral;
 use Drupal\Core\Access\AccessResultForbidden;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests Access Checks associated with Tripal Entities.
@@ -18,13 +20,30 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Content
  * @group Tripal Permissions
  */
-#[Group('Tripal')]
-#[Group('Tripal Content')]
-#[Group('Tripal Permissions')]
+#[Group('tripal-content')]
+#[Group('access-entity')]
+#[RunTestsInSeparateProcesses]
 class EntityAccessTest extends BrowserTestBase {
   protected $defaultTheme = 'stark';
 
   protected static $modules = ['user', 'path', 'tripal'];
+
+  /**
+   * Test TripalAccessOwnContentCheck.
+   */
+  public function testTripalAccessOwnContentCheck() {
+
+    $account_other = $this->drupalCreateUser([]);
+    $owner = $account_owner = $this->drupalCreateUser([]);
+
+    $access_check_obj = new TripalAccessOwnContentCheck();
+
+    $result = $access_check_obj->access($owner, $account_other);
+    $this->assertInstanceOf(AccessResultForbidden::class, $result, "A user other then the owner should not be allowed access.");
+
+    $result = $access_check_obj->access($owner, $account_owner);
+    $this->assertInstanceOf(AccessResultAllowed::class, $result, "The owner should be allowed access.");
+  }
 
   /**
    * Test TripalEntityAccessControlHandler.

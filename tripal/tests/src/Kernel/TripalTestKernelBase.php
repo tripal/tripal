@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
@@ -13,11 +14,14 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group Tripal
  */
-#[Group('Tripal')]
+#[Group('tripal-testing')]
 abstract class TripalTestKernelBase extends KernelTestBase {
 
   use TripalTestTrait;
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = ['tripal'];
 
   /**
@@ -35,7 +39,7 @@ abstract class TripalTestKernelBase extends KernelTestBase {
   protected $logger = NULL;
 
   /**
-   * An instance of the Tripal file retriever service
+   * An instance of the Tripal file retriever service.
    *
    * @var ?Drupal\tripal\Services\TripalFileRetriever
    */
@@ -49,34 +53,28 @@ abstract class TripalTestKernelBase extends KernelTestBase {
   protected $publish_manager = NULL;
 
   /**
-   * {@inheritdoc}
-   */
-  protected function setUp() :void {
-    parent::setUp();
-  }
-
-  /**
    * Prepare kernel environments to support specific functionality.
    *
    * This method is focused on making it easier to write kernel test for Tripal
    * functionality. Simply pass in the parts of Tripal core you need in your
-   * tests and this method will handle any dependencies to install all the needed
+   * tests and this method will handle any dependencies to install all needed
    * schema + config associated with that functionality. Additionally it will
    * try to warn you if your modules array is missing entries with a more user
    * friendly failure then the typical one provided by Drupal.
    *
    * @param array $functionality
-   *  A list of functionality you need to support. Although this method handles
-   *  dependencies, you should include all items in the supported keys below
-   *  that you need. This is because in some cases you will want to mock rather
-   *  then include in your kernel tests and this way, this method supports that.
-   *  Supported keys are:
+   *   A list of functionality you need to support. Although this method handles
+   *   dependencies, you should include all items in the supported keys below
+   *   that you need. This is because in some cases you will want to mock rather
+   *   then include in your kernel tests and this method supports that.
+   *   Supported keys are:
    *   - TripalTerm
    *   - TripalEntity
    *   - TripalField
-   *   - TripalImporter
+   *   - TripalImporter.
    *
    * @return void
+   *   All changes are stored in variables rather than returned.
    */
   protected function prepareEnvironment(array $functionality) {
 
@@ -101,7 +99,7 @@ abstract class TripalTestKernelBase extends KernelTestBase {
       $this->installConfig(['field']);
     }
 
-    if(in_array('TripalImporter', $functionality)) {
+    if (in_array('TripalImporter', $functionality)) {
       $this->installConfig('system');
       $this->installEntitySchema('user');
       $this->installEntitySchema('file');
@@ -114,4 +112,5 @@ abstract class TripalTestKernelBase extends KernelTestBase {
       $this->publish_manager = \Drupal::service('tripal.backend_publish');
     }
   }
+
 }
