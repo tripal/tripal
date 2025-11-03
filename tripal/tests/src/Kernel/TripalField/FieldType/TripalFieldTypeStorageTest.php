@@ -278,31 +278,10 @@ class TripalFieldTypeStorageTest extends TripalTestKernelBase {
       }
     }
 
-    // 4. Test that field values are reset to defaults of the correct type.
-    // Note: We will only do this for the first field item for each field.
-    $expected_values = $field_value_scenario['clearValues']['expected'];
-    foreach ($fields_under_test as $field_name) {
-      $field_item = $entity->get($field_name)->first();
-
-      $field_item->clearFieldValuesForTripalStorage();
-      $field_values = $field_item->getValue();
-      foreach ($field_values as $property_key => $field_val) {
-        $expected_prop_value = $expected_values[$field_name][0][$property_key];
-        $expected_propval_type = gettype($expected_prop_value);
-
-        $this->assertEquals(
-          $expected_prop_value,
-          $field_val,
-          "The field value for $field_name [0] [$property_key] was not what we expected (i.e. was not the correct default value for the property value)."
-        );
-
-        $this->assertEquals(
-          $expected_propval_type,
-          gettype($field_val),
-          "The primitive type of the cleared field value for $field_name [0] [$property_key] was not what we expected."
-        );
-      }
-    }
+    // Note: There is no point testing that field values are reset to defaults
+    // of the correct type when only drupal storage is available. This is
+    // because drupal storage automatically marks all properties to be saved
+    // in drupal! (since it's the primary storage).
   }
 
   /**
@@ -458,38 +437,6 @@ class TripalFieldTypeStorageTest extends TripalTestKernelBase {
           $expected_values[$field_name][$delta],
           $field_item->getValue(),
           "The updated field values after $field_name syncFieldValuesWithTripalStorage() did not match what we expected."
-        );
-      }
-    }
-
-    // 4. Test that field values are reset to defaults of the correct type.
-    // Note: We will only do this for the first field item for each field.
-    $expected_values = $field_value_scenario['clearValues']['expected'];
-    foreach ($fields_under_test as $field_name) {
-      $field_item = $entity->get($field_name)->first();
-
-      $field_item->tripalClear(
-        $field_item,
-        $field_name,
-        $field_item->getTripalStoragePropertyTypes(),
-        $field_item->getTripalStoragePropertyValues(),
-        $entity,
-      );
-      $field_values = $field_item->getValue();
-      foreach ($field_values as $property_key => $field_val) {
-        $expected_prop_value = $expected_values[$field_name][0][$property_key];
-        $expected_propval_type = gettype($expected_prop_value);
-
-        $this->assertEquals(
-          $expected_prop_value,
-          $field_val,
-          "The field value for $field_name [0] [$property_key] was not what we expected (i.e. was not the correct default value for the property value)."
-        );
-
-        $this->assertEquals(
-          $expected_propval_type,
-          gettype($field_val),
-          "The primitive type of the cleared field value for $field_name [0] [$property_key] was not what we expected."
         );
       }
     }
