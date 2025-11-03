@@ -89,7 +89,9 @@ class TripalContentViewAccessTest extends TripalTestKernelBase {
       ->disableOriginalConstructor()
       ->getMock();
     $options = [
-      'content_types' => ['all'],
+      'content_types' => [
+        'all' => 'ALL Existing Content Types',
+      ],
       'mode' => 'any',
       'operation' => 'view',
     ];
@@ -143,7 +145,9 @@ class TripalContentViewAccessTest extends TripalTestKernelBase {
       ->disableOriginalConstructor()
       ->getMock();
     $options = [
-      'content_types' => ['all'],
+      'content_types' => [
+        'all' => 'ALL Existing Content Types',
+      ],
       'mode' => 'any',
       'operation' => 'view',
     ];
@@ -157,7 +161,7 @@ class TripalContentViewAccessTest extends TripalTestKernelBase {
     // 2. Assert that the form elements are correctly rendered with the
     // correct default values.
     $this->assertArrayHasKey('content_types', $form, 'Content Types form element is expected but not present.');
-    $this->assertEquals(['all'], $form['content_types']['#default_value'], "Default value for Content Types is expected to be all but it's not.");
+    $this->assertEquals(['all' => 'ALL Existing Content Types'], $form['content_types']['#default_value'], "Default value for Content Types is expected to be all but it's not.");
     $this->assertEquals('select', $form['content_types']['#type'], 'Content Types form element is expected to be of type select.');
     $this->assertArrayHasKey($content_type->id(), $form['content_types']['#options'], "Content Type {$content_type->id()} is expected to be in the options list but it's not.");
 
@@ -166,6 +170,64 @@ class TripalContentViewAccessTest extends TripalTestKernelBase {
 
     $this->assertArrayHasKey('operation', $form, 'Operation form element is expected but not present.');
     $this->assertEquals('view', $form['operation']['#default_value'], 'Default value for Operation is expected to be view but it is not.');
+  }
+
+  /**
+   * Tests the summaryTitle() method.
+   */
+  public function testSummary() {
+    $content_type_service = \Drupal::service('tripal.tripalentitytype_collection');
+    $term = [
+      'label' => 'Organism',
+      'term' => $this->mock_terms['organism'],
+      'help_text' => 'Use the organism page for an individual living system, such as animal, plant, bacteria or virus,',
+      'category' => 'General',
+      'id' => 'organism',
+      'title_format' => "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]",
+      'url_format' => "organism/[TripalEntity__entity_id]",
+      'synonyms' => ['bio_data_1'],
+    ];
+    $content_type = $content_type_service->createContentType($term);
+
+    $content_type_id = $content_type->id();
+
+    // 1. Create the access handler and build the form.
+    $access_handler = new TripalContentViewAccessHandler([], 'tripal_content_views_access', []);
+
+    $executable = $this->getMockBuilder('Drupal\views\ViewExecutable')
+      ->disableOriginalConstructor()
+      ->getMock();
+    $display = $this->getMockBuilder('Drupal\views\Plugin\views\display\DisplayPluginBase')
+      ->disableOriginalConstructor()
+      ->getMock();
+    $options = [
+      'content_types' => [
+        'all' => 'ALL Existing Content Types',
+      ],
+      'mode' => 'any',
+      'operation' => 'view',
+    ];
+
+    $access_handler->init($executable, $display, $options);
+
+    $summary = $access_handler->summaryTitle();
+
+    $this->assertEquals('view at least 1 of the existing Tripal Content Type(s)', $summary);
+
+    $options = [
+      'content_types' => [
+        $content_type_id => $content_type->getLabel(),
+        'all' => 'ALL Existing Content Types',
+      ],
+      'mode' => 'all',
+      'operation' => 'view',
+    ];
+
+    $access_handler->init($executable, $display, $options);
+
+    $summary = $access_handler->summaryTitle();
+
+    $this->assertEquals('view all of the existing Tripal Content Type(s)', $summary);
   }
 
 }

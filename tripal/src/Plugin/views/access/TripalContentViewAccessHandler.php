@@ -39,7 +39,7 @@ class TripalContentViewAccessHandler extends AccessPluginBase {
     $options = parent::defineOptions();
 
     // Which content types the permissions should be restricted to.
-    $options['content_types'] = ['default' => ['all']];
+    $options['content_types'] = ['default' => ['all' => 'ALL Existing Content Types']];
     // The way to handle multiple content types.
     $options['mode'] = ['default' => 'any'];
     // The CRUD operation permission for those content types to check.
