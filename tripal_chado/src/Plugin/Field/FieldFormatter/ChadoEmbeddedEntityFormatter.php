@@ -47,7 +47,7 @@ class ChadoEmbeddedEntityFormatter extends ChadoFormatterBase {
    *
    * @var int
    */
-  const RECURSIVE_RENDER_LIMIT = 20;
+  const RECURSIVE_RENDER_LIMIT = 1;
 
   /**
    * The logger factory.
