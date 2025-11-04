@@ -278,10 +278,34 @@ class TripalFieldTypeStorageTest extends TripalTestKernelBase {
       }
     }
 
-    // Note: There is no point testing that field values are reset to defaults
-    // of the correct type when only drupal storage is available. This is
-    // because drupal storage automatically marks all properties to be saved
-    // in drupal! (since it's the primary storage).
+    // 4. Test that clearing field values has the effect we expect.
+    // These fields all use the Drupal storage backend so they will be "fully
+    // cached" and thus clearing the field values will not change them at all.
+    // Here we are testing that this is indeed the case.
+    // Note: We will only check the first field item per field for performance.
+    $expected_values = $field_value_scenario['clearValues']['expected'];
+    foreach ($fields_under_test as $field_name) {
+      $field_item = $entity->get($field_name)->first();
+
+      $field_item->clearFieldValuesForTripalStorage();
+      $field_values = $field_item->getValue();
+      foreach ($field_values as $property_key => $field_val) {
+        $expected_prop_value = $expected_values[$field_name][0][$property_key];
+        $expected_propval_type = gettype($expected_prop_value);
+
+        $this->assertEquals(
+          $expected_prop_value,
+          $field_val,
+          "The field value for $field_name [0] [$property_key] was not what we expected after being cleared."
+        );
+
+        $this->assertEquals(
+          $expected_propval_type,
+          gettype($field_val),
+          "The primitive type of the cleared field value for $field_name [0] [$property_key] was not what we expected."
+        );
+      }
+    }
   }
 
   /**
@@ -291,7 +315,7 @@ class TripalFieldTypeStorageTest extends TripalTestKernelBase {
 
     $field_value_scenario = $this->scenarios[0];
 
-    // 1. Create the entity with the values set.
+    // Create the entity with the values set.
     $entity = TripalEntity::create([
       'title' => $this->randomString(),
       'type' => $this->bundle_name,
@@ -309,12 +333,94 @@ class TripalFieldTypeStorageTest extends TripalTestKernelBase {
     $this->assertEquals('value', $entity->getTripalFieldInfo('gemstone_name', 'main_property_name'), "We were not able to retrieve the main property name for the gemstone_name field.");
     $this->assertEquals(TRUE, $entity->getTripalFieldInfo('gemstone_name', 'fully_cached'), "We were not able to retrieve the Tripal cache status of the gemstone_name field.");
 
-    // @todo confirm that getTripalFieldInfo() throws an exception if you
-    // ask for info about a non-Tripal field.
-    // @todo confirm that getTripalFieldInfo() throws an exception if you
-    // ask for info about a non-existing field.
-    // @todo confirm that getTripalFieldInfo() throws an exception if you
-    // ask for an unsupported request key.
+    // Confirm that the field knows if it is empty or not.
+    $gemstone_name = [
+      'items' => $entity->get('gemstone_name'),
+    ];
+    $gemstone_name['prop_values'] = $gemstone_name['items']->first()->getTripalStoragePropertyValues();
+    $gemstone_name['store_values'] = ['value' => $gemstone_name['items']->first()->getValue()];
+    // A) the gemstone_name field should not be empty.
+    $is_empty = TripalEntity::isEmptyFieldItem('gemstone_name', $gemstone_name['items'], $gemstone_name['prop_values'], $gemstone_name['store_values']);
+    $this->assertFalse($is_empty, "The gemstone_name field should not be considered empty.");
+    // B) Now set the value to NULL and confirm it is empty.
+    $gemstone_name['items']->first()->set('value', NULL);
+    $gemstone_name['prop_values']['value']->setValue(NULL);
+    $gemstone_name['store_values']['value'] = NULL;
+    $is_empty = TripalEntity::isEmptyFieldItem('gemstone_name', $gemstone_name['items'], $gemstone_name['prop_values'], $gemstone_name['store_values']);
+    $this->assertTrue($is_empty, "The gemstone_name should now catch the 'allNull' case of empty.");
+    // C) Now set the value to empty string and confirm it is empty.
+    $gemstone_name['items']->first()->set('value', '');
+    $gemstone_name['prop_values']['value']->setValue('');
+    $gemstone_name['store_values']['value'] = '';
+    $is_empty = TripalEntity::isEmptyFieldItem('gemstone_name', $gemstone_name['items'], $gemstone_name['prop_values'], $gemstone_name['store_values']);
+    $this->assertTrue($is_empty, "The gemstone_name should now catch the 'zero value in store values' case of empty.");
+    // D) Now set the value of gemstone_hardness to 0 and confirm it is empty.
+    $gemstone_hardness = [
+      'items' => $entity->get('gemstone_hardness'),
+    ];
+    $gemstone_hardness['prop_values'] = $gemstone_hardness['items']->first()->getTripalStoragePropertyValues();
+    $gemstone_hardness['store_values'] = ['value' => $gemstone_hardness['items']->first()->getValue()];
+    // - confirm we set hardness up correctly.
+    $is_empty = TripalEntity::isEmptyFieldItem('gemstone_hardness', $gemstone_hardness['items'], $gemstone_hardness['prop_values'], $gemstone_hardness['store_values']);
+    $this->assertFalse($is_empty, "The gemstone_hardness field should not be considered empty.");
+    // -- now make it 0 and check it can be detected as empty.
+    $gemstone_hardness['items']->first()->set('value', 0);
+    $gemstone_hardness['prop_values']['value']->setValue(0);
+    $gemstone_hardness['store_values']['value'] = 0;
+    $is_empty = TripalEntity::isEmptyFieldItem('gemstone_hardness', $gemstone_hardness['items'], $gemstone_hardness['prop_values'], $gemstone_hardness['store_values']);
+    $this->assertTrue($is_empty, "The gemstone_hardness should now catch the 'zero value in store values' case of empty.");
+
+    // Confirm that getTripalFieldInfo() throws an exception if you
+    // A) ask for info about a non-Tripal field.
+    $exception_caught = FALSE;
+    $exception_msg = uniqid();
+    try {
+      $entity->getTripalFieldInfo('title', 'main_property_name');
+    }
+    catch (\Exception $e) {
+      $exception_caught = TRUE;
+      $exception_msg = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, "We should have gotten an exception when trying to access Tripal field info for a non-Tripal field.");
+    $this->assertEquals(
+      "You requested information for a field (i.e. 'title') that is either not attached to this entity or not a valid TripalField.",
+      $exception_msg,
+      "The exception message we got was not what we expected.",
+    );
+    // B) ask for info about a non-existing field.
+    $field_name = uniqid();
+    $exception_caught = FALSE;
+    $exception_msg = uniqid();
+    try {
+      $entity->getTripalFieldInfo($field_name, 'main_property_name');
+    }
+    catch (\Exception $e) {
+      $exception_caught = TRUE;
+      $exception_msg = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, "We should have gotten an exception when trying to access a field which doesn't exist.");
+    $this->assertEquals(
+      "You requested information for a field (i.e. '$field_name') that is either not attached to this entity or not a valid TripalField.",
+      $exception_msg,
+      "The exception message we got was not what we expected."
+    );
+    // C) ask for an unsupported request key.
+    $field_name = 'gemstone_name';
+    $exception_caught = FALSE;
+    $exception_msg = uniqid();
+    try {
+      $entity->getTripalFieldInfo($field_name, 'NON-EXISTING-KEY');
+    }
+    catch (\Exception $e) {
+      $exception_caught = TRUE;
+      $exception_msg = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, "We should have gotten an exception when trying to access a field which doesn't exist.");
+    $this->assertEquals(
+      "The Request key 'NON-EXISTING-KEY' is not supported by TripalEntity::getTripalFieldInfo(). This error was encountered when information was requested for '$field_name' field.",
+      $exception_msg,
+      "The exception message we got was not what we expected."
+    );
   }
 
   /**
@@ -437,6 +543,41 @@ class TripalFieldTypeStorageTest extends TripalTestKernelBase {
           $expected_values[$field_name][$delta],
           $field_item->getValue(),
           "The updated field values after $field_name syncFieldValuesWithTripalStorage() did not match what we expected."
+        );
+      }
+    }
+
+    // 4. Test that clearing field values has the effect we expect.
+    // These fields all use the Drupal storage backend so they will be "fully
+    // cached" and thus clearing the field values will not change them at all.
+    // Here we are testing that this is indeed the case.
+    // Note: We will only check the first field item per field for performance.
+    $expected_values = $field_value_scenario['clearValues']['expected'];
+    foreach ($fields_under_test as $field_name) {
+      $field_item = $entity->get($field_name)->first();
+
+      $field_item->tripalClear(
+        $field_item,
+        $field_name,
+        $field_item->getTripalStoragePropertyTypes(),
+        $field_item->getTripalStoragePropertyValues(),
+        $entity,
+      );
+      $field_values = $field_item->getValue();
+      foreach ($field_values as $property_key => $field_val) {
+        $expected_prop_value = $expected_values[$field_name][0][$property_key];
+        $expected_propval_type = gettype($expected_prop_value);
+
+        $this->assertEquals(
+          $expected_prop_value,
+          $field_val,
+          "The field value for $field_name [0] [$property_key] was not what we expected after being cleared."
+        );
+
+        $this->assertEquals(
+          $expected_propval_type,
+          gettype($field_val),
+          "The primitive type of the cleared field value for $field_name [0] [$property_key] was not what we expected."
         );
       }
     }

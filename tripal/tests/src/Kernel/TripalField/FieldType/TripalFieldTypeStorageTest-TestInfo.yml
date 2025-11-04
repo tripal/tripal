@@ -90,10 +90,10 @@ scenarios:
     clearValues:
       expected:
         gemstone_name:
-        - value: ''
+        - value: 'Amazonite'
         gemstone_description:
-        - value: ''
+        - value: 'Amazonite is an attractive gemstone known for its distinctive blue and green color. It is a variety of potassium feldspar called microcline. Its chemical formula is KAlSi3O8, indicating it is composed of the elements potassium, aluminum, silicon, and oxygen.'
         gemstone_hardness:
-        - value: 0
+        - value: 6
         is_precious:
-        - value: FALSE
+        - value: TRUE

@@ -854,6 +854,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // Get some general info about this field to confirm it's a TripalField.
     $field_defn = $this->getFieldDefinition($field_name);
+    if (!$field_defn) {
+      return FALSE;
+    }
     $settings = $field_defn->getSettings();
 
     // Only register TripalFields which use TripalStorage.
@@ -944,7 +947,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
               $prop_types
             );
 
-            // Now we can set this to FALSe since it's done for this field.
+            // Now we can set this to FALSE since it's done for this field.
             $todo_setup = FALSE;
           }
         }
@@ -982,11 +985,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $this->registerTripalField($field_name);
 
     if (!array_key_exists($field_name, $this->tripalfield_info)) {
-      throw new \Exception("You requested information for a field (i.e. $field_name) that is either not attached to this entity or not a valid TripalField.");
+      throw new \Exception("You requested information for a field (i.e. '$field_name') that is either not attached to this entity or not a valid TripalField.");
     }
 
     if (!array_key_exists($request_key, $this->tripalfield_info[$field_name])) {
-      throw new \Exception("The Request key '$request_key' is not supported by TripalEntity::getTripalFieldInfo(). This error was encountered when information was requested for $field_name field.");
+      throw new \Exception("The Request key '$request_key' is not supported by TripalEntity::getTripalFieldInfo(). This error was encountered when information was requested for '$field_name' field.");
     }
 
     // Now we can use that TripalField information cache to retrieve the
