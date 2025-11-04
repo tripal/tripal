@@ -51,7 +51,11 @@ function tripal_help($route_name, RouteMatchInterface $route_match) {
 
 /**
  * Implements hook_theme().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Theme\TripalTheme in tripal/src/Theme/TripalTheme.php.
  */
+#[LegacyHook]
 function tripal_theme() {
   $theme = [];
 
@@ -252,8 +256,13 @@ function tripal_page_attachments(array &$attachments) {
 }
 
 /**
-* Implements hook_theme_suggestions_HOOK().
-*/
+ * Implements hook_theme_suggestions_HOOK().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Theme\TripalThemeSuggestions in
+ * tripal/src/Theme/TripalThemeSuggestions.php.
+ */
+#[LegacyHook]
 function tripal_theme_suggestions_tripal_entity(array $variables) {
   $suggestions = array();
   $entity = $variables['elements']['#tripal_entity'];
