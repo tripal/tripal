@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\Core\Hook\Attribute\LegacyHook;
+
 /**
  * @file
  * Contains tripal_biodb.module.
@@ -9,7 +11,12 @@ use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Implements hook_help().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_biodb\Hook\TripalBiodbHooks in
+ * tripal_biodb/src/Hook/TripalBiodbHooks.php.
  */
+#[LegacyHook]
 function tripal_biodb_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     // Main module help for the tripal_biodb module.

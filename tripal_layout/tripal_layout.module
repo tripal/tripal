@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\Core\Hook\Attribute\LegacyHook;
+
 /**
  * @file
  * Primary module hooks for tripal_layout module.
