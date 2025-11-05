@@ -580,45 +580,16 @@ function tripal_check_new_fields($bundle_name) {
   $response->send();
 }
 
-
 /**
  * Implements hook_rebuild().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
  */
+#[LegacyHook]
 function tripal_rebuild() {
-
-  tripal_load_configuration('tripal', 'tripalentitytype_collection');
-  tripal_load_configuration('tripal', 'tripal_content_terms');
-  tripal_load_configuration('tripal', 'tripalfield_collection');
-
-  //
-  // Make sure the CustomTables view is present. If not then add it.
-  //
-
-  // First get the config file.
-  $dir = \Drupal::service('extension.list.module')->getPath('tripal');
-  $fileStorage = new FileStorage($dir);
-  $config = $fileStorage->read('config/install/views.view.tripal_jobs');
-
-  // Next load the storage system for views entities and check if the view
-  // already exists. If it does then don't reload it.
-  $storage = \Drupal::entityTypeManager()->getStorage('view');
-  $view = $storage->load('tripal_jobs');
-  if (!$view) {
-    $view = $storage->create($config);
-    $view->save();
-  }
-
-  /* Installs the Manage Pub Search Queries View */
-  $config = $fileStorage->read('config/install/views.view.manage_pub_search_queries');
-
-  // Next load the storage system for views entities and check if the view
-  // already exists. If it does then don't reload it.
-  $storage = \Drupal::entityTypeManager()->getStorage('view');
-  $view = $storage->load('manage_pub_search_queries');
-  if (!$view) {
-    $view = $storage->create($config);
-    $view->save();
-  }
+  $rebuild_service = \Drupal::service('tripal.rebuild_service');
+  $rebuild_service->executeRebuild();
 }
 
 /**

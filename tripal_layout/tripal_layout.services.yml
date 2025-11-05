@@ -1,0 +1,6 @@
+services:
+  tripal_layout.rebuild_service:
+    class: 'Drupal\tripal_layout\Services\TripalLayoutRebuildService'
+    arguments:
+      - '%app.root%'
+      - '@entity_type.manager'

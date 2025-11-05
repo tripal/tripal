@@ -3,6 +3,12 @@ services:
   tripal_chado.database:
     class: 'Drupal\tripal_chado\Database\ChadoConnection'
     arguments: ['']
+  tripal_chado.rebuild_service:
+    class: 'Drupal\tripal_chado\Services\TripalChadoRebuildService'
+    arguments:
+      - '@entity_type.manager'
+      - '@extension.list.module'
+      - '@extension.path.resolver'
   tripal_chado.field_debugger:
     class: 'Drupal\tripal_chado\Services\ChadoFieldDebugger'
     arguments:

@@ -203,90 +203,16 @@ function tripal_chado_config_schema_info_alter(&$definitions) {
 }
 
 /**
- * Used by the hook_rebuild() function to recreate views from default.
- *
- * If the user deletes one of the views that are created on install of the
- * Tripal Chado module then this will restore them when the cache is cleared.
- */
-function tripal_chado_rebuild_views() {
-
-  //
-  // Make sure the Views are present.
-  //
-  $storage = \Drupal::entityTypeManager()->getStorage('view');
-  $dir = \Drupal::service('extension.path.resolver')->getPath('module', 'tripal_chado');
-  $fileStorage = new FileStorage($dir);
-
-  // The chado_custom_tables view.
-  $view = $storage->load('chado_custom_tables');
-  if (!$view) {
-    $config = $fileStorage->read('config/install/views.view.chado_custom_tables');
-    $view = $storage->create($config);
-    $view->save();
-  }
-
-  // The chado_materialized_views view.
-  $view = $storage->load('chado_mviews');
-  if (!$view) {
-    $config = $fileStorage->read('config/install/views.view.chado_mviews');
-    $view = $storage->create($config);
-    $view->save();
-  }
-}
-
-/**
- * Used by the hook_rebuild() to recreate chado term mappings from default.
- */
-function tripal_chado_rebuild_chado_term_mappings() {
-
-  $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-  $dir = \Drupal::service('extension.list.module')->getPath('tripal_chado');
-  $fileStorage = new FileStorage($dir);
-
-  $mapping = $storage->load('core_mapping');
-  if (!$mapping) {
-    $config = $fileStorage->read('config/install/tripal_chado.chado_term_mapping.core_mapping');
-    $mapping = $storage->create($config);
-    $mapping->save();
-  }
-
-  $storage = \Drupal::entityTypeManager()->getStorage('tripal_content_terms');
-  $mapping = $storage->load('chado_content_terms');
-  if (!$mapping) {
-    $config = $fileStorage->read('config/install/tripal.tripal_content_terms.chado_content_terms');
-    $mapping = $storage->create($config);
-    $mapping->save();
-  }
-}
-
-/**
  * Implements hook_rebuild().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_chado\Hook\TripalChadoHooks in
+ * tripal_chado/src/Hook/TripalChadoHooks.php.
  */
+#[LegacyHook]
 function tripal_chado_rebuild() {
-  tripal_chado_rebuild_views();
-  tripal_chado_rebuild_chado_term_mappings();
-
-  # Rebuild the Custom Tables and Materialized views views.
-  $dir = \Drupal::service('extension.list.module')->getPath('tripal_chado');
-  $fileStorage = new FileStorage($dir);
-
-  $custom_tables_config = $fileStorage->read('config/install/views.view.chado_custom_tables');
-  $mviews_config = $fileStorage->read('config/install/views.view.chado_mviews');
-
-  $storage = \Drupal::entityTypeManager()->getStorage('view');
-
-  // Reload the custom tables view.
-  $view = $storage->load('chado_custom_tables');
-  $view->delete();
-  $view = $storage->create($custom_tables_config);
-  $view->save();
-
-  // Reload the materialized view view.
-  $view = $storage->load('chado_mviews');
-  $view->delete();
-  $view = $storage->create($mviews_config);
-  $view->save();
-
+  $rebuild_service = \Drupal::service('tripal_chado.rebuild_service');
+  $rebuild_service->executeRebuild();
 }
 
 /**

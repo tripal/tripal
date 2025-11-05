@@ -13,6 +13,11 @@ services:
     arguments: ['@http_client', '@tripal.logger']
   tripal.logger:
     class: 'Drupal\tripal\Services\TripalLogger'
+  tripal.rebuild_service:
+    class: 'Drupal\tripal\Services\TripalRebuildService'
+    arguments:
+      - '@entity_type.manager'
+      - '@extension.list.module'
   tripal.token_parser:
     class: 'Drupal\tripal\Services\TripalTokenParser'
   tripal.dbx:
@@ -70,13 +75,11 @@ services:
      - '@tripal.logger'
   tripal.tripal_entity.lookup:
     class: 'Drupal\tripal\Services\TripalEntityLookup'
-
   tripal.sync_tripal_field_storage:
     class: 'Drupal\tripal\Services\SyncTripalFieldStorage'
     arguments:
      - '@entity_type.manager'
      - '@database'
-
   tripal.entity_hooks:
     class: 'Drupal\tripal\Hook\TripalEntityHooks'
     autowire: TRUE

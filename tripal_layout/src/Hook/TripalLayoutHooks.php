@@ -36,4 +36,13 @@ class TripalLayoutHooks {
     $attachments['#attached']['library'][] = 'tripal_layout/tripal-layout';
   }
 
+  /**
+   * Implements hook_rebuild().
+   */
+  #[Hook('rebuild')]
+  public function onRebuild(): void {
+    $rebuild_service = \Drupal::service('tripal_layout.rebuild_service');
+    $rebuild_service->executeRebuild();
+  }
+
 }

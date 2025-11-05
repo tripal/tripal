@@ -40,4 +40,13 @@ class TripalHooks {
     $attachments['#attached']['library'][] = 'tripal/vars';
   }
 
+  /**
+   * Implements hook_rebuild().
+   */
+  #[Hook('rebuild')]
+  public function onRebuild(): void {
+    $rebuild_service = \Drupal::service('tripal.rebuild_service');
+    $rebuild_service->executeRebuild();
+  }
+
 }
