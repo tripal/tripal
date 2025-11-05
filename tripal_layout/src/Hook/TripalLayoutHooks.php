@@ -28,4 +28,12 @@ class TripalLayoutHooks {
     return NULL;
   }
 
+  /**
+   * Implements hook_page_attachments().
+   */
+  #[Hook('page_attachments')]
+  public function addPageAttachments(array &$attachments): void {
+    $attachments['#attached']['library'][] = 'tripal_layout/tripal-layout';
+  }
+
 }

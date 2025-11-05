@@ -250,7 +250,11 @@ function tripal_toolbar () {
 
 /**
  * Implements hook_page_attachments().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
  */
+#[LegacyHook]
 function tripal_page_attachments(array &$attachments) {
   $attachments['#attached']['drupalSettings']['tripal']['vars'] = [
     'baseurl' => \Drupal::request()->getSchemeAndHttpHost(),

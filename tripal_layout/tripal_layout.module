@@ -9,7 +9,12 @@ use Drupal\Core\Hook\Attribute\LegacyHook;
 
 /**
  * Implements hook_page_attachments().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_layout\Hook\TripalLayoutHooks in
+ * tripal_layout/src/Hook/TripalLayoutHooks.php.
  */
+#[LegacyHook]
 function tripal_layout_page_attachments(array &$attachments) {
   $attachments['#attached']['library'][] = 'tripal_layout/tripal-layout';
 }
