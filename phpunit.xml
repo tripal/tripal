@@ -5,7 +5,7 @@
  https://www.drupal.org/node/2116263 for details.
 -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         bootstrap="../../../core/tests/bootstrap.php"
+         bootstrap="tripal-bootstrap.php"
          colors="true"
          beStrictAboutTestsThatDoNotTestAnything="true"
          beStrictAboutOutputDuringTests="true"
@@ -36,6 +36,8 @@
       correctly.
     -->
     <!-- <env name="SYMFONY_DEPRECATIONS_HELPER" value="ignoreFile=.deprecation-ignore.txt"/> -->
+    <!-- The Tripal bootstrap.php will create this file by combining Drupal and Tripal ignore rules -->
+    <env name="SYMFONY_DEPRECATIONS_HELPER" value="ignoreFile=/tmp/tripal-deprecation-ignore.txt"/>
     <!-- Example for changing the driver class for mink tests MINK_DRIVER_CLASS value: 'Drupal\FunctionalJavascriptTests\DrupalSelenium2Driver' -->
     <env name="MINK_DRIVER_CLASS" value=""/>
     <!-- Example for changing the driver args to mink tests MINK_DRIVER_ARGS value: '["http://127.0.0.1:8510"]' -->
