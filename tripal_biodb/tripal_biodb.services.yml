@@ -1,4 +1,6 @@
 services:
+  tripal_biodb.hooks:
+    class: Drupal\tripal_biodb\Hook\TripalBiodbHooks
   tripal_biodb.logger:
     parent: 'logger.channel_base'
     arguments: ['tripal_biodb']

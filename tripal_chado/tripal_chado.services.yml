@@ -3,6 +3,8 @@ services:
   tripal_chado.database:
     class: 'Drupal\tripal_chado\Database\ChadoConnection'
     arguments: ['']
+  tripal_chado.hooks:
+    class: Drupal\tripal_chado\Hook\TripalChadoHooks
   tripal_chado.rebuild_service:
     class: 'Drupal\tripal_chado\Services\TripalChadoRebuildService'
     arguments:
