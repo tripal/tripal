@@ -48,11 +48,22 @@ function tripal_help($route_name, RouteMatchInterface $route_match) {
  * Implements hook_theme().
  *
  * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal\Theme\TripalTheme in tripal/src/Theme/TripalTheme.php.
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
  */
 #[LegacyHook]
 function tripal_theme() {
-  return \Drupal::service('tripal.theme')->getThemeHooks();
+  return \Drupal::service('tripal.hooks')->tripalTheme();
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_theme_suggestions_tripal_entity(array $variables) {
+  return \Drupal::service('tripal.hooks')->themeSuggestionsTripalEntity($variables);
 }
 
 /**
@@ -78,26 +89,6 @@ function tripal_page_attachments(array &$attachments) {
 }
 
 /**
- * Implements hook_theme_suggestions_HOOK().
- *
- * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal\Theme\TripalThemeSuggestions in
- * tripal/src/Theme/TripalThemeSuggestions.php.
- */
-#[LegacyHook]
-function tripal_theme_suggestions_tripal_entity(array $variables) {
-  $suggestions = [];
-  $entity = $variables['elements']['#tripal_entity'];
-  $sanitized_view_mode = strtr($variables['elements']['#view_mode'], '.', '_');
-  $suggestions[] = 'tripal_entity__' . $sanitized_view_mode;
-  $suggestions[] = 'tripal_entity__' . $entity->bundle();
-  $suggestions[] = 'tripal_entity__' . $entity->bundle() . '__' . $sanitized_view_mode;
-  $suggestions[] = 'tripal_entity__' . $entity->id();
-  $suggestions[] = 'tripal_entity__' . $entity->id() . '__' . $sanitized_view_mode;
-  return $suggestions;
-}
-
-/**
  * Implements hook_preprocess_html().
  *
  * This legacy hook is only run for Drupal < 11, and is replaced by class
@@ -105,7 +96,6 @@ function tripal_theme_suggestions_tripal_entity(array $variables) {
  */
 #[LegacyHook]
 function tripal_preprocess_html(&$variables) {
-dpm("CPL2 preprocess_html");//@@@
   \Drupal::service('tripal.hooks')->preprocessHtml($variables);
 }
 

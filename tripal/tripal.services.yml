@@ -35,14 +35,6 @@ services:
   tripal.collection_plugin_manager.vocabulary:
     class: 'Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager'
     parent: 'default_plugin_manager'
-  tripal.theme_extension:
-    class: 'Drupal\tripal\Theme\TripalTheme'
-    tags:
-      - { name: 'theme_extension' }
-  tripal.theme_suggestions:
-    class: 'Drupal\tripal\Theme\TripalThemeSuggestions'
-    tags:
-      - { name: 'theme_hook_suggestion_alterer' }
   tripal.importer:
     class: 'Drupal\tripal\TripalImporter\PluginManagers\TripalImporterManager'
     parent: 'default_plugin_manager'
