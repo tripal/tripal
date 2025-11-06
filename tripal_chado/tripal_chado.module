@@ -217,9 +217,13 @@ function tripal_chado_rebuild() {
 
 /**
  * Implements hook_form_alter
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_chado\Hook\TripalChadoHooks in
+ * tripal_chado/src/Hook/TripalChadoHooks.php.
  */
+#[LegacyHook]
 function tripal_chado_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-
 
   // If this is the field_config_edit_form and if we are adding a Chado
   // field then we need to add a submit hook to set the base table in the
