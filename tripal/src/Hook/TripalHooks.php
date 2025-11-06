@@ -8,6 +8,10 @@ use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
+use Drupal\tripal\TripalField\TripalFieldItemBase;
+use Drupal\views\ViewEntityInterface;
+use Drupal\views\ViewExecutable;
+use Drupal\views\ViewsConfigUpdater;
 
 /**
  * Hook implementations for the Tripal module.
@@ -250,6 +254,23 @@ class TripalHooks {
     // <a href="admin/tripal/register">Click to register now or opt out</a>.'));
     // }
     // }
+  }
+
+  /**
+   * Implements hook_form_alter for the field_config_edit_form.
+   *
+   * Adds the form elements to the field settings form for setting controlled
+   * vocabulary. The function only does this for fields that are not
+   * Tripal fields but which are attached to a tripal content type.
+   */
+  #[Hook('form_alter')]
+  public function formFieldConfigEditFormAlter(&$form, FormStateInterface $form_state, $form_id) {
+    /** @var \Drupal\field\Entity\FieldConfig $field **/
+    $field = $form_state->getFormObject()->getEntity();
+    if ($field->getTargetEntityTypeId() == 'tripal_entity') {
+      $elements = TripalFieldItemBase::buildFieldTermForm($field, $form, $form_state);
+      $form['settings'] = $form['settings'] + $elements;
+    }
   }
 
   /**

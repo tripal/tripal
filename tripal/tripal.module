@@ -8,18 +8,11 @@
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\user\Entity\User;
 use Drupal\Core\Entity\EntityBase;
-use Symfony\Component\HttpFoundation\JsonResponse;
-// use Drupal\shortcut\Entity\ShortcutSet;
-use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\Form\FormStateInterface;
+// Use Drupal\shortcut\Entity\ShortcutSet;.
 use Drupal\Core\Hook\Attribute\LegacyHook;
-use Drupal\Core\Config\FileStorage;
-use Drupal\Core\Url;
-use Drupal\Component\Utility\Xss;
 use Drupal\tripal\Services\TripalJob;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Drupal\views\ViewEntityInterface;
 use Drupal\views\ViewExecutable;
-use Drupal\views\ViewsConfigUpdater;
 
 require_once 'src/api/tripal.api.php';
 require_once 'src/api/tripal.entities.api.php';
@@ -45,7 +38,7 @@ require_once 'src/api/tripal.viewsdata.inc';
  *   The file ID.
  */
 function tripal_access_user_files($op, $uid, $fid = NULL) {
-  // global $user is deprecated in D8 use the currentUser service.
+  // Global $user is deprecated in D8 use the currentUser service.
   // this only returns an AccountProxyInterface object and not a full
   // UserInterface object.  To get access to the full UserInterface object, load
   // the user using the uid of the currentUser
@@ -87,7 +80,7 @@ function tripal_access_user_files($op, $uid, $fid = NULL) {
 /**
  * An access function for data collections.
  *
- * @return boolean
+ * @return bool
  */
 function tripal_accesss_user_collections($uid) {
   $config = \Drupal::config('tripal_admin.settings');
@@ -108,9 +101,10 @@ function tripal_accesss_user_collections($uid) {
  * function can be used to check access for any type of user-specfic data
  * added by any Tripal module.
  *
- * @param  $uid
+ * @param $uid
  *   The UID of the user's account to access.
- * @return boolean
+ *
+ * @return bool
  */
 function tripal_access_user_data($uid) {
   if ($uid == \Drupal::currentUser()->id()) {
@@ -127,6 +121,7 @@ function tripal_access_user_data($uid) {
  *
  * @param $type
  *   The machine-readable name of a tripal data type to load.
+ *
  * @return
  *   A tripal data type array or FALSE if $type does not exist.
  */
@@ -157,6 +152,7 @@ function TripalBundle_load($bundle_type, $reset = FALSE) {
  *   Integer specifying the tripal_entity id.
  * @param $reset
  *   A boolean indicating that the internal cache should be reset.
+ *
  * @return
  *   A fully-loaded $tripal_entity object or FALSE if it cannot be loaded.
  *
@@ -164,7 +160,7 @@ function TripalBundle_load($bundle_type, $reset = FALSE) {
  */
 function TripalEntity_load($id, $reset = FALSE) {
   // $entity = entity_load('TripalEntity', array($id), array(), $reset);
-  $entity = tripal_load_entity('TripalEntity', array($id), $reset);
+  $entity = tripal_load_entity('TripalEntity', [$id], $reset);
   return reset($entity);
 }
 
@@ -181,7 +177,6 @@ function TripalEntity_load($id, $reset = FALSE) {
  *   module_load_include('module', 'tripal', 'tripal');
  *   tripal_import_api();
  * @endcode
- *
  */
 function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.d3js.api');
@@ -199,9 +194,12 @@ function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.DEPRECATED.api');
 }
 
+/**
+ *
+ */
 function tripal_check_new_fields($bundle_name) {
-  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+  $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
+  $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
 
   $added = tripal_create_bundle_fields($bundle, $term);
   if (count($added) == 0) {
@@ -213,6 +211,32 @@ function tripal_check_new_fields($bundle_name) {
 
   $response = new RedirectResponse("admin/structure/tripal/manage/$bundle_name/fields");
   $response->send();
+}
+
+/**
+ * Callback: Allows Tripal Jobs to create a set of TripalEntityType Collections.
+ *
+ * @param array $options
+ *   - collection_ids:
+ *     An array where each found collection has a key entry and only the chosen
+ *     ones have a value the same as the key. All collections not chosen to be
+ *     installed will have a value of 0.
+ * @param Drupal\tripal\Services\TripalJob|null $job
+ *   An optional Job object.
+ */
+function import_tripalentitytype_collection(array $options, ?TripalJob $job = NULL) {
+
+  // We need to ensure that we only submit the chosen collections.
+  $collection_ids = $options['collection_ids'];
+  $chosen_collection_ids = array_filter($collection_ids, function ($e) {
+    return ($e !== 0);
+  });
+
+  $content_type_setup = \Drupal::service('tripal.tripalentitytype_collection');
+  $content_type_setup->install($chosen_collection_ids);
+
+  $fields = \Drupal::service('tripal.tripalfield_collection');
+  $fields->install($chosen_collection_ids);
 }
 
 /**
@@ -255,7 +279,7 @@ function tripal_theme_suggestions_tripal_entity(array $variables) {
  * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
  */
 #[LegacyHook]
-function tripal_toolbar () {
+function tripal_toolbar() {
   return \Drupal::service('tripal.hooks')->tripalToolbar();
 }
 
@@ -293,46 +317,14 @@ function tripal_rebuild() {
 }
 
 /**
- * Callback: Allows Tripal Jobs to create a set of TripalEntityType Collections.
- *
- * @param array $options
- *   - collection_ids:
- *       An array where each found collection has a key entry and only the chosen
- *       ones have a value the same as the key. All collections not chosen to be
- *       installed will have a value of 0.
- * @param Drupal\tripal\Services\TripalJob|null $job
- *   An optional Job object.
- */
-function import_tripalentitytype_collection(array $options, ?TripalJob $job = NULL) {
-
-  // We need to ensure that we only submit the chosen collections.
-  $collection_ids = $options['collection_ids'];
-  $chosen_collection_ids = array_filter($collection_ids, function($e) {
-      return ($e !== 0);
-  });
-
-  $content_type_setup = \Drupal::service('tripal.tripalentitytype_collection');
-  $content_type_setup->install($chosen_collection_ids);
-
-  $fields = \Drupal::service('tripal.tripalfield_collection');
-  $fields->install($chosen_collection_ids);
-}
-
-/**
  * Implements hook_form_alter for the field_config_edit_form.
  *
- * Adds the form elements to the field settings form for setting controlled
- * vocabulary.  The function only does this for fields that are not
- * Tripal fields but which are attached to a tripal content type.
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
  */
-function tripal_form_field_config_edit_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-
-  /** @var \Drupal\field\Entity\FieldConfig $field **/
-  $field = $form_state->getFormObject()->getEntity();
-  if ($field->getTargetEntityTypeId() == 'tripal_entity') {
-    $elements = TripalFieldItemBase::buildFieldTermForm($field, $form, $form_state);
-    $form['settings'] = $form['settings'] + $elements;
-  }
+#[LegacyHook]
+function tripal_form_field_config_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  \Drupal::service('tripal.hooks')->formFieldConfigEditFormAlter($form, $form_state, $form_id);
 }
 
 /**
@@ -371,8 +363,8 @@ function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) 
 /**
  * Legacy implementation for TripalEntityHooks::tripalEntityStorageLoad().
  *
- * @param array $entities
- *   Entities to be loaded.
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
  */
 #[LegacyHook]
 function tripal_tripal_entity_storage_load(&$entities) {
