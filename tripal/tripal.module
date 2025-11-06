@@ -34,72 +34,6 @@ require_once 'src/api/tripal.importer.api.php';
 require_once 'src/api/tripal.viewsdata.inc';
 
 /**
- * Implements hook_help().
- *
- * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
- */
-#[LegacyHook]
-function tripal_help($route_name, RouteMatchInterface $route_match) {
-  return \Drupal::service('tripal.hooks')->help($route_name, $route_match);
-}
-
-/**
- * Implements hook_theme().
- *
- * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
- */
-#[LegacyHook]
-function tripal_theme() {
-  return \Drupal::service('tripal.hooks')->tripalTheme();
-}
-
-/**
- * Implements hook_theme_suggestions_HOOK().
- *
- * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
- */
-#[LegacyHook]
-function tripal_theme_suggestions_tripal_entity(array $variables) {
-  return \Drupal::service('tripal.hooks')->themeSuggestionsTripalEntity($variables);
-}
-
-/**
- * Implements hook_toolbar().
- *
- * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
- */
-#[LegacyHook]
-function tripal_toolbar () {
-  return \Drupal::service('tripal.hooks')->tripalToolbar();
-}
-
-/**
- * Implements hook_page_attachments().
- *
- * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
- */
-#[LegacyHook]
-function tripal_page_attachments(array &$attachments) {
-  \Drupal::service('tripal.hooks')->addPageAttachments($attachments);
-}
-
-/**
- * Implements hook_preprocess_html().
- *
- * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
- */
-#[LegacyHook]
-function tripal_preprocess_html(&$variables) {
-  \Drupal::service('tripal.hooks')->preprocessHtml($variables);
-}
-
-/**
  * Checks if the current user has permissions to perform an action on a file.
  *
  * @param $op
@@ -279,6 +213,72 @@ function tripal_check_new_fields($bundle_name) {
 
   $response = new RedirectResponse("admin/structure/tripal/manage/$bundle_name/fields");
   $response->send();
+}
+
+/**
+ * Implements hook_help().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_help($route_name, RouteMatchInterface $route_match) {
+  return \Drupal::service('tripal.hooks')->help($route_name, $route_match);
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_theme() {
+  return \Drupal::service('tripal.hooks')->tripalTheme();
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_theme_suggestions_tripal_entity(array $variables) {
+  return \Drupal::service('tripal.hooks')->themeSuggestionsTripalEntity($variables);
+}
+
+/**
+ * Implements hook_toolbar().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_toolbar () {
+  return \Drupal::service('tripal.hooks')->tripalToolbar();
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_page_attachments(array &$attachments) {
+  \Drupal::service('tripal.hooks')->addPageAttachments($attachments);
+}
+
+/**
+ * Implements hook_preprocess_html().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_preprocess_html(&$variables) {
+  \Drupal::service('tripal.hooks')->preprocessHtml($variables);
 }
 
 /**
