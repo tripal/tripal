@@ -123,7 +123,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - buddy_record = a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
+   *   (Optional) Associative array of options.
    *   - property_table - if the default of $base_table . 'prop' needs to be
    *     changed.
    *   - fkey - if the default of $base_table . '_id' needs to be changed.
@@ -226,7 +226,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - buddy_record = a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
+   *   (Optional) Associative array of options.
    *   - property_table - if the default of $base_table . 'prop' needs to be
    *     changed.
    *   - fkey - if the default of $base_table . '_id' needs to be changed.
@@ -271,8 +271,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
         $values["$property_table.type_id"] = $type_id;
       }
       else {
-        throw new ChadoBuddyException("ChadoBuddy insertProperty error, neither cvterm.cvterm_id nor $property_table.type_id"
-                                     . " were specified and create_cvterm option is not enabled");
+        throw new ChadoBuddyException("ChadoBuddy insertProperty error, neither cvterm.cvterm_id nor $property_table.type_id were specified and create_cvterm option is not enabled");
       }
     }
 
@@ -347,7 +346,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   only columns that are part of a unique constraint will be used for the
    *   database query. e.g. you can't query on the property value.
    * @param array $options
-   *   (Optional)
+   *   (Optional) Associative array of options.
    *   - property_table - if the default of $base_table . 'prop' needs to be
    *     changed.
    *   - fkey - if the default of $base_table . '_id' needs to be changed.
@@ -442,7 +441,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - buddy_record = a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
+   *   (Optional) Associative array of options.
    *   - property_table - if the default of $base_table . 'prop' needs to be
    *     changed.
    *   - fkey - if the default of $base_table . '_id' needs to be changed.
@@ -528,7 +527,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - buddy_record = a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
+   *   (Optional) Associative array of options.
    *   - property_table - if the default of $base_table . 'prop' needs to be
    *     changed.
    *   - fkey - if the default of $base_table . '_id' needs to be changed.

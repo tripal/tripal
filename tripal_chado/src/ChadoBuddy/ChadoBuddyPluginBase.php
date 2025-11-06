@@ -218,8 +218,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     if (!array_key_exists('fields', $table_schema)) {
       // Two levels up.
       $calling_function = debug_backtrace()[2]['function'];
-      throw new ChadoBuddyException("ChadoBuddy $calling_function error, invalid table"
-                                   . " \"$chado_table\" passed to getTableColumns()");
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, invalid table \"$chado_table\" passed to getTableColumns()");
     }
 
     // Obtain a list of the columns that are present in any unique key.
@@ -315,8 +314,8 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     foreach ($values as $key => $value) {
       $new_key = preg_replace('/^[^\.]*\./', '', $key);
       if (array_key_exists($new_key, $new_values)) {
-        throw new ChadoBuddyException("Ambiguous columns passed to removeTablePrefix(), this function"
-          . " can only handle columns in a single table. Passed values: " . print_r($values, TRUE));
+        throw new ChadoBuddyException("Ambiguous columns passed to removeTablePrefix(), this function can only handle columns in a single table. Passed values: "
+          . print_r($values, TRUE));
       }
       $new_values[$new_key] = $value;
     }
@@ -387,8 +386,8 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     foreach ($user_values as $key => $value) {
       if (!in_array($key, $valid_values)) {
         $calling_function = debug_backtrace()[1]['function'];
-        throw new ChadoBuddyException("ChadoBuddy $calling_function error, the key \"$key\" is not"
-          . " valid for this function. Valid keys are: " . implode(', ', $valid_values));
+        throw new ChadoBuddyException("ChadoBuddy $calling_function error, the key \"$key\" is not valid for this function. Valid keys are: "
+          . implode(', ', $valid_values));
       }
     }
   }
@@ -421,15 +420,13 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     if (array_key_exists('buddy_record', $values)) {
       if (!$values['buddy_record'] instanceof ChadoBuddyRecord) {
         $calling_function = debug_backtrace()[1]['function'];
-        throw new ChadoBuddyException("ChadoBuddy $calling_function error, something other than"
-          . " a ChadoBuddyRecord was stored under the 'buddy_record' key");
+        throw new ChadoBuddyException("ChadoBuddy $calling_function error, something other than a ChadoBuddyRecord was stored under the 'buddy_record' key");
       }
       $buddy_values = $values['buddy_record']->getValues();
       foreach ($buddy_values as $buddy_key => $buddy_value) {
         if (array_key_exists($buddy_key, $values) and ($values[$buddy_key] != $buddy_value)) {
           $calling_function = debug_backtrace()[1]['function'];
-          throw new ChadoBuddyException("ChadoBuddy $calling_function error, a value with the key"
-            . " $buddy_key was declared twice with different values");
+          throw new ChadoBuddyException("ChadoBuddy $calling_function error, a value with the key $buddy_key was declared twice with different values");
         }
         $values[$buddy_key] = $buddy_value;
       }
@@ -466,8 +463,8 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     }
     if (!$subset) {
       $calling_function = debug_backtrace()[1]['function'];
-      throw new ChadoBuddyException("ChadoBuddy $calling_function error, no valid values were"
-                                    . " specified for tables: " . implode(', ', $valid_tables));
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, no valid values were specified for tables: "
+        . implode(', ', $valid_tables));
     }
     return $subset;
   }
@@ -491,18 +488,17 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     if (!is_array($output_records) or (count($output_records) < 1)) {
       $calling_function = debug_backtrace()[1]['function'];
       throw new ChadoBuddyException("ChadoBuddy $calling_function error, did not retrieve the expected record\n"
-                                   . print_r($values, TRUE));
+        . print_r($values, TRUE));
     }
     $n = count($output_records);
     if ($n > 1) {
       $calling_function = debug_backtrace()[1]['function'];
-      throw new ChadoBuddyException("ChadoBuddy $calling_function error, more than one record ($n) was"
-                                    . " retrieved, only one was expected\n" . print_r($values, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, more than one record ($n) was retrieved, only one was expected\n"
+        . print_r($values, TRUE));
     }
     if (!array_key_exists(0, $output_records) or !($output_records[0] instanceof ChadoBuddyRecord)) {
       $calling_function = debug_backtrace()[1]['function'];
-      throw new ChadoBuddyException("ChadoBuddy $calling_function error, the array passed to validateOutput"
-                                    . " does not contain a ChadoBuddyRecord");
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, the array passed to validateOutput does not contain a ChadoBuddyRecord");
     }
   }
 

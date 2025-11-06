@@ -92,10 +92,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - buddy_record = a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   Associative array of options.
+   *   (Optional) Associative array of options.
    *     - 'case_insensitive' - a single key, or an array of keys
-   *                            to query case insensitively.
+   *       to query case insensitively.
    *
    * @return array
    *   An array of ChadoBuddyRecord objects. More specifically,
@@ -173,10 +172,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *       in place of or in addition to other keys.
    * @param array $options
    *   (Optional) Associative array of options.
-   *     - case_insensitive: a single key, or an array of keys to allow 
+   *     - case_insensitive: a single key, or an array of keys to allow
    *       query conditions to match ignoring the case of the value.
    *     - 'synonyms' - set to true to enable synonym query,
-   *                    used internally be getCvtermSynonym()
+   *       used internally be getCvtermSynonym()
    *
    * @return array
    *   An array of ChadoBuddyRecord objects. More specifically,
@@ -267,10 +266,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - buddy_record = a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   Associative array of options.
+   *   (Optional) Associative array of options.
    *     - 'case_insensitive' - a single key, or an array of keys
-   *                            to query case insensitively.
+   *       to query case insensitively.
    *
    * @return array
    *   An array of ChadoBuddyRecord objects. More specifically,
@@ -299,8 +297,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - buddy_record = a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
@@ -365,8 +362,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *       in place of or in addition to other keys.
    * @param array $options
    *   - create_dbxref - set to FALSE (default TRUE) if you do not
-   *         want to automatically create a dbxref if one does not
-   *         already exist.
+   *     want to automatically create a dbxref if one does not
+   *     already exist.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
@@ -401,8 +398,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     if (!array_key_exists('cvterm.dbxref_id', $values) or !$values['cvterm.dbxref_id']) {
       if (!array_key_exists('dbxref.dbxref_id', $values) or !$values['dbxref.dbxref_id']) {
         if (array_key_exists('create_dbxref', $options) and !$options['create_dbxref']) {
-          throw new ChadoBuddyException('ChadoBuddy insertCvterm error, dbxref.dbxref_id was'
-                                       . ' not specified and create_dbxref is set to FALSE');
+          throw new ChadoBuddyException('ChadoBuddy insertCvterm error, dbxref.dbxref_id was not specified and create_dbxref is set to FALSE');
         }
         else {
           $dbxref_record = $this->upsertDbxref($values, $values, $options);
@@ -469,8 +465,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - buddy_record = a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
@@ -537,8 +532,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
@@ -617,8 +611,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
@@ -727,8 +720,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
@@ -792,8 +784,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - buddy_record = a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
@@ -854,8 +845,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - buddy_record = a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
@@ -920,8 +910,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - buddy_record = a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
@@ -1093,8 +1082,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    * @param array $conditions
    *   An associative array of values.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
