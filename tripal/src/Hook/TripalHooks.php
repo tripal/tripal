@@ -263,16 +263,16 @@ class TripalHooks {
       'template' => 'tripal_entity_type',
     ];
 
-    $theme['tripal_entity'] = array(
+    $theme['tripal_entity'] = [
       'render element' => 'elements',
       'file' => 'templates/tripal_entity.page.php',
       'template' => 'tripal_entity',
-    );
+    ];
 
-    $theme['tripal_entity_edit_form'] = array(
+    $theme['tripal_entity_edit_form'] = [
       'render element' => 'form',
       'template' => 'tripal-entity-edit-form',
-    );
+    ];
 
     $theme['tripal_entity_content_add_list'] = [
       'render element' => 'types',
@@ -287,7 +287,7 @@ class TripalHooks {
    * Implements hook_theme_suggestions_HOOK().
    */
   #[Hook('theme_suggestions_tripal_entity')]
-  function themeSuggestionsTripalEntity(array $variables) {
+  public function themeSuggestionsTripalEntity(array $variables) {
     $suggestions = [];
     $entity = $variables['elements']['#tripal_entity'];
     $sanitized_view_mode = strtr($variables['elements']['#view_mode'], '.', '_');
