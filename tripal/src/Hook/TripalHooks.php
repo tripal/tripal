@@ -3,6 +3,7 @@
 namespace Drupal\tripal\Hook;
 
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -265,11 +266,14 @@ class TripalHooks {
    */
   #[Hook('form_alter')]
   public function formFieldConfigEditFormAlter(&$form, FormStateInterface $form_state, $form_id) {
-    /** @var \Drupal\field\Entity\FieldConfig $field **/
-    $field = $form_state->getFormObject()->getEntity();
-    if ($field->getTargetEntityTypeId() == 'tripal_entity') {
-      $elements = TripalFieldItemBase::buildFieldTermForm($field, $form, $form_state);
-      $form['settings'] = $form['settings'] + $elements;
+    $form_object = $form_state->getFormObject();
+    if (method_exists($form_object, 'getEntity')) {
+      /** @var \Drupal\field\Entity\FieldConfig $field **/
+      $field = $form_object->getEntity();
+      if ($field->getTargetEntityTypeId() == 'tripal_entity') {
+        $elements = TripalFieldItemBase::buildFieldTermForm($field, $form, $form_state);
+        $form['settings'] = $form['settings'] + $elements;
+      }
     }
   }
 
