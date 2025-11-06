@@ -16,7 +16,7 @@ use Drupal\Core\Hook\Attribute\LegacyHook;
  */
 #[LegacyHook]
 function tripal_layout_page_attachments(array &$attachments) {
-  $attachments['#attached']['library'][] = 'tripal_layout/tripal-layout';
+  \Drupal::service('tripal_layout.hooks')->addPageAttachments($attachments);
 }
 
 /**
@@ -28,6 +28,5 @@ function tripal_layout_page_attachments(array &$attachments) {
  */
 #[LegacyHook]
 function tripal_layout_rebuild() {
-  $rebuild_service = \Drupal::service('tripal_layout.rebuild_service');
-  $rebuild_service->executeRebuild();
+  \Drupal::service('tripal_layout.rebuild_service')->executeRebuild();
 }

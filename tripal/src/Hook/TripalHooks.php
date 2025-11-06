@@ -45,8 +45,7 @@ class TripalHooks {
    */
   #[Hook('rebuild')]
   public function onRebuild(): void {
-    $rebuild_service = \Drupal::service('tripal.rebuild_service');
-    $rebuild_service->executeRebuild();
+    \Drupal::service('tripal.rebuild_service')->executeRebuild();
   }
 
 }

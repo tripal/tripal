@@ -34,8 +34,7 @@ class TripalChadoHooks {
    */
   #[Hook('rebuild')]
   public function onRebuild(): void {
-    $rebuild_service = \Drupal::service('tripal_chado.rebuild_service');
-    $rebuild_service->executeRebuild();
+    \Drupal::service('tripal_chado.rebuild_service')->executeRebuild();
   }
 
   /**

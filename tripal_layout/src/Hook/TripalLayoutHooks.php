@@ -41,8 +41,7 @@ class TripalLayoutHooks {
    */
   #[Hook('rebuild')]
   public function onRebuild(): void {
-    $rebuild_service = \Drupal::service('tripal_layout.rebuild_service');
-    $rebuild_service->executeRebuild();
+    \Drupal::service('tripal_layout.rebuild_service')->executeRebuild();
   }
 
 }

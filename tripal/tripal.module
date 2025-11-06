@@ -41,16 +41,7 @@ require_once 'src/api/tripal.viewsdata.inc';
  */
 #[LegacyHook]
 function tripal_help($route_name, RouteMatchInterface $route_match) {
-  switch ($route_name) {
-    // Main module help for the tripal module.
-    case 'help.page.tripal':
-      $output = '';
-      $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('Tripal is a toolkit to facilitate construction of online genomic, genetic (and other biological) websites.') . '</p>';
-      return $output;
-
-    default:
-  }
+  return \Drupal::service('tripal.hooks')->help($route_name, $route_match);
 }
 
 /**
@@ -256,11 +247,7 @@ function tripal_toolbar () {
  */
 #[LegacyHook]
 function tripal_page_attachments(array &$attachments) {
-  $attachments['#attached']['drupalSettings']['tripal']['vars'] = [
-    'baseurl' => \Drupal::request()->getSchemeAndHttpHost(),
-    'tripal_path' => \Drupal::service('extension.list.module')->getPath('tripal'),
-  ];
-  $attachments['#attached']['library'][] = 'tripal/vars';
+  \Drupal::service('tripal.hooks')->addPageAttachments($attachments);
 }
 
 /**
@@ -588,8 +575,7 @@ function tripal_check_new_fields($bundle_name) {
  */
 #[LegacyHook]
 function tripal_rebuild() {
-  $rebuild_service = \Drupal::service('tripal.rebuild_service');
-  $rebuild_service->executeRebuild();
+  \Drupal::service('tripal.rebuild_service')->executeRebuild();
 }
 
 /**
