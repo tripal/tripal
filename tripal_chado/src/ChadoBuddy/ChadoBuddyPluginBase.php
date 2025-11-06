@@ -98,7 +98,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   For invalid table name.
    */
-  protected function getTableColumns(array $chado_tables, string $filter = 'all') {
+  protected function getTableColumns(array $chado_tables, string $filter = 'all'): array {
     $columns = [];
     $cache_updated = FALSE;
 
@@ -336,8 +336,11 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *   Associative array of options as passed to the calling buddy function.
    *   The option 'case_insensitive' can contain a single key string, or an
    *   array of multiple keys for which a case insensitive query is desired.
+   *
+   * @return void
+   *   No return value.
    */
-  protected function addConditions(object &$query, array $conditions, array $options) {
+  protected function addConditions(object &$query, array $conditions, array $options): void {
     // Obtain a list of case insensitive columns, can be empty.
     $insensitive_columns = [];
     if (array_key_exists('case_insensitive', $options)) {
@@ -414,7 +417,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *   - If a value inside the ChadoBuddyRecord is different than one in
    *     the $values array.
    */
-  protected function dereferenceBuddyRecord(array $values) {
+  protected function dereferenceBuddyRecord(array $values): array {
     if (array_key_exists('buddy_record', $values)) {
       if (!$values['buddy_record'] instanceof ChadoBuddyRecord) {
         $calling_function = debug_backtrace()[1]['function'];

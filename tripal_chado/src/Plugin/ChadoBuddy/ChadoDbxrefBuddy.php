@@ -182,8 +182,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    * @todo the built in page for cv/lookup is not yet implemented for Tripal 4
    */
   public function getDbxrefUrl(ChadoBuddyRecord $dbxref, array $options = []) {
-    // Almost the same as getUrl() in
-    // tripal/src/TripalVocabTerms/TripalTerm.php.
+    // Almost the same as the getUrl() implementation in TripalTerm.
+    // @see Drupal\tripal\TripalVocabTerms\TripalTerm::getUrl()
     $db = $dbxref->getValue('db.name');
     $accession = $dbxref->getValue('dbxref.accession');
     $urlprefix = $dbxref->getValue('db.urlprefix');

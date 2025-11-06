@@ -172,10 +172,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - buddy_record = a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   Associative array of options.
-   *     - 'case_insensitive' - a single key, or an array of keys
-   *                            to query case insensitively.
+   *   (Optional) Associative array of options.
+   *     - case_insensitive: a single key, or an array of keys to allow 
+   *       query conditions to match ignoring the case of the value.
    *     - 'synonyms' - set to true to enable synonym query,
    *                    used internally be getCvtermSynonym()
    *
