@@ -12,7 +12,9 @@ services:
     class: 'Drupal\tripal\Services\TripalFileRetriever'
     arguments: ['@http_client', '@tripal.logger']
   tripal.hooks:
-    class: Drupal\tripal\Hook\TripalHooks
+    class: 'Drupal\tripal\Hook\TripalHooks'
+  tripal.theme:
+    class: 'Drupal\tripal\Theme\TripalTheme'
   tripal.logger:
     class: 'Drupal\tripal\Services\TripalLogger'
   tripal.rebuild_service:

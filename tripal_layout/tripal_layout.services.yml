@@ -1,6 +1,6 @@
 services:
   tripal_layout.hooks:
-    class: Drupal\tripal_layout\Hook\TripalLayoutHooks
+    class: 'Drupal\tripal_layout\Hook\TripalLayoutHooks'
   tripal_layout.rebuild_service:
     class: 'Drupal\tripal_layout\Services\TripalLayoutRebuildService'
     arguments:

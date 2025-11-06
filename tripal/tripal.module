@@ -52,32 +52,7 @@ function tripal_help($route_name, RouteMatchInterface $route_match) {
  */
 #[LegacyHook]
 function tripal_theme() {
-  $theme = [];
-
-  $theme['tripal_entity_type'] = [
-    'render element' => 'elements',
-    'file' => 'templates/tripal_entity_type.page.php',
-    'template' => 'tripal_entity_type',
-  ];
-
-  $theme['tripal_entity'] = array(
-    'render element' => 'elements',
-    'file' => 'templates/tripal_entity.page.php',
-    'template' => 'tripal_entity',
-  );
-
-  $theme['tripal_entity_edit_form'] = array(
-    'render element' => 'form',
-    'template' => 'tripal-entity-edit-form',
-  );
-
-  $theme['tripal_entity_content_add_list'] = [
-    'render element' => 'types',
-    'variables' => ['types' => NULL],
-    'file' => 'templates/tripal_entity.page.php',
-  ];
-
-  return $theme;
+  return \Drupal::service('tripal.theme')->getThemeHooks();
 }
 
 /**
