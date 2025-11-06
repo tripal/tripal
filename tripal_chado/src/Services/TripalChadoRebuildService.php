@@ -89,7 +89,7 @@ class TripalChadoRebuildService {
    * If the user deletes one of the views that are created on install of the
    * Tripal Chado module, then this will restore them when the cache is cleared.
    */
-  protected function rebuildViews() {
+  public function rebuildViews() {
 
     // Make sure the Views are present.
     $storage = $this->entity_type_manager->getStorage('view');
@@ -116,7 +116,7 @@ class TripalChadoRebuildService {
   /**
    * Used to recreate chado term mappings from default.
    */
-  protected function rebuildChadoTermMappings() {
+  public function rebuildChadoTermMappings() {
 
     $storage = $this->entity_type_manager->getStorage('chado_term_mapping');
     $dir = $this->module_extension_list->getPath('tripal_chado');

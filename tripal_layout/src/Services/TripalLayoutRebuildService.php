@@ -67,7 +67,7 @@ class TripalLayoutRebuildService {
    * @return void
    *   No return value.
    */
-  protected function tripalLayoutSyncEntities(string $config_entity_type): void {
+  public function tripalLayoutSyncEntities(string $config_entity_type): void {
 
     /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_storage **/
     $config_storage = $this->entity_type_manager->getStorage($config_entity_type);
