@@ -338,55 +338,23 @@ function tripal_form_field_config_edit_form_alter(&$form, \Drupal\Core\Form\Form
 /**
  * Implements hook_preprocess_field for the title field.
  *
- * This is to permit HTML markup in the page title field, for
- * example on an organism page, to display genus and species
- * in italics.
- *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
  */
+#[LegacyHook]
 function tripal_preprocess_field(&$variables) {
-  if ($variables['element']['#field_name'] == 'title') {
-    // We can configure which tags are allowed at /admin/tripal/config
-    $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
-    $tripal_allowed_tags = explode(' ', $tag_string ?? '');
-
-    // Now for each item (usually only a single one)...
-    foreach ($variables['items'] as $delta => $item) {
-      // The title can be either a simple inline template or a link.
-      if ($item['content']['#type'] == 'inline_template') {
-        $value = $item['content']['#context']['value'];
-        // Convert strings into markup, this will cause HTML tags to be rendered.
-        if (is_string($value)) {
-          $sanitized_value = Xss::filter($value, $tripal_allowed_tags);
-          $variables['items'][$delta]['content']['#context']['value'] = Drupal\Core\Render\Markup::create($sanitized_value);
-        }
-      }
-      elseif ($item['content']['#type'] == 'link') {
-        $value = $item['content']['#title']['#context']['value'];
-        // Convert strings into markup, this will cause HTML tags to be rendered.
-        if (is_string($value)) {
-          $sanitized_value = Xss::filter($value, $tripal_allowed_tags);
-          $variables['items'][$delta]['content']['#title']['#context']['value'] = Drupal\Core\Render\Markup::create($sanitized_value);
-        }
-      }
-    }
-  }
+  \Drupal::service('tripal.hooks')->preprocessField($variables);
 }
 
 /**
  * Implements hook gin_content_form_routes provided by the GIN admin theme.
  *
- * @param array $route_names
- *   A simple list of route names that should be considered to be content forms.
- * @return array
- *   The $route_names parameter with our content form routes added.
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
  */
+#[LegacyHook]
 function tripal_gin_content_form_routes() {
-  $route_names = [];
-
-  $route_names[] = 'entity.tripal_entity.add_form';
-  $route_names[] = 'entity.tripal_entity.edit_form';
-
-  return $route_names;
+  return \Drupal::service('tripal.hooks')->ginContentFormRoutes();
 }
 
 /**
