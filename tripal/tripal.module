@@ -5,13 +5,12 @@
  * Contains tripal.module.
  */
 
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\user\Entity\User;
 use Drupal\Core\Entity\EntityBase;
 use Drupal\Core\Form\FormStateInterface;
-// Use Drupal\shortcut\Entity\ShortcutSet;.
 use Drupal\Core\Hook\Attribute\LegacyHook;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\tripal\Services\TripalJob;
+use Drupal\user\Entity\User;
 use Drupal\views\ViewExecutable;
 
 require_once 'src/api/tripal.api.php';
