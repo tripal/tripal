@@ -2,22 +2,13 @@
 
 namespace Drupal\tripal\Hook;
 
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
-use Drupal\Core\Render\Markup;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\Url;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Drupal\views\ViewEntityInterface;
-use Drupal\views\ViewExecutable;
-use Drupal\views\ViewsConfigUpdater;
 
 /**
- * Hook implementations for the Tripal module.
+ * Theme hook implementations for the Tripal module.
  */
-class TripalHooks {
+class TripalTheme {
 
   use StringTranslationTrait;
 
@@ -41,18 +32,18 @@ class TripalHooks {
    * Implements hook_theme().
    */
   #[Hook('theme')]
-  public function tripalTheme() {
+  public function theme() {
     $theme = [];
 
     $theme['tripal_entity_type'] = [
       'render element' => 'elements',
-      'file' => 'templates/tripal_entity_type.page.php',
+      'initial_preprocess' => static::class . ':templatePreprocessTripalEntityType',
       'template' => 'tripal_entity_type',
     ];
 
     $theme['tripal_entity'] = [
       'render element' => 'elements',
-      'file' => 'templates/tripal_entity.page.php',
+      'initial_preprocess' => static::class . ':templatePreprocessTripalEntity',
       'template' => 'tripal_entity',
     ];
 
@@ -64,10 +55,81 @@ class TripalHooks {
     $theme['tripal_entity_content_add_list'] = [
       'render element' => 'types',
       'variables' => ['types' => NULL],
-      'file' => 'templates/tripal_entity.page.php',
+      'initial_preprocess' => static::class . ':templatePreprocessTripalEntity',
     ];
 
     return $theme;
+  }
+
+  /**
+   * Prepares variables for Tripal Entity Type templates.
+   *
+   * Default template: tripal_entity_type.html.twig.
+   *
+   * @param array &$variables
+   *   An associative array containing:
+   *   - elements: An associative array containing the user information.
+   *   - attributes: HTML attributes for the containing element.
+   */
+  public function templatePreprocessTripalEntityType(array &$variables): void {
+
+    // Fetch TripalEntityType Object.
+    $tripal_entity_type = $variables['elements']['#tripal_entity_type'];
+
+    // Take information from the entity and add it to the content.
+    $variables['content']['label'] = [
+      '#type' => 'item',
+      '#title' => 'Label',
+      '#markup' => $tripal_entity_type->getLabel(),
+      '#wrapper_attributes' => [
+        'class' => ['container-inline'],
+      ],
+    ];
+    $variables['content']['term'] = [
+      '#type' => 'item',
+      '#title' => 'Term',
+      '#markup' => $tripal_entity_type->getTermIdSpace() . ':' . $tripal_entity_type->getTermAccession(),
+      '#wrapper_attributes' => [
+        'class' => ['container-inline'],
+      ],
+    ];
+    $variables['content']['category'] = [
+      '#type' => 'item',
+      '#title' => 'Category',
+      '#markup' => $tripal_entity_type->getCategory(),
+      '#wrapper_attributes' => [
+        'class' => ['container-inline'],
+      ],
+    ];
+    $variables['content']['description'] = [
+      '#type' => 'item',
+      '#title' => 'Help Text for Curators',
+      '#markup' => $tripal_entity_type->getHelpText(),
+    ];
+
+    // Helpful $content variable for templates.
+    // Only adds fields which TripalEntityType may not have.
+    foreach (Element::children($variables['elements']) as $key) {
+      $variables['content'][$key] = $variables['elements'][$key];
+    }
+  }
+
+  /**
+   * Prepares variables for Tripal Content templates.
+   *
+   * Default template: tripal_entity.html.twig.
+   *
+   * @param array $variables
+   *   An associative array containing:
+   *   - elements: An associative array containing the user information and any
+   *   - attributes: HTML attributes for the containing element.
+   */
+  public function templatePreprocessTripalEntity(array &$variables) {
+
+    // Helpful $content variable for templates.
+    foreach (Element::children($variables['elements']) as $key) {
+      $variables['content'][$key] = $variables['elements'][$key];
+    }
   }
 
 }

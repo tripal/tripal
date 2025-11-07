@@ -258,7 +258,7 @@ function tripal_help($route_name, RouteMatchInterface $route_match) {
  */
 #[LegacyHook]
 function tripal_theme() {
-  return \Drupal::service('tripal.hooks')->tripalTheme();
+  return \Drupal::service('tripal.hooks')->theme();
 }
 
 /**
