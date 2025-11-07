@@ -317,55 +317,6 @@ class TripalHooks {
   }
 
   /**
-   * Implements hook_theme().
-   */
-  #[Hook('theme')]
-  public function tripalTheme() {
-    $theme = [];
-
-    $theme['tripal_entity_type'] = [
-      'render element' => 'elements',
-      'file' => 'templates/tripal_entity_type.page.php',
-      'template' => 'tripal_entity_type',
-    ];
-
-    $theme['tripal_entity'] = [
-      'render element' => 'elements',
-      'file' => 'templates/tripal_entity.page.php',
-      'template' => 'tripal_entity',
-    ];
-
-    $theme['tripal_entity_edit_form'] = [
-      'render element' => 'form',
-      'template' => 'tripal-entity-edit-form',
-    ];
-
-    $theme['tripal_entity_content_add_list'] = [
-      'render element' => 'types',
-      'variables' => ['types' => NULL],
-      'file' => 'templates/tripal_entity.page.php',
-    ];
-
-    return $theme;
-  }
-
-  /**
-   * Implements hook_theme_suggestions_HOOK().
-   */
-  #[Hook('theme_suggestions_tripal_entity')]
-  public function themeSuggestionsTripalEntity(array $variables) {
-    $suggestions = [];
-    $entity = $variables['elements']['#tripal_entity'];
-    $sanitized_view_mode = strtr($variables['elements']['#view_mode'], '.', '_');
-    $suggestions[] = 'tripal_entity__' . $sanitized_view_mode;
-    $suggestions[] = 'tripal_entity__' . $entity->bundle();
-    $suggestions[] = 'tripal_entity__' . $entity->bundle() . '__' . $sanitized_view_mode;
-    $suggestions[] = 'tripal_entity__' . $entity->id();
-    $suggestions[] = 'tripal_entity__' . $entity->id() . '__' . $sanitized_view_mode;
-    return $suggestions;
-  }
-
-  /**
    * Implements hook gin_content_form_routes provided by the GIN admin theme.
    */
   #[Hook('gin_content_form_routes')]
