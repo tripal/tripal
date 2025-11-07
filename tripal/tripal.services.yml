@@ -14,7 +14,7 @@ services:
   tripal.hooks:
     class: 'Drupal\tripal\Hook\TripalHooks'
   tripal.theme:
-    class: 'Drupal\tripal\Theme\TripalTheme'
+    class: 'Drupal\tripal\Hook\TripalTheme'
   tripal.logger:
     class: 'Drupal\tripal\Services\TripalLogger'
   tripal.rebuild_service:

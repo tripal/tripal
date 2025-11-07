@@ -258,7 +258,7 @@ function tripal_help($route_name, RouteMatchInterface $route_match) {
  */
 #[LegacyHook]
 function tripal_theme() {
-  return \Drupal::service('tripal.hooks')->theme();
+  return \Drupal::service('tripal.theme')->theme();
 }
 
 /**
@@ -269,7 +269,7 @@ function tripal_theme() {
  */
 #[LegacyHook]
 function tripal_theme_suggestions_tripal_entity(array $variables) {
-  return \Drupal::service('tripal.hooks')->themeSuggestionsTripalEntity($variables);
+  return \Drupal::service('tripal.theme')->themeSuggestionsTripalEntity($variables);
 }
 
 /**
@@ -280,7 +280,7 @@ function tripal_theme_suggestions_tripal_entity(array $variables) {
  */
 #[LegacyHook]
 function tripal_toolbar() {
-  return \Drupal::service('tripal.hooks')->tripalToolbar();
+  return \Drupal::service('tripal.hooks')->toolbar();
 }
 
 /**
@@ -364,7 +364,7 @@ function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) 
  * Legacy implementation for TripalEntityHooks::tripalEntityStorageLoad().
  *
  * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ * Drupal\tripal\Hook\TripalEntityHooks in tripal/src/Hook/TripalEntityHooks.php.
  */
 #[LegacyHook]
 function tripal_tripal_entity_storage_load(&$entities) {

@@ -60,7 +60,7 @@ class TripalHooks {
    * Implements hook_toolbar().
    */
   #[Hook('toolbar')]
-  public function tripalToolbar() {
+  public function toolbar() {
     $items = [];
 
     $items['tripal'] = [
@@ -226,7 +226,7 @@ class TripalHooks {
    *   - page: A render element representing the page.
    */
   #[Hook('preprocess_html')]
-  public function tripalPreprocessHtml(&$variables) {
+  public function preprocessHtml(&$variables) {
     global $base_url;
     // @todo Need to look into service injection in the module file.
     $config = \Drupal::config('tripal_admin.settings');
