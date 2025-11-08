@@ -169,7 +169,7 @@ function TripalEntity_load($id, $reset = FALSE) {
  * Typically this function call is not necessary as all of the API is
  * automaticaly included by the tripal module.  However this function can
  * be useful in the .install files during a site upgrade when the tripal
- * module is not enabld.
+ * module is not enabled.
  *
  * Example usage:
  * @code
