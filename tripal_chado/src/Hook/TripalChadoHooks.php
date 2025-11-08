@@ -33,8 +33,10 @@ class TripalChadoHooks {
    * Implements hook_rebuild().
    */
   #[Hook('rebuild')]
-  public function onRebuild(): void {
+  public function rebuild(): string {
     \Drupal::service('tripal_chado.rebuild_service')->executeRebuild();
+    // Return value of the module name is only used for phpunit tests.
+    return 'tripal_chado';
   }
 
   /**

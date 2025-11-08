@@ -40,8 +40,10 @@ class TripalLayoutHooks {
    * Implements hook_rebuild().
    */
   #[Hook('rebuild')]
-  public function onRebuild(): void {
+  public function rebuild(): string {
     \Drupal::service('tripal_layout.rebuild_service')->executeRebuild();
+    // Return value is only used for phpunit tests.
+    return 'tripal_layout';
   }
 
 }
