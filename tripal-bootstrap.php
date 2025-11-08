@@ -26,13 +26,13 @@ $additional_ignores = '
 # /var/www/drupal/web/core/lib/Drupal/Core/Hook/HookCollectorPass.php:591
 # field_group_module_implements_alter without a #[LegacyModuleImplementsAlter] attribute is deprecated in drupal:11.2.0 and removed in drupal:12.0.0. See https://www.drupal.org/node/3496788
 # One of the tests that triggers this: testTripalEmptyContentTypes
-/field_group_module_implements_alter without a #\\[LegacyModuleImplementsAlter\\] attribute/
+%field_group_module_implements_alter without a #\\[LegacyModuleImplementsAlter\\] attribute%
 
 # Drupal
 # /var/www/drupal/vendor/symfony/error-handler/DebugClassLoader.php:347
 # Method "Twig\Extension\ExtensionInterface::getFunctions()" might add "array" as a native return type declaration in the future. Do the same in implementation "Drupal\devel\Twig\Extension\Debug" now to avoid errors or add an explicit @return annotation to suppress this message.
 # One of the tests that triggers this: testTripalEmptyContentTypes
-/Method "Twig\\\\Extension\\\\ExtensionInterface::getFunctions\(\)" might add "array"/
+%Method "Twig\\\\Extension\\\\ExtensionInterface::getFunctions\(\)" might add "array"%
 ';
 
 copy($drupal_ignore, $tripal_ignore);
