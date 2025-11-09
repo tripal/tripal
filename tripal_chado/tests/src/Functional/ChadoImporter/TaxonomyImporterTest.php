@@ -76,7 +76,7 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
       'schema_name' => $schema_name,
       'taxonomy_ids' => '3702',
       'use_transaction' => 1,
-      'import_existing' => 1,
+      'import_existing' => 0,
       'ncbi_api_key' => NULL,
     ];
 
@@ -100,6 +100,17 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
 
     // Test import_existing, check if Arabidopsis arenosa
     // lineageex property was looked up from NCBI.
+    $run_args['taxonomy_ids'] = NULL;
+    $run_args['import_existing'] = 1;
+    $this->mock_error = '';
+    $taxonomy_importer->createImportJob($run_args, $file_details);
+    $taxonomy_importer->prepareFiles();
+    $taxonomy_importer->run();
+    $taxonomy_importer->postRun();
+    if ($this->mock_error) {
+      $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
+    }
+
     $results = $chado->query("SELECT count(*) as c2 FROM {1:organism} O
         LEFT JOIN {1:organismprop} P ON O.organism_id=P.organism_id
         LEFT JOIN {1:cvterm} T ON P.type_id=T.cvterm_id
