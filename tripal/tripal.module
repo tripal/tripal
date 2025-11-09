@@ -312,7 +312,7 @@ function tripal_preprocess_html(&$variables) {
  */
 #[LegacyHook]
 function tripal_rebuild() {
-  \Drupal::service('tripal.hooks')->rebuild();
+  return \Drupal::service('tripal.hooks')->rebuild();
 }
 
 /**

@@ -28,5 +28,5 @@ function tripal_layout_page_attachments(array &$attachments) {
  */
 #[LegacyHook]
 function tripal_layout_rebuild() {
-  \Drupal::service('tripal_layout.hooks')->rebuild();
+  return \Drupal::service('tripal_layout.hooks')->rebuild();
 }
