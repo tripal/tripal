@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('service-rebuild')]
 #[RunTestsInSeparateProcesses]
-class RebuildServiceTest extends ChadoTestKernelBase {
+class TripalChadoRebuildServiceTest extends ChadoTestKernelBase {
 
   /**
    * Modules to enable.
@@ -58,7 +58,7 @@ class RebuildServiceTest extends ChadoTestKernelBase {
    */
   public function testTripalChadoRebuild() {
 
-    $config = Yaml::parseFile(__DIR__ . '/RebuildServiceTest.yml');
+    $config = Yaml::parseFile(__DIR__ . '/TripalChadoRebuildServiceTest.yml');
 
     // Check that rebuild creates views.
     // Before rebuild they will not exist.
