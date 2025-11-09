@@ -1,6 +1,7 @@
 <?php
 
 use Symfony\Component\Yaml\Yaml;
+use Drupal\Core\Hook\Attribute\LegacyHook;
 use Drupal\Core\Messenger\Messenger;
 use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
 use Drupal\tripal_chado\Database\ChadoSchema;
@@ -48,7 +49,7 @@ function tripal_file_install() {
 
   // Add the custom tables needed to associate Chado content with files.
   tripal_file_show_message('Adding custom tables');
-  tripal_file_create_custom_chado_tables();
+  \Drupal::service('tripal_file.rebuild_service')->createCustomChadoTables();
 
   // Associate terms with the linker tables.
   tripal_file_show_message('Adding linker table terms');
@@ -70,11 +71,14 @@ function tripal_file_install() {
 /**
  * Implements hook_uninstall().
  *
- * @ingroup tripal_file
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_file\Hook\TripalFileHooks in
+ * tripal_file/src/Hook/TripalFileHooks.php.
  */
+//@@@
 function tripal_file_uninstall() {
   // Delete the custom tables created by this module.
-  tripal_file_drop_custom_chado_tables();
+  \Drupal::service('tripal_file.hooks')->uninstall();
 }
 
 /**

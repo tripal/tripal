@@ -1,0 +1,7 @@
+services:
+  tripal_file.hooks:
+    class: 'Drupal\tripal_file\Hook\TripalFileHooks'
+  tripal_file.rebuild_service:
+    class: 'Drupal\tripal_file\Services\TripalFileRebuildService'
+    arguments:
+      - '@tripal_chado.database'

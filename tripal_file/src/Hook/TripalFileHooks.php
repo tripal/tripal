@@ -29,4 +29,24 @@ class TripalFileHooks {
     }
   }
 
+  /**
+   * Implements hook_rebuild().
+   */
+  #[Hook('rebuild')]
+  public function rebuild(): string {
+    \Drupal::service('tripal_file.rebuild_service')->executeRebuild();
+    // Return value of the module name is only used for phpunit tests.
+    return 'tripal_file';
+  }
+
+  /**
+   * Implements hook_uninstall().
+   *
+   * The hook_uninstall does not support attributes and must remain procedural.
+   */
+  public function uninstall() {
+    // Delete the custom tables created by this module.
+    \Drupal::service('tripal_file.rebuild_service')->dropCustomChadoTables();
+  }
+
 }

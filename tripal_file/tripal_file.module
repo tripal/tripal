@@ -1,12 +1,37 @@
 <?php
 
-use Symfony\Component\Yaml\Yaml;
+use Drupal\Core\Hook\Attribute\LegacyHook;
 use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * @file
  * Contains tripal_file.module.
  */
+
+/**
+ * Implements hook_help().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_file\Hook\TripalFileHooks in
+ * tripal_file/src/Hook/TripalFileHooks.php.
+ */
+#[LegacyHook]
+function tripal_file_help($route_name, RouteMatchInterface $route_match) {
+  return \Drupal::service('tripal_file.hooks')->help($route_name, $route_match);
+}
+
+/**
+ * Implements hook_rebuild().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_file\Hook\TripalFileHooks in
+ * tripal_file/src/Hook/TripalFileHooks.php.
+ */
+#[LegacyHook]
+function tripal_file_rebuild() {
+  return \Drupal::service('tripal_file.hooks')->rebuild();
+}
 
 /**
  * Creates the custom chado tables used by this module.
@@ -27,7 +52,8 @@ function tripal_file_create_custom_chado_tables(?string $chado_schema = NULL): v
     // then only add missing columns, so that we preserve existing table content.
     $existing_schema = $customTable->getTableSchema();
     if ($existing_schema) {
-      // @todo
+      // Upgrade migrated Tripal 3 tables.
+      tripal_file_migrate_table($table_name, $chado_schema, $schema, $existing_schema);
     }
     else {
       $force = FALSE;
@@ -59,6 +85,36 @@ function tripal_file_drop_custom_chado_tables(?string $chado_schema = NULL): voi
     $existing_schema = $customTable->getTableSchema();
     if ($existing_schema) {
       $customTable->delete();
+    }
+  }
+}
+
+/**
+ * Updates a table schema of an existing table to match expected.
+ *
+ * This is to support migrating tables from Tripal 3 which do not have
+ * the new type_id columns, and to update unique constraints to include
+ * NULLS_NOT_DISTINCT.
+ *
+ * @param string $table_name
+ *   The name of the table being updated.
+ * @param array $new_schema
+ *   The Tripal 4 table schema.
+ * @param array $existing_schema
+ *   The Tripal 3 migrated table schema.
+ * @param string|null $chado_schema
+ *   Optional. The chado schema where the custom tables live. If no
+ *   schema is specified then the default schema is used.
+ *
+ * @return void
+ *   No return value.
+ */
+function tripal_file_migrate_table(string $table_name, array $new_schema, array $existing_schema, ?string $chado_schema = NULL): void {
+
+  // Adds type_id column if it is missing.
+  if (array_key_exists('type_id', $new_schema['fields'])) {
+    if (!array_key_exists('type_id', $existing_schema['fields'])) {
+      $sql = 'ALTER TABLE ' . $table_name . ' ADD COLUMN type_id integer';
     }
   }
 }
