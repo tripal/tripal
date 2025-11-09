@@ -100,7 +100,7 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
 
     // Test import_existing, check if Arabidopsis arenosa
     // lineageex property was looked up from NCBI.
-    $run_args['taxonomy_ids'] = NULL;
+    $run_args['taxonomy_ids'] = '';
     $run_args['import_existing'] = 1;
     $this->mock_error = '';
     $taxonomy_importer->createImportJob($run_args, $file_details);
