@@ -44,7 +44,7 @@ class TripalFileHooks {
    *
    * The hook_uninstall does not support attributes and must remain procedural.
    */
-  public function uninstall() {
+  public function tripal_file_uninstall() {
     // Delete the custom tables created by this module.
     \Drupal::service('tripal_file.rebuild_service')->dropCustomChadoTables();
   }
