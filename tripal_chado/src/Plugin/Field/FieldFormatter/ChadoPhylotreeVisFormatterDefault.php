@@ -169,7 +169,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#value' => '<i class="fa fa-fw fa-sort-amount-asc"></i>',
     ];
     $elements[$delta]['row']['toolbar']['sort_descending'] = [
-      '#suffix' => '</div>',
+//      '#suffix' => '</div>',
       '#type' => 'html_tag',
       '#tag' => 'button',
       '#attributes' => [
@@ -180,17 +180,17 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#value' => '<i class="fa fa-fw fa-sort-amount-desc"></i>',
     ];
 // @todo this doesn't work in the example either.
-//    $elements[$delta]['row']['toolbar']['sort_original'] = [
-//      '#suffix' => '</div>',
-//      '#type' => 'html_tag',
-//      '#tag' => 'button',
-//      '#attributes' => [
-//        'class' => 'btn btn-light btn-sm',
-//        'id' => 'sort_original',
-//        'title' => 'Restore original order',
-//      ],
-//      '#value' => '<i class="fa fa-fw fa-sort"></i>',
-//    ];
+    $elements[$delta]['row']['toolbar']['sort_original'] = [
+      '#suffix' => '</div>',
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#attributes' => [
+        'class' => 'btn btn-light btn-sm',
+        'id' => 'sort_original',
+        'title' => 'Restore original order',
+      ],
+      '#value' => '<i class="fa fa-fw fa-sort"></i>',
+    ];
 // @todo make this work.
 //    $elements[$delta]['row']['toolbar']['save_image'] = [
 //      '#suffix' => '</div>',
@@ -248,12 +248,12 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#value' => '<i class="fa fa-fw fa-align-right"></i>',
     ];
 
-    // Selection status.
-    $elements[$delta]['row']['selected'] = [
-      '#prefix' => '<div class="col-md-4 pull-right">',
-      '#suffix' => '</div>',
-      '#markup' => '<b>Selected </b><span class="badge badge-secondary" id="selected_branch_counter">0</span>',
-    ];
+//    // Selection status.
+//    $elements[$delta]['row']['selected'] = [
+//      '#prefix' => '<div class="col-md-4 pull-right">',
+//      '#suffix' => '</div>',
+//      '#markup' => '<b>Selected </b><span class="badge badge-secondary" id="selected_branch_counter">0</span>',
+//    ];
 
   }
 

@@ -11,7 +11,7 @@ use Drupal\tripal\Services\TripalEntityLookup;
  * The loadPhylotreeById() method loads a phylotree record from its
  * primary key phylotree_id and returns an associative array.
  *
- * The getTreeJson() method is used to generate a json representation
+ * The getTreeNewick() method is used to generate a newick representation
  * of the phylonodes in a tree, which is then used to prepare a
  * visualization of the tree.
  */
@@ -148,12 +148,10 @@ class ChadoPhylotree {
    */
   public function getTreeNewick(int $phylotree_id): string {
     $structure = $this->getTreeStructure($phylotree_id);
-#print "CP1 entire tree structure ";var_dump($structure);//@@@
     $newick = '';
     if ($structure) {
       $newick = $this->getNodeNewick($structure) . ';';
     }
-#print "CP9 newick \"". $newick . "\"\n";//@@@
     return $newick;
   }
 
@@ -170,7 +168,7 @@ class ChadoPhylotree {
     $newick = '';
     if (!($node['children'] ?? [])) {
       // Process a leaf node.
-      $newick = $this->escape($node['name']);
+      $newick = $this->quote($node['name']);
     }
     else {
       // Process an internal node.
@@ -178,7 +176,7 @@ class ChadoPhylotree {
       foreach ($node['children'] as $child) {
         $children_strings[] = $this->getNodeNewick($child);
       }
-      $name = $this->escape($node['name'] ?? '');
+      $name = $this->quote($node['name'] ?? '');
       $newick = '(' . implode(',', $children_strings) . ')' . $name;
     }
 
@@ -214,7 +212,7 @@ class ChadoPhylotree {
     foreach ($node as $key => $value) {
       if (!in_array($key, $exclude)) {
         if (isset($value) && strlen($value)) {
-          $annotations[] = $this->escape($key) . ':' . $this->escape($value);
+          $annotations[] = $this->quote($key) . ':' . $this->quote($value);
         }
       }
     }
@@ -234,130 +232,11 @@ class ChadoPhylotree {
    * @return string
    *   The string with surrounding double quotes if necessary.
    */
-  protected function escape(string $string): string {
+  protected function quote(string $string): string {
     if (preg_match('/[^0-9]/', $string)) {
       $string = '"' . $string . '"';
     }
     return $string;
-  }
-
-  /**
-   * Generates a json representation of all the nodes in a phylotree.
-   *
-   * @param int $phylotree_id
-   *   The ID of the phylotree table record.
-   *
-   * @return string
-   *   The phylotree encoded in json format.
-   *   Returns an empty string if the specified tree does not
-   *   exist, or if it has no phylonodes attached.
-   */
-  public function getTreeJson(int $phylotree_id): string {
-    $json = '';
-
-    /** @var array */
-    $phylotree = $this->loadPhylotreeById($phylotree_id);
-    if (!$phylotree) {
-      return $json;
-    }
-
-    /** @var Drupal\Core\Database\StatementWrapperIterator */
-    $nodes = $this->loadPhylonodesById($phylotree_id);
-    if (!$nodes) {
-      return $json;
-    }
-
-    // Fetch all the phylonodes into an associative array indexed by
-    // phylonode_id. Convert from database query record to array,
-    // casting to appropriate datatypes.
-    $phylonodes = [];
-    $root_phylonode_ref = NULL;
-
-    while ($r = $nodes->fetchObject()) {
-      $phylonode_id = (int) $r->phylonode_id;
-
-      // Expect all nodes to have these properties.
-      $node = [
-        'phylonode_id' => $phylonode_id,
-        'parent_phylonode_id' => (int) $r->parent_phylonode_id,
-        'length' => (double) $r->length,
-        'cvterm_name' => $r->cvterm_name,
-      ];
-
-      // If the nodes are taxonomic then set an equal distance.
-      if (($phylotree['type_id'] ?? 0) == $this->cv_terms['Species tree']) {
-        $node['length'] = 0.001;
-      }
-
-      // Other properties may exist only for leaf nodes.
-      if ($r->name) {
-        $node['name'] = $r->name;
-      }
-
-      // If this node is associated with a feature, then add in the details.
-      if ($r->feature_id) {
-        $node['feature_id'] = (int) $r->feature_id;
-        $node['feature_name'] = $r->feature_name;
-        // If not linked directly to a feature, leaf nodes can also be linked to
-        // stock entities through an intermediate feature.
-        if ($r->stock_id) {
-          $entity_id = $this->entity_lookup_manager->getEntityId($r->stock_id, NULL, NULL, 'stock');
-        }
-        else {
-          $entity_id = $this->entity_lookup_manager->getEntityId($r->feature_id, NULL, NULL, 'feature');
-        }
-        $node['entity_id'] = (int) $entity_id;
-      }
-
-      // Add in the organism fields when they are available via the
-      // phylonode_organism table.
-      if ($r->organism_id) {
-        $node['organism_id'] = (int) $r->organism_id;
-        $node['common_name'] = $r->common_name;
-        $node['abbreviation'] = $r->abbreviation;
-        $node['entity_id'] = $this->entity_lookup_manager->getEntityId($r->organism_id, 'OBI', '0100026', 'organism');
-
-        // If the node does not have a name but is linked to an organism
-        // then set the name to be that of the genus and species.
-        if (!$r->name) {
-          $node['name'] = chado_get_organism_scientific_name(chado_get_organism(['organism_id' => $r->organism_id], []));
-        }
-      }
-
-      // Add in the organism fields when they are available via the
-      // phylonode.feature_id FK relationship.
-      if ($r->fo_organism_id) {
-        $node['fo_organism_id'] = (int)$r->fo_organism_id;
-        $node['fo_common_name'] = $r->fo_common_name;
-        $node['fo_abbreviation'] = $r->fo_abbreviation;
-        $node['fo_genus'] = $r->fo_genus;
-        $node['fo_species'] = $r->fo_species;
-        $node['entity_id'] = $this->entity_lookup_manager->getEntityId($r->fo_organism_id, 'OBI', '0100026', 'organism');
-      }
-
-      // Add this node to the list, organized by ID.
-      $phylonodes[$phylonode_id] = $node;
-    }
-
-    // Populate the children[] arrays for each node.
-    $root_phylonode_ref = NULL;
-    foreach ($phylonodes as $key => &$node) {
-      if ($node['parent_phylonode_id'] !== 0) {
-        $parent_ref = &$phylonodes[$node['parent_phylonode_id']];
-        // Append node reference to children.
-        $parent_ref['children'][] = &$node;
-      }
-      else {
-        $root_phylonode_ref = &$node;
-      }
-    }
-
-    // Convert datastructure to json.
-    if ($root_phylonode_ref) {
-      $json = json_encode($root_phylonode_ref);
-    }
-
-    return $json;
   }
 
   /**
@@ -372,26 +251,26 @@ class ChadoPhylotree {
    *   exist, or if it has no phylonodes attached.
    */
   public function getTreeStructure(int $phylotree_id): array {
-    $json = '';
+
+    // Stores the function return value.
+    $root_phylonode_ref = [];
 
     /** @var array */
     $phylotree = $this->loadPhylotreeById($phylotree_id);
     if (!$phylotree) {
-      return $json;
+      return $root_phylonode_ref;
     }
 
     /** @var Drupal\Core\Database\StatementWrapperIterator */
     $nodes = $this->loadPhylonodesById($phylotree_id);
     if (!$nodes) {
-      return $json;
+      return $root_phylonode_ref;
     }
 
     // Fetch all the phylonodes into an associative array indexed by
     // phylonode_id. Convert from database query record to array,
     // casting to appropriate datatypes.
     $phylonodes = [];
-    $root_phylonode_ref = NULL;
-
     while ($r = $nodes->fetchObject()) {
       $phylonode_id = (int) $r->phylonode_id;
 
@@ -405,10 +284,11 @@ class ChadoPhylotree {
 
       // If the nodes are taxonomic then set an equal distance.
       if (($phylotree['type_id'] ?? 0) == $this->cv_terms['Species tree']) {
+        // @todo phylotree.js only uses 2 sig. digits, change to 0.01?
         $node['length'] = 0.001;
       }
 
-      // Other properties may exist only for leaf nodes.
+      // Other properties may not exist for internal nodes.
       if ($r->name) {
         $node['name'] = $r->name;
       }
@@ -449,6 +329,7 @@ class ChadoPhylotree {
         $node['fo_organism_id'] = (int)$r->fo_organism_id;
         $node['fo_common_name'] = $r->fo_common_name;
         $node['fo_abbreviation'] = $r->fo_abbreviation;
+        // @todo these next two are not used, use name code from above?
         $node['fo_genus'] = $r->fo_genus;
         $node['fo_species'] = $r->fo_species;
         $node['entity_id'] = $this->entity_lookup_manager->getEntityId($r->fo_organism_id, 'OBI', '0100026', 'organism');
@@ -459,7 +340,6 @@ class ChadoPhylotree {
     }
 
     // Populate the children[] arrays for each node.
-    $root_phylonode_ref = [];
     foreach ($phylonodes as $key => &$node) {
       if ($node['parent_phylonode_id'] !== 0) {
         $parent_ref = &$phylonodes[$node['parent_phylonode_id']];
