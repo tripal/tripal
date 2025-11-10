@@ -1,0 +1,177 @@
+expected_modules:
+  - 'tripal_file'
+# After PR #2356 is merged add these two:
+#  - 'tripal'
+#  - 'tripal_chado'
+expected_tables:
+  - name: 'file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: false
+  - name: 'license'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: false
+      rank: false
+  - name: 'fileloc'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: false
+      rank: true
+  - name: 'fileprop'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'file_relationship'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: false
+  - name: 'file_dbxref'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: false
+      rank: false
+  - name: 'file_license'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: false
+      rank: false
+  - name: 'analysis_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'assay_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'biomaterial_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  # This is the only linking table lacking both columns.
+  - name: 'file_contact'
+    before:
+      exists: true
+      type_id: false
+      rank: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'cv_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'eimage_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'feature_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'featuremap_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'library_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'nd_protocol_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'organism_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'phylotree_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'project_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'file_pub'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'stock_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'stockcollection_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
+  - name: 'study_file'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
