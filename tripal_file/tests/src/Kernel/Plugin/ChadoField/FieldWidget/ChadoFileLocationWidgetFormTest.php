@@ -2,8 +2,10 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\ChadoField\FieldType;
 
+use Drupal\file\Entity\File;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
+use Drupal\tripal_chado\Database\ChadoConnection;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -13,13 +15,13 @@ use PHPUnit\Framework\Attributes\Group;
  * Specifically focused on create + update actions performed on the entity
  * directly. Both TripalEntity, ChadoStorage and the field will be covered.
  *
- * @group tripal-file
  * @group TripalField
  * @group ChadoField
+ * @group tripal-file
  */
+#[Group('tripal-field')]
+#[Group('chado-field')]
 #[Group('tripal-file')]
-#[Group('TripalField')]
-#[Group('ChadoField')]
 class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;
@@ -57,9 +59,9 @@ class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
   /**
    * The test chado connection. It is also set in the container.
    *
-   * @var ChadoConnection
+   * @var Drupal\tripal_chado\Database\ChadoConnection
    */
-  protected object $chado_connection;
+  protected ChadoConnection $chado_connection;
 
   /**
    * The test drupal connection. It is also set in the container.
@@ -99,6 +101,12 @@ class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
    * @var string
    */
   protected string $bundle_name;
+  /**
+   * A file in the public:// space for testing.
+   *
+   * @var File
+   */
+  protected File $test_file;
 
   /**
    * Describes the scenarios to test.
@@ -155,8 +163,9 @@ class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
     // We will be using the drupal 'file' module also.
     $this->installEntitySchema('file');
 
-    // Install schema for custom chado tables, needed for tripal_file module.
+    // Install schemas needed for tripal_file module.
     $this->installSchema('tripal_chado', ['tripal_custom_tables']);
+    $this->installSchema('file', ['file_usage']);
 
     // Set up the tripal file module.
     $this->installConfig(['tripal_file']);
@@ -179,6 +188,19 @@ class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
       ->fields(['name' => 'Public Domain', 'summary' => 'You can do anything at zombo com', 'uri' => 'https://zombo.com'])
       ->execute();
     $this->assertNotEmpty($this->license_id, 'Did not create license');
+
+    // Create a managed file with a specific md5 checksum
+    // 58ce66d7df0a1cf9b360cabf43da3ea5. Conveniently, this file will
+    // not persist outside the testing environment.
+    $filepath = 'public://tripal_genome.fna';
+    $contents = "ACGT\n";
+    file_put_contents($filepath, $contents);
+    $this->test_file = File::create([
+      'uri' => $filepath,
+      'uid' => 1,
+    ]);
+    $this->test_file->save();
+    $this->assertFileExists($filepath, 'Test file ' . $filepath . ' was not created');
   }
 
   /**

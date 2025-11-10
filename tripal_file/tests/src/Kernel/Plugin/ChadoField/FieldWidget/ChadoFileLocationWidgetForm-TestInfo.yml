@@ -200,6 +200,13 @@ scenarios:
           fileloc_size: 4096
           fileloc_filename: 'allknowledge.txt'
           fileloc_md5checksum: '0123456789ABCDEF0123456789abcdef'
+        - record_id: 0
+          linker_id: 0
+          fileloc_id: 0
+          fileloc_uri: 'public://tripal_genome.fna'
+          fileloc_size: 0
+          fileloc_filename: ''
+          fileloc_md5checksum: ''
       expected_field_values:
         file_name:
         - record_id: 1
@@ -223,6 +230,11 @@ scenarios:
           fileloc_size: 4096
           fileloc_filename: 'allknowledge.txt'
           fileloc_md5checksum: '0123456789ABCDEF0123456789abcdef'
+        - record_id: 1
+          fileloc_uri: 'public://tripal_genome.fna'
+          fileloc_size: 5
+          fileloc_filename: 'tripal_genome.fna'
+          fileloc_md5checksum: '58ce66d7df0a1cf9b360cabf43da3ea5'
     edit:
       expected_form_keys:
         file_name:

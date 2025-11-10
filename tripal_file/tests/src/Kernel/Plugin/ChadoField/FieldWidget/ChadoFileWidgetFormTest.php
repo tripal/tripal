@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\ChadoField\FieldType;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
+use Drupal\tripal_chado\Database\ChadoConnection;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -13,13 +14,13 @@ use PHPUnit\Framework\Attributes\Group;
  * Specifically focused on create + update actions performed on the entity
  * directly. Both TripalEntity, ChadoStorage and the field will be covered.
  *
- * @group tripal-file
  * @group TripalField
  * @group ChadoField
+ * @group tripal-file
  */
+#[Group('tripal-field')]
+#[Group('chado-field')]
 #[Group('tripal-file')]
-#[Group('TripalField')]
-#[Group('ChadoField')]
 class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;
@@ -57,9 +58,9 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
   /**
    * The test chado connection. It is also set in the container.
    *
-   * @var ChadoConnection
+   * @var Drupal\tripal_chado\Database\ChadoConnection
    */
-  protected object $chado_connection;
+  protected ChadoConnection $chado_connection;
 
   /**
    * The test drupal connection. It is also set in the container.
