@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\ChadoField\FieldType;
 
+use Drupal\pgsql\Driver\Database\pgsql\Connection;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
 use Drupal\tripal_chado\Database\ChadoConnection;
@@ -65,9 +66,9 @@ class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
   /**
    * The test drupal connection. It is also set in the container.
    *
-   * @var object
+   * @var Drupal\pgsql\Driver\Database\pgsql\Connection
    */
-  protected object $drupal_connection;
+  protected Connection $drupal_connection;
 
   /**
    * The YAML file indicating the scenarios to test and how to setup the enviro.
