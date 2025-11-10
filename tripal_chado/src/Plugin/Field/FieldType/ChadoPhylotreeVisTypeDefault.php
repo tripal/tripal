@@ -125,34 +125,6 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
   }
 
   /**
-   * Retrieves all phylonodes for one phylotree and converts to json format.
-   *
-   * @param array $context
-   *   Values that a callback function might need in order
-   *   to calculate the field's final value.
-   *
-   * @return string
-   *   A tree representation in json format.
-   */
-  public static function getTreeJson(array $context): string {
-
-    // This will hold each of the tripalTypes values.
-    $field_name = $context['field_name'];
-    $delta = $context['delta'];
-    $values = $context['values'][$field_name][$delta];
-
-    // This retrieves the phylotree_id value.
-    $record_id = $values['record_id']['value']->getValue();
-
-    // This will retrieve the phylonodes and convert to json format.
-    $chado = \Drupal::service('tripal_chado.database');
-    $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
-    $phylotree = new ChadoPhylotree($chado, $lookup_manager);
-    $json = $phylotree->getTreeJson($record_id);
-    return $json;
-  }
-
-  /**
    * Retrieves all phylonodes for one phylotree and converts to newick format.
    *
    * @param array $context
