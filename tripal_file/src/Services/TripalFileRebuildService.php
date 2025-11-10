@@ -165,6 +165,11 @@ class TripalFileRebuildService {
             $transaction_chado->rollback();
             throw new \Exception($e);
           }
+
+          // Clear tripaldbx caches for this modified table.
+          $this->chado_connection->schema()->getTableDdl($table_name, TRUE);
+          $args = ['format' => 'none', 'clear' => TRUE];
+          $this->chado_connection->schema()->getTableDef($table_name, $args);
         }
       }
     }
