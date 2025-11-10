@@ -69,7 +69,10 @@ class TripalFileRebuildService {
     $table_schemas = Yaml::parseFile($config);
     foreach ($table_schemas as $table_name => $table_schema) {
       $args = ['format' => 'drupal', 'source' => 'database'];
-      $existing_schema = $this->chado_connection->schema()->getTableDef($table_name, $args);
+      $existing_schema = NULL;
+      if ($this->chado_connection->schema()->tableExists($table_name)) {
+        $existing_schema = $this->chado_connection->schema()->getTableDef($table_name, $args);
+      }
       if ($existing_schema) {
         // If the table already exists, e.g. for a migrated Tripal 3
         // site, then only add missing columns, so that we preserve
