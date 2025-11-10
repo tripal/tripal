@@ -13,8 +13,10 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * Tests the rebuild hooks and services.
  *
  * @group service-rebuild
+ * @group tripal-file
  */
 #[Group('service-rebuild')]
+#[Group('tripal-file')]
 #[RunTestsInSeparateProcesses]
 class TripalFileRebuildServiceTest extends ChadoTestKernelBase {
 
