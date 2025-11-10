@@ -114,24 +114,6 @@ class TripalFileRebuildService {
       if (array_key_exists($column, $new_schema['fields'])) {
         if (!array_key_exists($column, $existing_schema['fields'])) {
 
-          // NULLS NOT DISTINCT is only supported for unique constraints
-          // starting with Postgresql 15. Determine whether the currently
-          // running version supports this.
-          // Save in a class variable so that we only need to do this once.
-          if (is_null($this->nulls_not_distinct_supported)) {
-            $psql_version = $this->chado_connection->version();
-            // Remove distro info, e.g.
-            // "13.22 (Debian 13.22-1.pgdg12+1)" -> "13.22".
-            $psql_version = preg_replace('/[^\d\.].*$/', '', $psql_version);
-            if (version_compare($psql_version, '15.0') < 0) {
-              // Version < 15 so is not supported.
-              $this->nulls_not_distinct_supported = FALSE;
-            }
-            else {
-              $this->nulls_not_distinct_supported = TRUE;
-            }
-          }
-
           $transaction_chado = $this->chado_connection->startTransaction();
           try {
             $full_table_name = $chado_schema_name . '.' . $table_name;
@@ -164,7 +146,7 @@ class TripalFileRebuildService {
               $ukeys = $new_schema['unique keys'] ?? [];
               foreach ($ukeys as $uk_name => $uk_columns) {
                 $nnd = '';
-                if ($this->nulls_not_distinct_supported && ($new_schema['nulls not distinct'] ?? FALSE)) {
+                if ($this->nullsNotDistinctSupported() && ($new_schema['nulls not distinct'] ?? FALSE)) {
                   $nnd = ' NULLS NOT DISTINCT';
                 }
 
@@ -173,7 +155,6 @@ class TripalFileRebuildService {
                 $sql = 'ALTER TABLE ' . $full_table_name . ' ADD CONSTRAINT ' . $uk_name . ' UNIQUE'
                   . $nnd . ' (' . implode(', ', $uk_columns) . ')';
                 $this->chado_connection->query($sql, []);
-
               }
             }
           }
@@ -184,6 +165,34 @@ class TripalFileRebuildService {
         }
       }
     }
+  }
+
+  /**
+   * Gets nulls not distinct support status based on postgresql version.
+   *
+   * NULLS NOT DISTINCT is only supported for unique constraints
+   * starting with Postgresql 15. Determine whether the currently
+   * running version supports this.
+   * Cache result in a class variable so that we only need to do this once.
+   *
+   * @return bool
+   *   TRUE if supported, FALSE if not.
+   */
+  protected function nullsNotDistinctSupported(): bool {
+    if (is_null($this->nulls_not_distinct_supported)) {
+      $psql_version = $this->chado_connection->version();
+      // Remove distro info, e.g.
+      // "13.22 (Debian 13.22-1.pgdg12+1)" -> "13.22".
+      $psql_version = preg_replace('/[^\d\.].*$/', '', $psql_version);
+      if (version_compare($psql_version, '15.0') < 0) {
+        // Version < 15 therefore not supported.
+        $this->nulls_not_distinct_supported = FALSE;
+      }
+      else {
+        $this->nulls_not_distinct_supported = TRUE;
+      }
+    }
+    return $this->nulls_not_distinct_supported;
   }
 
   /**
