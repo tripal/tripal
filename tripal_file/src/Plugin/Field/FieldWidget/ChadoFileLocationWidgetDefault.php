@@ -4,7 +4,7 @@ namespace Drupal\tripal_file\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\File\FileUrlGenerator;
+use Drupal\Core\File\FileSystem;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\file\Entity\File;
@@ -30,9 +30,9 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
    * not registered with Drupal. We will only load this service when
    * it is necessary.
    *
-   * @var Drupal\Core\File\FileUrlGenerator|null
+   * @var Drupal\Core\File\FileSystem|null
    */
-  protected static ?FileUrlGenerator $file_url_generator = NULL;
+  protected static ?FileSystem $file_system = NULL;
 
   /**
    * {@inheritdoc}
@@ -302,10 +302,10 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
     $scheme = parse_url($uri, PHP_URL_SCHEME);
     // Only evaluate for a local file.
     if ($scheme == 'public') {
-      if (!self::$file_url_generator) {
-        self::$file_url_generator = \Drupal::service('file_url_generator');
+      if (!self::$file_system) {
+        self::$file_system = \Drupal::service('file_system');
       }
-      $file_path = \Drupal::root() . self::$file_url_generator->generateString($uri);
+      $file_path = self::$file_system->realpath($uri);
       if (!file_exists(urldecode($file_path))) {
         $file_path = '';
       }
