@@ -45,7 +45,6 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     // Contains all of the settings used for formatting the phylotree.
     $treeOptions = [
       'phylogram_layout' => $this->getSetting('phylogram_layout'),
-      //'phylogram_scale' => $this->getSetting('phylogram_scale'),
       'font_size' => $this->getSetting('phylogram_font_size'),
       'skipTicks' => $this->getSetting('phylogram_skip_ticks'),
       'root_node_size' => $this->getSetting('phylogram_root_node_size'),
@@ -84,8 +83,6 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     $settings = parent::defaultSettings();
     // Valid options are 'linear' or 'radial'.
     $settings['phylogram_layout'] = 'linear';
-    // Not currently supported, options would be 'linear' or 'log'.
-    //$settings['phylogram_scale'] = 'linear';
     $settings['phylogram_font_size'] = 12;
     $settings['phylogram_skip_ticks'] = 0;
     $settings['phylogram_root_node_size'] = 3;
@@ -274,14 +271,6 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     // tripal_chado/tripal_chado.libraries.yml.
     $form['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoPhylotreeVisFormatterSettings';
 
-    // Form elements for each of the settings.
-    //$form['phylogram_scale'] = [
-    //  '#type' => 'select',
-    //  '#title' => $this->t('Phylogram Scale'),
-    //  '#description' => $this->t('Please specify the scale to use.'),
-    //  '#options' => ['linear' => $this->t('Linear'), 'log' => $this->t('Logarithmic')],
-    //  '#default_value' => $this->getSetting('phylogram_scale'),
-    //];
     $form['phylogram_layout'] = [
       '#type' => 'select',
       '#title' => $this->t('Phylogram Layout'),
@@ -396,8 +385,6 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
   public function settingsSummary() {
     $scales = [1 => 'Linear', 2 => 'Log'];
     $summary = parent::settingsSummary();
-//    $summary[] = $this->t('Scale: @phylogram_scale',
-//                          ['@phylogram_scale' => $scales[$this->getSetting('phylogram_scale') ?? 'linear']]);
     $summary[] = $this->t('Layout: @phylogram_layout',
                           ['@phylogram_layout' => ($this->getSetting('phylogram_layout') ?? 'linear')]);
     if ($this->getSetting('phylogram_skip_ticks') ?? 0) {
