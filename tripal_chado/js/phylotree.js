@@ -25,6 +25,7 @@ var container_id = "tree_container";
   }
 })(jQuery, drupalSettings);
 
+// Handles expand|contract for both horizontal and vertical.
 $("[data-direction]").on("click", function(e) {
   var which_function =
     $(this).data("direction") == "vertical"
@@ -315,7 +316,8 @@ $(document).ready(function() {
   // Rescale trees with distance 0.001 placeholders because
   // phylotree.js rounds scale tic numbers to two decimal places
   // and this is hardcoded and can't be changed.
-  // You should not even display a scale for species trees.
+  // This will happen for species trees, but by default we don't
+  // display a scale for those.
   var max_length = Math.max(...tree.getBranchLengths());
   if (max_length < 0.01) {
     tree.scaleBranchLengths(function(length) {
@@ -343,8 +345,6 @@ $(document).ready(function() {
 
   tree.render({
     "container": "#" + container_id,
-    // Width does not work here, so we fit to container size.
-    "left-right-spacing": "fit-to-size",
     "show-scale": show_scale,
     "is-radial": radial,
     // This must be true in order to have leaf node circles.
