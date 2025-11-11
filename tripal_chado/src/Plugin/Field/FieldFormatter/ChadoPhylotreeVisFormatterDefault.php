@@ -121,7 +121,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#attributes' => [
         'class' => 'btn btn-light btn-sm',
         'data-direction' => 'vertical',
-        'data-amount' => '1',
+        'data-amount' => '2',
         'title' => 'Expand vertical spacing',
       ],
       '#value' => '<i class="fa fa-fw fa-arrows-v"></i>',
@@ -132,7 +132,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#attributes' => [
         'class' => 'btn btn-light btn-sm',
         'data-direction' => 'vertical',
-        'data-amount' => '-1',
+        'data-amount' => '-2',
         'title' => 'Compress vertical spacing',
       ],
       '#value' => '<i class="fa fa-fw fa-compress fa-rotate-135"></i>',
@@ -143,7 +143,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#attributes' => [
         'class' => 'btn btn-light btn-sm',
         'data-direction' => 'horizontal',
-        'data-amount' => '1',
+        'data-amount' => '2',
         'title' => 'Expand horizontal spacing',
       ],
       '#value' => '<i class="fa fa-fw fa-arrows-h"></i>',
@@ -154,7 +154,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#attributes' => [
         'class' => 'btn btn-light btn-sm',
         'data-direction' => 'horizontal',
-        'data-amount' => '-1',
+        'data-amount' => '-2',
         'title' => 'Compress horizontal spacing',
       ],
       '#value' => '<i class="fa fa-fw fa-compress fa-rotate-45"></i>',
