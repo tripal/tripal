@@ -170,7 +170,6 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#value' => '<i class="fa fa-fw fa-sort-amount-asc"></i>',
     ];
     $elements[$delta]['row']['toolbar']['sort_descending'] = [
-//      '#suffix' => '</div>',
       '#type' => 'html_tag',
       '#tag' => 'button',
       '#attributes' => [
@@ -180,7 +179,6 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       ],
       '#value' => '<i class="fa fa-fw fa-sort-amount-desc"></i>',
     ];
-// @todo this doesn't work in the example either.
     $elements[$delta]['row']['toolbar']['sort_original'] = [
       '#suffix' => '</div>',
       '#type' => 'html_tag',
@@ -248,14 +246,6 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       ],
       '#value' => '<i class="fa fa-fw fa-align-right"></i>',
     ];
-
-//    // Selection status.
-//    $elements[$delta]['row']['selected'] = [
-//      '#prefix' => '<div class="col-md-4 pull-right">',
-//      '#suffix' => '</div>',
-//      '#markup' => '<b>Selected </b><span class="badge badge-secondary" id="selected_branch_counter">0</span>',
-//    ];
-
   }
 
   /**
