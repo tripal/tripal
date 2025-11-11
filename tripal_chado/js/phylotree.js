@@ -306,25 +306,57 @@ $(document).ready(function() {
     .style('position', 'absolute')
     .style('display', 'inline-block')
 
-  // Do not show the scale for trees with distance 0.001 placeholders
-  // because phylotree.js rounds scale tic numbers to two decimal places.
-  // @todo could we normalize this kind of tree?
-  var show_scale = false
-  var max_length = Math.max(tree.getBranchLengths());
-  if (max_length >= 0.01) {
-    show_scale = true;
+  // Turns off scale bar if requested.
+  var show_scale = true;
+  if (treeOptions.skipTicks) {
+    show_scale = false;
   }
+
+  // Rescale trees with distance 0.001 placeholders because
+  // phylotree.js rounds scale tic numbers to two decimal places
+  // and this is hardcoded and can't be changed.
+  // You should not even display a scale for species trees.
+  var max_length = Math.max(...tree.getBranchLengths());
+  if (max_length < 0.01) {
+    tree.scaleBranchLengths(function(length) {
+      return length * 10;
+    });
+  }
+
+  // Linear vs. radial tree layout.
+  var radial = false;
+  if (treeOptions.phylogram_layout == "radial") {
+    radial = true;
+  }
+
+  // Controls font size in the rendered tree.
+  // phylotree.js doesn't seem to allow values greater than 12.
+  var font_size = 12;
+  if (treeOptions.font_size) {
+    font_size = treeOptions.font_size;
+  }
+
+  // Optional logarithmic transformation, a Tripal 3 legacy,
+  // would be controlled by treeOptions.phylogram_scale == "log"
+  // but is not currently supported because phylogram.js does
+  // not have this option.
 
   tree.render({
     "container": "#" + container_id,
+    // Width does not work here, so we fit to container size.
+    "left-right-spacing": "fit-to-size",
+    "show-scale": show_scale,
+    "is-radial": radial,
     // This must be true in order to have leaf node circles.
     "draw-size-bubbles": true,
+    "font-size": font_size,
+    // This enables zooming with the mouse wheel, not supported here.
+    "zoom": false,
+    // We are not supporting any of the branch selection functions.
+    "selectable": false,
     // The node_colorizer function is defined in this file above.
     "node-styler": node_colorizer,
-    "font-size": 12,
-    "zoom": false,
-    "edge-styler": null,
-    "show-scale": show_scale
+    "edge-styler": null
   });
 
   // Until a cleaner solution to supporting both Observable and regular HTML.

@@ -44,8 +44,9 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
 
     // Contains all of the settings used for formatting the phylotree.
     $treeOptions = [
-      'phylogram_width' => $this->getSetting('phylogram_width'),
-      'phylogram_scale' => $this->getSetting('phylogram_scale'),
+      'phylogram_layout' => $this->getSetting('phylogram_layout'),
+      //'phylogram_scale' => $this->getSetting('phylogram_scale'),
+      'font_size' => $this->getSetting('phylogram_font_size'),
       'skipTicks' => $this->getSetting('phylogram_skip_ticks'),
       'root_node_size' => $this->getSetting('phylogram_root_node_size'),
       'interior_node_size' => $this->getSetting('phylogram_interior_node_size'),
@@ -81,8 +82,11 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
-    $settings['phylogram_width'] = 600;
-    $settings['phylogram_scale'] = 1;
+    // Valid options are 'linear' or 'radial'.
+    $settings['phylogram_layout'] = 'linear';
+    // Not currently supported, options would be 'linear' or 'log'.
+    //$settings['phylogram_scale'] = 'linear';
+    $settings['phylogram_font_size'] = 12;
     $settings['phylogram_skip_ticks'] = 0;
     $settings['phylogram_root_node_size'] = 3;
     $settings['phylogram_interior_node_size'] = 4;
@@ -263,32 +267,42 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $form = parent::settingsForm($form, $form_state);
 
+    // The "token_string" setting is not applicable to this field.
+    unset($form['token_string']);
+
     // Attaches the css for the settings form as defined in
     // tripal_chado/tripal_chado.libraries.yml.
     $form['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoPhylotreeVisFormatterSettings';
 
     // Form elements for each of the settings.
-    $form['phylogram_width'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Tree Width'),
-      '#description' => $this->t('Please specify the width in pixels for the phylogram.'),
-      '#default_value' => $this->getSetting('phylogram_width'),
-      '#min' => 200,
-      '#max' => 4000,
-      '#required' => FALSE,
-    ];
-    $form['phylogram_scale'] = [
+    //$form['phylogram_scale'] = [
+    //  '#type' => 'select',
+    //  '#title' => $this->t('Phylogram Scale'),
+    //  '#description' => $this->t('Please specify the scale to use.'),
+    //  '#options' => ['linear' => $this->t('Linear'), 'log' => $this->t('Logarithmic')],
+    //  '#default_value' => $this->getSetting('phylogram_scale'),
+    //];
+    $form['phylogram_layout'] = [
       '#type' => 'select',
-      '#title' => $this->t('Phylogram Scale'),
-      '#description' => $this->t('Please specify the scale to use.'),
-      '#options' => ['1' => 'Linear', '2' => 'Logarithmic'],
-      '#default_value' => $this->getSetting('phylogram_scale'),
+      '#title' => $this->t('Phylogram Layout'),
+      '#description' => $this->t('Please specify how the phylogram should be presented, Linear or Radial.'),
+      '#options' => ['linear' => $this->t('Linear'), 'radial' => $this->t('Radial')],
+      '#default_value' => $this->getSetting('phylogram_layout'),
     ];
     $form['phylogram_skip_ticks'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Turn Off Tick Marks'),
-      '#description' => $this->t('Check to prevent display of tick marks.'),
+      '#description' => $this->t('Check to prevent display of a scale bar with tick marks.'),
       '#default_value' => $this->getSetting('phylogram_skip_ticks'),
+    ];
+    $form['phylogram_font_size'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Font Size'),
+      '#description' => $this->t('Please specify the font size to use to display the phylogram, valid values are from 4 to 12.'),
+      '#default_value' => $this->getSetting('phylogram_font_size'),
+      '#min' => 4,
+      '#max' => 12,
+      '#required' => FALSE,
     ];
     $form['phylogram_root_node_size'] = [
       '#type' => 'number',
@@ -382,13 +396,15 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
   public function settingsSummary() {
     $scales = [1 => 'Linear', 2 => 'Log'];
     $summary = parent::settingsSummary();
-    $summary[] = $this->t('Width: @phylogram_width',
-                          ['@phylogram_width' => $this->getSetting('phylogram_width') ?? '']);
-    $summary[] = $this->t('Scale: @phylogram_scale',
-                          ['@phylogram_scale' => $scales[$this->getSetting('phylogram_scale') ?? 1]]);
+//    $summary[] = $this->t('Scale: @phylogram_scale',
+//                          ['@phylogram_scale' => $scales[$this->getSetting('phylogram_scale') ?? 'linear']]);
+    $summary[] = $this->t('Layout: @phylogram_layout',
+                          ['@phylogram_layout' => ($this->getSetting('phylogram_layout') ?? 'linear')]);
     if ($this->getSetting('phylogram_skip_ticks') ?? 0) {
       $summary[] = $this->t('Tick marks off');
     }
+    $summary[] = $this->t('Font size: @phylogram_font_size',
+                          ['@phylogram_font_size' => $this->getSetting('phylogram_font_size') ?? '']);
     $summary[] = $this->t('Root node: @phylogram_root_node_size',
                           ['@phylogram_root_node_size' => $this->getSetting('phylogram_root_node_size') ?? '']);
     $summary[] = $this->t('Int. node: @phylogram_interior_node_size',

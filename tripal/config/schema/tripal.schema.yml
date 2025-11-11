@@ -258,13 +258,17 @@ tripal.tripalfield_collection.*:
                  type: mapping
                  label: 'Settings'
                  mapping:
-                   phylogram_width:
-                     type: integer
-                     label: 'Width of a phylogenetic tree'
-                     nullable: true
                    phylogram_scale:
                      type: string
                      label: 'Scaling transformation for the X-axis of a phylogenetic tree'
+                     nullable: true
+                   phylogram_layout:
+                     type: string
+                     label: 'Whether tree layout is linear or radial'
+                     nullable: true
+                   phylogram_font_size:
+                     type: string
+                     label: 'Font size to use when rendering a tree, defaults to 12'
                      nullable: true
                    phylogram_skip_ticks:
                      type: integer
@@ -471,13 +475,17 @@ field.formatter.settings.*:
       type: string
       label: 'Hide value'
       nullable: true
-    phylogram_width:
-      type: integer
-      label: 'Width of a phylogenetic tree'
-      nullable: true
     phylogram_scale:
       type: string
       label: 'Scaling transformation for the X-axis of a phylogenetic tree'
+      nullable: true
+    phylogram_layout:
+      type: string
+      label: 'Whether tree layout is linear or radial'
+      nullable: true
+    phylogram_font_size:
+      type: string
+      label: 'Font size to use when rendering a tree, defaults to 12'
       nullable: true
     phylogram_skip_ticks:
       type: integer
