@@ -948,7 +948,7 @@ fields:
         display:
           view:
             default:
-              region: 'content'
+              region: 'hidden'
               label: 'above'
               weight: 20
           form:
