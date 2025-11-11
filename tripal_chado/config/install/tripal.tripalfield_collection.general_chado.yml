@@ -422,6 +422,8 @@ fields:
               region: 'content'
               label: 'above'
               weight: 95
+              settings:
+                phylogram_skip_ticks: true
           form:
             default:
               region: 'content'
