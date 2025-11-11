@@ -1099,8 +1099,8 @@ EOD;
    * @throws \BadMethodCallException
    *   When ::createTableSql() is not implemented in the concrete driver class.
    *
-   * For information about Postgresql version 15 support:
    * @see https://github.com/GMOD/Chado/issues/139
+   * for information about Postgresql version 15 support:
    */
   public function createTable($name, $table) {
 
