@@ -258,49 +258,6 @@ tripal.tripalfield_collection.*:
                  type: mapping
                  label: 'Settings'
                  mapping:
-                   phylogram_scale:
-                     type: string
-                     label: 'Scaling transformation for the X-axis of a phylogenetic tree'
-                     nullable: true
-                   phylogram_layout:
-                     type: string
-                     label: 'Whether tree layout is linear or radial'
-                     nullable: true
-                   phylogram_font_size:
-                     type: string
-                     label: 'Font size to use when rendering a tree, defaults to 12'
-                     nullable: true
-                   phylogram_skip_ticks:
-                     type: integer
-                     label: 'Tick marks are not displayed if truthy'
-                     nullable: true
-                   phylogram_root_node_size:
-                     type: integer
-                     label: 'Diameter of the root node of a phylogenetic tree'
-                     nullable: true
-                   phylogram_interior_node_size:
-                     type: integer
-                     label: 'Diameter of the interior nodes of a phylogenetic tree'
-                     nullable: true
-                   phylogram_leaf_node_size:
-                     type: integer
-                     label: 'Diameter of the terminal nodes of a phylogenetic tree'
-                     nullable: true
-                   phylogram_colors:
-                     type: mapping
-                     label: 'Color mapping to apply to nodes in a phylogenetic tree'
-                     nullable: true
-                     mapping:
-                        index:
-                          type: 'integer'
-                          label: 'array key'
-                          mapping:
-                            organism:
-                              type: string
-                              label: 'Organism'
-                            color:
-                              type: string
-                              label: 'Color specification'
                    termIdSpace:
                      type: string
                      label: "Term Id Space"
@@ -385,6 +342,61 @@ tripal.tripalfield_collection.*:
                                type: string
                                label: 'Hide value'
                                nullable: true
+                             phylogram_scale:
+                               type: string
+                               label: 'Scaling transformation for the X-axis of a phylogenetic tree'
+                               nullable: true
+                             phylogram_layout:
+                               type: string
+                               label: 'Whether tree layout is linear or radial'
+                               nullable: true
+                             phylogram_font_size:
+                               type: string
+                               label: 'Font size to use when rendering a tree, defaults to 12'
+                               nullable: true
+                             phylogram_skip_ticks:
+                               type: integer
+                               label: 'Tick marks are not displayed if truthy'
+                               nullable: true
+                             phylogram_root_node_size:
+                               type: integer
+                               label: 'Diameter of the root node of a phylogenetic tree'
+                               nullable: true
+                             phylogram_root_node_color:
+                               type: string
+                               label: 'Color of the root node of a phylogenetic tree'
+                               nullable: true
+                             phylogram_interior_node_size:
+                               type: integer
+                               label: 'Diameter of the interior nodes of a phylogenetic tree'
+                               nullable: true
+                             phylogram_interior_node_color:
+                               type: string
+                               label: 'Color of the interior nodes of a phylogenetic tree'
+                               nullable: true
+                             phylogram_leaf_node_size:
+                               type: integer
+                               label: 'Diameter of the terminal nodes of a phylogenetic tree'
+                               nullable: true
+                             phylogram_leaf_node_color:
+                               type: string
+                               label: 'Color of the terminal nodes of a phylogenetic tree'
+                               nullable: true
+                             phylogram_colors:
+                               type: mapping
+                               label: 'Color mapping to apply to nodes in a phylogenetic tree'
+                               nullable: true
+                               mapping:
+                                  index:
+                                    type: 'integer'
+                                    label: 'array key'
+                                    mapping:
+                                      organism:
+                                        type: string
+                                        label: 'Organism'
+                                      color:
+                                        type: string
+                                        label: 'Color specification'
                    form:
                      type: sequence
                      label: 'Edit'
@@ -495,13 +507,25 @@ field.formatter.settings.*:
       type: integer
       label: 'Diameter of the root node of a phylogenetic tree'
       nullable: true
+    phylogram_root_node_color:
+      type: string
+      label: 'Color of the root node of a phylogenetic tree'
+      nullable: true
     phylogram_interior_node_size:
       type: integer
       label: 'Diameter of the interior nodes of a phylogenetic tree'
       nullable: true
+    phylogram_interior_node_color:
+      type: string
+      label: 'Color of the interior nodes of a phylogenetic tree'
+      nullable: true
     phylogram_leaf_node_size:
       type: integer
       label: 'Diameter of the terminal nodes of a phylogenetic tree'
+      nullable: true
+    phylogram_leaf_node_color:
+      type: string
+      label: 'Color of the terminal nodes of a phylogenetic tree'
       nullable: true
     phylogram_colors:
       type: mapping
