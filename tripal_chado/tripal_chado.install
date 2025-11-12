@@ -1107,11 +1107,26 @@ function tripal_chado_update_10415() {
  */
 function tripal_chado_update_10416() {
   try {
+    $messenger = \Drupal::messenger();
+    // Adds a new CV term for storing phylotree visualization settings.
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $term_values = [
+      'db.name' => 'NCIT',
+      'cv.name' => 'ncit',
+      'dbxref.accession' => 'C85439',
+      'cvterm.name' => 'Graphics Visualization',
+      'cvterm.definition' => 'Computer methods for creating images, diagrams or animations.',
+    ];
+    $cvterm_buddy->upsertCvterm($term_values, []);
+    $messenger->addMessage('Added "NCIT:Graphics Visualization" term');
+
+    // Installs new phylotree visualization and settings (property) fields.
     $general_fields_yaml = __DIR__ . '/config/install/tripal.tripalfield_collection.general_chado.yml';
     $genomic_fields_yaml = __DIR__ . '/config/install/tripal.tripalfield_collection.genomic_chado.yml';
 
-    add_field_from_yaml($general_fields_yaml, ['speciestree_phylotreevis']);
-    add_field_from_yaml($genomic_fields_yaml, ['phylotree_phylotreevis']);
+    add_field_from_yaml($general_fields_yaml, ['speciestree_phylotreevis', 'speciestree_settings']);
+    add_field_from_yaml($genomic_fields_yaml, ['phylotree_phylotreevis', 'phylotree_settings']);
   }
   catch (\Exception $e) {
     throw new UpdateException('Could not update phylotree: ' . $e->getMessage());

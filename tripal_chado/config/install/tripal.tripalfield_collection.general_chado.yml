@@ -395,11 +395,40 @@ fields:
             default:
               region: 'content'
               label: 'above'
-              weight: 68
+              weight: 40
           form:
             default:
               region: 'content'
-              weight: 68
+              weight: 40
+
+    -   name: 'speciestree_settings'
+        content_type: 'speciestree'
+        label: 'Visualization Settings'
+        type: 'chado_property_type_default'
+        description: 'A json string containing optional settings to control how the phylotree is displayed. Valid keys are: root_node_size: int, interior_node_size:int, leaf_node_size:int, skipTicks:0 or 1, font_size: int 3-12, phylogram_layout: linear or radial, org_colors: array of organism_id and color value'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'phylotree'
+                prop_table: 'phylotreeprop'
+        settings:
+            termIdSpace: 'NCIT'
+            termAccession: 'C85439'
+        display:
+          view:
+            default:
+              region: 'hidden'
+              label: 'above'
+              weight: 50
+          form:
+            default:
+              region: 'content'
+              weight: 50
+              settings:
+                filter_format: plain_text
+                num_rows: 2
 
     -   name: 'speciestree_phylotreevis'
         content_type: 'speciestree'

@@ -1,0 +1,171 @@
+system-under-test:
+  chado_version: '1.3.3.013'
+  bundle:
+    label: 'Phylogenetic Tree'
+    termIdSpace: 'data'
+    termAccession: '0872'
+    id: 'phylotree'
+    settings:
+      chado_base_table: 'phylotree'
+  fields:
+  - name: 'phylotree_name'
+    type: 'chado_string_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+    widget: 'chado_string_type_widget'
+    formatter: 'chado_string_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'name'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'phylotree'
+          base_column: 'name'
+      max_length: 255
+  - name: 'phylotree_comment'
+    type: 'chado_text_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
+    widget: 'chado_text_type_widget'
+    formatter: 'chado_text_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'comment'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'phylotree'
+          base_column: 'comment'
+  - name: 'phylotree_type'
+    type: 'chado_additional_type_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAdditionalTypeTypeDefault'
+    widget: 'chado_additional_type_widget_default'
+    formatter: 'chado_additional_type_formatter_default'
+    termIdSpace: 'data'
+    termAccession: '0872'
+    # fixed_value: 'data:0872'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'phylotree'
+          type_table: 'phylotree'
+          type_column: 'type_id'
+  - name: 'phylotree_tree_type'
+    type: 'chado_property_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPropertyTypeDefault'
+    widget: 'chado_property_widget_default'
+    formatter: 'chado_property_formatter_default'
+    termIdSpace: 'data'
+    termAccession: '1122'
+    cardinality: -1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'phylotree'
+          prop_table: 'phylotreeprop'
+  - name: 'phylotree_dbxref'
+    type: 'chado_dbxref_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoDbxrefTypeDefault'
+    widget: 'chado_dbxref_widget_default'
+    formatter: 'chado_dbxref_formatter_default'
+    termIdSpace: 'SBO'
+    termAccession: '0000554'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'phylotree'
+          base_column: 'dbxref_id'
+  - name: 'phylotree_phylotreevis'
+    type: 'chado_phylotreevis_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPhylotreeVisTypeDefault'
+    widget:
+    formatter: 'chado_phylotreevis_type_formatter'
+    termIdSpace: 'operation'
+    termAccession: '0567'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'phylotree'
+          base_column: 'phylotree_id'
+scenarios:
+  - label: 'Typical Scenario'
+    description: 'Create a page with standard fields.'
+    create:
+      user_input:
+        phylotree_name:
+        - record_id: 0
+          value: 'Simple phylotree'
+        phylotree_comment:
+        - record_id: 0
+          value: 'This is a basic phylotree.'
+        phylotree_type:
+        - record_id: 0
+          type_id: 26
+          term_name: ''
+          id_space: ''
+          accession: ''
+        phylotree_tree_type:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          type_id: 28
+          value: 'Maple'
+          rank: 9
+        phylotree_dbxref:
+        - record_id: 0
+          dbxref_id: 1
+        phylotree_phylotreevis:
+        - record_id: 0
+      expected:
+        phylotree_name:
+        - record_id: 1
+          value: 'Simple phylotree'
+        phylotree_comment:
+        - record_id: 1
+          value: 'This is a basic phylotree.'
+        phylotree_type:
+        - record_id: 1
+          type_id: 26
+          id_space: 'data'
+          accession: '0872'
+        phylotree_tree_type:
+        - record_id: 1
+          type_id: 28
+          value: 'Maple'
+          rank: 9
+        phylotree_phylotreevis:
+        - record_id: 1
+          tree_data: ''
+    edit:
+      user_input:
+        phylotree_name:
+        - record_id: 1
+          value: 'Simple phylotree Still'
+        phylotree_comment:
+          record_id: 1
+          value: 'Totally changed comment.'
+        phylotree_type:
+        - record_id: 1
+          type_id: 165
+          term_name: ''
+          id_space: ''
+          accession: ''
+        phylotree_phylotreevis:
+        - record_id: 1
+      expected:
+        phylotree_name:
+        - record_id: 1
+          value: 'Simple phylotree Still'
+        phylotree_comment:
+        - record_id: 1
+          value: 'Totally changed comment.'
+        phylotree_type:
+        - record_id: 1
+          type_id: 165
+          id_space: 'NCIT'
+          accession: 'C47885'
+        phylotree_phylotreevis:
+        - record_id: 1
+          tree_data: '(("Leaf Node Tripalus databasica"{"cvterm_name":"phylo_leaf","feature_id":1,"fo_organism_id":1,"fo_common_name":"Common tripal","fo_genus":"Tripalus","fo_species":"databasica"}:0.002,"Leaf Node Tripalus bogusii"{"cvterm_name":"phylo_leaf","organism_id":2,"common_name":"Common false tripal"}:0.002,"Leaf Node Tripalus fakus"{"cvterm_name":"phylo_leaf","feature_id":2,"fo_organism_id":3,"fo_common_name":"Rare false tripal","fo_genus":"Tripalus","fo_species":"fakus"}:0.002)"Internal Node"{"cvterm_name":"phylo_interior"}:0.001)"Root Node"{"cvterm_name":"phylo_root"}:0;'
