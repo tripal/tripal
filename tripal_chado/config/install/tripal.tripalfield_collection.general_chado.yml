@@ -421,7 +421,7 @@ fields:
             default:
               region: 'hidden'
               label: 'above'
-              weight: 50
+              weight: 0
           form:
             default:
               region: 'content'
