@@ -1067,7 +1067,7 @@ fields:
         content_type: 'phylotree'
         label: 'Visualization Settings'
         type: 'chado_property_type_default'
-        description: 'A json string containing optional settings to control how the phylotree is displayed. Valid keys are: root_node_size: int, interior_node_size:int, leaf_node_size:int, skipTicks:0 or 1, font_size: int 3-12, phylogram_layout: linear or radial, org_colors: array of organism_id and color value'
+        description: 'A json string containing optional settings to control how the phylotree is displayed. Valid keys are: root_node_size: int, root_node_color: string, interior_node_size:int, interior_node_color: string, leaf_node_size:int, leaf_node_color: string, skip_ticks:0 or 1, font_size: int 3-12, phylogram_layout: linear or radial, org_colors: array of organism_id and color value'
         cardinality: 1
         required: false
         storage_settings:

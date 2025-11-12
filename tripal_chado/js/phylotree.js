@@ -77,8 +77,14 @@ $("#sort_descending").on("click", function(e) {
 // This function determines node size and color, and provides
 // linkouts to Drupal entities for nodes that have entity_id set.
 function node_colorizer(element, data) {
+  var node_size = 3;
+  if (treeOptions.root_node_size) {
+    node_size = treeOptions.root_node_size;
+  }
   var node_color = "#404040";
-  var node_size = treeOptions.root_node_size;
+  if (treeOptions.root_node_color) {
+    node_color = treeOptions.root_node_color;
+  }
   var tooltiptext = 'Root node';
   var circle = element.selectAll("circle");
   var annotations = null;
@@ -97,8 +103,14 @@ function node_colorizer(element, data) {
     // Internal nodes that have links will have the same appearance
     // as leaf nodes.
     if (hasLink || annotations.cvterm_name == 'phylo_leaf') {
+      node_size = 6;
+      if (treeOptions.leaf_node_size) {
+        node_size = treeOptions.leaf_node_size;
+      }
       node_color = "#40A040";
-      node_size = treeOptions.leaf_node_size;
+      if (treeOptions.leaf_node_color) {
+        node_color = treeOptions.leaf_node_color;
+      }
 
       // Use custom organism colors if so configured in the
       // chado field formatter settings.
@@ -112,8 +124,14 @@ function node_colorizer(element, data) {
     }
     // Style for all interior nodes without links.
     else if (annotations.cvterm_name == 'phylo_interior') {
+      node_size = 4;
+      if (treeOptions.interior_node_size) {
+        node_size = treeOptions.interior_node_size;
+      }
       node_color = "#808080";
-      node_size = treeOptions.interior_node_size;
+      if (treeOptions.interior_node_color) {
+        node_color = treeOptions.interior_node_color;
+      }
     }
   }
 
@@ -309,7 +327,7 @@ $(document).ready(function() {
 
   // Turns off scale bar if requested.
   var show_scale = true;
-  if (treeOptions.skipTicks) {
+  if (treeOptions.skip_ticks) {
     show_scale = false;
   }
 

@@ -452,7 +452,7 @@ fields:
               label: 'above'
               weight: 95
               settings:
-                phylogram_skip_ticks: true
+                phylogram_skip_ticks: 1
           form:
             default:
               region: 'content'

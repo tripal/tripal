@@ -47,10 +47,13 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     $treeOptions = [
       'phylogram_layout' => $this->getSetting('phylogram_layout'),
       'font_size' => $this->getSetting('phylogram_font_size'),
-      'skipTicks' => $this->getSetting('phylogram_skip_ticks'),
+      'skip_ticks' => $this->getSetting('phylogram_skip_ticks'),
       'root_node_size' => $this->getSetting('phylogram_root_node_size'),
+      'root_node_color' => $this->getSetting('phylogram_root_node_color'),
       'interior_node_size' => $this->getSetting('phylogram_interior_node_size'),
+      'interior_node_color' => $this->getSetting('phylogram_interior_node_color'),
       'leaf_node_size' => $this->getSetting('phylogram_leaf_node_size'),
+      'leaf_node_color' => $this->getSetting('phylogram_leaf_node_color'),
       'org_colors' => $colors,
     ];
 
@@ -146,8 +149,11 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     $settings['phylogram_font_size'] = 12;
     $settings['phylogram_skip_ticks'] = 0;
     $settings['phylogram_root_node_size'] = 3;
+    $settings['phylogram_root_node_color'] = '#404040';
     $settings['phylogram_interior_node_size'] = 4;
+    $settings['phylogram_interior_node_color'] = '#808080';
     $settings['phylogram_leaf_node_size'] = 6;
+    $settings['phylogram_leaf_node_color'] = '#40A040';
     $settings['phylogram_colors'] = [];
     return $settings;
   }
@@ -352,6 +358,13 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#max' => 30,
       '#required' => FALSE,
     ];
+    $form['phylogram_root_node_color'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Root Node Color'),
+      '#description' => $this->t('Please specify a color for the root node.'),
+      '#default_value' => $this->getSetting('phylogram_root_node_color'),
+      '#required' => FALSE,
+    ];
     $form['phylogram_interior_node_size'] = [
       '#type' => 'number',
       '#title' => $this->t('Interior Node Size'),
@@ -361,6 +374,13 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#max' => 30,
       '#required' => FALSE,
     ];
+    $form['phylogram_interior_node_color'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Interior Node Color'),
+      '#description' => $this->t('Please specify a color for interior nodes.'),
+      '#default_value' => $this->getSetting('phylogram_interior_node_color'),
+      '#required' => FALSE,
+    ];
     $form['phylogram_leaf_node_size'] = [
       '#type' => 'number',
       '#title' => $this->t('Leaf Node Size'),
@@ -368,6 +388,13 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#default_value' => $this->getSetting('phylogram_leaf_node_size'),
       '#min' => 0,
       '#max' => 30,
+      '#required' => FALSE,
+    ];
+    $form['phylogram_leaf_node_color'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Leaf Node Color'),
+      '#description' => $this->t('Please specify a color for the terminal nodes.'),
+      '#default_value' => $this->getSetting('phylogram_leaf_node_color'),
       '#required' => FALSE,
     ];
 
@@ -440,14 +467,23 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     if ($this->getSetting('phylogram_skip_ticks') ?? 0) {
       $summary[] = $this->t('Tick marks off');
     }
-    $summary[] = $this->t('Font size: @phylogram_font_size',
-                          ['@phylogram_font_size' => $this->getSetting('phylogram_font_size') ?? '']);
-    $summary[] = $this->t('Root node: @phylogram_root_node_size',
-                          ['@phylogram_root_node_size' => $this->getSetting('phylogram_root_node_size') ?? '']);
-    $summary[] = $this->t('Int. node: @phylogram_interior_node_size',
-                          ['@phylogram_interior_node_size' => $this->getSetting('phylogram_interior_node_size') ?? '']);
-    $summary[] = $this->t('Leaf node: @phylogram_leaf_node_size',
-                          ['@phylogram_leaf_node_size' => $this->getSetting('phylogram_leaf_node_size') ?? '']);
+    $summary[] = $this->t('Font size: @font_size',
+                          ['@font_size' => $this->getSetting('phylogram_font_size') ?? '']);
+    $summary[] = $this->t('Root: @root_size:@root_color',
+                          [
+                            '@root_size' => $this->getSetting('phylogram_root_node_size') ?? '',
+                            '@root_color' => $this->getSetting('phylogram_root_node_color') ?? '',
+                          ]);
+    $summary[] = $this->t('Int.: @interior_size:@interior_color',
+                          [
+                            '@interior_size' => $this->getSetting('phylogram_interior_node_size') ?? '',
+                            '@interior_color' => $this->getSetting('phylogram_interior_node_color') ?? '',
+                          ]);
+    $summary[] = $this->t('Leaf: @leaf_size:@leaf_color',
+                          [
+                            '@leaf_size' => $this->getSetting('phylogram_leaf_node_size') ?? '',
+                            '@leaf_color' => $this->getSetting('phylogram_leaf_node_color') ?? '',
+                          ]);
     $n_colors = count($this->removeEmptyColors($this->getSetting('phylogram_colors') ?? []));
     if ($n_colors) {
       $summary[] = $this->t('Colors: @n_colors',
