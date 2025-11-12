@@ -2,10 +2,11 @@
 
 namespace Drupal\tripal\TripalDBX;
 
+use Drupal\Core\Database\Connection;
 use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
 
 /**
- * Tripal DBX
+ * Tripal DBX.
  *
  * This class provides methods which form the Tripal DBX API.
  * Specifically, this API focuses on extending Drupal to better handle cross
@@ -98,12 +99,14 @@ class TripalDbx {
       // Get Drupal connection details.
       $drupal_database = \Drupal::database();
       $connection_options = $drupal_database->getConnectionOptions();
-      // Drupal <= 10.1 driver will be 'pgsql', Drupal 10.2 it will be 'Drupal\pgsql\Driver\Database\pgsql'
-      if (array_key_exists('driver', $connection_options) AND (!preg_match('/pgsql$/', $connection_options['driver']))) {
+      // Drupal <= 10.1 driver will be 'pgsql', Drupal 10.2 it will
+      // be 'Drupal\pgsql\Driver\Database\pgsql'.
+      if (array_key_exists('driver', $connection_options) and (!preg_match('/pgsql$/', $connection_options['driver']))) {
         // Not using PostgreSQL. There might be something wrong!
         // @todo we may want to evaluate this further as it does tie our Drupal
         // database to being in pgsql. It doesn't support the case where Drupal
-        // is in a separate database from Chado and thus may be of a different type.
+        // is in a separate database from Chado and thus may be of a different
+        // type.
         $schema_name = '';
       }
       else {
@@ -116,9 +119,9 @@ class TripalDbx {
         }
         else {
           // Otherwise, it should be the first schema used by PostgreSQL
-          // (current_schema()) but we make sure the PostgreSQL "search_path" has
-          // not been altered by looking for a table rather specific to Drupal
-          // 'key_value'.
+          // (current_schema()) but we make sure the PostgreSQL "search_path"
+          // has not been altered by looking for a table rather specific to
+          // Drupal 'key_value'.
           $sql_query = "
             SELECT table_schema AS \"schema\"
             FROM information_schema.tables
@@ -191,10 +194,10 @@ class TripalDbx {
    *   The name of the schema to validate.
    * @param bool $ignore_reservation
    *   If TRUE, reserved schema names are considered as valid.
-   *   Default: FALSE
+   *   Default: FALSE.
    * @param bool $reload_config
    *   Forces schema reserved names config reloading.
-   *   Default: FALSE
+   *   Default: FALSE.
    *
    * @return string
    *   An empty string if the schema name is valid or a string describing the
@@ -203,13 +206,12 @@ class TripalDbx {
   public function isInvalidSchemaName(
     string $schema_name,
     bool $ignore_reservation = FALSE,
-    bool $reload_config = FALSE
+    bool $reload_config = FALSE,
   ) :string {
 
-    // @todo: Maybe add a flag to enable message translation.
+    // @todo Maybe add a flag to enable message translation.
     // Reminder: exception messages should not be translated while user
     // interface should be. Here, we may use the messages in both situation.
-
     $issue = '';
     // Make sure we have a valid schema name.
     // -- Check that we were even given a schema name.
@@ -219,23 +221,21 @@ class TripalDbx {
     // -- Check the name is not too long.
     if (63 < strlen($schema_name)) {
       $issue =
-        'The schema name is too long and must contain strictly less than 64 characters.'
-      ;
+        'The schema name is too long and must contain strictly less than 64 characters.';
     }
-    // -- Check it matches the set regex (i.e. does not contain illegal characters).
+    // -- Check it matches the set regex (i.e. does not contain
+    // illegal characters).
     elseif (!preg_match('#^' . static::SCHEMA_NAME_REGEXP . '$#', $schema_name)) {
       $issue =
-        'The schema name must not begin with a number and only contain lower case letters, numbers, underscores and diacritical marks.'
-      ;
+        'The schema name must not begin with a number and only contain lower case letters, numbers, underscores and diacritical marks.';
     }
     // -- Does not begin with a reserved prefix.
     elseif ((0 === strpos($schema_name, 'pg_')) && !$ignore_reservation) {
       $issue =
-        'The schema name must not begin with "pg_" (PostgreSQL reserved prefix).'
-      ;
+        'The schema name must not begin with "pg_" (PostgreSQL reserved prefix).';
     }
     if (!$ignore_reservation) {
-      //  -- Check reserved patterns.
+      // -- Check reserved patterns.
       // Note: other reserved patterns should be added by other extensions when
       // they are installed, through config modifications.
       // See tripal_install() for an example.
@@ -244,8 +244,7 @@ class TripalDbx {
         $pattern = array_key_first($reserved);
         $description = $reserved[$pattern];
         $issue =
-          "'$schema_name' matches the reservation pattern '$pattern' used for: $description."
-        ;
+          "'$schema_name' matches the reservation pattern '$pattern' used for: $description.";
       }
     }
     return $issue;
@@ -255,8 +254,8 @@ class TripalDbx {
    * Initializes schema reservations.
    *
    * @param bool $reload_config
-   *  Forces config reloading.
-   *  Default: FALSE
+   *   Forces config reloading.
+   *   Default: FALSE.
    */
   protected function initSchemaReservation(bool $reload_config = FALSE) :void {
     if ($reload_config || !isset(static::$reservedSchemaPatterns)) {
@@ -271,8 +270,8 @@ class TripalDbx {
    * Adds a schema name pattern for reservation.
    *
    * Schema names matching the given pattern will be considered invalid by
-   * ::isInvalidSchemaName and will not be allowed in TripalDbxConnection or TripalDbxSchema
-   * objects.
+   * ::isInvalidSchemaName and will not be allowed in TripalDbxConnection
+   * or TripalDbxSchema objects.
    *
    * @param string $pat_regex
    *   A simple schema name or a regular expression. Do not include regex
@@ -288,13 +287,13 @@ class TripalDbx {
    *   The description of the reservation that may be displayed to users when a
    *   schema name is denied.
    *
-   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
-   *   if the pattern is empty or does not contain any valid schema name
+   * @throws Drupal\tripal\TripalDBX\Exceptions\SchemaException
+   *   If the pattern is empty or does not contain any valid schema name
    *   character.
    */
   public function reserveSchemaPattern(
     string $pat_regex,
-    string $description = ''
+    string $description = '',
   ) :void {
     static::initSchemaReservation();
     if (empty($pat_regex)
@@ -334,10 +333,10 @@ class TripalDbx {
    */
   public function freeSchemaPattern(
     string $pat_regex,
-    bool $free_all_matching = FALSE
+    bool $free_all_matching = FALSE,
   ) :array {
     static::initSchemaReservation();
-    $removed_patterns  = [];
+    $removed_patterns = [];
     if (array_key_exists($pat_regex, static::$reservedSchemaPatterns)) {
       $removed_patterns[$pat_regex] =
         static::$reservedSchemaPatterns[$pat_regex];
@@ -371,7 +370,7 @@ class TripalDbx {
     static::initSchemaReservation();
     $reserved = FALSE;
     foreach (static::$reservedSchemaPatterns as $reserved_pattern => $description) {
-      // Adds regex wildcard
+      // Adds regex wildcard.
       $reserved_pattern = preg_replace('/(?<!\.)\*/', '.*', $reserved_pattern);
       if (preg_match("/^$reserved_pattern\$/", $schema_name)) {
         if ($reserved === FALSE) {
@@ -406,7 +405,7 @@ class TripalDbx {
    * when necessary.
    *
    * @param string $object_id
-   *  Object name to quote if needed.
+   *   Object name to quote if needed.
    * @param ?\Drupal\Core\Database\Connection $db
    *   A Drupal PostgreSQL or TripalDBX connection object.
    *   If NULL, current Drupal database is used.
@@ -416,15 +415,14 @@ class TripalDbx {
    */
   public function quoteDbObjectId(
     string $object_id,
-    ?\Drupal\Core\Database\Connection $db = NULL
+    ?Connection $db = NULL,
   ) :string {
     $db = $db ?? \Drupal::database();
     $sql = "SELECT quote_ident(:object_id) AS \"qi\";";
     $quoted_object_id = $db
       ->query($sql, [':object_id' => $object_id])
       ->fetch()
-      ->qi ?: $object_id
-    ;
+      ->qi ?: $object_id;
     return $quoted_object_id;
   }
 
@@ -451,7 +449,7 @@ class TripalDbx {
    */
   public function schemaExists(
     string $schema_name,
-    ?\Drupal\Core\Database\Connection $db = NULL
+    ?Connection $db = NULL,
   ) :bool {
     $db = $db ?? \Drupal::database();
 
@@ -472,8 +470,7 @@ class TripalDbx {
     ";
     $schema_exists = $db
       ->query($sql_query, [':nspname' => $schema_name])
-      ->fetchField()
-    ;
+      ->fetchField();
     return ($schema_exists ? TRUE : FALSE);
   }
 
@@ -500,7 +497,7 @@ class TripalDbx {
    */
   public function createSchema(
     string $schema_name,
-    ?\Drupal\Core\Database\Connection $db = NULL
+    ?Connection $db = NULL,
   ) :void {
     $db = $db ?? \Drupal::database();
     $tripaldbx = \Drupal::service('tripal.dbx');
@@ -536,12 +533,11 @@ class TripalDbx {
   public function cloneSchema(
     string $source_schema,
     string $target_schema,
-    ?object $db = NULL
+    ?object $db = NULL,
   ) :void {
 
     // Initialize database if one is not supplied.
-    //$db = $db ?? \Drupal::database();
-
+    // $db = $db ?? \Drupal::database();
     // Make sure we have the cloning PostgreSQL function.
     if (method_exists($db->schema(), 'initialize')) {
       $db->schema()->initialize();
@@ -552,8 +548,7 @@ class TripalDbx {
 
     // Clone schema.
     $sql_query =
-      "SELECT pg_temp.tripal_clone_schema(:source_schema, :target_schema, TRUE, FALSE);"
-    ;
+      "SELECT pg_temp.tripal_clone_schema(:source_schema, :target_schema, TRUE, FALSE);";
     $args = [
       ':source_schema' => $source_schema,
       ':target_schema' => $target_schema,
@@ -587,7 +582,7 @@ class TripalDbx {
   public function renameSchema(
     string $old_schema_name,
     string $new_schema_name,
-    ?\Drupal\Core\Database\Connection $db = NULL
+    ?Connection $db = NULL,
   ) :void {
     $db = $db ?? \Drupal::database();
 
@@ -616,9 +611,7 @@ class TripalDbx {
    *
    * @param ?string $schema_name
    *   Name of schema to remove.
-   * @param string $schema_name
-   *   Schema name.
-   * @param ?\Drupal\Core\Database\Connection $db
+   * @param Drupal\Core\Database\Connection|null $db
    *   A Drupal PostgreSQL or Tripal DBX connection object.
    *   If NULL, current Drupal database is used.
    *
@@ -626,7 +619,7 @@ class TripalDbx {
    */
   public function dropSchema(
     string $schema_name,
-    ?\Drupal\Core\Database\Connection $db = NULL
+    ?Connection $db = NULL,
   ) :void {
     $db = $db ?? \Drupal::database();
     $tripaldbx = \Drupal::service('tripal.dbx');
@@ -651,14 +644,14 @@ class TripalDbx {
    *   A Drupal PostgreSQL or Tripal DBX connection object.
    *   If NULL, current Drupal database is used.
    *
-   * @return integer
+   * @return int
    *   The size in bytes of the schema or 0 if the size is not available.
    *
    * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    */
   public function getSchemaSize(
     string $schema_name,
-    ?\Drupal\Core\Database\Connection $db = NULL
+    ?Connection $db = NULL,
   ) :int {
     $db = $db ?? \Drupal::database();
 
@@ -699,7 +692,7 @@ class TripalDbx {
    *   The size in bytes of the database or 0 if the size is not available.
    */
   public function getDatabaseSize(
-    ?\Drupal\Core\Database\Connection $db = NULL
+    ?Connection $db = NULL,
   ) :int {
     $db = $db ?? \Drupal::database();
     $db_size = 0;
@@ -731,7 +724,7 @@ class TripalDbx {
   public function runSqlFile(
     string $sql_file,
     array $replacements,
-    ?\Drupal\Core\Database\Connection $db = NULL
+    ?Connection $db = NULL,
   ) {
 
     // Get the default database.
@@ -750,7 +743,7 @@ class TripalDbx {
     $replacements['search'][] = '/^--[^\n]*\n(?:\s*\n)*/m';
     $replacements['replace'][] = '';
     $sql = preg_replace($replacements['search'], $replacements['replace'], $sql);
-    $x = $db->query(
+    $db->query(
       $sql,
       [],
       [
@@ -861,10 +854,10 @@ class TripalDbx {
               $match
             )
         ) {
-          $table_columns =  preg_split('/\s*,\s*/', $match[1]);
-          $foreign_table_schema = $match[2];
+          $table_columns = preg_split('/\s*,\s*/', $match[1]);
+          // $match[2] is foreign_table_schema.
           $foreign_table = $match[3];
-          $foreign_table_columns =  preg_split('/\s*,\s*/', $match[4]);
+          $foreign_table_columns = preg_split('/\s*,\s*/', $match[4]);
           if (count($table_columns) != count($foreign_table_columns)) {
             throw new SchemaException("Failed to parse foreign key definition:\n'$constraint_def'");
           }
@@ -893,8 +886,7 @@ class TripalDbx {
           'not null' => (FALSE !== stripos($match[3], 'NOT')),
           'default'  => ($match[4] === '')
             ? NULL
-            : preg_replace('/(?:^\s+DEFAULT\s+)|(?:\s+$)/', '', $match[4])
-          ,
+            : preg_replace('/(?:^\s+DEFAULT\s+)|(?:\s+$)/', '', $match[4]),
         ];
       }
       else {
@@ -954,7 +946,7 @@ class TripalDbx {
         ) {
           $table_definition['comment'] = $match[1];
           // Complete the comment if needed (multiline comments).
-          while (empty($match[2]) && ($i+1 < count($table_raw_definition))) {
+          while (empty($match[2]) && ($i + 1 < count($table_raw_definition))) {
             ++$i;
             preg_match(
               '/^((?:[^\'\\\\]|\\\\.)*)(\'\s*;\s*|)/i',
@@ -1049,7 +1041,7 @@ class TripalDbx {
         )
       ) {
         $length = intval($match[1]);
-        $scale =  intval($match[2]);
+        $scale = intval($match[2]);
         $column_def['type'] = substr(
           $column_def['type'],
           0,
@@ -1232,10 +1224,10 @@ class TripalDbx {
         if (!array_key_exists('foreign keys', $table_def)) {
           $table_def['foreign keys'] = [];
         }
-        $table_columns =  preg_split('/\s*,\s*/', $match[1]);
-        $foreign_table_schema = $match[2];
+        $table_columns = preg_split('/\s*,\s*/', $match[1]);
+        // $match[2] is foreign_table_schema.
         $foreign_table = $match[3];
-        $foreign_table_columns =  preg_split('/\s*,\s*/', $match[4]);
+        $foreign_table_columns = preg_split('/\s*,\s*/', $match[4]);
         $table_def['foreign keys'][$constraint] = [
           'table' => $foreign_table,
           'columns' => [],
@@ -1251,4 +1243,5 @@ class TripalDbx {
     }
     return $table_def;
   }
+
 }

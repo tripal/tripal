@@ -277,7 +277,7 @@ abstract class TripalDbxSchema extends PgSchema {
    *     - 'blob_fields' that lists all the blob fields in the table.
    *     - 'sequences' that lists the sequences used in that table.
    */
-  public function queryTableInformation(string $table) {
+  public function queryTableInformation($table) {
 
     // Generate a key to reference this table's information on.
     $key = $this->connection
@@ -377,7 +377,7 @@ EOD;
    * @return bool
    *   TRUE if the given index exists, otherwise FALSE.
    */
-  public function indexExists(string $table, string $index_name, bool $exact_name = FALSE) :bool {
+  public function indexExists($table, $index_name, bool $exact_name = FALSE) {
     if ($exact_name) {
       return (bool) $this->connection
         ->query("SELECT 1 FROM pg_indexes WHERE indexname = '{$index_name}'")

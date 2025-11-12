@@ -11,6 +11,7 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\tripal\TripalDBX\TripalDbx;
 use Prophecy\Argument;
+use Prophecy\Prophecy\ObjectProphecy;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -45,24 +46,91 @@ use PHPUnit\Framework\Attributes\Group;
 class TripalDbxUnitTest extends UnitTestCase {
 
   /**
-   * Test members.
+   * Prophesize config factory object.
    *
-   * "pro*" members are prophesize objects while their "non-pro*" equivqlent are
-   * the revealed objects.
+   * "pro*" members are prophesize objects while their "non-pro*" equivalent
+   * are the revealed objects.
+   *
+   * @var Prophecy\Prophecy\ObjectProphecy
    */
-  protected $proContainer;
-  protected $container;
-  protected $proConnection;
-  protected $connection;
-  protected $proConfig;
-  protected $config;
-  protected $proConfigFactory;
-  protected $configFactory;
-  protected $proModuleHandler;
-  protected $moduleHandler;
-  protected $proTripalDbxDb;
-  protected $tripalDbxDb;
-  protected $tripaldbx;
+  protected ObjectProphecy $proConfigFactory;
+
+  /**
+   * Revealed config factory object.
+   *
+   * @var object
+   */
+  protected object $configFactory;
+
+  /**
+   * Prophesize config object.
+   *
+   * @var Prophecy\Prophecy\ObjectProphecy
+   */
+  protected ObjectProphecy $proConfig;
+
+  /**
+   * Revealed config object.
+   *
+   * @var object
+   */
+  protected object $config;
+
+  /**
+   * Prophesize container object.
+   *
+   * @var Prophecy\Prophecy\ObjectProphecy
+   */
+  protected ObjectProphecy $proContainer;
+
+  /**
+   * Revealed container object.
+   *
+   * @var object
+   */
+  protected object $container;
+
+  /**
+   * Prophesize connection object.
+   *
+   * @var Prophecy\Prophecy\ObjectProphecy
+   */
+  protected ObjectProphecy $proConnection;
+
+  /**
+   * Revealed connnection object.
+   *
+   * @var object
+   */
+  protected object $connection;
+
+  /**
+   * Prophesize module handler object.
+   *
+   * @var Prophecy\Prophecy\ObjectProphecy
+   */
+  protected ObjectProphecy $proModuleHandler;
+
+  /**
+   * Revealed module handler object.
+   *
+   * @var object
+   */
+  protected object $moduleHandler;
+
+  /**
+   * Prophesize tripaldbx db object.
+   *
+   * @var Prophecy\Prophecy\ObjectProphecy
+   */
+  protected ObjectProphecy $proTripalDbxDb;
+
+  /**
+   * Revealed tripaldbxdb object.
+   *
+   * @var object
+   */
+  protected object $tripalDbxDb;
 
   /**
    * {@inheritdoc}
@@ -101,7 +169,8 @@ class TripalDbxUnitTest extends UnitTestCase {
       }
     };
     $this->proTripalDbxDb = $this->prophesize(TripalDbx::class);
-    // $this->proTripalDbxDb->isInvalidSchemaName('invalid')->willReturn('Invalid schema name.');
+    // $this->proTripalDbxDb->isInvalidSchemaName('invalid')
+    // ->willReturn('Invalid schema name.');
     // $this->proTripalDbxDb->isInvalidSchemaName('valid')->willReturn('');
     $this->proTripalDbxDb->isInvalidSchemaName(Argument::cetera())->will($is_invalid_schema_name);
     $this->tripalDbxDb = $this->proTripalDbxDb->reveal();
@@ -117,8 +186,8 @@ class TripalDbxUnitTest extends UnitTestCase {
     // Hack to clear TripalDbx cache on each run.
     $clear = function () {
       TripalDbx::$drupalSchema
-      = TripalDbx::$reservedSchemaPatterns
-      = NULL;
+        = TripalDbx::$reservedSchemaPatterns
+          = NULL;
     };
     $clear->call(new TripalDbx());
   }
