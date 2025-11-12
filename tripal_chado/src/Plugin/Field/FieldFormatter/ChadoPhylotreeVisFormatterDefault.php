@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Plugin implementation of default Tripal Phylotree Visualization formatter.
@@ -53,6 +54,9 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       'org_colors' => $colors,
     ];
 
+    // Default options can be overridden by the settings property field.
+    $treeOptions = $this->overrideTreeOptions($items, $treeOptions);
+
     // Will only be one item because cardinality = 1.
     foreach ($items as $delta => $item) {
       $values = [
@@ -74,6 +78,62 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     }
 
     return $elements;
+  }
+
+  /**
+   * Overrides tree options if present as a property.
+   *
+   * @param Drupal\Core\Field\FieldItemListInterface $items
+   *   Field items.
+   * @param array $treeOptions
+   *   Associative array of options controlling tree rendering.
+   *
+   * @return array
+   *   Updated options array.
+   */
+  protected function overrideTreeOptions(FieldItemListInterface $items, array $treeOptions): array {
+    $json = '';
+    $overrides = [];
+
+    // Get the current field's name e.g. speciestree_phylotreevis
+    // or phylotree_phylotreevis and construct the property name
+    // using this as a guide, e.g. speciestree_settings.
+    $field_machine_name = $items->getFieldDefinition()->getName();
+    $prefix = explode('_', $field_machine_name)[0];
+    $property_machine_name = $prefix . '_settings';
+
+    $parentEntity = $items->getParent()->getEntity();
+    if ($parentEntity->hasField($property_machine_name)) {
+      $record = $parentEntity->get($property_machine_name)->first();
+      if ($record) {
+        $json = $record->getValue()['value'];
+      }
+    }
+    if ($json) {
+      if (!preg_match('/^{/', $json)) {
+        $json = '{' . $json;
+      }
+      if (!preg_match('/}$/', $json)) {
+        $json = $json . '}';
+      }
+      // Native json_decode requires quoted keys, so use a yaml parser.
+      // @todo Could we somehow add a json validator to the property widget?
+      // Or could the phylotree widget validate an external field?
+      try {
+        $overrides = Yaml::parse($json);
+      }
+      catch (\Exception $e) {
+        // e.g. "Malformed inline YAML string"...
+        $id = $parentEntity->id();
+        \Drupal::logger('tripal')->error("Invalid visualization settings on entity $id: " . $e->getMessage());
+      }
+    }
+    if ($overrides) {
+      foreach ($overrides as $key => $value) {
+        $treeOptions[$key] = $value;
+      }
+    }
+    return $treeOptions;
   }
 
   /**
