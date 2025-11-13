@@ -408,7 +408,8 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
         visualize which nodes belong to each organism. Please enter the
         name of the organism and its corresponding color in Hex format
         (e.g. #FF0000 or #F00) or a valid color name (e.g. Crimson or
-        DarkGreen). Organisms that are not given a color will be gray.'),
+        DarkGreen). Organisms that are not given a color will the leaf node
+        color as set above.'),
     ];
     $form['phylogram_colors'] = [
       '#element_validate' => [[$this, 'settingsFormValidateColors']],
