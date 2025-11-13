@@ -100,7 +100,8 @@ function tripal_file_show_message(string $message) {
  *
  * The new CV terms are defined in YAML in /config/install/
  * tripal.tripal_content_terms.tripal_file_content_terms.yml
- * and files located there are added automatically by Drupal.
+ * and files located there are added automatically by Drupal,
+ * so here we just need to install them.
  *
  * @return void
  *   No return value.
@@ -111,10 +112,7 @@ function tripal_file_create_tripal_terms(): void {
 }
 
 /**
- * Adds the vocabulary terms for the linked table columns.
- *
- * The actual changes are made through hook_chado_core_mapping_alter
- * located in src/Hook/TripalFileHooks.php.
+ * Adds the vocabulary terms for the linker table columns.
  *
  * @return void
  *   No return value.
@@ -155,6 +153,9 @@ function tripal_file_add_linker_table_terms(): void {
 
 /**
  * Creates content types and fields used by this module.
+ *
+ * The two new content types will be file and license, which
+ * are in the "tripal_file" collection defined by this module.
  *
  * @return void
  *   No return value.
