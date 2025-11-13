@@ -95,6 +95,8 @@ class TripalFileRebuildService {
    * This is to support migrating tables from Tripal 3 which do not have
    * the new type_id columns, and to update unique constraints to include
    * NULLS_NOT_DISTINCT.
+   * Adding filename to fileloc table is only applicable to a migrated
+   * Tripal 3 site that never ran Tripal File v3 update 7101 and 7102.
    *
    * @param string $table_name
    *   The name of the table being updated.
@@ -111,7 +113,7 @@ class TripalFileRebuildService {
    */
   public function migrateTable(string $table_name, array $new_schema, array $existing_schema, ?string $chado_schema_name = NULL): void {
 
-    $check_columns = ['type_id', 'rank'];
+    $check_columns = ['type_id', 'rank', 'filename'];
     foreach ($check_columns as $column) {
       // Adds the column if it is missing.
       if (array_key_exists($column, $new_schema['fields'])) {
@@ -122,7 +124,7 @@ class TripalFileRebuildService {
             $full_table_name = $chado_schema_name . '.' . $table_name;
 
             // Add the new column to the table.
-            $type = ' int';
+            $type = ' ' . $new_schema['fields'][$column]['type'];
             if (($new_schema['fields'][$column]['size'] ?? '') == 'big') {
               $type = ' bigint';
             }
@@ -201,6 +203,39 @@ class TripalFileRebuildService {
       }
     }
     return $this->nulls_not_distinct_supported;
+  }
+
+  /**
+   * This fixes migrated Tripal 3 EDAM terms with db of 'HTTP:'.
+   *
+   * The Tripal 3 obo importer incorrectly created and assigned a db
+   * of 'HTTP:' to several EDAM typedef records. This function will
+   * change the dbxref db_id from 'HTTP:' to 'EDAM'.
+   * This bug was fixed for Tripal 4 in PR 2280.
+   *
+   * @return void
+   *   No return value.
+   *
+   * @see https://github.com/tripal/tripal/pull/2280
+   * @see https://github.com/tripal/tripal/issues/2344
+   */
+  public function applyPr2280Fix() {
+    $query = $this->chado_connection->select('1:db', 'db')
+      ->fields('db', ['db_id'])
+      ->condition('db.name', 'HTTP:', '=');
+    $http_db_id = $query->execute()->fetchField();
+    if ($http_db_id) {
+      $query = $this->chado_connection->select('1:db', 'db')
+        ->fields('db', ['db_id'])
+        ->condition('db.name', 'EDAM', '=');
+      $edam_db_id = $query->execute()->fetchField();
+      if ($edam_db_id) {
+        $query = $this->chado_connection->update('1:dbxref')
+          ->fields(['db_id' => $edam_db_id])
+          ->condition('db_id', $http_db_id, '=')
+          ->execute();
+      }
+    }
   }
 
   /**

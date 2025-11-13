@@ -75,7 +75,6 @@ function tripal_file_install() {
  * Drupal\tripal_file\Hook\TripalFileHooks in
  * tripal_file/src/Hook/TripalFileHooks.php.
  */
-//@@@
 function tripal_file_uninstall() {
   // Delete the custom tables created by this module.
   \Drupal::service('tripal_file.hooks')->uninstall();
@@ -249,7 +248,7 @@ function tripal_file_load_EDAM_obo() {
   ]);
 
   // This fixes migrated Tripal 3 EDAM terms with db of 'HTTP:'.
-  tripal_file_apply_pr_2280_fix();
+  \Drupal::service('tripal_file.rebuild_service')->applyPr2280Fix();
 
   // Submit the import job. This takes enough time that it needs to be
   // detached from the install as a separate job so that there is no
@@ -265,100 +264,4 @@ function tripal_file_load_EDAM_obo() {
   else {
     $obo_importer->submitJob();
   }
-}
-
-/**
- * This fixes migrated Tripal 3 EDAM terms with db of 'HTTP:'.
- *
- * The Tripal 3 obo importer incorrectly created and assigned a db
- * of 'HTTP:' to several EDAM typedef records. This function will
- * change the dbxref db_id from 'HTTP:' to 'EDAM'.
- * This bug was fixed for Tripal 4 in PR 2280.
- *
- * @return void
- *   No return value.
- *
- * @see https://github.com/tripal/tripal/pull/2280
- * @see https://github.com/tripal/tripal/issues/2344
- */
-function tripal_file_apply_pr_2280_fix() {
-  $chado = \Drupal::service('tripal_chado.database');
-  $query = $chado->select('1:db', 'db')
-    ->fields('db', ['db_id'])
-    ->condition('db.name', 'HTTP:', '=');
-  $http_db_id = $query->execute()->fetchField();
-  if ($http_db_id) {
-    $query = $chado->select('1:db', 'db')
-      ->fields('db', ['db_id'])
-      ->condition('db.name', 'EDAM', '=');
-    $edam_db_id = $query->execute()->fetchField();
-    if ($edam_db_id) {
-      $query = $chado->update('1:dbxref')
-        ->fields(['db_id' => $edam_db_id])
-        ->condition('db_id', $http_db_id, '=')
-        ->execute();
-    }
-  }
-}
-
-/**
- * Add support for displayed filename.
- *
- * This is only applicable to a migrated Tripal 3 site that never
- * ran Tripal File v3 update 7101 and 7102. On a new install it
- * will not do anything.
- * @todo
- *
- * @param Drupal\tripal_chado\Database\ChadoConnection $chado
- *   A connection to the chado database.
- */
-function legacy_update_7102(Drupal\tripal_chado\Database\ChadoConnection $chado) {
-// how to get chado_schema?
-  $file_schema = $chado_schema->getCustomTableSchema('file');
-
-  $filename_schema = [
-    'type' => 'text',
-    'not null' => FALSE,
-    'description' => t('The short name of the uri as displayed to the user.'),
-  ];
-
-  $transaction = db_transaction();
-  try {
-
-    // Add 'filename' column to fileloc table, this holds the filename presented to
-    // the user. Do nothing if it already exists, as will occur on a new install.
-    if (!chado_column_exists('fileloc', 'filename')) {
-      $sql = "ALTER TABLE ONLY {fileloc} ADD COLUMN filename TEXT";
-      chado_query($sql, []);
-      $sql = "COMMENT ON COLUMN {fileloc}.filename IS :comment";
-      $column_comment = 'The short name of the uri as displayed to the user.';
-      chado_query($sql, [':comment' => $column_comment]);
-
-      // The CVterm for the new column is added as of this update, data:1050 = 'File name'.
-      tripal_file_add_terms();
-    }
-
-    // Retrieve the table_id of the fileloc custom table, this will be
-    // needed to update the schema.
-    $sql = "SELECT table_id FROM [tripal_custom_tables] WHERE table_name='fileloc'";
-    $fileloc_table_id = chado_query($sql, [])->fetchObject()->table_id;
-
-    // Update the schema to add the new column for the fileloc custom table
-    // by getting the current schema, adding in filename schema, and updating
-    // the schema stored in public.tripal_custom_tables.
-    $schema = chado_get_schema('fileloc');
-    $schema['fields']['filename'] = $filename_schema;
-    $fields = ['schema' => serialize($schema)];
-    db_update('tripal_custom_tables')
-      ->fields($fields)
-      ->condition('table_id', $fileloc_table_id, '=')
-      ->execute();
-
-  }
-  catch (\PDOException $e) {
-    $transaction->rollback();
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
-  }
-
 }

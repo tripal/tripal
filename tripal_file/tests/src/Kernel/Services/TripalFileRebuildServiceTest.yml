@@ -20,11 +20,15 @@ expected_tables:
       rank: false
   - name: 'fileloc'
     before:
-      exists: false
+      exists: true
+      type_id: false
+      rank: true
+      filename: false
     after:
       exists: true
       type_id: false
       rank: true
+      filename: true
   - name: 'fileprop'
     before:
       exists: false

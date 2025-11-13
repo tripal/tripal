@@ -53,12 +53,17 @@ class TripalFileRebuildServiceTest extends ChadoTestKernelBase {
     $this->installSchema('tripal_chado', ['tripal_custom_tables']);
 
     // To test tripal 3 table migration, create one table as it
-    // would exist there, without type_id and rank columns.
+    // would exist there, without type_id and rank columns, and create
+    // the fileloc table as it would exist if the site never ran
+    // tripal 3 update hooks 7101 and 7102.
     $ts = $this->chado_connection->getSchemaName();
     $statements = [];
     $statements[] = "CREATE TABLE $ts.file_contact (file_contact_id integer NOT NULL, file_id integer NOT NULL, contact_id integer)";
     $statements[] = "CREATE SEQUENCE $ts.file_contact_file_contact_id_seq AS integer START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;";
     $statements[] = "ALTER SEQUENCE $ts.file_contact_file_contact_id_seq OWNED BY $ts.file_contact.file_contact_id";
+    $statements[] = "CREATE TABLE $ts.fileloc (fileloc_id integer NOT NULL, file_id integer NOT NULL, uri text NOT NULL, rank integer DEFAULT 0 NOT NULL, md5checksum character(32), size character varying(1024))";
+    $statements[] = "CREATE SEQUENCE $ts.fileloc_fileloc_id_seq AS integer START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1";
+    $statements[] = "ALTER SEQUENCE $ts.fileloc_fileloc_id_seq OWNED BY $ts.fileloc.fileloc_id";
     foreach ($statements as $sql) {
       $this->chado_connection->query($sql, []);
     }
@@ -124,6 +129,8 @@ class TripalFileRebuildServiceTest extends ChadoTestKernelBase {
       'Presence of column type_id in table ' . $table_name . ' does not match expectation.');
     $this->assertEquals($expect['rank'], array_key_exists('rank', $table_schema['fields']),
       'Presence of column rank in table ' . $table_name . ' does not match expectation.');
+    $this->assertEquals($expect['filename'] ?? FALSE, array_key_exists('filename', $table_schema['fields']),
+      'Presence of column filename in table ' . $table_name . ' does not match expectation.');
   }
 
 }
