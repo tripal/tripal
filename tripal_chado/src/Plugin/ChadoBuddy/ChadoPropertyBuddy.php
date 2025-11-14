@@ -94,13 +94,13 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   An array where the key is a table+dot+column to describe the
    *   name of the property table and the column desired. Examples
    *   here are for the project table:
-   *     - projectprop.projectprop_id - (optional) property table primary key
+   *     - projectprop.projectprop_id (optional): property table primary key
    *       value.
-   *     - projectprop.project_id - (optional) base table primary key value.
-   *     - projectprop.type_id - a foreign key to cvterm_id.
-   *     - projectprop.value - the value of the property.
-   *     - projectprop.rank - optional rank of the property.
-   *     - and possibly other columns for some property tables.
+   *     - projectprop.project_id (optional): base table primary key value
+   *     - projectprop.type_id: a foreign key to cvterm_id
+   *     - projectprop.value: the value of the property
+   *     - projectprop.rank: optional rank of the property
+   *     - and possibly other columns for some property tables
    *     - cv.cv_id
    *     - cv.name
    *     - cv.definition
@@ -120,14 +120,16 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.description
    *     - db.urlprefix
    *     - db.url
-   *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys.
+   *     - buddy_record (object): a ChadoBuddyRecord can be used in place of
+   *       or in addition to other keys.
    * @param array $options
-   *   (Optional) Associative array of options.
-   *   - property_table - if the default of $base_table . 'prop' needs to be
-   *     changed.
-   *   - fkey - if the default of $base_table . '_id' needs to be changed.
-   *   - pkey - if the default of $property_table . '_id' needs to be changed.
+   *   (Optional) Associative array of options with these supported keys:
+   *   - property_table (string): The name of the property table. The default
+   *     is $base_table . 'prop'.
+   *   - pkey (string): The name of the primary key column in the base table.
+   *     The default is to use $base_table . '_id'.
+   *   - fkey (string): The name of the foreign key column in the property table
+   *     that links to the base table. The default is $base_table . '_id'.
    *
    * @return bool|array|ChadoBuddyRecord
    *   An array of ChadoBuddyRecord objects. More specifically,
@@ -197,13 +199,13 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   An array where the key is a table+dot+column to describe the
    *   name of the property table and the column desired. Examples
    *   here are for the project table:
-   *     - projectprop.projectprop_id - (optional) property table primary key
+   *     - projectprop.projectprop_id (optional): property table primary key
    *       value.
-   *     - projectprop.project_id - (optional) base table primary key value.
-   *     - projectprop.type_id - a foreign key to cvterm_id.
-   *     - projectprop.value - the value of the property.
-   *     - projectprop.rank - optional rank of the property.
-   *     - and possibly other columns for some property tables.
+   *     - projectprop.project_id (optional): base table primary key value
+   *     - projectprop.type_id: a foreign key to cvterm_id
+   *     - projectprop.value: the value of the property
+   *     - projectprop.rank: optional rank of the property
+   *     - and possibly other columns for some property tables
    *     - cv.cv_id
    *     - cv.name
    *     - cv.definition
@@ -223,15 +225,17 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.description
    *     - db.urlprefix
    *     - db.url
-   *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys.
+   *     - buddy_record (object): a ChadoBuddyRecord can be used in place of
+   *       or in addition to other keys.
    * @param array $options
-   *   (Optional) Associative array of options.
-   *   - property_table - if the default of $base_table . 'prop' needs to be
-   *     changed.
-   *   - fkey - if the default of $base_table . '_id' needs to be changed.
-   *   - pkey - if the default of $property_table . '_id' needs to be changed.
-   *   - create_cvterm - set to TRUE (default FALSE) if you specified the
+   *   (Optional) Associative array of options with these supported keys:
+   *   - property_table (string): The name of the property table. The default
+   *     is $base_table . 'prop'.
+   *   - pkey (string): The name of the primary key column in the base table.
+   *     The default is to use $base_table . '_id'.
+   *   - fkey (string): The name of the foreign key column in the property table
+   *     that links to the base table. The default is $base_table . '_id'.
+   *   - create_cvterm (bool): set to TRUE (default FALSE) if you specified the
    *     necessary fields and want to create the dbxref and cvterm when
    *     creating this property, if they do not already exist.
    *
@@ -312,12 +316,12 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   An array where the key is a table+dot+column to describe the
    *   name of the property table and the column desired. Examples
    *   here are for the project table:
-   *     - projectprop.projectprop_id - (optional) property table primary key
+   *     - projectprop.projectprop_id (optional): property table primary key
    *       value.
-   *     - projectprop.project_id - (optional) base table primary key value
-   *     - projectprop.type_id - a foreign key to cvterm_id
-   *     - projectprop.value - the value of the property
-   *     - projectprop.rank - optional rank of the property
+   *     - projectprop.project_id (optional): base table primary key value
+   *     - projectprop.type_id: a foreign key to cvterm_id
+   *     - projectprop.value: the value of the property
+   *     - projectprop.rank: optional rank of the property
    *     - and possibly other columns for some property tables
    *     - cv.cv_id
    *     - cv.name
@@ -346,11 +350,13 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   only columns that are part of a unique constraint will be used for the
    *   database query. e.g. you can't query on the property value.
    * @param array $options
-   *   (Optional) Associative array of options.
-   *   - property_table - if the default of $base_table . 'prop' needs to be
-   *     changed.
-   *   - fkey - if the default of $base_table . '_id' needs to be changed.
-   *   - pkey - if the default of $property_table . '_id' needs to be changed.
+   *   (Optional) Associative array of options with these supported keys:
+   *   - property_table (string): The name of the property table. The default
+   *     is $base_table . 'prop'.
+   *   - pkey (string): The name of the primary key column in the base table.
+   *     The default is to use $base_table . '_id'.
+   *   - fkey (string): The name of the foreign key column in the property table
+   *     that links to the base table. The default is $base_table . '_id'.
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
@@ -412,12 +418,12 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   An array where the key is a table+dot+column to describe the
    *   name of the property table and the column desired. Examples
    *   here are for the project table:
-   *     - projectprop.projectprop_id - (optional) property table primary key
+   *     - projectprop.projectprop_id (optional): property table primary key
    *       value.
-   *     - projectprop.project_id - (optional) base table primary key value
-   *     - projectprop.type_id - a foreign key to cvterm_id
-   *     - projectprop.value - the value of the property
-   *     - projectprop.rank - optional rank of the property
+   *     - projectprop.project_id (optional): base table primary key value
+   *     - projectprop.type_id: a foreign key to cvterm_id
+   *     - projectprop.value: the value of the property
+   *     - projectprop.rank: optional rank of the property
    *     - and possibly other columns for some property tables
    *     - cv.cv_id
    *     - cv.name
@@ -438,17 +444,19 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.description
    *     - db.urlprefix
    *     - db.url
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional) Associative array of options.
-   *   - property_table - if the default of $base_table . 'prop' needs to be
-   *     changed.
-   *   - fkey - if the default of $base_table . '_id' needs to be changed.
-   *   - pkey - if the default of $property_table . '_id' needs to be changed.
-   *   - create_cvterm - set to TRUE (default FALSE) if you have the necessary
-   *     fields and want to create the dbxref and cvterm when creating this
-   *     property, if they do not already exist.
+   *   (Optional) Associative array of options with these supported keys:
+   *   - property_table (string): The name of the property table. The default
+   *     is $base_table . 'prop'.
+   *   - pkey (string): The name of the primary key column in the base table.
+   *     The default is to use $base_table . '_id'.
+   *   - fkey (string): The name of the foreign key column in the property table
+   *     that links to the base table. The default is $base_table . '_id'.
+   *   - create_cvterm (bool): set to TRUE (default FALSE) if you specified the
+   *     necessary fields and want to create the dbxref and cvterm when
+   *     creating this property, if they do not already exist.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
@@ -498,13 +506,13 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   An array where the key is a table+dot+column to describe the
    *   name of the property table and the column desired. Examples
    *   here are for the project table:
-   *     - projectprop.projectprop_id - (optional) property table primary key
+   *     - projectprop.projectprop_id (optional): property table primary key
    *       value.
-   *     - projectprop.project_id - (optional) base table primary key value.
-   *     - projectprop.type_id - a foreign key to cvterm_id.
-   *     - projectprop.value - the value of the property.
-   *     - projectprop.rank - optional rank of the property.
-   *     - and possibly other columns for some property tables.
+   *     - projectprop.project_id (optional): base table primary key value
+   *     - projectprop.type_id: a foreign key to cvterm_id
+   *     - projectprop.value: the value of the property
+   *     - projectprop.rank: optional rank of the property
+   *     - and possibly other columns for some property tables
    *     - cv.cv_id
    *     - cv.name
    *     - cv.definition
@@ -524,17 +532,19 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.description
    *     - db.urlprefix
    *     - db.url
-   *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys.
+   *     - buddy_record (object): a ChadoBuddyRecord can be used in place of
+   *       or in addition to other keys.
    * @param array $options
-   *   (Optional) Associative array of options.
-   *   - property_table - if the default of $base_table . 'prop' needs to be
-   *     changed.
-   *   - fkey - if the default of $base_table . '_id' needs to be changed.
-   *   - pkey - if the default of $property_table . '_id' needs to be changed.
-   *   - max_delete - specifies the maximum number of properties that can be
-   *     deleted. Default is 1. Set to -1 for unlimited.
-   *     If the limit is exceeded, a ChadoBuddyException is thrown.
+   *   (Optional) Associative array of options with these supported keys:
+   *   - property_table (string): The name of the property table. The default
+   *     is $base_table . 'prop'.
+   *   - pkey (string): The name of the primary key column in the base table.
+   *     The default is to use $base_table . '_id'.
+   *   - fkey (string): The name of the foreign key column in the property table
+   *     that links to the base table. The default is $base_table . '_id'.
+   *   - max_delete (int): specifies the maximum number of properties that can
+   *     be deleted. Default is 1. Set to -1 for unlimited. If the limit is
+   *     exceeded, a ChadoBuddyException is thrown.
    *
    * @return int
    *   Returns a count of the number of records that were deleted.

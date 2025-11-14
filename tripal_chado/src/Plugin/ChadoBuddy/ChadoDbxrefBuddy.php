@@ -29,11 +29,11 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.description
    *     - db.urlprefix
    *     - db.url
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional) Associative array of options.
-   *     - 'case_insensitive' - a single key, or an array of keys
+   *   (Optional) Associative array of options with these supported keys:
+   *     - case_insensitive (string|array): a single key, or an array of keys
    *       to query case insensitively.
    *
    * @return array
@@ -98,11 +98,11 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.description
    *     - db.urlprefix
    *     - db.url
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional) Associative array of options.
-   *     - 'case_insensitive' - a single key, or an array of keys
+   *   (Optional) Associative array of options with these supported keys:
+   *     - case_insensitive (string|array): a single key, or an array of keys
    *       to query case insensitively.
    *
    * @return array
@@ -217,7 +217,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.url: (Optional) The URL for the database.
    *     - db.urlprefix: (Optional) The URL that is to be used as a prefix when
    *       constructing a link to a database term.
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param (Optional) $options
    *   None supported yet. Here for consistency.
@@ -274,7 +274,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param (Optional) $options
    *   None supported yet. Here for consistency.
@@ -352,7 +352,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.url: (Optional) The URL for the database.
    *     - db.urlprefix: (Optional) The URL that is to be used as a prefix when
    *       constructing a link to a database term.
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
@@ -427,7 +427,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
@@ -498,7 +498,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.url: (Optional) The URL for the database.
    *     - db.urlprefix: (Optional) The URL that is to be used as a prefix
    *       when constructing a link to a database term.
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
    *   (Optional) None supported yet. Here for consistency.
@@ -551,7 +551,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
    *   (Optional) None supported yet. Here for consistency.
@@ -600,8 +600,11 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    * @param \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord $dbxref
    *   A dbxref object returned by any of the *Dbxref() in this service.
    * @param array $options
-   *   'pkey': Looking up the primary key for the base table is costly. If it is
-   *           known, then pass it in as this option for better performance.
+   *   (Optional) Associative array of options with these supported keys:
+   *   - pkey (string): The name of the primary key column in the base table.
+   *     Looking up the primary key for the base table is costly. If it is
+   *     known, then pass it in as this option for better performance.
+   *
    *   Also pass in any other columns used in the linking table, some of which
    *   may have a NOT NULL constraint.
    *

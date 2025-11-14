@@ -81,15 +81,15 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * @param array $chado_tables
    *   One or more chado table names.
    * @param string $filter
-   *   'required' = return columns that [1]: have a NOT NULL
-   *     constraint, and [2]: do not have a default value and
-   *     are not serial, such as a primary key.
-   *     In other words, a column with a NOT NULL constraint
-   *     but with some form of a default value is considered
-   *     to be not required.
-   *   'unique' = return only columns that are part
-   *     of any unique constraint.
-   *   'all' (default) or anything else = return all columns.
+   *   A string that indicates which subset of columns to return.
+   *   Valid values are:
+   *   - required: return columns that [1]: have a NOT NULL constraint,
+   *     and [2]: do not have a default value and are not serial, such as a
+   *     primary key. In other words, a column with a NOT NULL constraint
+   *     but with some form of a default value is considered to be not required.
+   *   - unique: return only columns that are part of any unique constraint.
+   *   - all: return all columns. This is the default if an unrecognized filter
+   *     is provided.
    *
    * @return array
    *   An array of table+dot+column name, e.g. for 'db' table:
