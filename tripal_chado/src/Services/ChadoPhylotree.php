@@ -6,13 +6,16 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal\Services\TripalEntityLookup;
 
 /**
- * Methods used for processing phylogenetic trees.
+ * Methods used for accessing phylogenetic trees stored in chado.
  *
  * The loadPhylotreeById() method loads a phylotree record from its
  * primary key phylotree_id and returns an associative array.
  *
+ * The getTreeStructure() method returns the phylotree representation
+ * in a PHP nested array.
+ *
  * The getTreeNewick() method is used to generate a newick representation
- * of the phylonodes in a tree, which is then used to prepare a
+ * of the phylonodes in a tree, which can then be used to prepare a
  * visualization of the tree.
  */
 class ChadoPhylotree {
@@ -104,7 +107,7 @@ class ChadoPhylotree {
    *   Returns FALSE if the passed phylotree_id does not
    *   exist or has no nodes.
    */
-  protected function loadPhylonodesById(int $phylotree_id) {
+  protected function loadPhylonodesByTreeId(int $phylotree_id) {
     $query = $this->chado_connection->select('1:phylonode', 'n');
     $query->condition('n.phylotree_id', $phylotree_id, '=');
     $query->leftJoin('1:cvterm', 'cvt', 'n.type_id = cvt.cvterm_id');
@@ -140,14 +143,17 @@ class ChadoPhylotree {
    *
    * @param int $phylotree_id
    *   The ID of the phylotree table record.
+   * @param array $options
+   *   - no_normalize = FALSE, set to TRUE to return node lengths
+   *     exactly as they are stored in the phylonode records.
    *
    * @return string
    *   The phylotree encoded in newick format.
    *   Returns an empty string if the specified tree does not
    *   exist, or if it has no phylonodes attached.
    */
-  public function getTreeNewick(int $phylotree_id): string {
-    $structure = $this->getTreeStructure($phylotree_id);
+  public function getTreeNewick(int $phylotree_id, array $options = []): string {
+    $structure = $this->getTreeStructure($phylotree_id, $options);
     $newick = '';
     if ($structure) {
       $newick = $this->getNodeNewick($structure) . ';';
@@ -181,7 +187,7 @@ class ChadoPhylotree {
     }
 
     // Include annotations from Chado if present.
-    $newick .= $this->getAnnotations($node);
+    $newick .= $this->encodeAnnotations($node);
 
     // Include length if present.
     if (isset($node['length'])) {
@@ -195,8 +201,8 @@ class ChadoPhylotree {
   /**
    * Encode any additional annotations in a json string.
    *
-   * To be compatible with phylotree.js the json string will be
-   * enclosed in curly braces {}.
+   * The json string will be enclosed in curly braces {}.
+   * Any key or value that is not an integer will be quoted.
    *
    * Example: '{"cvterm_name":"phylo_leaf","organism_id":7,"entity_id":11}'.
    *
@@ -206,7 +212,7 @@ class ChadoPhylotree {
    * @return string
    *   Encoded properties, or an empty string if there are none.
    */
-  protected function getAnnotations(array $node): string {
+  protected function encodeAnnotations(array $node): string {
     $exclude = ['length', 'phylonode_id', 'parent_phylonode_id', 'name', 'children'];
     $annotations = [];
     foreach ($node as $key => $value) {
@@ -244,13 +250,16 @@ class ChadoPhylotree {
    *
    * @param int $phylotree_id
    *   The ID of the phylotree table record.
+   * @param array $options
+   *   - no_normalize = FALSE, set to TRUE to return node lengths
+   *     exactly as they are stored in the phylonode records.
    *
    * @return array
    *   The phylotree array.
    *   Returns an empty array if the specified tree does not
    *   exist, or if it has no phylonodes attached.
    */
-  public function getTreeStructure(int $phylotree_id): array {
+  public function getTreeStructure(int $phylotree_id, array $options = []): array {
 
     // Stores the function return value.
     $root_phylonode_ref = [];
@@ -262,7 +271,7 @@ class ChadoPhylotree {
     }
 
     /** @var Drupal\Core\Database\StatementWrapperIterator */
-    $nodes = $this->loadPhylonodesById($phylotree_id);
+    $nodes = $this->loadPhylonodesByTreeId($phylotree_id);
     if (!$nodes) {
       return $root_phylonode_ref;
     }
@@ -282,10 +291,17 @@ class ChadoPhylotree {
         'cvterm_name' => $r->cvterm_name,
       ];
 
-      // If the nodes are taxonomic then set an equal distance.
+      // Tripal 3 ignored the length for taxonomic trees and set it to 0.001.
+      // Because phylotree.js hardcodes tick marks to 2 significant digits,
+      // we will now use 0.01. However, if the node already has a length
+      // that is greater than this, then use that. Can be overridden by
+      // option 'no_normalize' => TRUE.
       if (($phylotree['type_id'] ?? 0) == $this->cv_terms['Species tree']) {
-        // @todo phylotree.js only uses 2 sig. digits, change to 0.01?
-        $node['length'] = 0.001;
+        if (!($options['no_normalize'] ?? FALSE)) {
+          if ($node['length'] < 0.01) {
+            $node['length'] = 0.01;
+          }
+        }
       }
 
       // Other properties may not exist for internal nodes.
