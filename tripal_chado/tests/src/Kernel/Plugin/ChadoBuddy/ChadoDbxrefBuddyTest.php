@@ -5,13 +5,16 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the Chado Dbxref Buddy.
  *
  * @group ChadoBuddy
  */
-#[Group('ChadoBuddy')]
+#[Group('bio-cv')]
+#[Group('plugin-chado-buddy')]
+#[RunTestsInSeparateProcesses]
 class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
 
   /**

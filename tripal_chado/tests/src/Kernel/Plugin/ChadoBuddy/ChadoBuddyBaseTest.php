@@ -7,6 +7,7 @@ use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the base functionality for Chado Buddies.
@@ -15,7 +16,8 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group ChadoBuddy
  */
-#[Group('ChadoBuddy')]
+#[Group('plugin-chado-buddy')]
+#[RunTestsInSeparateProcesses]
 class ChadoBuddyBaseTest extends ChadoTestKernelBase {
 
   /**

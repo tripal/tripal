@@ -1,11 +1,12 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Kernel\ChadoField\FieldType;
+namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoField\Widget;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the ChadoPropertyTypeDefault Field Type.
@@ -16,8 +17,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group TripalField
  * @group ChadoField
  */
-#[Group('TripalField')]
-#[Group('ChadoField')]
+#[Group('tripal-field')]
+#[Group('chado-field')]
+#[RunTestsInSeparateProcesses]
 class ChadoPropertyWidgetFormTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;

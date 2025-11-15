@@ -14,10 +14,12 @@ use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\tripal_chado\Plugin\TripalStorage\ChadoStorage;
 use Symfony\Component\Yaml\Yaml;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Provides functions related to testing Tripal Entities + their Fields.
  */
+#[Group('tripal-testing')]
 trait TripalEntityFieldTestTrait {
 
   use UserCreationTrait;
