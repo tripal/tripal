@@ -19,10 +19,26 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('plugin-chado-buddy')]
 #[RunTestsInSeparateProcesses]
 class ChadoBuddyBaseTest extends ChadoTestKernelBase {
+
+  /**
+   * The default theme to use for this test.
+   *
+   * @var string
+   */
   protected $defaultTheme = 'stark';
 
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
   protected static $modules = ['system', 'user', 'file', 'tripal', 'tripal_chado'];
 
+  /**
+   * The database connection to the test chado.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
   protected ChadoConnection $connection;
 
   /**
@@ -58,7 +74,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // Test the ChadoBuddy Plugin Manager.
     // --Ensure we can instantiate the plugin manager.
     $type = \Drupal::service('tripal_chado.chado_buddy');
-    // Note: If the plugin manager is not found you will get a ServiceNotFoundException.
+    // Note: If the plugin manager is not found then you will
+    // get a ServiceNotFoundException.
     $this->assertIsObject(
       $type,
       'A chado buddy plugin service object was not returned.'
@@ -162,8 +179,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $dereferenced_values = $removeTablePrefix->invoke($instance, $referenced_values);
     $this->assertEquals($expected_values, $dereferenced_values, "We did not get the dereferenced values we expected when calling removeTablePrefix on " . print_r($referenced_values, TRUE));
 
-    // Test when more then one table of values is passed in and an ambiguous column
-    // name would result (e.g. cv.name and cvterm.name). Expect exception.
+    // Test when more then one table of values is passed in and an ambiguous
+    // column name would result (e.g. cv.name and cvterm.name).
+    // Expect exception.
     $referenced_values = ['cv.name' => 'aldous', 'cvterm.name' => 'huxley'];
     $exception_caught = FALSE;
     $exception_message = '';
@@ -177,7 +195,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertTrue($exception_caught, 'Did not catch exception that should have been thrown for removeTablePrefix()');
     $this->assertStringContainsString('Ambiguous columns passed to removeTablePrefix', $exception_message, "We didn't get the exception message we expected for removeTablePrefix()");
 
-    // Test when a key does not have a dot or when it has multiple dots. Only trim to first dot.
+    // Test when a key does not have a dot or when it has multiple dots.
+    // Only trim to first dot.
     $referenced_values = ['real_name_no_dot' => 'newton', 'cvterm.name.fictional.indeed' => 'dumbledore'];
     $expected_values = ['real_name_no_dot' => 'newton', 'name.fictional.indeed' => 'dumbledore'];
     $dereferenced_values = $removeTablePrefix->invoke($instance, $referenced_values);
@@ -185,8 +204,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests methods dealing with table columns: getTableColumns(),
-   * addTableToCache(), makeUpsertConditions().
+   * Tests methods dealing with table columns.
+   *
+   * Tests getTableColumns(), addTableToCache(), and makeUpsertConditions().
    */
   public function testChadoBuddyColumnMethods() {
 
@@ -227,7 +247,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertCount(1, $retrieved_cache, "There should only be a single table (db) in the cache.");
     $this->assertArrayHasKey('db', $retrieved_cache, "The db table should be in the cache.");
 
-    // CASE: getTableColumns() with two tables, no filter, one table cached + the other not.
+    // CASE: getTableColumns() with two tables, no filter, one
+    // table cached + the other not.
     $expected_columns = [
       'db.db_id',
       'db.name',
@@ -317,8 +338,10 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests methods dealing with input: validateInput(), subsetInput(),
-   * dereferenceBuddyRecord(), validateOutput().
+   * Tests methods dealing with input.
+   *
+   * Tests validateInput(), subsetInput(), dereferenceBuddyRecord(),
+   * and validateOutput().
    */
   public function testChadoBuddyInputOutputMethods() {
 
@@ -349,7 +372,13 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
       'analysis.sourcename' => 'D',
       'analysis.sourceversion' => 'E',
     ];
-    $valid_columns = ['analysis.name', 'analysis.program', 'analysis.programversion', 'analysis.sourcename', 'analysis.sourceversion'];
+    $valid_columns = [
+      'analysis.name',
+      'analysis.program',
+      'analysis.programversion',
+      'analysis.sourcename',
+      'analysis.sourceversion',
+    ];
     $exception_caught = FALSE;
     $exception_message = '';
     try {
@@ -362,7 +391,13 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertFalse($exception_caught, "We shouldn't get an exception when calling validateInput() with valid input.");
 
     // CASE: calling validateInput with no user values.
-    $valid_columns = ['analysis.name', 'analysis.program', 'analysis.programversion', 'analysis.sourcename', 'analysis.sourceversion'];
+    $valid_columns = [
+      'analysis.name',
+      'analysis.program',
+      'analysis.programversion',
+      'analysis.sourcename',
+      'analysis.sourceversion',
+    ];
     $exception_caught = FALSE;
     $exception_message = '';
     try {
@@ -385,7 +420,13 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
       'analysis.sourceversion' => 'E',
       'me.you' => 'BEEEEEP',
     ];
-    $valid_columns = ['analysis.name', 'analysis.program', 'analysis.programversion', 'analysis.sourcename', 'analysis.sourceversion'];
+    $valid_columns = [
+      'analysis.name',
+      'analysis.program',
+      'analysis.programversion',
+      'analysis.sourcename',
+      'analysis.sourceversion',
+    ];
     $exception_caught = FALSE;
     $exception_message = '';
     try {
@@ -506,11 +547,12 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertFalse($exception_caught, 'We should not get an exception when calling dereferenceBuddyRecord with valid values including a ChadoBuddyRecord.');
     $this->assertEqualsCanonicalizing($expected_values, $updated_values, 'We did not get back the expected dereferenced values from dereferenceBuddyRecord() including a ChadoBuddyRecord.');
 
-    // CASE: using this ChadoBuddyRecord, getting a non-existant value from it causes an exception.
+    // CASE: using this ChadoBuddyRecord, getting a non-existant
+    // value from it causes an exception.
     $exception_caught = FALSE;
     $exception_message = '';
     try {
-      $should_fail = $buddy_record->getValue('non.exist');
+      $buddy_record->getValue('non.exist');
     }
     catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
@@ -519,8 +561,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertTrue($exception_caught, 'We should get an exception when calling getValue with an invalid key.');
     $this->assertStringContainsString("the key 'non.exist' is not present in the values array", $exception_message, "We did not get the exception message we expected when calling getValue with an invalid key.");
 
-    // CASE: calling dereferenceBuddyRecord() with a key=>value pair in both the
-    // ChadoBuddyRecord and in the values array, but the values are identical. Not an error.
+    // CASE: calling dereferenceBuddyRecord() with a key=>value pair in both
+    // the ChadoBuddyRecord and in the values array, but the values are
+    // identical. Not an error.
     $values['project.name'] = $sub_values['project.name'];
     $exception_caught = FALSE;
     try {
@@ -532,7 +575,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertFalse($exception_caught, 'We should not get an exception when calling dereferenceBuddyRecord with duplicate keys with identical values.');
 
     // CASE: calling dereferenceBuddyRecord() with a key=>value pair in both the
-    // ChadoBuddyRecord and in the values array, but the values are different. Expect exception.
+    // ChadoBuddyRecord and in the values array, but the values are different.
+    // Expect exception.
     $values['project.name'] = 'Incorrect name';
     $exception_caught = FALSE;
     $exception_message = '';
@@ -546,7 +590,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertTrue($exception_caught, 'We should get an exception when calling dereferenceBuddyRecord with duplicate keys with different values.');
     $this->assertStringContainsString('declared twice with different values', $exception_message, "We did not get the exception message we expected when calling dereferenceBuddyRecord() with duplicate keys.");
 
-    // CASE: calling dereferenceBuddyRecord() with a values['buddy_record'] => array
+    // CASE: calling dereferenceBuddyRecord() with a
+    // values['buddy_record'] => array
     // (i.e. value is not actually a buddy record). Expect exception.
     $values['buddy_record'] = ['a.b' => 'c'];
     $exception_caught = FALSE;
@@ -611,7 +656,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertTrue($exception_caught, "We should get an exception when calling validateOutput() with an empty array");
     $this->assertStringContainsString('did not retrieve the expected record', $exception_message, "We did not get the exception message we expected when calling validateOutput() with an empty array.");
 
-    // CASE: calling validateOutput() with an array of something not a ChadoBuddyRecord.
+    // CASE: calling validateOutput() with an array of something
+    // that is not a ChadoBuddyRecord.
     $output_values = ['a' => 'b'];
     $exception_caught = FALSE;
     $exception_message = '';
@@ -673,7 +719,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     }
     $this->assertFalse($exception_caught, "We shouldn't get an exception when calling addConditions() with valid conditions.");
 
-    // CASE: calling addConditions() with a string as though its a query object ;-p
+    // CASE: calling addConditions() with a string as though it's
+    // a query object ;-p.
     // We don't bother to test this because it is a TypeError.
     // CASE: calling addConditions() with an empty array of conditions.
     $query = $this->connection->select('1:cv', 'cv');
@@ -688,7 +735,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     }
     $this->assertFalse($exception_caught, "We shouldn't get an exception when calling addConditions() with no conditions.");
 
-    // CASE: calling addConditions() with a single key string to be case insensitive.
+    // CASE: calling addConditions() with a single key string to be
+    // case insensitive.
     $query = $this->connection->select('1:dbxref', 'dbxref');
     $conditions = [
       'db.name' => 'Edam',
@@ -706,7 +754,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $sql = (string) $query;
     $this->assertStringContainsString('LOWER(db.name)', $sql, "We did not get a query with case insensitivity for 'db.name'.");
 
-    // CASE: calling addConditions() with an array of keys to be case insensitive.
+    // CASE: calling addConditions() with an array of keys to be
+    // case insensitive.
     $options = ['case_insensitive' => ['db.name', 'dbxref.accession']];
     $exception_caught = FALSE;
     try {
