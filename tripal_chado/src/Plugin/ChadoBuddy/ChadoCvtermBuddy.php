@@ -175,7 +175,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - case_insensitive (string|array): a single key, or an array of keys
    *       to allow query conditions to match ignoring the case of the value.
    *     - synonyms (bool): set to TRUE to enable synonym query. This option is
-   *       used internally be getCvtermSynonym().
+   *       used internally by getCvtermSynonym().
    *
    * @return array
    *   An array of ChadoBuddyRecord objects. More specifically,
