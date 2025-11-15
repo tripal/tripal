@@ -393,9 +393,9 @@ fields:
         display:
           view:
             default:
-              region: 'content'
+              region: 'hidden'
               label: 'above'
-              weight: 40
+              weight: 0
           form:
             default:
               region: 'content'
