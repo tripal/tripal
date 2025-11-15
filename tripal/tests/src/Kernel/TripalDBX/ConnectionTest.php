@@ -7,6 +7,7 @@ use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Tripal DBX connection on a real database.
@@ -38,9 +39,6 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers ::query
  */
 #[CoversClass(TripalDbxConnection::class)]
-#[Group('Tripal')]
-#[Group('TripalDBX')]
-#[Group('TripalDbxConnection')]
 #[CoversMethod(TripalDbxConnection::class, '__construct')]
 #[CoversMethod(TripalDbxConnection::class, 'getDatabaseName')]
 #[CoversMethod(TripalDbxConnection::class, 'getDatabaseKey')]
@@ -60,6 +58,8 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversMethod(TripalDbxConnection::class, '__toString')]
 #[CoversMethod(TripalDbxConnection::class, 'executeSqlQueries')]
 #[CoversMethod(TripalDbxConnection::class, 'query')]
+#[Group('tripal-dbx')]
+#[RunTestsInSeparateProcesses]
 class ConnectionTest extends TripalTestKernelBase {
 
   /**
@@ -150,10 +150,10 @@ class ConnectionTest extends TripalTestKernelBase {
     $logger = NULL
   ) {
     // Create a mock for the abstract class.
-    $dbmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
+    $dbmock = $this->getMockBuilder(TripalDbxConnection::class)
       ->setConstructorArgs([$schema_name, $database, $logger])
       ->onlyMethods(['getTripalDbxClass', 'findVersion', 'getAvailableInstances'])
-      ->getMockForAbstractClass();
+      ->getMock();
 
     $dbmock
       ->expects($this->any())
@@ -181,11 +181,10 @@ class ConnectionTest extends TripalTestKernelBase {
    */
   public function testConnectionConstructorAllDefault() {
     // Create a mock for the abstract class.
-    $dbmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
+    $dbmock = $this->getMockBuilder(TripalDbxConnection::class)
       ->disableOriginalConstructor()
-      ->onlyMethods(['setTarget', 'setKey', 'setSchemaName', 'findVersion'])
-      ->getMockForAbstractClass()
-    ;
+      ->onlyMethods(['setTarget', 'setKey', 'setSchemaName', 'findVersion', 'getAvailableInstances'])
+      ->getMock();
 
     $dbmock->expects($this->once())
       ->method('setTarget')
@@ -412,8 +411,7 @@ class ConnectionTest extends TripalTestKernelBase {
     $dbmock
       ->expects($this->exactly(2))
       ->method('findVersion')
-      ->will($this->onConsecutiveCalls('42', '806'))
-    ;
+      ->willReturnOnConsecutiveCalls('42', '806');
 
     $version = $dbmock->getVersion();
     $this->assertEquals('42', $version, 'Version set.');

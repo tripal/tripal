@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalImporter;
 
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
@@ -8,6 +8,7 @@ use Drupal\tripal\Services\TripalLogger;
 use Symfony\Component\Yaml\Yaml;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for the OBO ontology importer.
@@ -16,9 +17,11 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoImporter
  * @group OntologyImporter
  */
-#[Group('TripalImporter')]
-#[Group('ChadoImporter')]
-#[Group('OntologyImporter')]
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
+#[group('importer-obo')]
+#[Group('bio-cv')]
+#[RunTestsInSeparateProcesses]
 class OboImporterTest extends ChadoTestKernelBase {
 
   use UserCreationTrait;

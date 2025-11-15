@@ -89,13 +89,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - cv.cv_id
    *     - cv.name
    *     - cv.definition
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   Associative array of options.
-   *     - 'case_insensitive' - a single key, or an array of keys
-   *                            to query case insensitively.
+   *   (Optional) Associative array of options with these supported keys:
+   *     - case_insensitive (string|array): a single key, or an array of keys
+   *       to query case insensitively.
    *
    * @return array
    *   An array of ChadoBuddyRecord objects. More specifically,
@@ -169,15 +168,14 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description
    *     - db.urlprefix
    *     - db.url
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   Associative array of options.
-   *     - 'case_insensitive' - a single key, or an array of keys
-   *                            to query case insensitively.
-   *     - 'synonyms' - set to true to enable synonym query,
-   *                    used internally be getCvtermSynonym()
+   *   (Optional) Associative array of options with these supported keys:
+   *     - case_insensitive (string|array): a single key, or an array of keys
+   *       to allow query conditions to match ignoring the case of the value.
+   *     - synonyms (bool): set to TRUE to enable synonym query. This option is
+   *       used internally by getCvtermSynonym().
    *
    * @return array
    *   An array of ChadoBuddyRecord objects. More specifically,
@@ -265,13 +263,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description
    *     - db.urlprefix
    *     - db.url
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   Associative array of options.
-   *     - 'case_insensitive' - a single key, or an array of keys
-   *                            to query case insensitively.
+   *   (Optional) Associative array of options with these supported keys:
+   *     - case_insensitive (string|array): a single key, or an array of keys
+   *       to query case insensitively.
    *
    * @return array
    *   An array of ChadoBuddyRecord objects. More specifically,
@@ -297,11 +294,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - cv.cv_id
    *     - cv.name
    *     - cv.definition
-   *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys.
+   *     - buddy_record (object): a ChadoBuddyRecord can be used in place of
+   *       or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
@@ -362,12 +358,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   - create_dbxref - set to FALSE (default TRUE) if you do not
-   *         want to automatically create a dbxref if one does not
-   *         already exist.
+   *   (Optional) Associative array of options with these supported keys:
+   *   - create_dbxref (bool): set to FALSE (default TRUE) if you do not
+   *     want to automatically create a dbxref if one does not already exist.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
@@ -402,8 +398,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     if (!array_key_exists('cvterm.dbxref_id', $values) or !$values['cvterm.dbxref_id']) {
       if (!array_key_exists('dbxref.dbxref_id', $values) or !$values['dbxref.dbxref_id']) {
         if (array_key_exists('create_dbxref', $options) and !$options['create_dbxref']) {
-          throw new ChadoBuddyException('ChadoBuddy insertCvterm error, dbxref.dbxref_id was'
-                                       . ' not specified and create_dbxref is set to FALSE');
+          throw new ChadoBuddyException('ChadoBuddy insertCvterm error, dbxref.dbxref_id was not specified and create_dbxref is set to FALSE');
         }
         else {
           $dbxref_record = $this->upsertDbxref($values, $values, $options);
@@ -467,11 +462,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
-   *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys.
+   *     - buddy_record (object): a ChadoBuddyRecord can be used in place of
+   *       or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
@@ -532,14 +526,13 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - cv.cv_id (only used for $conditions)
    *     - cv.name
    *     - cv.definition
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
@@ -612,14 +605,13 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
-   *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys.
+   *     - buddy_record (object): a ChadoBuddyRecord can be used in place of
+   *       or in addition to other keys.
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
@@ -722,14 +714,13 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
@@ -790,11 +781,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - cv.cv_id
    *     - cv.name
    *     - cv.definition
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
@@ -852,11 +842,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
@@ -918,11 +907,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
-   *     - buddy_record = a ChadoBuddyRecord can be used
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
    *       in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
@@ -968,16 +956,25 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    * @param \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord $cvterm
    *   A cvterm object returned by any of the *Cvterm() in this service.
    * @param array $options
-   *   'pkey': Looking up the primary key for the base table is costly. If it is
-   *           known, then pass it in as this option for better performance.
+   *   (Optional) Associative array of options with these supported keys:
+   *   - pkey (string): The name of the primary key column in the base table.
+   *     Looking up the primary key for the base table is costly. If it is
+   *     known, then pass it in as this option for better performance.
+   *   - pub_id (string): The name of the column linking to the publication.
+   *   - is_not (string): The name of the column indicating if the cvterm
+   *    association is a NOT association.
+   *   - rank (string): The name of the column indicating the rank.
+   *   - cvterm_type_id (string): The name of the column indicating the type of
+   *     cvterm association being made via foreign key to cvterm.cvterm_id.
+   *   - lookup_columns (bool): Whether to look up any additional columns that
+   *     are not specified in the options. FALSE will disable looking up any
+   *     additional columns, which may cause the insert to fail if any NOT NULL
+   *     columns are not specified. Default TRUE.
    *
-   *   Also pass in any other columns used in the linking table, some of which
-   *   may have a NOT NULL constraint. See the table below for a list of which
-   *   of the following may be required: 'pub_id', 'is_not', 'rank',
-   *   'cvterm_type_id'. If not specified, then they will be looked up
-   *   automatically, but this will be a slight performance hit. Disable this
-   *   by specifying at least one additional column, or by setting the option
-   *   'lookup_columns' to FALSE.
+   *   While the column name options above are optional, they will incur a
+   *   slight performance hit if not included due to needing to look them up
+   *   via the schema. See the table below for which columns apply to which
+   *   linking tables so you know which ones to include.
    *
    *   phpcs:disable
    *   Chado 1.3 defines these columns in the various linking tables:
@@ -1092,8 +1089,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    * @param array $conditions
    *   An associative array of values.
    * @param array $options
-   *   (Optional)
-   *   None supported yet. Here for consistency.
+   *   (Optional) None supported yet. Here for consistency.
    *
    * @return Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
