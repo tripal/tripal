@@ -3,6 +3,7 @@
 namespace Drupal\tripal\Hook;
 
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
@@ -37,13 +38,13 @@ class TripalTheme {
 
     $theme['tripal_entity_type'] = [
       'render element' => 'elements',
-      'initial_preprocess' => static::class . ':templatePreprocessTripalEntityType',
+      'initial preprocess' => static::class . ':templatePreprocessTripalEntityType',
       'template' => 'tripal_entity_type',
     ];
 
     $theme['tripal_entity'] = [
       'render element' => 'elements',
-      'initial_preprocess' => static::class . ':templatePreprocessTripalEntity',
+      'initial preprocess' => static::class . ':templatePreprocessTripalEntity',
       'template' => 'tripal_entity',
     ];
 
@@ -55,7 +56,7 @@ class TripalTheme {
     $theme['tripal_entity_content_add_list'] = [
       'render element' => 'types',
       'variables' => ['types' => NULL],
-      'initial_preprocess' => static::class . ':templatePreprocessTripalEntity',
+      'initial preprocess' => static::class . ':templatePreprocessTripalEntity',
     ];
 
     return $theme;
