@@ -244,6 +244,7 @@ class TripalHooks {
     // otherwise PostgreSQL version that may have a different datestyle setting
     // will fail when inserting or updating a date column in a table.
     // @todo we do this for every page? Maybe move to rebuild().
+    // @see Issue #2360.
     \Drupal::database()->query("SET DATESTYLE TO :style", [':style' => 'MDY']);
 
     // Ask users to do the registration form.
