@@ -28,15 +28,15 @@ require_once 'src/api/tripal.viewsdata.inc';
 /**
  * Checks if the current user has permissions to perform an action on a file.
  *
- * @param $op
+ * @param string $op
  *   The operation to perform.  These include 'view', 'download', 'renew' and
- *   'delete'
- * @param $uid
+ *   'delete'.
+ * @param int $uid
  *   The user ID of the user's account that owns the file.
- * @param $fid
+ * @param int|null $fid
  *   The file ID.
  */
-function tripal_access_user_files($op, $uid, $fid = NULL) {
+function tripal_access_user_files(string $op, int $uid, ?int $fid = NULL) {
   // Global $user is deprecated in D8 use the currentUser service.
   // this only returns an AccountProxyInterface object and not a full
   // UserInterface object.  To get access to the full UserInterface object, load
@@ -79,9 +79,13 @@ function tripal_access_user_files($op, $uid, $fid = NULL) {
 /**
  * An access function for data collections.
  *
+ * @param int $uid
+ *   User ID value.
+ *
  * @return bool
+ *   TRUE if access allowed, FALSE if not.
  */
-function tripal_accesss_user_collections($uid) {
+function tripal_accesss_user_collections(int $uid) {
   $config = \Drupal::config('tripal_admin.settings');
   if (!tripal_access_user_data($uid)) {
     return FALSE;
@@ -100,12 +104,13 @@ function tripal_accesss_user_collections($uid) {
  * function can be used to check access for any type of user-specfic data
  * added by any Tripal module.
  *
- * @param $uid
+ * @param int $uid
  *   The UID of the user's account to access.
  *
  * @return bool
+ *   TRUE if passed UID matches the current user, FALSE if not.
  */
-function tripal_access_user_data($uid) {
+function tripal_access_user_data(int $uid): bool {
   if ($uid == \Drupal::currentUser()->id()) {
     return TRUE;
   }
@@ -118,13 +123,15 @@ function tripal_access_user_data($uid) {
  * This function is not meant to be used as an API function. It is only meant
  * for use in the menu to resolve the %tripal_bundle wildcard.
  *
- * @param $type
+ * @param string $bundle_type
  *   The machine-readable name of a tripal data type to load.
+ * @param bool|null $reset
+ *   Probably a bug here, this is not used.
  *
- * @return
+ * @return array|bool
  *   A tripal data type array or FALSE if $type does not exist.
  */
-function TripalBundle_load($bundle_type, $reset = FALSE) {
+function TripalBundle_load(string $bundle_type, bool $reset = FALSE) {
   // Get the type of entity by the ID.
   $bundle = Drupal::database()->select('tripal_bundle', 'tdt')
     ->fields('tdt')
@@ -147,17 +154,17 @@ function TripalBundle_load($bundle_type, $reset = FALSE) {
  * This function is not meant to be used as an API function. It is only meant
  * for use in the menu to resolve the %tripal_entity wildcard.
  *
- * @param $id
+ * @param int $id
  *   Integer specifying the tripal_entity id.
- * @param $reset
+ * @param bool|null $reset
  *   A boolean indicating that the internal cache should be reset.
  *
- * @return
+ * @return object|bool
  *   A fully-loaded $tripal_entity object or FALSE if it cannot be loaded.
  *
  * @see tripal_entity_load_multiple()
  */
-function TripalEntity_load($id, $reset = FALSE) {
+function TripalEntity_load(int $id, bool $reset = FALSE) {
   // $entity = entity_load('TripalEntity', array($id), array(), $reset);
   $entity = tripal_load_entity('TripalEntity', [$id], $reset);
   return reset($entity);
@@ -194,7 +201,10 @@ function tripal_import_api() {
 }
 
 /**
+ * Adds new fields to a bundle.
  *
+ * @param string $bundle_name
+ *   The name of the bundle to process.
  */
 function tripal_check_new_fields($bundle_name) {
   $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
@@ -205,7 +215,7 @@ function tripal_check_new_fields($bundle_name) {
     \Drupal::messenger()->addStatus(t('No new fields were added'));
   }
   foreach ($added as $field_name) {
-    \Drupal::messenger()->addStatus(t('Added field: ' . $field_name));
+    \Drupal::messenger()->addStatus(t('Added field: @field_name', ['@field_name' => $field_name]));
   }
 
   $response = new RedirectResponse("admin/structure/tripal/manage/$bundle_name/fields");
@@ -216,6 +226,7 @@ function tripal_check_new_fields($bundle_name) {
  * Callback: Allows Tripal Jobs to create a set of TripalEntityType Collections.
  *
  * @param array $options
+ *   Currently only one option is supported.
  *   - collection_ids:
  *     An array where each found collection has a key entry and only the chosen
  *     ones have a value the same as the key. All collections not chosen to be
@@ -363,7 +374,8 @@ function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) 
  * Legacy implementation for TripalEntityHooks::tripalEntityStorageLoad().
  *
  * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal\Hook\TripalEntityHooks in tripal/src/Hook/TripalEntityHooks.php.
+ * Drupal\tripal\Hook\TripalEntityHooks in
+ * tripal/src/Hook/TripalEntityHooks.php.
  */
 #[LegacyHook]
 function tripal_tripal_entity_storage_load(&$entities) {

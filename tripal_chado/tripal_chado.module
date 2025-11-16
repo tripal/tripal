@@ -1,14 +1,13 @@
 <?php
 
-use Drupal\Core\Hook\Attribute\LegacyHook;
-
 /**
  * @file
  * Contains tripal_chado.module.
  */
 
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Hook\Attribute\LegacyHook;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Config\FileStorage;
 
 require_once 'src/api/tripal_chado.schema.api.php';
 require_once 'src/api/tripal_chado.custom_tables.api.php';
@@ -62,13 +61,13 @@ function tripal_chado_rebuild() {
 }
 
 /**
- * Implements hook_form_alter
+ * Implements hook_form_alter.
  *
  * This legacy hook is only run for Drupal < 11, and is replaced by class
  * Drupal\tripal_chado\Hook\TripalChadoHooks in
  * tripal_chado/src/Hook/TripalChadoHooks.php.
  */
 #[LegacyHook]
-function tripal_chado_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function tripal_chado_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   \Drupal::service('tripal_chado.hooks')->formAlter($form, $form_state, $form_id);
 }

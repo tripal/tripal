@@ -1,11 +1,11 @@
 <?php
 
-use Drupal\Core\Hook\Attribute\LegacyHook;
-
 /**
  * @file
  * Primary module hooks for tripal_layout module.
  */
+
+use Drupal\Core\Hook\Attribute\LegacyHook;
 
 /**
  * Implements hook_page_attachments().
