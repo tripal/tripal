@@ -41,18 +41,6 @@ class TripalHooks {
   }
 
   /**
-   * Implements hook_page_attachments().
-   */
-  #[Hook('page_attachments')]
-  public function addPageAttachments(array &$attachments): void {
-    $attachments['#attached']['drupalSettings']['tripal']['vars'] = [
-      'baseurl' => \Drupal::request()->getSchemeAndHttpHost(),
-      'tripal_path' => \Drupal::service('extension.list.module')->getPath('tripal'),
-    ];
-    $attachments['#attached']['library'][] = 'tripal/vars';
-  }
-
-  /**
    * Implements hook_rebuild().
    */
   #[Hook('rebuild')]
