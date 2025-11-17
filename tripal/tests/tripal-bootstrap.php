@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Tripal preprocessing of bootstrap.php.
  *
  * The purpose of this file is to append a few additional phpunit deprecation
@@ -19,7 +20,7 @@ $combined_ignore_file = __DIR__ . '/../../.deprecation-ignore.txt';
 // defined by Drupal.
 $drupal_exclude_text = file_get_contents($drupal_ignore_file);
 $tripal_exclude_text = file_get_contents($tripal_ignore_file);
- file_put_contents($combined_ignore_file, $drupal_exclude_text . $tripal_exclude_text);
+file_put_contents($combined_ignore_file, $drupal_exclude_text . $tripal_exclude_text);
 
 // Tripal preprocessing is done, now call Drupal's bootstrap.php.
 include DRUPAL_ROOT . '/core/tests/bootstrap.php';
