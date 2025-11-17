@@ -8,8 +8,14 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Theme hook implementations for the Tripal module.
+ *
+ * This class contains hook implementations pertaining to theme and render
+ * functionality. Some examples include hooks:
+ *  - with theme or render in the name.
+ *  - preprocessing variables for twig templates.
+ *  - adding js/css libraries or settings.
  */
-class TripalTheme {
+class TripalThemeHooks {
 
   use StringTranslationTrait;
 
@@ -133,6 +139,60 @@ class TripalTheme {
         $variables['content'][$key] = $variables['elements'][$key];
       }
     }
+  }
+
+  /**
+   * Implements hook_page_attachments().
+   */
+  #[Hook('page_attachments')]
+  public function addPageAttachments(array &$attachments): void {
+    $attachments['#attached']['drupalSettings']['tripal']['vars'] = [
+      'baseurl' => \Drupal::request()->getSchemeAndHttpHost(),
+      'tripal_path' => \Drupal::service('extension.list.module')->getPath('tripal'),
+    ];
+    $attachments['#attached']['library'][] = 'tripal/vars';
+  }
+
+  /**
+   * Implements hook_preprocess_html().
+   *
+   * Replacement for tripal_init.
+   *
+   * @param array &$variables
+   *   An associative array containing:
+   *   - page: A render element representing the page.
+   */
+  #[Hook('preprocess_html')]
+  public function preprocessHtml(&$variables) {
+    global $base_url;
+    // @todo Need to look into service injection in the module file.
+    $config = \Drupal::config('tripal_admin.settings');
+    // Add some variables for all javasript to use for building URLs.
+    $clean_urls = $config->get('clean_url', 0);
+    $tripal_path = \Drupal::service('extension.list.module')->getPath('tripal');
+    // Add a JS library.
+    $variables['#attached']['library'][] = 'tripal/tripal-js';
+    $variables['#attached']['drupalSettings']['tripal']['tripalJS']['baseurl'] = $base_url;
+    $variables['#attached']['drupalSettings']['tripal']['tripalJS']['isClean'] = $clean_urls;
+    $variables['#attached']['drupalSettings']['tripal']['tripalJS']['tripal_path'] = $tripal_path;
+    // Make sure the date time settings are the way Tripal will insert them,
+    // otherwise PostgreSQL version that may have a different datestyle setting
+    // will fail when inserting or updating a date column in a table.
+    // @todo we do this for every page? Maybe move to rebuild().
+    // @see Issue #2360.
+    \Drupal::database()->query("SET DATESTYLE TO :style", [':style' => 'MDY']);
+
+    // Ask users to do the registration form.
+    // @upgrade when Issue #45 is closed.
+    // if (\Drupal::currentUser()->hasPermission('administer tripal')) {
+    // if (empty($config->get('tripal_site_registration') ?: FALSE)
+    // || !($config->get('disable_tripal_reporting') ?: FALSE)) {
+    // \Drupal::messenger()->addWarning(t('Please register your Tripal Site.
+    // Registering provides important information that will help secure funding
+    // for continued improvements to Tripal.
+    // <a href="admin/tripal/register">Click to register now or opt out</a>.'));
+    // }
+    // }
   }
 
 }

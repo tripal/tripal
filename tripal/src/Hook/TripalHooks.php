@@ -2,20 +2,19 @@
 
 namespace Drupal\tripal\Hook;
 
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
-use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Drupal\views\ViewEntityInterface;
-use Drupal\views\ViewExecutable;
-use Drupal\views\ViewsConfigUpdater;
 
 /**
  * Hook implementations for the Tripal module.
+ *
+ * This class contains miscellaneous hook implementations that do not fit in
+ * any of the other hook classes in this namespace. Only include hooks here
+ * if they do not fit better elsewhere.
  */
 class TripalHooks {
 
@@ -37,18 +36,6 @@ class TripalHooks {
   }
 
   /**
-   * Implements hook_page_attachments().
-   */
-  #[Hook('page_attachments')]
-  public function addPageAttachments(array &$attachments): void {
-    $attachments['#attached']['drupalSettings']['tripal']['vars'] = [
-      'baseurl' => \Drupal::request()->getSchemeAndHttpHost(),
-      'tripal_path' => \Drupal::service('extension.list.module')->getPath('tripal'),
-    ];
-    $attachments['#attached']['library'][] = 'tripal/vars';
-  }
-
-  /**
    * Implements hook_rebuild().
    */
   #[Hook('rebuild')]
@@ -60,6 +47,9 @@ class TripalHooks {
 
   /**
    * Implements hook_toolbar().
+   *
+   * This hook is provided by the Gin Admin theme and we use it to provide
+   * the specialized Tripal toolbar in their specialized top menu bar.
    */
   #[Hook('toolbar')]
   public function toolbar() {
@@ -219,48 +209,6 @@ class TripalHooks {
   }
 
   /**
-   * Implements hook_preprocess_html().
-   *
-   * Replacement for tripal_init.
-   *
-   * @param array &$variables
-   *   An associative array containing:
-   *   - page: A render element representing the page.
-   */
-  #[Hook('preprocess_html')]
-  public function preprocessHtml(&$variables) {
-    global $base_url;
-    // @todo Need to look into service injection in the module file.
-    $config = \Drupal::config('tripal_admin.settings');
-    // Add some variables for all javasript to use for building URLs.
-    $clean_urls = $config->get('clean_url', 0);
-    $tripal_path = \Drupal::service('extension.list.module')->getPath('tripal');
-    // Add a JS library.
-    $variables['#attached']['library'][] = 'tripal/tripal-js';
-    $variables['#attached']['drupalSettings']['tripal']['tripalJS']['baseurl'] = $base_url;
-    $variables['#attached']['drupalSettings']['tripal']['tripalJS']['isClean'] = $clean_urls;
-    $variables['#attached']['drupalSettings']['tripal']['tripalJS']['tripal_path'] = $tripal_path;
-    // Make sure the date time settings are the way Tripal will insert them,
-    // otherwise PostgreSQL version that may have a different datestyle setting
-    // will fail when inserting or updating a date column in a table.
-    // @todo we do this for every page? Maybe move to rebuild().
-    // @see Issue #2360.
-    \Drupal::database()->query("SET DATESTYLE TO :style", [':style' => 'MDY']);
-
-    // Ask users to do the registration form.
-    // @upgrade when Issue #45 is closed.
-    // if (\Drupal::currentUser()->hasPermission('administer tripal')) {
-    // if (empty($config->get('tripal_site_registration') ?: FALSE)
-    // || !($config->get('disable_tripal_reporting') ?: FALSE)) {
-    // \Drupal::messenger()->addWarning(t('Please register your Tripal Site.
-    // Registering provides important information that will help secure funding
-    // for continued improvements to Tripal.
-    // <a href="admin/tripal/register">Click to register now or opt out</a>.'));
-    // }
-    // }
-  }
-
-  /**
    * Implements hook_form_alter for the field_config_edit_form.
    *
    * Adds the form elements to the field settings form for setting controlled
@@ -285,45 +233,6 @@ class TripalHooks {
   }
 
   /**
-   * Implements hook_preprocess_field().
-   *
-   * This is to permit HTML markup in the page title field, for
-   * example on an organism page, to display genus and species
-   * in italics.
-   */
-  #[Hook('preprocess_field')]
-  public function preprocessField(&$variables) {
-    if ($variables['element']['#field_name'] == 'title') {
-      // We can configure which tags are allowed at /admin/tripal/config.
-      $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
-      $tripal_allowed_tags = explode(' ', $tag_string ?? '');
-
-      // Process each item (usually only a single one).
-      foreach ($variables['items'] as $delta => $item) {
-        // The title can be either a simple inline template or a link.
-        if ($item['content']['#type'] == 'inline_template') {
-          $value = $item['content']['#context']['value'];
-          // Convert strings into markup, this will cause HTML tags to
-          // be rendered.
-          if (is_string($value)) {
-            $sanitized_value = Xss::filter($value, $tripal_allowed_tags);
-            $variables['items'][$delta]['content']['#context']['value'] = Markup::create($sanitized_value);
-          }
-        }
-        elseif ($item['content']['#type'] == 'link') {
-          $value = $item['content']['#title']['#context']['value'];
-          // Convert strings into markup, this will cause HTML tags to
-          // be rendered.
-          if (is_string($value)) {
-            $sanitized_value = Xss::filter($value, $tripal_allowed_tags);
-            $variables['items'][$delta]['content']['#title']['#context']['value'] = Markup::create($sanitized_value);
-          }
-        }
-      }
-    }
-  }
-
-  /**
    * Implements hook gin_content_form_routes provided by the GIN admin theme.
    */
   #[Hook('gin_content_form_routes')]
@@ -332,61 +241,6 @@ class TripalHooks {
       'entity.tripal_entity.add_form',
       'entity.tripal_entity.edit_form',
     ];
-  }
-
-  /**
-   * Implements hook_views_pre_view().
-   */
-  #[Hook('views_pre_view')]
-  public function viewsPreView(ViewExecutable $view, $display_id, array &$args) {
-    // Override permission of Tripal Content Type listing
-    // (admin/content/bio_data) in order to support OR when evaluating
-    // permissions since views UI does not support this.
-    // WARNING: requires you to have NO Permissions on this view through the UI!
-    if ($view->id() == 'tripal_content_type_listing') {
-      // The user must have 1+ of the following permissions to access the
-      // Tripal Content Type listing (admin/content/bio_data).
-      $perm = [
-        'access tripal content overview',
-        'administer tripal content',
-      ];
-
-      // Check if current user has either permissions when attempting to
-      // view listing.
-      $user = \Drupal::currentUser();
-
-      $has_permission = FALSE;
-      foreach ($perm as $permission) {
-        if ($user->hasPermission($permission)) {
-          $has_permission = TRUE;
-          break;
-        }
-      }
-
-      // Deny access if user does not have necessary permission.
-      if (!$has_permission) {
-        throw new AccessDeniedHttpException();
-      }
-    }
-  }
-
-  /**
-   * Implements hook_ENTITY_TYPE_presave().
-   *
-   * A new views 'class' setting was introduced in Drupal 11.2, but it has
-   * not been added to our yaml views configurations so that we maintain
-   * backward compatibility. We do the update here before Drupal does it
-   * in order to avoid a deprecation notice in unit tests.
-   * This hook will do nothing for Drupal <11.2.
-   */
-  #[Hook('view_presave')]
-  public function viewPresave(ViewEntityInterface $view): void {
-    /** @var \Drupal\views\ViewsConfigUpdater $config_updater */
-    $config_updater = \Drupal::classResolver(ViewsConfigUpdater::class);
-    if (method_exists($config_updater, 'processTableCssClassUpdate')) {
-      $config_updater->setDeprecationsEnabled(FALSE);
-      $config_updater->processTableCssClassUpdate($view);
-    }
   }
 
 }
