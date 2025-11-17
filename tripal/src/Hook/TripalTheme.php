@@ -128,8 +128,10 @@ class TripalTheme {
   public function templatePreprocessTripalEntity(array &$variables) {
 
     // Helpful $content variable for templates.
-    foreach (Element::children($variables['elements']) as $key) {
-      $variables['content'][$key] = $variables['elements'][$key];
+    if (array_key_exists('elements', $variables)) {
+      foreach (Element::children($variables['elements']) as $key) {
+        $variables['content'][$key] = $variables['elements'][$key];
+      }
     }
   }
 
