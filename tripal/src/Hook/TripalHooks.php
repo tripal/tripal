@@ -52,6 +52,9 @@ class TripalHooks {
 
   /**
    * Implements hook_toolbar().
+   *
+   * This hook is provided by the Gin Admin theme and we use it to provide
+   * the specialized Tripal toolbar in their specialized top menu bar.
    */
   #[Hook('toolbar')]
   public function toolbar() {
