@@ -264,11 +264,33 @@ function tripal_help($route_name, RouteMatchInterface $route_match) {
  * Implements hook_theme().
  *
  * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ * Drupal\tripal\Hook\TripalTheme in tripal/src/Hook/TripalTheme.php.
  */
 #[LegacyHook]
 function tripal_theme() {
   return \Drupal::service('tripal.theme')->theme();
+}
+
+/**
+ * Implements template_preprocess hook for tripal entity type.
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalTheme in tripal/src/Hook/TripalTheme.php.
+ */
+#[LegacyHook]
+function template_preprocess_tripal_entity_type(array &$variables): void {
+  \Drupal::service('tripal.theme')->templatePreprocessTripalEntityType($variables);
+}
+
+/**
+ * Implements template_preprocess hook for tripal entity.
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalTheme in tripal/src/Hook/TripalTheme.php.
+ */
+#[LegacyHook]
+function template_preprocess_tripal_entity(array &$variables): void {
+  \Drupal::service('tripal.theme')->templatePreprocessTripalEntity($variables);
 }
 
 /**
