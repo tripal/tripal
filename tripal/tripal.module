@@ -268,7 +268,7 @@ function tripal_help($route_name, RouteMatchInterface $route_match) {
  */
 #[LegacyHook]
 function tripal_theme() {
-  return \Drupal::service('tripal.theme')->theme();
+  return \Drupal::service('tripal.theme_hooks')->theme();
 }
 
 /**
@@ -279,7 +279,7 @@ function tripal_theme() {
  */
 #[LegacyHook]
 function template_preprocess_tripal_entity_type(array &$variables): void {
-  \Drupal::service('tripal.theme')->templatePreprocessTripalEntityType($variables);
+  \Drupal::service('tripal.theme_hooks')->templatePreprocessTripalEntityType($variables);
 }
 
 /**
@@ -290,7 +290,7 @@ function template_preprocess_tripal_entity_type(array &$variables): void {
  */
 #[LegacyHook]
 function template_preprocess_tripal_entity(array &$variables): void {
-  \Drupal::service('tripal.theme')->templatePreprocessTripalEntity($variables);
+  \Drupal::service('tripal.theme_hooks')->templatePreprocessTripalEntity($variables);
 }
 
 /**
@@ -301,7 +301,7 @@ function template_preprocess_tripal_entity(array &$variables): void {
  */
 #[LegacyHook]
 function tripal_theme_suggestions_tripal_entity(array $variables) {
-  return \Drupal::service('tripal.theme')->themeSuggestionsTripalEntity($variables);
+  return \Drupal::service('tripal.theme_hooks')->themeSuggestionsTripalEntity($variables);
 }
 
 /**
@@ -323,7 +323,7 @@ function tripal_toolbar() {
  */
 #[LegacyHook]
 function tripal_page_attachments(array &$attachments) {
-  \Drupal::service('tripal.theme')->addPageAttachments($attachments);
+  \Drupal::service('tripal.theme_hooks')->addPageAttachments($attachments);
 }
 
 /**
@@ -334,7 +334,7 @@ function tripal_page_attachments(array &$attachments) {
  */
 #[LegacyHook]
 function tripal_preprocess_html(&$variables) {
-  \Drupal::service('tripal.theme')->preprocessHtml($variables);
+  \Drupal::service('tripal.theme_hooks')->preprocessHtml($variables);
 }
 
 /**

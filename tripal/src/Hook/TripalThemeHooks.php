@@ -15,7 +15,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  *  - preprocessing variables for twig templates.
  *  - adding js/css libraries or settings.
  */
-class TripalTheme {
+class TripalThemeHooks {
 
   use StringTranslationTrait;
 
