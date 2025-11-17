@@ -8,6 +8,12 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Theme hook implementations for the Tripal module.
+ *
+ * This class containers hook implementations pertaining to theme and render
+ * functionality. Some examples include hooks:
+ *  - with theme  or render in the name.
+ *  - preprocessing variables for twig templates.
+ *  - adding js/css libraries or settings.
  */
 class TripalTheme {
 

@@ -16,6 +16,10 @@ use Drupal\views\ViewsConfigUpdater;
 
 /**
  * Hook implementations for the Tripal module.
+ *
+ * This class contains miscellaneous hook implementations that do not fit in
+ * any of the other hook classes in this namespace. Only include hooks here
+ * if they do not fit better elsewhere.
  */
 class TripalHooks {
 
