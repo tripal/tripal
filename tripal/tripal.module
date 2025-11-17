@@ -323,7 +323,7 @@ function tripal_toolbar() {
  */
 #[LegacyHook]
 function tripal_page_attachments(array &$attachments) {
-  \Drupal::service('tripal.hooks')->addPageAttachments($attachments);
+  \Drupal::service('tripal.theme')->addPageAttachments($attachments);
 }
 
 /**
@@ -334,7 +334,7 @@ function tripal_page_attachments(array &$attachments) {
  */
 #[LegacyHook]
 function tripal_preprocess_html(&$variables) {
-  \Drupal::service('tripal.hooks')->preprocessHtml($variables);
+  \Drupal::service('tripal.theme')->preprocessHtml($variables);
 }
 
 /**
@@ -367,7 +367,7 @@ function tripal_form_field_config_edit_form_alter(&$form, FormStateInterface $fo
  */
 #[LegacyHook]
 function tripal_preprocess_field(&$variables) {
-  \Drupal::service('tripal.hooks')->preprocessField($variables);
+  \Drupal::service('tripal.entity_hooks')->preprocessField($variables);
 }
 
 /**
@@ -389,7 +389,7 @@ function tripal_gin_content_form_routes() {
  */
 #[LegacyHook]
 function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
-  return \Drupal::service('tripal.hooks')->viewsPreView($view, $display_id, $args);
+  return \Drupal::service('tripal.views_hooks')->viewsPreView($view, $display_id, $args);
 }
 
 /**
