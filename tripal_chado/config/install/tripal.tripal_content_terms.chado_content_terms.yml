@@ -998,3 +998,15 @@ vocabularies:
         terms:
             -   id: 'PBO:0000065'
                 name: 'progeny'
+    -   name: 'GO'
+        label: 'Gene Ontology'
+        url: 'https://geneontology.org/'
+        idSpaces:
+            -   name: 'gene_ontology'
+                description: 'Gene Ontology'
+            -   name: 'biological_process'
+                description: 'BPs are the larger processes or ‘biological programs’ accomplished by the concerted action of multiple molecular activities'
+            -   name: 'cellular_component'
+                description: 'CC serves to capture the cellular location where a molecular function takes place'
+            -   name: 'molecular_function'
+                description: 'MFs represent molecular-level activities performed by gene products'
