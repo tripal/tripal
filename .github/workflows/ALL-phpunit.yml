@@ -99,7 +99,7 @@ jobs:
             echo "Drupal version is ${drupalversion}, copying config for phpunit 9" \
             && mv web/modules/contrib/tripal/phpunit.xml web/modules/contrib/tripal/phpunit.11.xml \
             && mv web/modules/contrib/tripal/phpunit.9.6.xml web/modules/contrib/tripal/phpunit.xml; \
-            elif $(dpkg --compare-versions "${drupalversion}" "le" "11.1"); then \
+            elif $(dpkg --compare-versions "${drupalversion}" "le" "11.1.x-dev"); then \
             echo "Drupal version is ${drupalversion}, copying config for phpunit 10" \
             && mv web/modules/contrib/tripal/phpunit.xml web/modules/contrib/tripal/phpunit.11.xml \
             && mv web/modules/contrib/tripal/phpunit.10.xml web/modules/contrib/tripal/phpunit.xml; \

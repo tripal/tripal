@@ -39,7 +39,7 @@ RUN service apache2 start \
   && if $(dpkg --compare-versions "${drupalversion}" "le" "10.9"); then \
      mv web/modules/contrib/tripal/phpunit.xml web/modules/contrib/tripal/phpunit.11.xml \
      && mv web/modules/contrib/tripal/phpunit.9.6.xml web/modules/contrib/tripal/phpunit.xml; \
-     elif $(dpkg --compare-versions "${drupalversion}" "le" "11.1"); then \
+     elif $(dpkg --compare-versions "${drupalversion}" "le" "11.1.x-dev"); then \
      mv web/modules/contrib/tripal/phpunit.xml web/modules/contrib/tripal/phpunit.11.xml \
      && mv web/modules/contrib/tripal/phpunit.10.xml web/modules/contrib/tripal/phpunit.xml; \
   fi \
