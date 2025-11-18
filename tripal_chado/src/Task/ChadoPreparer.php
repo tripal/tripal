@@ -939,6 +939,10 @@ class ChadoPreparer extends ChadoTaskBase {
 
     // Iterate through each ontology and install them with the OBO Importer.
     foreach ($ontologies as $ontology) {
+      // Fallback if the idSpace does not have a description.
+      if (!$ontology['idSpace']->getDescription()) {
+        $ontology['idSpace']->setDescription($ontology['idSpace']->getName());
+      }
       $obo_id = $this->insertOntologyRecord($ontology);
       $schema_name = $this->outputSchemas[0]->getSchemaName();
       if ($ontology['auto_load']) {
