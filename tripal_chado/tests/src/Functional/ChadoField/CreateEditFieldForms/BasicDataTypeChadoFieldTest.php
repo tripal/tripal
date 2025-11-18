@@ -1,11 +1,12 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional\Plugin\Fields\CreateEditFieldForms;
+namespace Drupal\Tests\tripal_chado\Functional\ChadoField\CreateEditFieldForms;
 
 use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the configuration for where a basic chado field is added to an existing
@@ -15,13 +16,15 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group ChadoField
  */
-#[Group('ChadoField')]
+#[Group('form')]
+#[Group('chado-field')]
+#[RunTestsInSeparateProcesses]
 class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
   use FieldUiTestTrait;
 
-	protected $defaultTheme = 'stark';
+  protected $defaultTheme = 'stark';
 
-	protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'field_ui', 'tripal', 'tripal_chado'];
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'field_ui', 'tripal', 'tripal_chado'];
 
   /**
    * Provides a list of the field types we are testing with this class.
@@ -50,7 +53,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     // NOTE: This does not prepare Drupal, so none of the TripalTerms we need are available.
     $this->connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
 
-    // Create the Organism Content Type
+    // Create the Organism Content Type.
     $content_type = $this->createTripalContentType([
       'label' => 'Gene',
       'termIdSpace' => 'SO',
@@ -72,15 +75,15 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     $this->drupalLogin($admin_user);
 
     // Create the Tripal Terms we need.
-    // -- SIO:000729
+    // -- SIO:000729.
     $term_details = [
       'vocab_name' => 'SIO',
       'id_space_name' => 'SIO',
       'term' => [
         'name' => 'record identifier',
         'definition' => 'A record identifier is an identifier for a database entry.',
-        'accession' =>'000729',
-      ]
+        'accession' => '000729',
+      ],
     ];
     $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
     $term_details = [
@@ -90,7 +93,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
         'name' => 'sequence_feature',
         'definition' => 'Any extent of continuous biological sequence.',
         'accession' => '0000110',
-      ]
+      ],
     ];
     $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
     $term_details = [
@@ -99,7 +102,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
       'term' => [
         'name' => 'is_analysis',
         'accession' => 'is_analysis',
-      ]
+      ],
     ];
     $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
     $term_details = [
@@ -108,7 +111,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
       'term' => [
         'name' => 'name',
         'accession' => 'name',
-      ]
+      ],
     ];
     $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
     $term_details = [
@@ -117,7 +120,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
       'term' => [
         'name' => 'Identifier',
         'accession' => '0842',
-      ]
+      ],
     ];
     $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
   }
@@ -130,7 +133,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
 
     $sets[] = [
       'chado_integer_type_default',
-      ['feature_id','dbxref_id','organism_id','seqlen','type_id'],
+      ['feature_id', 'dbxref_id', 'organism_id', 'seqlen', 'type_id'],
     ];
 
     $sets[] = [
@@ -145,7 +148,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
 
     $sets[] = [
       'chado_text_type_default',
-      ['uniquename','residues'],
+      ['uniquename', 'residues'],
     ];
 
     return $sets;
@@ -153,6 +156,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
 
   /**
    * Tests adding a basic field type via the combined add field form.
+   *
    * @dataProvider provideFieldsToTest
    *
    * This specifically refers to the form used in Drupal 10.2+ and thus
@@ -197,7 +201,6 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     // Submit the form with the following input.
     // We have no AJAX in these tests so we have to submit the form after selecting
     // the category in order to see the list of field types in that category.
-
     // Each key here indicates the form element to apply the value to.
     // It can be either the id, name, label, or value of the form element.
     $input = [
@@ -240,15 +243,15 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
 
     // Step  1c: Actually indicate the name/label of our new field.
     $input = [
-      // Machine name is a hidden input where the input name=field_name
+      // Machine name is a hidden input where the input name=field_name.
       'field_name' => $details['name'],
-      // Field label is an input where the name=label
+      // Field label is an input where the name=label.
       'label' => $details['label'],
     ];
     $this->submitForm($input, 'Continue');
 
     // Step 2: Fill in the Storage settings
-    // -- Confirm the field label is set from the previous step
+    // -- Confirm the field label is set from the previous step.
     $this->assertSession()->fieldValueEquals('label', $details['label']);
     // -- Confirm the select list for base table is disabled and set properly.
     $base_table_select = 'field_storage[subform][settings][storage_plugin_settings][base_table]';
@@ -274,4 +277,5 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     // Finally assert the field exists on the overview.
     $this->assertFieldExistsOnOverview($details['label']);
   }
+
 }

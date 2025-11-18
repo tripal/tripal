@@ -3,6 +3,7 @@
 namespace Drupal\tripal_chado\Plugin\TripalBackendPublish;
 
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalBackendPublish\Attribute\TripalBackendPublish;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
@@ -18,6 +19,8 @@ use Drupal\tripal\TripalStorage\StoragePropertyValue;
   description: new TranslatableMarkup('Creates Tripal content based on records in a chado database.'),
 )]
 class ChadoPublish extends TripalBackendPublishBase {
+
+  use StringTranslationTrait;
 
   /**
    * The base table of the bundle.
@@ -217,13 +220,13 @@ class ChadoPublish extends TripalBackendPublishBase {
                             . ', expected 4, found ' . count($cols);
                 return $errormsg;
               }
-            }
-            // The columns are:
-            // bundle_name(not used), chado_table, pkey_id, entity_id.
-            $this->migration_data[$cols[1]][$cols[2]] = $cols[3];
-            $n_records++;
-            if ($cols[3] > $this->max_migrated_entity_id) {
-              $this->max_migrated_entity_id = $cols[3];
+              // The columns are:
+              // bundle_name(not used), chado_table, pkey_id, entity_id.
+              $this->migration_data[$cols[1]][$cols[2]] = $cols[3];
+              $n_records++;
+              if ($cols[3] > $this->max_migrated_entity_id) {
+                $this->max_migrated_entity_id = $cols[3];
+              }
             }
           }
         }
@@ -369,7 +372,7 @@ class ChadoPublish extends TripalBackendPublishBase {
           ];
 
           // Store the main properties for later.
-          $main_property_name = $instance->mainPropertyName();
+          $main_property_name = $instance->mainDisplayPropertyName();
           $this->main_property_names[$field_name] = $main_property_name;
 
           // Order the property types by key for easy lookup.
@@ -448,7 +451,7 @@ class ChadoPublish extends TripalBackendPublishBase {
         /** @var \Drupal\tripal\TripalField\TripalFieldItemBase $field */
         /** @var \Drupal\tripal\TripalStorage\StoragePropertyBase $prop **/
         $field = $this->field_info[$field_name]['instance'];
-        $main_prop = $field->mainPropertyName();
+        $main_prop = $field->mainDisplayPropertyName();
         $prop = $field_info['prop_types'][$main_prop];
         $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
             $field_class::$id, $main_prop, $prop->getTerm()->getTermId(), NULL);
