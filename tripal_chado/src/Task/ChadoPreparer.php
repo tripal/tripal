@@ -911,19 +911,19 @@ class ChadoPreparer extends ChadoTaskBase {
       // cellular_component, external, and molecular_function.
       'vocabulary' => $this->getVocabulary('gene_ontology'),
       'idSpace' => $this->getIdSpace('GO'),
-      'path' => 'http://purl.obolibrary.org/obo/go.obo',
+      'path' => 'http://purl.obolibrary.org/obo/go.obo||{tripal_chado}/files/go.obo',
       'auto_load' => FALSE,
     ];
     $ontologies[] = [
       'vocabulary' => $this->getVocabulary('sequence'),
       'idSpace' => $this->getIdSpace('SO'),
-      'path' => 'http://purl.obolibrary.org/obo/so.obo',
+      'path' => 'http://purl.obolibrary.org/obo/so.obo||{tripal_chado}/files/so.obo',
       'auto_load' => TRUE,
     ];
     $ontologies[] = [
       'vocabulary' => $this->getVocabulary('taxonomic_rank'),
       'idSpace' => $this->getIdSpace('TAXRANK'),
-      'path' => 'http://purl.obolibrary.org/obo/taxrank.obo',
+      'path' => 'http://purl.obolibrary.org/obo/taxrank.obo||{tripal_chado}/files/taxrank.obo',
       'auto_load' => TRUE,
     ];
     $ontologies[] = [
