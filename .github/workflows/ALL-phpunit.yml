@@ -96,10 +96,14 @@ jobs:
           docker exec tripaldocker service postgresql restart
           docker exec tripaldocker bash -c 'export drupalversion="'${{ matrix.drupal-version }}'"; \
             if $(dpkg --compare-versions "${drupalversion}" "le" "10.9"); then \
-            echo "Drupal version is ${drupalversion}, copying phpunit config for 10.x" \
-            && mv web/modules/contrib/tripal/phpunit.xml web/modules/contrib/tripal/phpunit.10.5.xml \
+            echo "Drupal version is ${drupalversion}, copying config for phpunit 9" \
+            && mv web/modules/contrib/tripal/phpunit.xml web/modules/contrib/tripal/phpunit.11.xml \
             && mv web/modules/contrib/tripal/phpunit.9.6.xml web/modules/contrib/tripal/phpunit.xml; \
-            else echo "Drupal version is ${drupalversion}, using default phpunit config for 11.x"; fi'
+            elif $(dpkg --compare-versions "${drupalversion}" "le" "11.1"); then \
+            echo "Drupal version is ${drupalversion}, copying config for phpunit 10" \
+            && mv web/modules/contrib/tripal/phpunit.xml web/modules/contrib/tripal/phpunit.11.xml \
+            && mv web/modules/contrib/tripal/phpunit.10.xml web/modules/contrib/tripal/phpunit.xml; \
+            else echo "Drupal version is ${drupalversion}, using config for phpunit 11"; fi'
       # Runs the PHPUnit tests.
       - name: 'Run PHPUnit Tests'
         run: |
