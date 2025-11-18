@@ -907,7 +907,9 @@ class ChadoPreparer extends ChadoTaskBase {
       'auto_load' => FALSE,
     ];
     $ontologies[] = [
-      'vocabulary' => $this->getVocabulary('cellular_component'),
+      // This obo file also includes namepaces: biological_process,
+      // cellular_component, external, and molecular_function.
+      'vocabulary' => $this->getVocabulary('gene_ontology'),
       'idSpace' => $this->getIdSpace('GO'),
       'path' => 'http://purl.obolibrary.org/obo/go.obo',
       'auto_load' => FALSE,
