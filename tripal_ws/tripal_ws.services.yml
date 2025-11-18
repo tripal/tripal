@@ -1,0 +1,5 @@
+services:
+  tripal_ws.link_header_subscriber:
+    class: 'Drupal\tripal_ws\EventSubscriber\LinkHeaderSubscriber'
+    tags:
+      - { name: 'event_subscriber' }

@@ -4,3 +4,33 @@
  * @file
  * Primary module hooks for Tripal Webservices module.
  */
+
+/**
+ * Add a LINK to the page's 'head' section specifying the location
+ * of Tripal's Webservices, as documented by the WC3 Hydra documentation
+ */
+function tripal_ws_page_attachments(array &$attachments) {
+  global $base_url;
+  $api_url = $base_url . '/web-services/';
+
+  // Get vocabulary for Hydra
+  $vocab = tripal_get_vocabulary_details('hydra');
+  if (is_array($vocab)) {
+    $attachments['#attached']['html_head_link'][] = [
+      [
+        'rel' => $vocab['sw_url'] . 'apiDocumentation',
+        'href' => $api_url . '/doc/v0.1',
+        // Add other attributes as needed.
+      ],
+      TRUE,
+    ];
+  }
+  else {
+    $attachments['#attached']['html_head_link'][] = [
+      [
+        'rel' => 'test',
+        'href' => $api_url
+      ]
+    ];
+  }
+}

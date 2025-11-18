@@ -5,3 +5,10 @@ tripal_ws.settings_form:
     _form: 'Drupal\tripal_ws\Form\TripalWsSettingsForm'
   requirements:
     _permission: 'administer tripal_ws'
+tripal_ws.web_services:
+  path: '/web-services'
+  defaults:
+    _title: 'Tripal Webservices'
+    _controller: '\Drupal\tripal_ws\Controller\WebServices::get_services'
+  requirements:
+    _permission: 'access content'
