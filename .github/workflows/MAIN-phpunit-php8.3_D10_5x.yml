@@ -5,8 +5,7 @@ on:
   push:
     branches:
       - '4.x'
-      - 'tv4g0-2208-codeclimateToQltyCloud'
-      - 'tv4g9-issue2170-wrong-config-drupal-10.x-dockers'
+      - 'tv4g0-issue2247-support-php-8.4'
   # Allows us to schedule when this workflow is run.
   # This ensures we pick up any new changes in Drupal.
   schedule:

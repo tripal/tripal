@@ -2,10 +2,13 @@
 
 namespace Drupal\Tests\tripal\Kernel\Services\TripalEntityTypeCollection;
 
+use Drupal\tripal\Services\TripalLogger;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
+use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use PHPUnit\Framework\Attributes\Group;
-
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Focused on testing the validate() method.
@@ -14,11 +17,10 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Content
  * @group TripalEntityTypeCollection
  */
-#[Group('Tripal')]
-#[Group('Tripal Content')]
-#[Group('TripalEntityTypeCollection')]
+#[Group('tripal-content')]
+#[group('service-collection')]
+#[RunTestsInSeparateProcesses]
 class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
-
 
   /**
    * {@inheritdoc}
@@ -27,6 +29,7 @@ class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
 
   /**
    * A dummy Tripal Term.
+   *
    * NOTE: This is a dummy object so any methods called on it will return NULL.
    *
    * @var array of \Drupal\tripal\TripalVocabTerms\TripalTerm
@@ -35,13 +38,14 @@ class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
 
   /**
    * A dummy Tripal ID Space.
+   *
    * NOTE: This is a dummy object so any methods called on it will return NULL.
    *
    * @var \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase
    */
   protected object $mock_idspace;
 
-    /**
+  /**
    * {@inheritdoc}
    */
   protected function setUp() :void {
@@ -58,9 +62,9 @@ class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
     $this->prepareEnvironment(['TripalEntity']);
 
     // We need a term for property types so we will create a generic mocked one
-    // here which will be pulled from the container any time a term is requested.
+    // which will be pulled from the container any time a term is requested.
     // -- valid organism term.
-    $mock_term = $this->createMock(\Drupal\tripal\TripalVocabTerms\TripalTerm::class);
+    $mock_term = $this->createMock(TripalTerm::class);
     $mock_term->method('getName')
       ->willReturn('organism');
     $mock_term->method('getIdSpace')
@@ -73,7 +77,7 @@ class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
       ->willReturn(TRUE);
     $this->mock_terms['organism'] = $mock_term;
     // Invalid term with missing name.
-    $mock_term = $this->createMock(\Drupal\tripal\TripalVocabTerms\TripalTerm::class);
+    $mock_term = $this->createMock(TripalTerm::class);
     $mock_term->method('getName')
       ->willReturn('');
     $mock_term->method('getIdSpace')
@@ -87,9 +91,9 @@ class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
     $this->mock_terms['invalidTerm'] = $mock_term;
 
     // Create a mock ID space to return our mock term when asked.
-    $this->mock_idspace = $this->createMock(\Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface::class);
+    $this->mock_idspace = $this->createMock(TripalIdSpaceInterface::class);
     $this->mock_idspace->method('getTerm')
-      ->willReturnCallback(function($accession) {
+      ->willReturnCallback(function ($accession) {
         if (array_key_exists($accession, $this->mock_terms)) {
           return $this->mock_terms[$accession];
         }
@@ -97,10 +101,10 @@ class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
           return NULL;
         }
       });
-    // Create a mock Tripal ID Space service to return our mock idspace when asked.
-    $mock_idspace_service = $this->createMock(\Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager::class);
+    // Create a mock Tripal ID Space service to return our mock idspace.
+    $mock_idspace_service = $this->createMock(TripalIdSpaceManager::class);
     $mock_idspace_service->method('loadCollection')
-      ->willReturnCallback(function($id_space) {
+      ->willReturnCallback(function ($id_space) {
         if ($id_space == 'mock') {
           return $this->mock_idspace;
         }
@@ -110,11 +114,11 @@ class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
       });
     $container->set('tripal.collection_plugin_manager.idspace', $mock_idspace_service);
 
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['error'])
       ->getMock();
     $mock_logger->method('error')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
@@ -139,7 +143,7 @@ class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
       'id' => 'organism',
       'title_format' => "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]",
       'url_format' => "organism/[TripalEntity__entity_id]",
-      'synonyms' => ['bio_data_1']
+      'synonyms' => ['bio_data_1'],
     ];
 
     $content_type_service = \Drupal::service('tripal.tripalentitytype_collection');
@@ -226,7 +230,7 @@ class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
 
     // -- pass in a random object instead of a tripal term.
     $bad = $good;
-    $bad['term'] = (object) array('foo' => 'bar');
+    $bad['term'] = (object) ['foo' => 'bar'];
     ob_start();
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition with a non TripalTerm object as the term should fail the validation check but it passed.");
@@ -238,7 +242,7 @@ class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
 
     // -- pass in a optional synonyms but they are not an array.
     $bad = $good;
-    $bad['synonyms'] = (object) array('syn1', 'syn2', 'syn3');
+    $bad['synonyms'] = (object) ['syn1', 'syn2', 'syn3'];
     ob_start();
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition with synonyms specified in the wrong format should fail the validation check but it passed.");
@@ -248,4 +252,5 @@ class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
     $this->assertStringContainsString('synonyms should be an array', $printed_output,
       "The user should be told why their content type wasn't created.");
   }
+
 }

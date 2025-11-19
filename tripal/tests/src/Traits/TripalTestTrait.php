@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\Tests\tripal\Traits;
 
 use Drupal\tripal\Entity\TripalEntity;
@@ -6,13 +7,13 @@ use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\TripalVocabTerms\Interfaces\TripalVocabularyInterface;
 use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Provides functions related to setting up Tripal test environments
  * and can be used in either Kernel or Functional tests.
- *
- *
  */
+#[Group('tripal-testing')]
 trait TripalTestTrait {
 
   /**
@@ -28,6 +29,7 @@ trait TripalTestTrait {
    *    - is_required (boolean)
    *    - cardinality (integer)
    *    - storage_settings (array)
+   *
    * @return array
    *   The field details used to create the field.
    */
@@ -98,7 +100,8 @@ trait TripalTestTrait {
    *        - name (string)
    *        - definition (string)
    *        - accession (string)
-   * @return TripalTerm
+   *
+   * @return \Drupal\tripal\TripalVocabTerms\TripalTerm
    *   Returns the tripal term that was created.
    */
   public function createTripalTerm(&$values, $idspace_plugin_id, $vocab_plugin_id) {
@@ -111,7 +114,7 @@ trait TripalTestTrait {
     $values['vocab_name'] = $values['vocab_name'] ?? $random->sentences(4, TRUE);
     // Provides a 4 character string.
     $values['id_space_name'] = $values['id_space_name'] ?? $random->word(4);
-    $values['term'] = $values['term'] ?? array();
+    $values['term'] = $values['term'] ?? [];
     // Provides a unique string with ~8 characters.
     $values['term']['accession'] = $values['term']['accession'] ?? $random->name(8, TRUE);
     // Provides a title with ~2 latin capitalized words.
@@ -145,7 +148,7 @@ trait TripalTestTrait {
       $values['term']['vocabulary'] = $values['vocab_name'];
       $term = new TripalTerm($values['term']);
       $this->assertInstanceOf(TripalTerm::class, $term, "Unable to create the term object.");
-      // and save it to the ID Space.
+      // And save it to the ID Space.
       $idSpace->saveTerm($term);
     }
 
@@ -170,7 +173,7 @@ trait TripalTestTrait {
    *    - user_id (integer)
    *    - status (boolean; TRUE if published)
    *
-   * @return TripalEntity
+   * @return \Drupal\tripal\Entity\TripalEntity
    *   The Tripal Entity object that was created based off the parameters.
    */
   public function createTripalContent($values = []) {
@@ -189,7 +192,7 @@ trait TripalTestTrait {
       $values['type'] = $content_type->id();
     }
 
-    $entity = \Drupal\tripal\Entity\TripalEntity::create($values);
+    $entity = TripalEntity::create($values);
     $this->assertIsObject($entity, "Unable to create a test entity.");
 
     return $entity;
@@ -219,7 +222,7 @@ trait TripalTestTrait {
    *    -     hide_empty_field (boolean)
    *    -     ajax_field (boolean)
    *
-   * @return TripalEntityType
+   * @return \Drupal\tripal\Entity\TripalEntityType
    *   The Tripal content type that was created based on the parameters.
    */
   public function createTripalContentType($values = []) {
@@ -229,8 +232,8 @@ trait TripalTestTrait {
     // Setting the default values:
     $random = $this->getRandomGenerator();
     // Provides a title with ~3 latin capitalized words.
-    $values['label'] = $values['label'] ?? $random->sentences(3,TRUE);
-    $values['id'] = $values['id'] ?? $random->sentences(1,TRUE);
+    $values['label'] = $values['label'] ?? $random->sentences(3, TRUE);
+    $values['id'] = $values['id'] ?? $random->sentences(1, TRUE);
     // Provides a random non-unique 4 character string.
     $values['termIdSpace'] = $values['termIdSpace'] ?? $random->string(4);
     // Provides a random non-unique 10 character string.
@@ -244,7 +247,7 @@ trait TripalTestTrait {
     $values['ajax_field'] = $values['ajax_field'] ?? FALSE;
 
     // Actually creating the type.
-    $entity_type_obj = \Drupal\tripal\Entity\TripalEntityType::create($values);
+    $entity_type_obj = TripalEntityType::create($values);
     $this->assertIsObject($entity_type_obj, "Unable to create a test content type.");
     $entity_type_obj->save();
 
@@ -264,9 +267,9 @@ trait TripalTestTrait {
    * @param string $content_type_id
    *   The id of the content type to create. It must exist in the specified YAML.
    * @param bool $createTerms
-   *   Not implemented
+   *   Not implemented.
    *
-   * @return integer
+   * @return int
    *   The return value is 1 if everything went well and 2 if the content type
    *   was created but the fields were not due to a missing config with matching
    *   id. If the content type was not created then PHPUnit asserts fail.
@@ -283,7 +286,7 @@ trait TripalTestTrait {
     // FIRST THE CONTENT TYPE.
     $yaml_contentTypes = 'tripal.tripalentitytype_collection.' . $config_id;
 
-    // check that config is installed.
+    // Check that config is installed.
     $config = $config_factory->get($yaml_contentTypes);
     $this->assertIsObject($config,
       'You need to have called $this->installConfig for the module containing the configuration for the content type you want to use in this test.');
@@ -293,23 +296,23 @@ trait TripalTestTrait {
 
     foreach ($specific_config as $content_type) {
 
-      if (!array_key_exists('id', $content_type) OR $content_type['id'] != $content_type_id) {
+      if (!array_key_exists('id', $content_type) or $content_type['id'] != $content_type_id) {
         continue;
       }
 
-      list($termIdSpace, $termAccession) = explode(':', $content_type['term']);
+      [$termIdSpace, $termAccession] = explode(':', $content_type['term']);
       $idspace = $idsmanager->loadCollection($termIdSpace);
       $this->assertIsObject($idspace, "We were not able to get the id space " . $termIdSpace);
-      $term =  $idspace->getTerm($termAccession);
+      $term = $idspace->getTerm($termAccession);
       $this->assertIsObject($term, "We were not able to get the term " . $content_type['term']);
       $content_type['term'] = $term;
 
-      // Add the content type
+      // Add the content type.
       $added_content_type = $content_type_service->createContentType($content_type);
       $this->assertIsObject($added_content_type,
         "We were not able to create the $content_type_id content type in the testing environment.");
 
-      // Set the third party setting for base table
+      // Set the third party setting for base table.
       $base_table = $content_type['settings']['chado_base_table'] ?? NULL;
       $this->assertNotNull($base_table, "There is no YAML base table setting for content type $content_type_id");
       $entity_type = $storage->load($content_type_id);
@@ -319,10 +322,10 @@ trait TripalTestTrait {
       $this->assertEquals($base_table, $table, "We did not retrieve the correct third party base table setting for $content_type_id");
     }
 
-    // NOW THE FIELDS
+    // NOW THE FIELDS.
     $yaml_fields = 'tripal.tripalfield_collection.' . $config_id;
 
-    // check that config is installed.
+    // Check that config is installed.
     $config = $config_factory->get($yaml_fields);
     if (!is_object($config)) {
       return 2;
@@ -333,7 +336,7 @@ trait TripalTestTrait {
     }
 
     foreach ($specific_config as $field) {
-      if (array_key_exists('content_type', $field) AND $field['content_type'] === $content_type_id) {
+      if (array_key_exists('content_type', $field) and $field['content_type'] === $content_type_id) {
         // @debug print "\nAdding Field to Bundle: " . print_r($field,TRUE);
         $field_service->addBundleField($field);
       }
@@ -342,7 +345,6 @@ trait TripalTestTrait {
     return 1;
   }
 
-
   /**
    * Warns test developers if they are missing required modules in a kernel test.
    *
@@ -350,15 +352,16 @@ trait TripalTestTrait {
    * and complicate debugging kernel tests.
    *
    * @param array $functionality
-   *  A list of functionality you need to support. Although this method handles
-   *  dependencies, you should include all items in the supported keys below
-   *  that you need. This is because in some cases you will want to mock rather
-   *  then include in your kernel tests and this way, this method supports that.
-   *  Supported keys are:
+   *   A list of functionality you need to support. Although this method handles
+   *   dependencies, you should include all items in the supported keys below
+   *   that you need. This is because in some cases you will want to mock rather
+   *   then include in your kernel tests and this way, this method supports that.
+   *   Supported keys are:
    *   - TripalTerm
    *   - TripalEntity
    *   - TripalField
-   *   - TripalImporter
+   *   - TripalImporter.
+   *
    * @return void
    */
   protected function suggestRequiredModules(array $functionality) {
@@ -401,4 +404,5 @@ trait TripalTestTrait {
     $modules_array_code = 'protected static $modules = [\'' . implode("','", $suggested_modules) . '\'];';
     $this->assertEmpty($missing_modules, 'You are missing some modules in your static $modules array. For the functionality you requested, we suggest the following: ' . $modules_array_code);
   }
+
 }
