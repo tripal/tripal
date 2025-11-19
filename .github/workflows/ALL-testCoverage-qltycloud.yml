@@ -1,4 +1,4 @@
-name: 'Test Coverage on Drupal 11.1.x-dev + PHP 8.3'
+name: 'Test Coverage on Drupal 11.2.x-dev + PHP 8.3'
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
         run: |
           docker build --tag=tripaldocker:localdocker \
             --build-arg phpversion='8.4' \
-            --build-arg drupalversion='11.1.x-dev' \
+            --build-arg drupalversion='11.2.x-dev' \
             --build-arg postgresqlversion='17' \
             --build-arg chadoschema='teacup' ./
       # Just spin up docker the good ol' fashion way.

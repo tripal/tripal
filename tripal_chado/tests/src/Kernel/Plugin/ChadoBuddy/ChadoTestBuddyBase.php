@@ -9,11 +9,27 @@ use Drupal\tripal_chado\Database\ChadoConnection;
  * Tests the Chado Property Buddy.
  */
 abstract class ChadoTestBuddyBase extends ChadoTestKernelBase {
+
+  /**
+   * The default theme to use for this test.
+   *
+   * @var string
+   */
   protected $defaultTheme = 'stark';
 
-  protected ChadoConnection $connection;
-
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
   protected static $modules = ['system', 'user', 'file', 'tripal', 'tripal_chado'];
+
+  /**
+   * The database connection to the test chado.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected ChadoConnection $connection;
 
   /**
    * Performs a set of basic assertions for a chado buddy function.
@@ -28,7 +44,8 @@ abstract class ChadoTestBuddyBase extends ChadoTestKernelBase {
    * @param string $pkey
    *   The primary key to check in the returned values, e.g. 'cv.cv_id'.
    * @param array $description
-   *   Describes the buddy in assertions, e.g. 'db "local"', 'property "prop001"'.
+   *   Describes the buddy in assertions,
+   *   e.g. 'db "local"', 'property "prop001"'.
    * @param int $count
    *   The expected number of values.
    *
