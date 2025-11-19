@@ -191,7 +191,8 @@ trait ChadoFieldTestTrait {
     // -- we need the chado term mapping for our properties.
     $this->installEntitySchema('chado_term_mapping');
     // -- we need access to the core term mappings.
-    tripal_chado_rebuild_chado_term_mappings();
+    $rebuild_service = \Drupal::service('tripal_chado.rebuild_service');
+    $rebuild_service->rebuildChadoTermMappings();
 
     // If information about the environment to be setup was provided, then we
     // will set it up for them :-).
