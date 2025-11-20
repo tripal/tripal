@@ -33,7 +33,7 @@ class TripalAccessOwnContentCheck implements AccessInterface {
    */
   public function access(UserInterface $user, AccountInterface $account) {
 
-    // First check that the account requesting access matches the user in the path.
+    // Check that the account requesting access matches the user in the path.
     $slug_uid = $user->id();
     $requesting_uid = $account->id();
     if ($slug_uid === $requesting_uid) {
@@ -41,7 +41,6 @@ class TripalAccessOwnContentCheck implements AccessInterface {
     }
 
     return AccessResult::forbidden();
-    // Return ($account->hasPermission('administer tripal') && $this->someOtherCustomCondition()) ? AccessResult::allowed() : AccessResult::forbidden();
   }
 
 }
