@@ -6,6 +6,7 @@
 
 use Drupal\Core\Database\ConnectionNotDefinedException;
 use \Drupal\Core\Database\Database;
+use Drupal\user\Entity\Role;
 
 /**
  * Implementation of hook_install().
@@ -32,6 +33,29 @@ function tripal_install() {
       'label' => t('Data Search'),
       'description' => t('The Data Search menu contains links to search tools for finding biological data.'),
     ])->save();
+  }
+
+  // Load the anonymous role.
+  $anonymous_role = Role::load('anonymous');
+
+  // Load all Tripal entity types.
+  $entity_types = \Drupal::service('entity_type.manager')
+    ->getStorage('tripal_entity_type')
+    ->loadByProperties([]);
+
+  // Build the permissions to grant.
+  $permissions_to_grant = [];
+  foreach ($entity_types as $entity_type) {
+    $entity_id = $entity_type->id();
+    $permissions_to_grant[] = "view all $entity_id content";
+  }
+
+  // Grant the permissions to the anonymous role.
+  if ($anonymous_role) {
+    foreach ($permissions_to_grant as $permission) {
+      $anonymous_role->grantPermission($permission);
+    }
+    $anonymous_role->save();
   }
 }
 
@@ -1068,5 +1092,35 @@ function tripal_update_10403() {
       'label' => t('Data Search'),
       'description' => t('The Data Search menu contains links to search tools for finding biological data.'),
     ])->save();
+  }
+}
+
+/**
+ * Implements hook_update_10404().
+ *
+ * Updates hook to grant new permissions to anonymous users.
+ */
+function tripal_update_10404() {
+  // Load the anonymous role.
+  $anonymous_role = Role::load('anonymous');
+
+  // Load all Tripal entity types.
+  $entity_types = \Drupal::service('entity_type.manager')
+    ->getStorage('tripal_entity_type')
+    ->loadByProperties([]);
+
+  // Build the permissions to grant.
+  $permissions_to_grant = [];
+  foreach ($entity_types as $entity_type) {
+    $entity_id = $entity_type->id();
+    $permissions_to_grant[] = "view all $entity_id content";
+  }
+
+  // Grant the permissions to the anonymous role.
+  if ($anonymous_role) {
+    foreach ($permissions_to_grant as $permission) {
+      $anonymous_role->grantPermission($permission);
+    }
+    $anonymous_role->save();
   }
 }
