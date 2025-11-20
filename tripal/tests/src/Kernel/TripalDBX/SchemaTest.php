@@ -612,8 +612,6 @@ on multiple lines.';
 ";
     $table_ddl = $scmock->getTableDdl('testtable');
     $this->assertNotEmpty($table_ddl, 'Got a table DDL.');
-#print "CP4 expected ";var_dump($expected);//@@@
-#print "CP5 actual ";var_dump($table_ddl);//@@@
     $this->assertEquals($expected, $table_ddl, 'Table DDL ok.');
 
     // Schema renaming.
