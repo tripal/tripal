@@ -11,7 +11,6 @@ use Drupal\Core\Hook\Attribute\LegacyHook;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\tripal\Services\TripalJob;
 use Drupal\user\Entity\User;
-use Drupal\views\ViewExecutable;
 
 require_once 'src/api/tripal.api.php';
 require_once 'src/api/tripal.entities.api.php';
@@ -379,17 +378,6 @@ function tripal_preprocess_field(&$variables) {
 #[LegacyHook]
 function tripal_gin_content_form_routes() {
   return \Drupal::service('tripal.hooks')->ginContentFormRoutes();
-}
-
-/**
- * Implements hook_views_pre_view().
- *
- * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
- */
-#[LegacyHook]
-function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
-  return \Drupal::service('tripal.views_hooks')->viewsPreView($view, $display_id, $args);
 }
 
 /**
