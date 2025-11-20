@@ -25,7 +25,7 @@ jobs:
           - '8.3'
           - '8.4'
         pgsql-version:
-          - '13'
+          - '14'
           - '17'
         drupal-version:
           - '10.4.x-dev'
@@ -49,16 +49,16 @@ jobs:
             drupal-version: '11.2.x-dev'
           # Drupal 11+ requires at least Postgresql 16.
           - php-version: '8.3'
-            pgsql-version: '13'
+            pgsql-version: '14'
             drupal-version: '11.1.x-dev'
           - php-version: '8.4'
-            pgsql-version: '13'
+            pgsql-version: '14'
             drupal-version: '11.1.x-dev'
           - php-version: '8.3'
-            pgsql-version: '13'
+            pgsql-version: '14'
             drupal-version: '11.2.x-dev'
           - php-version: '8.4'
-            pgsql-version: '13'
+            pgsql-version: '14'
             drupal-version: '11.2.x-dev'
           # Exclude higher postgresql version from middle Drupal versions
           # This is done to reduce combinations; higher postgresql version
