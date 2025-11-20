@@ -6,7 +6,7 @@
 
 ![Target Drupal Version 11.2.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-11.2.x-informational)
 
-Tested on ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success) - ![PostgreSQL 17](https://img.shields.io/badge/PostreSQL-17-success)
+Tested on ![PostgreSQL 14](https://img.shields.io/badge/PostreSQL-14-success) - ![PostgreSQL 17](https://img.shields.io/badge/PostreSQL-17-success)
 
 The following table proves the compatibility for the current development version of Tripal.
 
