@@ -87,9 +87,7 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
     $taxonomy_importer->prepareFiles();
     $taxonomy_importer->run();
     $taxonomy_importer->postRun();
-    if ($this->mock_error) {
-      $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
-    }
+    $this->checkForNetworkError();
 
     // Check if Arabidopsis thaliana retrieved by tax_id 3702 from NCBI and organism created.
     $results = $chado->query("SELECT count(*) as c1 FROM {1:organism}
@@ -107,9 +105,7 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
     $taxonomy_importer->prepareFiles();
     $taxonomy_importer->run();
     $taxonomy_importer->postRun();
-    if ($this->mock_error) {
-      $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
-    }
+    $this->checkForNetworkError();
 
     $results = $chado->query("SELECT count(*) as c2 FROM {1:organism} O
         LEFT JOIN {1:organismprop} P ON O.organism_id=P.organism_id
@@ -127,6 +123,18 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
     $results_object = $results->fetchObject();
     $this->assertEquals(38785, $results_object->accession,
         'An incorrect NCBI Taxid value was retrieved from NCBI for Arabidopsis arenosa');
+  }
+
+  /**
+   * Mark test skipped when NCBI is down.
+   */
+  protected function checkForNetworkError() {
+    if ($this->mock_error) {
+      if (preg_match('/Error contacting NCBI/', $this->mock_error) || preg_match('/Invalid XML returned/', $this->mock_error)) {
+        $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
+      }
+    }
+    $this->assertEmpty($this->mock_error, 'Unexpected error: ' . $this->mock_error);
   }
 
 }
