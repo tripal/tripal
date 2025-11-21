@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - '4.x'
-      - 'tv4g0-issue2247-support-php-8.4'
+      - 'tv4g0-issue2367-support-php-8.5'
   # Allows us to schedule when this workflow is run.
   # This ensures we pick up any new changes in Drupal.
   schedule:
@@ -16,7 +16,7 @@ permissions: read-all
 
 jobs:
   running-tests:
-    name: 'Drupal 10.5: PHP 8.1'
+    name: 'Drupal 11.2: PHP 8.5'
     runs-on: 'ubuntu-latest'
     steps:
       - name: 'Checkout Repository'
@@ -26,8 +26,7 @@ jobs:
         with:
           directory-name: 'tripal'
           modules: 'tripal tripal_biodb tripal_chado'
-          php-version: '8.1'
+          php-version: '8.5'
           pgsql-version: '18'
-          drupal-version: '10.5.x-dev'
+          drupal-version: '11.2.x-dev'
           build-image: true
-          phpunit-command-options: '-c /var/www/drupal/web/modules/contrib/tripal/phpunit.9.6.xml'

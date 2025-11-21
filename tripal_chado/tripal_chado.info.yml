@@ -2,7 +2,7 @@ name: 'Tripal Chado'
 type: 'module'
 description: 'Chado integration for Tripal.'
 core_version_requirement: '^10.4 || ^11.1'
-php: 8.1
+php: 8.2
 package: 'Tripal'
 version: '4.0.alpha4'
 dependencies:

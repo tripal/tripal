@@ -2,7 +2,7 @@ name: 'Tripal Layout'
 type: 'module'
 description: 'Auto generates layouts for Tripal entity types'
 core_version_requirement: '^10.4 || ^11.1'
-php: 8.1
+php: 8.2
 package: 'Tripal'
 version: '4.0.alpha4'
 dependencies:
