@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - '4.x'
-      - 'tv4g0-issue2367-support-php-8.5'
   # Allows us to manually trigger this workflow.
   # This is great if there is a change made to Tripal core that we want to test our modules on ASAP.
   workflow_dispatch:
