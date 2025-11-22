@@ -25,7 +25,7 @@ jobs:
           docker build --tag=tripaldocker:localdocker \
             --build-arg phpversion='8.4' \
             --build-arg drupalversion='11.2.x-dev' \
-            --build-arg postgresqlversion='17' \
+            --build-arg postgresqlversion='18' \
             --build-arg chadoschema='teacup' ./
       # Just spin up docker the good ol' fashion way.
       - name: 'Spin up Local Docker'

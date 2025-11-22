@@ -304,6 +304,9 @@ class SchemaTest extends TripalTestKernelBase {
     $scmock = $this->getTripalDbxSchemaMock($tdbx);
     $schema_name = $scmock->getSchemaName();
     $this->assertEquals($sch_1, $schema_name, 'Schema name set.');
+    $psql_version = $tdbx->version();
+    // Remove distro info, e.g. "13.22 (Debian 13.22-1.pgdg12+1)" -> "13.22".
+    $psql_version = preg_replace('/[^\d\.].*$/', '', $psql_version);
 
     // Check schema does not exist.
     $exists = $scmock->schemaExists();
@@ -560,11 +563,29 @@ class SchemaTest extends TripalTestKernelBase {
         'othertesttable' => ['id' => 'fk',],
       ],
     ];
+
+    // Postgresql 18 handles constraints a bit differently, so we will expect
+    // a few more items here.
+    if (version_compare($psql_version, '18.0') >= 0) {
+      $expected['constraints']['testtable_fieldbool_not_null'] = 'NOT NULL fieldbool';
+      $expected['constraints']['testtable_fieldtext_not_null'] = 'NOT NULL fieldtext';
+      $expected['constraints']['testtable_id_not_null'] = 'NOT NULL id';
+    }
+
     $this->assertEquals(
       $expected,
       $table_def,
       'Table definition ok.'
     );
+
+    // Again a few more items expected under postgresql 18.
+    $extra_if_18 = '';
+    if (version_compare($psql_version, '18.0') >= 0) {
+      $extra_if_18 = ",
+  CONSTRAINT testtable_fieldbool_not_null NOT NULL fieldbool,
+  CONSTRAINT testtable_fieldtext_not_null NOT NULL fieldtext,
+  CONSTRAINT testtable_id_not_null NOT NULL id";
+    }
 
     // DDL.
     $expected =
@@ -581,7 +602,7 @@ class SchemaTest extends TripalTestKernelBase {
   fieldbytea bytea NULL DEFAULT 'x'::bytea,
   CONSTRAINT testtable_pkey PRIMARY KEY (id),
   CONSTRAINT testtable_c1 UNIQUE (fieldbigint, fieldsmallint),
-  CONSTRAINT testtable_foreign_id_fkey FOREIGN KEY (foreign_id) REFERENCES othertesttable(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED
+  CONSTRAINT testtable_foreign_id_fkey FOREIGN KEY (foreign_id) REFERENCES othertesttable(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED$extra_if_18
 );
 CREATE UNIQUE INDEX testtable_c1 ON $test_schema.testtable USING btree (fieldbigint, fieldsmallint);
 CREATE UNIQUE INDEX testtable_c2 ON $test_schema.testtable USING btree (fieldbigint, fieldsmallint);
