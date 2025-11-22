@@ -76,7 +76,7 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
       'schema_name' => $schema_name,
       'taxonomy_ids' => '3702',
       'use_transaction' => 1,
-      'import_existing' => 1,
+      'import_existing' => 0,
       'ncbi_api_key' => NULL,
     ];
 
@@ -87,9 +87,7 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
     $taxonomy_importer->prepareFiles();
     $taxonomy_importer->run();
     $taxonomy_importer->postRun();
-    if ($this->mock_error) {
-      $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
-    }
+    $this->checkForNetworkError();
 
     // Check if Arabidopsis thaliana retrieved by tax_id 3702 from NCBI and organism created.
     $results = $chado->query("SELECT count(*) as c1 FROM {1:organism}
@@ -100,6 +98,15 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
 
     // Test import_existing, check if Arabidopsis arenosa
     // lineageex property was looked up from NCBI.
+    $run_args['taxonomy_ids'] = '';
+    $run_args['import_existing'] = 1;
+    $this->mock_error = '';
+    $taxonomy_importer->createImportJob($run_args, $file_details);
+    $taxonomy_importer->prepareFiles();
+    $taxonomy_importer->run();
+    $taxonomy_importer->postRun();
+    $this->checkForNetworkError();
+
     $results = $chado->query("SELECT count(*) as c2 FROM {1:organism} O
         LEFT JOIN {1:organismprop} P ON O.organism_id=P.organism_id
         LEFT JOIN {1:cvterm} T ON P.type_id=T.cvterm_id
@@ -116,6 +123,18 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
     $results_object = $results->fetchObject();
     $this->assertEquals(38785, $results_object->accession,
         'An incorrect NCBI Taxid value was retrieved from NCBI for Arabidopsis arenosa');
+  }
+
+  /**
+   * Mark test skipped when NCBI is down.
+   */
+  protected function checkForNetworkError() {
+    if ($this->mock_error) {
+      if (preg_match('/Error contacting NCBI/', $this->mock_error) || preg_match('/Invalid XML returned/', $this->mock_error)) {
+        $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
+      }
+    }
+    $this->assertEmpty($this->mock_error, 'Unexpected error: ' . $this->mock_error);
   }
 
 }
