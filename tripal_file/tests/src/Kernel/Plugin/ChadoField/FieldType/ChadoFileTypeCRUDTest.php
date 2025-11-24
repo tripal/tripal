@@ -287,8 +287,8 @@ class ChadoFileTypeCRUDTest extends ChadoTestKernelBase {
     ] + $current_scenario['create']['user_input']);
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
     $status = $entity->save();
-    $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
     // @debug print_r($entity->toArray());
+    $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
 
     // 2. Load the entity we just created so we can check the values.
     $created_entity = TripalEntity::load($entity->id());

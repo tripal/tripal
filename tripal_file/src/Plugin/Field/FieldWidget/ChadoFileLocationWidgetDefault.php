@@ -70,7 +70,7 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $linker_id,
     ];
-// @todo issue with layout https://www.drupal.org/project/drupal/issues/3519949
+    // @todo issue with layout https://www.drupal.org/project/drupal/issues/3519949
     $elements['fileloc_uri'] = [
       '#title' => $this->t('URI'),
       '#type' => 'textfield',
@@ -235,8 +235,8 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
             // @todo We could implement a way to move the uploaded file, using
             // a path supplied in $fileloc_uri which might even support tokens.
             // e.g. \Drupal::service('file.repository')
-            // ->move(FileInterface $source, $destination, $replace):
-            // Moves a managed file to a new location and updates its database entry.
+            // ->move(FileInterface $source, $destination, $replace): Moves
+            // a managed file to a new location and updates its database entry.
           }
           $values[$delta]['fileloc_uri'] = $managed_file_uri;
           $file->setPermanent();
@@ -485,4 +485,3 @@ class ChadoFileLocationWidgetDefault extends ChadoWidgetBase {
   }
 
 }
-

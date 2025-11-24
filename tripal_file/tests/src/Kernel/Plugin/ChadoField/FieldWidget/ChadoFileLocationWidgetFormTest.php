@@ -102,10 +102,11 @@ class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
    * @var string
    */
   protected string $bundle_name;
+
   /**
    * A file in the public:// space for testing.
    *
-   * @var File
+   * @var \Drupal\file\Entity\File
    */
   protected File $test_file;
 
@@ -186,7 +187,11 @@ class ChadoFileLocationWidgetFormTest extends ChadoTestKernelBase {
     // Create one license record in chado for testing (not published).
     $this->license_id = $this->chado_connection
       ->insert('1:license')
-      ->fields(['name' => 'Public Domain', 'summary' => 'You can do anything at zombo com', 'uri' => 'https://zombo.com'])
+      ->fields([
+        'name' => 'Public Domain',
+        'summary' => 'You can do anything at zombo com',
+        'uri' => 'https://zombo.com',
+      ])
       ->execute();
     $this->assertNotEmpty($this->license_id, 'Did not create license');
 

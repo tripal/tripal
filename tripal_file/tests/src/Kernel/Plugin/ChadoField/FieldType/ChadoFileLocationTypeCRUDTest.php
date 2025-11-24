@@ -174,7 +174,11 @@ class ChadoFileLocationTypeCRUDTest extends ChadoTestKernelBase {
     // Create one license record in chado for testing (not published).
     $this->license_id = $this->chado_connection
       ->insert('1:license')
-      ->fields(['name' => 'Public Domain', 'summary' => 'You can do anything at zombo com', 'uri' => 'https://zombo.com'])
+      ->fields([
+        'name' => 'Public Domain',
+        'summary' => 'You can do anything at zombo com',
+        'uri' => 'https://zombo.com',
+      ])
       ->execute();
     $this->assertNotEmpty($this->license_id, 'Did not create license');
   }
@@ -289,8 +293,8 @@ class ChadoFileLocationTypeCRUDTest extends ChadoTestKernelBase {
     ] + $current_scenario['create']['user_input']);
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
     $status = $entity->save();
-    $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
     // @debug print_r($entity->toArray());
+    $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
 
     // 2. Load the entity we just created so we can check the values.
     $created_entity = TripalEntity::load($entity->id());

@@ -1,6 +1,8 @@
 services:
   tripal_file.hooks:
     class: 'Drupal\tripal_file\Hook\TripalFileHooks'
+    arguments:
+      - '@tripal_file.rebuild_service'
   tripal_file.rebuild_service:
     class: 'Drupal\tripal_file\Services\TripalFileRebuildService'
     arguments:

@@ -13,6 +13,24 @@ class TripalFileHooks {
 
   use StringTranslationTrait;
 
+
+  /**
+   * The rebuild service for this module.
+   *
+   * @var \Drupal\tripal_file\Service\RebuildService
+   */
+  protected RebuildService $rebuildService;
+
+  /**
+   * Constructor.
+   *
+   * @param \Drupal\tripal_file\Service\RebuildService $rebuildService
+   *   The rebuild service for this module.
+   */
+  public function __construct(RebuildService $rebuildService) {
+    $this->rebuildService = $rebuildService;
+  }
+
   /**
    * Implements hook_help().
    */
@@ -34,7 +52,7 @@ class TripalFileHooks {
    */
   #[Hook('rebuild')]
   public function rebuild(): string {
-    \Drupal::service('tripal_file.rebuild_service')->executeRebuild();
+    $this->rebuildService->executeRebuild();
     // Return value of the module name is only used for phpunit tests.
     return 'tripal_file';
   }
@@ -42,11 +60,11 @@ class TripalFileHooks {
   /**
    * Implements hook_uninstall().
    *
-   * The hook_uninstall does not support attributes and must remain procedural.
+   * The hook uninstall does not support attributes and must remain procedural.
    */
-  public function tripal_file_uninstall() {
+  public function tripalFileUninstall() {
     // Delete the custom tables created by this module.
-    \Drupal::service('tripal_file.rebuild_service')->dropCustomChadoTables();
+    $this->rebuildService->dropCustomChadoTables();
   }
 
 }

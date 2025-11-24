@@ -71,13 +71,11 @@ function tripal_file_install() {
 /**
  * Implements hook_uninstall().
  *
- * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal_file\Hook\TripalFileHooks in
- * tripal_file/src/Hook/TripalFileHooks.php.
+ * The hook uninstall does not support attributes and must remain procedural.
  */
 function tripal_file_uninstall() {
   // Delete the custom tables created by this module.
-  \Drupal::service('tripal_file.hooks')->uninstall();
+  \Drupal::service('tripal_file.hooks')->tripalFileUninstall();
 }
 
 /**
