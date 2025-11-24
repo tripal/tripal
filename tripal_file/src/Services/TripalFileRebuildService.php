@@ -143,24 +143,7 @@ class TripalFileRebuildService {
             // Add the foreign key only for the type_id column.
             if ($column == 'type_id') {
               $fkey_name = $table_name . '_' . $column . '_fkey';
-              $sql = 'ALTER TABLE ' . $full_table_name
-                . ' ADD CONSTRAINT ' . $fkey_name . ' FOREIGN KEY (' . $column . ') REFERENCES cvterm(cvterm_id)';
-              $this->chado_connection->query($sql, []);
-
-              // Update the unique constraint to include type_id.
-              $ukeys = $new_schema['unique keys'] ?? [];
-              foreach ($ukeys as $uk_name => $uk_columns) {
-                $nnd = '';
-                if ($this->nullsNotDistinctSupported() && ($new_schema['nulls not distinct'] ?? FALSE)) {
-                  $nnd = ' NULLS NOT DISTINCT';
-                }
-
-                $sql = 'ALTER TABLE ' . $full_table_name . ' DROP CONSTRAINT IF EXISTS ' . $uk_name;
-                $this->chado_connection->query($sql, []);
-                $sql = 'ALTER TABLE ' . $full_table_name . ' ADD CONSTRAINT ' . $uk_name . ' UNIQUE'
-                  . $nnd . ' (' . implode(', ', $uk_columns) . ')';
-                $this->chado_connection->query($sql, []);
-              }
+              addTypeIdForeignKey($new_schema, $full_table_name, $fkey_name);
             }
           }
           catch (\Exception $e) {
@@ -169,12 +152,62 @@ class TripalFileRebuildService {
           }
 
           // Clear tripaldbx caches for this modified table.
-          $this->chado_connection->schema()->getTableDdl($table_name, TRUE);
-          $args = ['format' => 'none', 'clear' => TRUE];
-          $this->chado_connection->schema()->getTableDef($table_name, $args);
+          $this->clearTripalDbxCaches($table_name);
         }
       }
     }
+  }
+
+  /**
+   * Adds foreign key for the type_id column.
+   *
+   * @param array $new_schema
+   *   The schema we are updating to.
+   * @param string $full_table_name
+   *   Table name with chado prefix.
+   * @param string $fkey_name
+   *   The name of the foreign key to add.
+   *
+   * @return void
+   *   No return value.
+   */
+  protected function addTypeIdForeignKey(array $new_schema, string $full_table_name, string $fkey_name): void {
+    $sql = 'ALTER TABLE ' . $full_table_name
+      . ' ADD CONSTRAINT ' . $fkey_name . ' FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id)';
+    $this->chado_connection->query($sql, []);
+
+    // Update the unique constraint to include type_id.
+    $ukeys = $new_schema['unique keys'] ?? [];
+    foreach ($ukeys as $uk_name => $uk_columns) {
+      $nnd = '';
+      if ($this->nullsNotDistinctSupported() && ($new_schema['nulls not distinct'] ?? FALSE)) {
+        $nnd = ' NULLS NOT DISTINCT';
+      }
+
+      $sql = 'ALTER TABLE ' . $full_table_name . ' DROP CONSTRAINT IF EXISTS ' . $uk_name;
+      $this->chado_connection->query($sql, []);
+      $sql = 'ALTER TABLE ' . $full_table_name . ' ADD CONSTRAINT ' . $uk_name . ' UNIQUE'
+        . $nnd . ' (' . implode(', ', $uk_columns) . ')';
+      $this->chado_connection->query($sql, []);
+    }
+  }
+
+  /**
+   * Clears TripalDbx caches for a table.
+   *
+   * This is essential after modifying a table schema so that the
+   * previous schema is not used by these functions.
+   *
+   * @param string $table_name
+   *   The name of the chado table.
+   *
+   * @return void
+   *   No return value.
+   */
+  protected function clearTripalDbxCaches(string $table_name): void {
+    $this->chado_connection->schema()->getTableDdl($table_name, TRUE);
+    $args = ['format' => 'none', 'clear' => TRUE];
+    $this->chado_connection->schema()->getTableDef($table_name, $args);
   }
 
   /**
