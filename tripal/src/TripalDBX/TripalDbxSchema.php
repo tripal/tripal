@@ -937,6 +937,8 @@ EOD;
         $query->condition('ct.table_name', $table);
         $schema = $query->execute()->fetchField();
         if ($schema) {
+          // While this is not externally derived content, this allowed_classes
+          // option provides more security.
           $table_def = unserialize($schema, ['allowed_classes' => FALSE]);
         }
       }
