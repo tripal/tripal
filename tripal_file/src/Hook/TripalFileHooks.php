@@ -5,6 +5,7 @@ namespace Drupal\tripal_file\Hook;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\tripal_file\Services\TripalFileRebuildService;
 
 /**
  * Hook implementations for the TripalFile module.
@@ -17,9 +18,9 @@ class TripalFileHooks {
   /**
    * The rebuild service for this module.
    *
-   * @var \Drupal\tripal_file\Service\RebuildService
+   * @var \Drupal\tripal_file\Services\TripalFileRebuildService
    */
-  protected RebuildService $rebuildService;
+  protected TripalFileRebuildService $rebuildService;
 
   /**
    * Constructor.
@@ -27,7 +28,7 @@ class TripalFileHooks {
    * @param \Drupal\tripal_file\Service\RebuildService $rebuildService
    *   The rebuild service for this module.
    */
-  public function __construct(RebuildService $rebuildService) {
+  public function __construct(TripalFileRebuildService $rebuildService) {
     $this->rebuildService = $rebuildService;
   }
 

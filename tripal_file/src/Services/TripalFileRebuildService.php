@@ -143,7 +143,7 @@ class TripalFileRebuildService {
             // Add the foreign key only for the type_id column.
             if ($column == 'type_id') {
               $fkey_name = $table_name . '_' . $column . '_fkey';
-              addTypeIdForeignKey($new_schema, $full_table_name, $fkey_name);
+              $this->addTypeIdForeignKey($new_schema, $full_table_name, $fkey_name);
             }
           }
           catch (\Exception $e) {
