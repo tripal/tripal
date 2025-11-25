@@ -160,11 +160,13 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $summary_dbxref = NULL;
       $defined_terms = [];
 
-      [$summary_cv] = $this->chadoCheckTermsCheckVocab(
+      $cvs = $this->chadoCheckTermsCheckVocab(
         $vocab_info,
         $problems,
         $solutions
       );
+      // We don't use the existing_cv return value here.
+      $summary_cv = $cvs[0];
 
       [$summary_dbs, $defined_ispaces] = $this->chadoCheckTermsCheckIdSpaces(
         $vocab_info,
