@@ -4,14 +4,14 @@ namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
-use Drupal\tripal_chado\Database\ChadoConnection;
-use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
-use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
-use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
+use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
+use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
+use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the chado cvterm buddy.
@@ -22,6 +22,13 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
   description: new TranslatableMarkup('Provides helper methods for managing chado cvs and cvterms.'),
 )]
 class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterface, ContainerFactoryPluginInterface {
+
+  /**
+   * A Database query interface for querying Chado using Tripal DBX.
+   *
+   * @var \Drupal\tripal_chado\Database\ChadoConnection
+   */
+  public ChadoConnection $chado_connection;
 
   /**
    * Used to store the manager so we can create a buddy.
@@ -73,10 +80,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    ChadoConnection $connection,
+    ChadoConnection $chado_connection,
     ChadoBuddyPluginManager $buddy_manager,
   ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $chado_connection);
     $this->buddy_manager = $buddy_manager;
   }
 
@@ -113,7 +120,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
 
-    $query = $this->connection->select('1:cv', 'cv');
+    $query = $this->chado_connection->select('1:cv', 'cv');
 
     // Return the joined fields aliased to the unique names
     // as listed in this function's header.
@@ -132,7 +139,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
       $new_record = new ChadoBuddyRecord();
-      $new_record->setSchemaName($this->connection->getSchemaName());
+      $new_record->setSchemaName($this->chado_connection->getSchemaName());
       $new_record->setBaseTable('cv');
       foreach ($values as $key => $value) {
         $new_record->setValue($this->unmakeAlias($key), $value);
@@ -198,7 +205,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
 
-    $query = $this->connection->select('1:cvterm', 'cvterm');
+    $query = $this->chado_connection->select('1:cvterm', 'cvterm');
 
     // Return the joined fields aliased to the unique names
     // as listed in this function's header.
@@ -223,7 +230,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
       $new_record = new ChadoBuddyRecord();
-      $new_record->setSchemaName($this->connection->getSchemaName());
+      $new_record->setSchemaName($this->chado_connection->getSchemaName());
       $new_record->setBaseTable('cvterm');
       foreach ($values as $key => $value) {
         $new_record->setValue($this->unmakeAlias($key), $value);
@@ -315,7 +322,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $this->validateInput($values, $valid_columns);
 
     try {
-      $query = $this->connection->insert('1:cv');
+      $query = $this->chado_connection->insert('1:cv');
       $query->fields($this->removeTablePrefix($values));
       $query->execute();
     }
@@ -411,7 +418,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     }
 
     // Insert cvterm.
-    $query = $this->connection->insert('1:cvterm');
+    $query = $this->chado_connection->insert('1:cvterm');
 
     // Create a subset of the passed $values for just the cvterm table.
     $cvterm_values = $this->subsetInput($values, ['cvterm']);
@@ -496,7 +503,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     }
 
     // Insert synonym.
-    $query = $this->connection->insert('1:cvtermsynonym');
+    $query = $this->chado_connection->insert('1:cvtermsynonym');
 
     // Create a subset of the passed $values for just the cvterm table.
     $cvtermsynonym_values = $this->subsetInput($values, ['cvtermsynonym']);
@@ -563,7 +570,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     if (array_key_exists('cv.cv_id', $values)) {
       unset($values['cv.cv_id']);
     }
-    $query = $this->connection->update('1:cv');
+    $query = $this->chado_connection->update('1:cv');
     $query->condition('cv_id', $cv_id, '=');
     $query->fields($this->removeTablePrefix($values));
     try {
@@ -666,7 +673,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     if (array_key_exists('cvterm.cvterm_id', $values)) {
       unset($values['cvterm.cvterm_id']);
     }
-    $query = $this->connection->update('1:cvterm');
+    $query = $this->chado_connection->update('1:cvterm');
     $query->condition('cvterm_id', $cvterm_id, '=');
     // Create a subset of the passed $values for just the cvterm table.
     $term_values = $this->subsetInput($values, ['cvterm']);
@@ -752,7 +759,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     if (array_key_exists('cvterm.cvtermsynonym_id', $values)) {
       unset($values['cvterm.cvtermsynonym_id']);
     }
-    $query = $this->connection->update('1:cvtermsynonym');
+    $query = $this->chado_connection->update('1:cvtermsynonym');
     $query->condition('cvtermsynonym_id', $cvtermsynonym_id, '=');
     // Create a subset of the passed $values for just the cvtermsynonym table.
     $synonym_values = $this->subsetInput($values, ['cvtermsynonym']);
@@ -1007,7 +1014,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     // Get the primary key of the base table.
     $base_pkey_col = $options['pkey'] ?? NULL;
     if (!$base_pkey_col) {
-      $schema = $this->connection->schema();
+      $schema = $this->chado_connection->schema();
       $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
       $base_pkey_col = $base_table_def['primary key'];
     }
@@ -1023,7 +1030,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       }
     }
     try {
-      $query = $this->connection->insert('1:' . $linking_table);
+      $query = $this->chado_connection->insert('1:' . $linking_table);
       $query->fields($fields);
       $query->execute();
     }
@@ -1064,7 +1071,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       if ($lookup_columns) {
         // Automatic lookup is enabled.
         // Determine actual columns for this linking table.
-        $schema = $this->connection->schema();
+        $schema = $this->chado_connection->schema();
         $linking_table_def = $schema->getTableDef($linking_table, ['format' => 'Drupal']);
         foreach ($linking_table_def['fields'] as $field_id => $def) {
           if (array_key_exists($field_id, $defaults)) {

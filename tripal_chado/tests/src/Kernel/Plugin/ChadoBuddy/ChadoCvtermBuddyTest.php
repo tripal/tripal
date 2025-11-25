@@ -24,7 +24,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     parent::setUp();
 
     // Open connection to a test Chado.
-    $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+    $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
   }
 
   /**
@@ -280,14 +280,14 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
 
     // TEST: associate a cvterm with a base table.
     $base_table = 'phenotype';
-    $query = $this->connection->insert('1:' . $base_table)
+    $query = $this->chado_connection->insert('1:' . $base_table)
       ->fields(['uniquename' => 'phen005'])
       ->execute();
     $linking_table = $base_table . '_cvterm';
     $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records[0], []);
     $this->assertIsBool($status, "We did not retrieve a boolean when associating a cvterm with the base table \"$base_table\"");
     $this->assertTrue($status, "We did not retrieve TRUE when associating a cvterm with the base table \"$base_table\"");
-    $query = $this->connection->select('1:' . $linking_table, 'lt')
+    $query = $this->chado_connection->select('1:' . $linking_table, 'lt')
       ->fields('lt', ['cvterm_id'])
       ->execute();
     $results = $query->fetchAll();
@@ -302,7 +302,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     // columns in the linking table (i.e. pub_id), but we disable automatic
     // lookup and we don't include pub_id. Exception expected.
     $base_table = 'organism';
-    $query = $this->connection->insert('1:' . $base_table)
+    $query = $this->chado_connection->insert('1:' . $base_table)
       ->fields(['genus' => 'org005', 'species' => 'org005'])
       ->execute();
     $linking_table = $base_table . '_cvterm';
@@ -325,7 +325,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     // columns in the linking table (i.e. pub_id).
     // Tests the default auto-lookup functionality.
     $base_table = 'stock';
-    $query = $this->connection->insert('1:' . $base_table)
+    $query = $this->chado_connection->insert('1:' . $base_table)
       ->fields(['uniquename' => 'stock006', 'type_id' => 1])
       ->execute();
     $linking_table = $base_table . '_cvterm';
@@ -333,7 +333,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records[0], $options);
     $this->assertIsBool($status, "We did not retrieve a boolean when associating a cvterm with the base table \"$base_table\"");
     $this->assertTrue($status, "We did not retrieve TRUE when associating a cvterm with the base table \"$base_table\"");
-    $query = $this->connection->select('1:' . $linking_table, 'lt')
+    $query = $this->chado_connection->select('1:' . $linking_table, 'lt')
       ->fields('lt', ['cvterm_id', 'pub_id'])
       ->execute();
     $results = $query->fetchAll();

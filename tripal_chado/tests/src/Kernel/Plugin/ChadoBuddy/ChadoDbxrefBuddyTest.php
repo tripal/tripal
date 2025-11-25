@@ -24,7 +24,7 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     parent::setUp();
 
     // Open connection to a test Chado.
-    $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+    $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
   }
 
   /**
@@ -250,14 +250,14 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
 
     // TEST: associate a dbxref with a base table.
     $base_table = 'project';
-    $query = $this->connection->insert('1:' . $base_table)
+    $query = $this->chado_connection->insert('1:' . $base_table)
       ->fields(['name' => 'proj005'])
       ->execute();
     $linking_table = $base_table . '_dbxref';
     $status = $instance->associateDbxref($base_table, 1, $chado_buddy_records[0], []);
     $this->assertIsBool($status, "We did not retrieve a boolean when associating a dbxref with the base table \"$base_table\"");
     $this->assertTrue($status, "We did not retrieve TRUE when associating a dbxref with the base table \"$base_table\"");
-    $query = $this->connection->select('1:' . $linking_table, 'lt')
+    $query = $this->chado_connection->select('1:' . $linking_table, 'lt')
       ->fields('lt', ['dbxref_id'])
       ->execute();
     $results = $query->fetchAll();
