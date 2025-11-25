@@ -27,6 +27,6 @@ jobs:
           directory-name: 'tripal'
           modules: 'tripal tripal_biodb tripal_chado'
           php-version: '8.4'
-          pgsql-version: '17'
+          pgsql-version: '18'
           drupal-version: '11.2.x-dev'
           build-image: true
