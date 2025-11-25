@@ -19,7 +19,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *
    * @var Drupal\tripal_chado\Database\ChadoConnection
    */
-  public ChadoConnection $connection;
+  public ChadoConnection $chado_connection;
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
@@ -52,9 +52,9 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ChadoConnection $connection) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ChadoConnection $chado_connection) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->connection = $connection;
+    $this->chado_connection = $chado_connection;
   }
 
   /**
@@ -153,7 +153,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *          unique constraint.
    */
   protected function getTableCache() {
-    $schema_name = $this->connection->getSchemaName();
+    $schema_name = $this->chado_connection->getSchemaName();
 
     // Get cached columns.
     $cache_id = $schema_name . '_buddy_table_columns';
@@ -185,7 +185,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *   No return value.
    */
   private function setTableCache(array $cached_tables): void {
-    $schema_name = $this->connection->getSchemaName();
+    $schema_name = $this->chado_connection->getSchemaName();
     $cache_id = $schema_name . '_buddy_table_columns';
 
     \Drupal::cache()->set($cache_id, $cached_tables, \Drupal::time()->getRequestTime() + (3600));
@@ -214,7 +214,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    */
   protected function addTableToCache(string $chado_table, array &$cached_tables): void {
     $cached_tables[$chado_table] = [];
-    $table_schema = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
+    $table_schema = $this->chado_connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
     if (!array_key_exists('fields', $table_schema)) {
       // Two levels up.
       $calling_function = debug_backtrace()[2]['function'];

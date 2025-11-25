@@ -24,14 +24,18 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterface, ContainerFactoryPluginInterface {
 
   /**
-   * Used to store the manager so we can create a buddy.
+   * A Database query interface for querying Chado using Tripal DBX.
+   *
+   * @var \Drupal\tripal_chado\Database\ChadoConnection
    */
-  protected ChadoBuddyPluginManager $buddy_manager;
+  public ChadoConnection $chado_connection;
 
   /**
-   * Provide the dbxref instance.
+   * Used to store the manager so we can create a buddy.
+   *
+   * @var Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
    */
-  protected object $dbxref_instance;
+  public ChadoBuddyPluginManager $buddy_manager;
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
@@ -62,7 +66,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       $plugin_id,
       $plugin_definition,
       $container->get('tripal_chado.database'),
-      $container->get('tripal_chado.chado_buddy')
+      $container->get('tripal_chado.chado_buddy'),
     );
   }
 
@@ -73,10 +77,10 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    ChadoConnection $connection,
+    ChadoConnection $chado_connection,
     ChadoBuddyPluginManager $buddy_manager,
   ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $chado_connection);
     $this->buddy_manager = $buddy_manager;
   }
 
@@ -118,13 +122,13 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   If an error is encountered.
    */
   public function getOrganism(array $conditions, array $options = []) {
-    //$valid_tables = ['organism', 'cv', 'cvterm', 'db', 'dbxref'];
+    // $valid_tables = ['organism', 'cv', 'cvterm', 'db', 'dbxref'];
     $valid_tables = ['organism'];
     $valid_columns = $this->getTableColumns($valid_tables);
     $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
 
-    $query = $this->connection->select('1:organism', 'organism');
+    $query = $this->chado_connection->select('1:organism', 'organism');
 
     // Return the joined fields aliased to the unique names
     // as listed in this function's header.
@@ -136,7 +140,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     $query->leftJoin('1:cv', 'cv', 'cvterm.cv_id = cv.cv_id');
     $query->leftJoin('1:dbxref', 'dbxref', 'cvterm.dbxref_id = dbxref.dbxref_id');
     $query->leftJoin('1:db', 'db', 'dbxref.db_id = db.db_id');
-    */
+     */
     $this->addConditions($query, $conditions, $options);
 
     try {
@@ -148,7 +152,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
       $new_record = new ChadoBuddyRecord();
-      $new_record->setSchemaName($this->connection->getSchemaName());
+      $new_record->setSchemaName($this->chado_connection->getSchemaName());
       $new_record->setBaseTable('organism');
       foreach ($values as $key => $value) {
         $new_record->setValue($this->unmakeAlias($key), $value);
