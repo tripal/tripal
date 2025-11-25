@@ -1,4 +1,4 @@
-name: 'Test Coverage on Drupal 11.2.x-dev + PHP 8.3'
+name: 'Test Coverage on Drupal 11.2.x-dev + PHP 8.4'
 
 on:
   push:
