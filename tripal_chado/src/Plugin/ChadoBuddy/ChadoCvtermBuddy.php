@@ -1011,17 +1011,6 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
       $base_pkey_col = $base_table_def['primary key'];
     }
-    $fields = [
-      'cvterm_id' => $cvterm->getValue('cvterm.cvterm_id'),
-      $base_pkey_col => $record_id,
-    ];
-    // Add in any of the other columns for the linking table.
-    $options = $this->addLinkingColumns($linking_table, $options);
-    foreach ($options as $key => $value) {
-      if (($key != 'pkey') and ($key != 'lookup_columns')) {
-        $fields[$key] = $value;
-      }
-    }
     try {
       // Verify that this exact record does not already exist.
       $query = $this->connection->select('1:' . $linking_table, 'L');
@@ -1032,6 +1021,18 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
 
       // If count is not zero, the record already exists, so skip insert.
       if (!$count) {
+        $fields = [
+          'cvterm_id' => $cvterm->getValue('cvterm.cvterm_id'),
+          $base_pkey_col => $record_id,
+        ];
+
+        // Add in any of the other columns for the linking table.
+        $options = $this->addLinkingColumns($linking_table, $options);
+        foreach ($options as $key => $value) {
+          if (($key != 'pkey') and ($key != 'lookup_columns')) {
+            $fields[$key] = $value;
+          }
+        }
         $query = $this->connection->insert('1:' . $linking_table);
         $query->fields($fields);
         $query->execute();
