@@ -41,7 +41,7 @@ use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
  * query builder as shown in this next example:
  *
  * $dbxdb = \Drupal::service('tripal_chado.database');
- * $query = $dbxdb->select('feature', 'x');
+ * $query = $dbxdb->select('1:feature', 'x');
  * $query->condition('x.is_obsolete', 'f', '=');
  * $query->fields('x', ['name', 'residues']);
  * $query->range(0, 10);

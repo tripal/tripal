@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Functional\api;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Testing the tripal_chado/api/tripal_chado.cv.api.php functions.
@@ -13,15 +14,15 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
  * @group Tripal Chado
  * @group Tripal API
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal API')]
+#[Group('legacy-api')]
 #[IgnoreDeprecations]
+#[RunTestsInSeparateProcesses]
 class ChadoCvAPITest extends ChadoTestBrowserBase {
 
   /**
    * The name of the TripalDBX-managed test schema.
    * This is set in the setUp() function.
+   *
    * @var string
    */
   protected $schema_name;
@@ -44,12 +45,7 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado.cv associated functions.
-   *
-   * @group tripal-chado
-   * @group chado-cv
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-cv')]
   public function testcv() {
 
     // INSERT.
@@ -65,7 +61,7 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
       "The returned object should have the primary key included.");
     $this->assertEquals($cvval['name'], $return->name,
       "The returned object should be the one we asked for.");
-    // test the update part of chado_insert_cv().
+    // Test the update part of chado_insert_cv().
     $returnagain = chado_insert_cv($cvval['name'], $cvval['definition'], [], $this->schema_name);
     $this->assertNotFalse($returnagain, 'chado_insert_cv failed unexpectedly.');
     $this->assertIsObject($returnagain, 'Should be an updated cv object.');
@@ -90,7 +86,8 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
     $returned_options = chado_get_cv_select_options($this->schema_name);
     $this->assertNotFalse($returned_options, 'chado_get_cv_select_options failed unexpectedly.');
     $this->assertIsArray($returned_options, 'Should be an array.');
-    $this->assertNotEmpty($returned_options, "There should be at least one option.");;
+    $this->assertNotEmpty($returned_options, "There should be at least one option.");
+
     $this->assertArrayHasKey($return->cv_id, $returned_options,
       "The cv we added should be one of the options.");
 
@@ -98,26 +95,21 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado.cvterm associated functions.
-   *
-   * @group tripal-chado
-   * @group chado-cv
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-cv')]
   public function testcvterm() {
 
     // INSERT.
     // chado_insert_cvterm().
     $cvval = [
-      'name' => 'cvterm-test'.uniqid(),
+      'name' => 'cvterm-test' . uniqid(),
       'definition' => 'none',
-      ];
+    ];
     $cv = chado_insert_cv($cvval['name'], $cvval['definition'], [], $this->schema_name);
     $cvtermval = [
       'cv_name' => $cv->name,
       'id' => 'chado_properties:version',
       'db_name' => 'null',
-      'name' => 'cvterm-test'.uniqid(),
+      'name' => 'cvterm-test' . uniqid(),
       'definition' => 'Lorem ipsum and I forget the rest.',
     ];
     $return = chado_insert_cvterm($cvtermval, [], $this->schema_name);
@@ -128,19 +120,19 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
     $this->assertEquals($cvtermval['name'], $return->name,
       "The returned object should be the one we asked for.");
 
-    // check it is returned if it already exists.
+    // Check it is returned if it already exists.
     $returnagain = chado_insert_cvterm($cvtermval, [], $this->schema_name);
     $this->assertNotFalse($returnagain, 'chado_insert_cvterm failed unexpectedly.');
     $this->assertIsObject($returnagain, 'Should be an updated cvterm object.');
     $this->assertTrue(property_exists($returnagain, 'cvterm_id'),
       "The returned object should have the primary key included.");
-      $this->assertEquals($cvtermval['name'], $return->name,
+    $this->assertEquals($cvtermval['name'], $return->name,
         "The returned object should be the one we asked for.");
     $this->assertEquals($return, $returnagain,
       "Both should be the same term!");
 
     // chado_associate_cvterm().
-    $org = ['genus' => 'Tripalus', 'species' => 'databasica'.uniqid()];
+    $org = ['genus' => 'Tripalus', 'species' => 'databasica' . uniqid()];
     $cvterm = ['name' => $return->name, 'cv_id' => $return->cv_id];
     $orgr = chado_insert_record('organism', $org, [], $this->schema_name);
     $return = chado_associate_cvterm(
@@ -163,4 +155,5 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
     $this->assertEquals($cvtermval['name'], $return->name,
       "The returned object should be the one we asked for.");
   }
+
 }

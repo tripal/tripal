@@ -9,6 +9,7 @@ use Drupal\tripal_biodb\Lock\PersistentDatabaseSharedLockBackend;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for PersistentDatabaseSharedLockBackend.
@@ -46,9 +47,6 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers ::getCurrentExpirationDelay
  */
 #[CoversClass(PersistentDatabaseSharedLockBackend::class)]
-#[Group('Tripal')]
-#[Group('Tripal BioDb')]
-#[Group('Tripal BioDb Lock')]
 #[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'acquire')]
 #[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'acquireShared')]
 #[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'lockMayBeAvailable')]
@@ -59,6 +57,8 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'releaseAll')]
 #[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'cleanUnusedSharedLocks')]
 #[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'getCurrentExpirationDelay')]
+#[Group('biodb-lock')]
+#[RunTestsInSeparateProcesses]
 class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**

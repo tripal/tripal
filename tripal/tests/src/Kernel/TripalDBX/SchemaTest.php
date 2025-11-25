@@ -3,9 +3,11 @@
 namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal\TripalDBX\TripalDbxSchema;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Tripal DBX schema on a real database.
@@ -46,9 +48,6 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers ::dropSchema
  */
 #[CoversClass(TripalDbxSchema::class)]
-#[Group('Tripal')]
-#[Group('TripalDBX')]
-#[Group('TripalDbxSchema')]
 #[CoversMethod(TripalDbxSchema::class, '__construct')]
 #[CoversMethod(TripalDbxSchema::class, 'getPrefixInfo')]
 #[CoversMethod(TripalDbxSchema::class, 'getSchemaName')]
@@ -75,6 +74,8 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversMethod(TripalDbxSchema::class, 'renameSchema')]
 #[CoversMethod(TripalDbxSchema::class, 'cloneSchema')]
 #[CoversMethod(TripalDbxSchema::class, 'dropSchema')]
+#[Group('tripal-dbx')]
+#[RunTestsInSeparateProcesses]
 class SchemaTest extends TripalTestKernelBase {
 
   /**
@@ -221,19 +222,19 @@ class SchemaTest extends TripalTestKernelBase {
    */
   protected function getTripalDbxSchemaMock($database_or_schema_name) {
     if (is_string($database_or_schema_name)) {
-      $tdbx = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
+      $tdbx = $this->getMockBuilder(TripalDbxConnection::class)
+        ->onlyMethods(['findVersion', 'getAvailableInstances'])
         ->setConstructorArgs([$database_or_schema_name])
-        ->getMockForAbstractClass()
-      ;
+        ->getMock();
     }
     else {
       $tdbx = $database_or_schema_name;
     }
     // Create a mock for the abstract class.
-    $scmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxSchema::class)
+    $scmock = $this->getMockBuilder(TripalDbxSchema::class)
+      ->onlyMethods(['getSchemaDef'])
       ->setConstructorArgs([$tdbx])
-      ->getMockForAbstractClass()
-    ;
+      ->getMock();
 
     // Return initialized mock.
     return $scmock;
@@ -296,13 +297,16 @@ class SchemaTest extends TripalTestKernelBase {
     $sch_2 = $test_schema_base_names['default'] . mt_rand(10000000, 99999999);
 
     // Get abstract mock.
-    $tdbx = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
+    $tdbx = $this->getMockBuilder(TripalDbxConnection::class)
+      ->onlyMethods(['findVersion', 'getAvailableInstances'])
       ->setConstructorArgs([$sch_1])
-      ->getMockForAbstractClass()
-    ;
+      ->getMock();
     $scmock = $this->getTripalDbxSchemaMock($tdbx);
     $schema_name = $scmock->getSchemaName();
     $this->assertEquals($sch_1, $schema_name, 'Schema name set.');
+    $psql_version = $tdbx->version();
+    // Remove distro info, e.g. "13.22 (Debian 13.22-1.pgdg12+1)" -> "13.22".
+    $psql_version = preg_replace('/[^\d\.].*$/', '', $psql_version);
 
     // Check schema does not exist.
     $exists = $scmock->schemaExists();
@@ -559,11 +563,29 @@ class SchemaTest extends TripalTestKernelBase {
         'othertesttable' => ['id' => 'fk',],
       ],
     ];
+
+    // Postgresql 18 handles constraints a bit differently, so we will expect
+    // a few more items here.
+    if (version_compare($psql_version, '18.0') >= 0) {
+      $expected['constraints']['testtable_fieldbool_not_null'] = 'NOT NULL fieldbool';
+      $expected['constraints']['testtable_fieldtext_not_null'] = 'NOT NULL fieldtext';
+      $expected['constraints']['testtable_id_not_null'] = 'NOT NULL id';
+    }
+
     $this->assertEquals(
       $expected,
       $table_def,
       'Table definition ok.'
     );
+
+    // Again a few more items expected under postgresql 18.
+    $extra_if_18 = '';
+    if (version_compare($psql_version, '18.0') >= 0) {
+      $extra_if_18 = ",
+  CONSTRAINT testtable_fieldbool_not_null NOT NULL fieldbool,
+  CONSTRAINT testtable_fieldtext_not_null NOT NULL fieldtext,
+  CONSTRAINT testtable_id_not_null NOT NULL id";
+    }
 
     // DDL.
     $expected =
@@ -580,7 +602,7 @@ class SchemaTest extends TripalTestKernelBase {
   fieldbytea bytea NULL DEFAULT 'x'::bytea,
   CONSTRAINT testtable_pkey PRIMARY KEY (id),
   CONSTRAINT testtable_c1 UNIQUE (fieldbigint, fieldsmallint),
-  CONSTRAINT testtable_foreign_id_fkey FOREIGN KEY (foreign_id) REFERENCES othertesttable(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED
+  CONSTRAINT testtable_foreign_id_fkey FOREIGN KEY (foreign_id) REFERENCES othertesttable(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED$extra_if_18
 );
 CREATE UNIQUE INDEX testtable_c1 ON $test_schema.testtable USING btree (fieldbigint, fieldsmallint);
 CREATE UNIQUE INDEX testtable_c2 ON $test_schema.testtable USING btree (fieldbigint, fieldsmallint);

@@ -2,6 +2,11 @@
 
 namespace Drupal\Tests\tripal\Unit\TripalDBX;
 
+use Drupal\Core\Database\StatementInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Core\Database\Connection;
 use Drupal\Tests\UnitTestCase;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\tripal\TripalDBX\TripalDbx;
@@ -29,9 +34,6 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers ::parseTableDdl
  */
 #[CoversClass(TripalDbx::class)]
-#[Group('Tripal')]
-#[Group('Tripal DBX')]
-#[Group('Tripal DBX Service')]
 #[CoversMethod(TripalDbx::class, 'getDrupalSchemaName')]
 #[CoversMethod(TripalDbx::class, 'isInvalidSchemaName')]
 #[CoversMethod(TripalDbx::class, 'reserveSchemaPattern')]
@@ -39,6 +41,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversMethod(TripalDbx::class, 'freeSchemaPattern')]
 #[CoversMethod(TripalDbx::class, 'schemaExists')]
 #[CoversMethod(TripalDbx::class, 'parseTableDdl')]
+#[Group('tripal-dbx')]
 class TripalDbxUnitTest extends UnitTestCase {
 
   /**
@@ -68,24 +71,24 @@ class TripalDbxUnitTest extends UnitTestCase {
     parent::setUp();
 
     // Mock Drupal connection (\Drupal::database).
-    $this->proConnection = $this->prophesize(\Drupal\Core\Database\Connection::class);
+    $this->proConnection = $this->prophesize(Connection::class);
     $this->connection = $this->proConnection->reveal();
 
     // Mock the Config object, but methods will be mocked in the test class.
-    $this->proConfig = $this->prophesize(\Drupal\Core\Config\ImmutableConfig::class);
+    $this->proConfig = $this->prophesize(ImmutableConfig::class);
     $this->config = $this->proConfig->reveal();
 
     // Mock the ConfigFactory service.
-    $this->proConfigFactory = $this->prophesize(\Drupal\Core\Config\ConfigFactory::class);
+    $this->proConfigFactory = $this->prophesize(ConfigFactory::class);
     $this->proConfigFactory->get('tripal.settings')->willReturn($this->config);
     $this->configFactory = $this->proConfigFactory->reveal();
 
     // Mock the module handler.
-    $this->proModuleHandler = $this->prophesize(\Drupal\Core\Extension\ModuleHandlerInterface::class);
+    $this->proModuleHandler = $this->prophesize(ModuleHandlerInterface::class);
     $this->moduleHandler = $this->proModuleHandler->reveal();
 
     // Mock the TripalDbx static functions when needed.
-    $is_invalid_schema_name = function($args) {
+    $is_invalid_schema_name = function ($args) {
       $tripaldbx = new TripalDbx();
       if (1 == count($args)) {
         return $tripaldbx->isInvalidSchemaName($args[0]);
@@ -97,7 +100,7 @@ class TripalDbxUnitTest extends UnitTestCase {
         return $tripaldbx->isInvalidSchemaName($args[0], $args[1], $args[2]);
       }
     };
-    $this->proTripalDbxDb = $this->prophesize(\Drupal\tripal\TripalDBX\TripalDbx::class);
+    $this->proTripalDbxDb = $this->prophesize(TripalDbx::class);
     // $this->proTripalDbxDb->isInvalidSchemaName('invalid')->willReturn('Invalid schema name.');
     // $this->proTripalDbxDb->isInvalidSchemaName('valid')->willReturn('');
     $this->proTripalDbxDb->isInvalidSchemaName(Argument::cetera())->will($is_invalid_schema_name);
@@ -112,7 +115,7 @@ class TripalDbxUnitTest extends UnitTestCase {
     \Drupal::setContainer($this->container);
 
     // Hack to clear TripalDbx cache on each run.
-    $clear = function() {
+    $clear = function () {
       TripalDbx::$drupalSchema
       = TripalDbx::$reservedSchemaPatterns
       = NULL;
@@ -140,16 +143,16 @@ class TripalDbxUnitTest extends UnitTestCase {
 
     $tripaldbx = new TripalDbx();
     // First call.
-    $start_time = hrtime(true);
+    $start_time = hrtime(TRUE);
     $drupal_schema = $tripaldbx->getDrupalSchemaName();
     // Non-public, and in our case 'other'.
     $this->assertEquals('other', $drupal_schema, 'Got a non-public schema name.');
-    $end_time = hrtime(true);
+    $end_time = hrtime(TRUE);
 
-    $next_start_time = hrtime(true);
+    $next_start_time = hrtime(TRUE);
     $drupal_schema = $tripaldbx->getDrupalSchemaName();
     $this->assertEquals('other', $drupal_schema, 'Got the same schema name from cache.');
-    $next_end_time = hrtime(true);
+    $next_end_time = hrtime(TRUE);
 
     // Performances.
     $first_round = $end_time - $start_time;
@@ -163,8 +166,8 @@ class TripalDbxUnitTest extends UnitTestCase {
   public function testGetDrupalSchemaNameDefault() {
 
     // Mock a statement.
-    $prophecy = $this->prophesize(\Drupal\Core\Database\StatementInterface::class);
-    $prophecy->fetch()->willReturn((object)['schema' => 'pub']);
+    $prophecy = $this->prophesize(StatementInterface::class);
+    $prophecy->fetch()->willReturn((object) ['schema' => 'pub']);
     $statement = $prophecy->reveal();
 
     $this->proConnection->getConnectionOptions()->willReturn([
@@ -185,7 +188,7 @@ class TripalDbxUnitTest extends UnitTestCase {
   public function testGetDrupalSchemaNameFailure() {
 
     // Mock a statement.
-    $prophecy = $this->prophesize(\Drupal\Core\Database\StatementInterface::class);
+    $prophecy = $this->prophesize(StatementInterface::class);
     $prophecy->fetch()->willReturn(NULL);
     $statement = $prophecy->reveal();
 
@@ -307,64 +310,64 @@ class TripalDbxUnitTest extends UnitTestCase {
       [
         '_test_not_ok',
         'reserved',
-        ['_test*' => 'reserved prefix',],
+        ['_test*' => 'reserved prefix'],
         NULL,
         'Invalid name starting with prefix "_test" which has been reserved.',
       ],
       [
         '_other_not_ok',
         'reserved',
-        ['_other.*' => 'reserved prefix',],
+        ['_other.*' => 'reserved prefix'],
         NULL,
         'Invalid name starting with prefix "_other" which has been reserved.',
       ],
       [
         '_chado_test_not_ok',
         'reserved',
-        ['_test*' => 'reserved prefix', '_chado*' => 'second reserved prefix',],
+        ['_test*' => 'reserved prefix', '_chado*' => 'second reserved prefix'],
         NULL,
         'Invalid name starting with prefix "_chado" which has been also reserved.',
       ],
       [
         'to2foo_ok',
         '',
-        ['.*(to)+\d+foo' => 'regex pattern reservation',],
+        ['.*(to)+\d+foo' => 'regex pattern reservation'],
         NULL,
         'Valid name not reserved by a pattern.',
       ],
       [
         'to0foo_not_ok',
         'reserv',
-        ['.*(to)+\d+foo_not_ok' => 'regex pattern reservation',],
+        ['.*(to)+\d+foo_not_ok' => 'regex pattern reservation'],
         NULL,
         'Invalid name reserved by a pattern.',
       ],
       [
         'barToto123foo_not_ok',
         'reserv',
-        ['.*(to)+\d+foo_not_ok' => 'regex pattern reservation',],
+        ['.*(to)+\d+foo_not_ok' => 'regex pattern reservation'],
         NULL,
         'Invalid name reserved by a pattern.',
       ],
       [
         'to2foo_ok',
         'reserv',
-        ['.*(to)+\d+foo' => 'regex pattern reservation',],
-        ['to\dfoo_.*' => 'added regex pattern reservation',],
+        ['.*(to)+\d+foo' => 'regex pattern reservation'],
+        ['to\dfoo_.*' => 'added regex pattern reservation'],
         'Invalid name reserved by a pattern added by ::reserveSchemaPattern.',
       ],
       [
         'to0foo_not_ok',
         '',
-        ['.*(to)+\d+foo_not_ok' => 'regex pattern reservation',],
-        ['.*(to)+\d+foo_not_ok' => FALSE,],
+        ['.*(to)+\d+foo_not_ok' => 'regex pattern reservation'],
+        ['.*(to)+\d+foo_not_ok' => FALSE],
         'Valid unreserved name.',
       ],
       [
         'to2foo_not_ok',
         'special xyz word',
-        ['.*(to)+\d+foo_not_ok' => 'for something',],
-        ['.*(to)+\d+foo_not_ok' => 'special xyz word',],
+        ['.*(to)+\d+foo_not_ok' => 'for something'],
+        ['.*(to)+\d+foo_not_ok' => 'special xyz word'],
         'Invalid name reserved by a pattern with new reservation value.',
       ],
     ];
@@ -381,7 +384,7 @@ class TripalDbxUnitTest extends UnitTestCase {
     $expected,
     $reserved,
     $alter,
-    $message
+    $message,
   ) {
     $reserved = $reserved ?? [];
     $alter = $alter ?? [];
@@ -452,13 +455,13 @@ class TripalDbxUnitTest extends UnitTestCase {
     // Release public reservation.
     $result = $tripaldbx->freeSchemaPattern('public');
     $this->assertEquals(
-      ['public' => 'public schema is reserved',],
+      ['public' => 'public schema is reserved'],
       $result,
       'Public schema not reserved.'
     );
     $patterns = $tripaldbx->getReservedSchemaPattern();
     $this->assertEquals(
-      ['myschema*' => 'private reservation',],
+      ['myschema*' => 'private reservation'],
       $patterns,
       'All reserved well.'
     );
@@ -518,11 +521,11 @@ class TripalDbxUnitTest extends UnitTestCase {
   public function testSchemaExistsValid() {
 
     // Mock a statement.
-    $prophecy = $this->prophesize(\Drupal\Core\Database\StatementInterface::class);
+    $prophecy = $this->prophesize(StatementInterface::class);
     $prophecy->fetchField()->willReturn(TRUE, FALSE);
     $statement = $prophecy->reveal();
 
-    $prophecy = $this->prophesize(\Drupal\Core\Database\Connection::class);
+    $prophecy = $this->prophesize(Connection::class);
     $prophecy->query(Argument::cetera())->willReturn($statement);
     $connection = $prophecy->reveal();
 
@@ -541,13 +544,13 @@ class TripalDbxUnitTest extends UnitTestCase {
    */
   public function testParseTableDdl() {
     // Use regular service.
-    $this->container->set('tripal.dbx', new \Drupal\tripal\TripalDBX\TripalDbx());
+    $this->container->set('tripal.dbx', new TripalDbx());
     // Get fixture data.
-    $ddl = file_get_contents( __DIR__ . '/../../../fixtures/feature_ddl.sql');
+    $ddl = file_get_contents(__DIR__ . '/../../../fixtures/feature_ddl.sql');
     // Import $feature_basic.
-    include  __DIR__ . '/../../../fixtures/feature_parsed_basic.php';
+    include __DIR__ . '/../../../fixtures/feature_parsed_basic.php';
     // Import $feature_drupal.
-    include  __DIR__ . '/../../../fixtures/feature_parsed_drupal.php';
+    include __DIR__ . '/../../../fixtures/feature_parsed_drupal.php';
 
     $tripaldbx = new TripalDbx();
     $parsed_ddl = $tripaldbx->parseTableDdl($ddl);
