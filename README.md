@@ -6,7 +6,7 @@
 
 ![Target Drupal Version 11.2.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-11.2.x-informational)
 
-Tested on ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success) - ![PostgreSQL 17](https://img.shields.io/badge/PostreSQL-17-success)
+Tested on ![PostgreSQL 14](https://img.shields.io/badge/PostreSQL-14-success) - ![PostgreSQL 18](https://img.shields.io/badge/PostreSQL-18-success)
 
 The following table proves the compatibility for the current development version of Tripal.
 
@@ -48,6 +48,7 @@ This project uses QLTY Cloud to determine the quality of our codebase and the co
 | 4.0-alpha1 | >=9.2 <=10.0        | >=8.0 <=8.1 | >=13 <=16  |
 | 4.0-alpha2 | >=10.0 <= 10.1      | >=8.1 <=8.2 | >=13 <=16  |
 | 4.0-alpha3 | >=10.4 <= 11.2      | >=8.1 <=8.3 | >=13 <=17  |
+| 4.0-dev    | >=10.4 <= 11.x.dev  | >=8.1 <=8.4 | >=14 <=18  |
 
 ## Current Timeline
 
