@@ -67,6 +67,7 @@
       <directory>tripal_biodb/tests/src/Kernel</directory>
       <directory>tripal_chado/tests/src/Kernel</directory>
       <directory>tripal_layout/tests/src/Kernel</directory>
+      <directory>tripal_file/tests/src/Kernel</directory>
     </testsuite>
   </testsuites>
   <listeners>
@@ -83,6 +84,8 @@
       <file>tripal_chado/tripal_chado.module</file>
       <directory suffix=".php">tripal_layout/src</directory>
       <file>tripal_layout/tripal_layout.module</file>
+      <directory suffix=".php">tripal_file/src</directory>
+      <file>tripal_file/tripal_file.module</file>
     </include>
     <exclude>
       <!-- Exclude Interface classes from coverage -->
