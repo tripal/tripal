@@ -1102,7 +1102,7 @@ EOD;
    *   When ::createTableSql() is not implemented in the concrete driver class.
    *
    * @see https://github.com/GMOD/Chado/issues/139
-   * for information about Postgresql version 15 support:
+   * for information about Postgresql version 15 support.
    */
   public function createTable($name, $table) {
 
