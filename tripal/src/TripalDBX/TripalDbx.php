@@ -6,7 +6,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
 
 /**
- * Tripal DBX.
+ * Service extending the Tripal DBX API to managing multiple schema.
  *
  * This class provides methods which form the Tripal DBX API.
  * Specifically, this API focuses on extending Drupal to better handle cross
