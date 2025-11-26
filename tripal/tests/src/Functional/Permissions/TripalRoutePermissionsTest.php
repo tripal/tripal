@@ -351,7 +351,12 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     foreach ($urls as $title => $path) {
       $html = $this->drupalGet($path);
       $status_code = $session->getStatusCode();
-      $this->assertEquals(403, $status_code, "The anonymous user should not be able to access any content pages including: $title ($path).");
+      if (!in_array($title, $permissions_mapping["view all $content_type content"])) {
+        $this->assertEquals(403, $status_code, "The anonymous user should not be able to access any content pages including: $title ($path).");
+      }
+      else {
+        $this->assertEquals(200, $status_code, "The anonymous user should be able to access the content listing page: $title ($path).");
+      }
     }
 
     // Next check all the URLs with the authenticated, unprivileged user.
