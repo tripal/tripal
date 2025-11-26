@@ -58,9 +58,9 @@ class TripalDbxUnitTest extends UnitTestCase {
   /**
    * Revealed config factory object.
    *
-   * @var object
+   * @var Drupal\Core\Config\ConfigFactory
    */
-  protected object $configFactory;
+  protected ConfigFactory $configFactory;
 
   /**
    * Prophesize config object.
@@ -72,9 +72,9 @@ class TripalDbxUnitTest extends UnitTestCase {
   /**
    * Revealed config object.
    *
-   * @var object
+   * @var Drupal\Core\Config\ImmutableConfig
    */
-  protected object $config;
+  protected ImmutableConfig $config;
 
   /**
    * Prophesize container object.
@@ -84,25 +84,25 @@ class TripalDbxUnitTest extends UnitTestCase {
   protected ObjectProphecy $proContainer;
 
   /**
-   * Revealed container object.
+   * Drupal container object used in the tests.
    *
-   * @var object
+   * @var Drupal\Core\DependencyInjection\ContainerBuilder
    */
-  protected object $container;
+  protected ContainerBuilder $container;
 
   /**
-   * Prophesize connection object.
+   * Prophesize DRUPAL connection object.
    *
    * @var Prophecy\Prophecy\ObjectProphecy
    */
   protected ObjectProphecy $proConnection;
 
   /**
-   * Revealed connnection object.
+   * Revealed DRUPAL connnection object.
    *
-   * @var object
+   * @var Drupal\Core\Database\Connection
    */
-  protected object $connection;
+  protected Connection $connection;
 
   /**
    * Prophesize module handler object.
@@ -114,9 +114,9 @@ class TripalDbxUnitTest extends UnitTestCase {
   /**
    * Revealed module handler object.
    *
-   * @var object
+   * @var Drupal\Core\Extension\ModuleHandlerInterface
    */
-  protected object $moduleHandler;
+  protected ModuleHandlerInterface $moduleHandler;
 
   /**
    * Prophesize tripaldbx db object.
