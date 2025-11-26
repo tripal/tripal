@@ -149,7 +149,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $base_tables[$base_table] = $base_table;
     }
     else {
-      $base_tables[NULL] = '- Select -';
+      $base_tables[''] = '- Select -';
       $chado = \Drupal::service('tripal_chado.database');
       $schema = $chado->schema();
       $tables = $schema->getTables(['type' => 'table', 'status' => 'base']);
@@ -501,11 +501,11 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
     // This is unlikely to happen, but provide an indication if it does.
     if (count($base_tables) == 0) {
-      $base_tables = [NULL => '-- No base tables available --'];
+      $base_tables = ['' => '-- No base tables available --'];
     }
     // If more than one table was found, prefix the list with a Select message
     elseif (count($base_tables) > 1) {
-      $base_tables = [NULL => '- Select -'] + $base_tables;
+      $base_tables = ['' => '- Select -'] + $base_tables;
     }
 
     return $base_tables;
@@ -529,7 +529,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $select_list = [];
 
     if (!$table_name) {
-      $select_list[NULL] = '- Select base table first -';
+      $select_list[''] = '- Select base table first -';
     }
     else {
       $column_names = $this->getTableColumns($table_name, $column_types);
@@ -537,12 +537,12 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         $select_list[$column_name] = $column_name;
       }
       if (count($select_list) == 0) {
-        $select_list = [NULL => '-- No valid columns available --'];
+        $select_list = ['' => '-- No valid columns available --'];
       }
       // If more than one item was found, prefix the list with a Select message
       elseif (count($select_list) > 1) {
         ksort($select_list);
-        $select_list = [NULL => '- Select -'] + $select_list;
+        $select_list = ['' => '- Select -'] + $select_list;
       }
     }
 
@@ -602,12 +602,12 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // The base table is needed to generate the list. We will return
     // here again from the ajax callback once that has been selected.
     if (!$base_table) {
-      $select_list[NULL] = '- Select base table first -';
+      $select_list[''] = '- Select base table first -';
     }
     else {
       $linker_tables = $this->getLinkerTables($object_table, $base_table);
       if (count($linker_tables) == 0) {
-        $select_list = [NULL => '-- No link is possible --'];
+        $select_list = ['' => '-- No link is possible --'];
       }
       // If at least one found, convert to options for a form select
       else {
@@ -618,7 +618,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         // If more than one item was found, prefix the list with a Select message
         if (count($linker_tables) > 1) {
           ksort($select_list);
-          $select_list = [NULL => '- Select -'] + $select_list;
+          $select_list = ['' => '- Select -'] + $select_list;
         }
       }
     }
