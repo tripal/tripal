@@ -627,20 +627,31 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $base_pkey_col = $base_table_def['primary key'];
     }
 
-    $fields = [
-      'dbxref_id' => $dbxref->getValue('dbxref.dbxref_id'),
-      $base_pkey_col => $record_id,
-    ];
-    // Add in any of the other columns for the linking table.
-    foreach ($options as $key => $value) {
-      if ($key != 'pkey') {
-        $fields[$key] = $value;
-      }
-    }
     try {
-      $query = $this->connection->insert('1:' . $linking_table);
-      $query->fields($this->removeTablePrefix($fields));
-      $query->execute();
+      // Verify that this exact record does not already exist.
+      $query = $this->connection->select('1:' . $linking_table, 'L');
+      $query->condition('L.dbxref_id', $dbxref->getValue('dbxref.dbxref_id'), '=');
+      $query->condition('L.' . $base_pkey_col, $record_id, '=');
+      $query->fields('L');
+      $count = $query->countQuery()->execute()->fetchField();
+
+      // If count is not zero, the record already exists, so skip insert.
+      if (!$count) {
+        $fields = [
+          'dbxref_id' => $dbxref->getValue('dbxref.dbxref_id'),
+          $base_pkey_col => $record_id,
+        ];
+
+        // Add in any of the other columns for the linking table.
+        foreach ($options as $key => $value) {
+          if ($key != 'pkey') {
+            $fields[$key] = $value;
+          }
+        }
+        $query = $this->connection->insert('1:'.$linking_table);
+        $query->fields($this->removeTablePrefix($fields));
+        $query->execute();
+      }
     }
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy associateDbxref database error ' . $e->getMessage());
