@@ -128,9 +128,9 @@ class TripalDbxUnitTest extends UnitTestCase {
   /**
    * Revealed tripaldbxdb object.
    *
-   * @var object
+   * @var Drupal\tripal\TripalDBX\TripalDbx
    */
-  protected object $tripalDbxDb;
+  protected TripalDbx $tripalDbxDb;
 
   /**
    * {@inheritdoc}
