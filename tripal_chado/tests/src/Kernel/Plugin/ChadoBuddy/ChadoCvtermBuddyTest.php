@@ -298,6 +298,12 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
       "We did not get the cvterm_id from \"$linking_table\" that should have been set by associateCvterm");
 
+    // TEST: associate a cvterm with a base table but it already exists.
+    // Just repeat the same association, should not be an error.
+    $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records[0], []);
+    $this->assertIsBool($status, "We did not retrieve a boolean when re-associating a cvterm with the base table \"$base_table\"");
+    $this->assertTrue($status, "We did not retrieve TRUE when re-associating a cvterm with the base table \"$base_table\"");
+
     // TEST: associate a cvterm with a base table where there are required
     // columns in the linking table (i.e. pub_id), but we disable automatic
     // lookup and we don't include pub_id. Exception expected.

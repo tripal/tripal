@@ -267,6 +267,12 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     $retrieved_dbxref_id = $results[0]->dbxref_id;
     $this->assertEquals($expected_dbxref_id, $retrieved_dbxref_id,
       "We did not get the dbxref_id from \"$linking_table\" that should have been set by associateDbxref");
+
+    // TEST: associate a dbxref with a base table but record already exists.
+    // To do so, we just associate the same record a second time.
+    $status = $instance->associateDbxref($base_table, 1, $chado_buddy_records[0], []);
+    $this->assertIsBool($status, "We did not retrieve a boolean when associating a dbxref with the base table \"$base_table\"");
+    $this->assertTrue($status, "We did not retrieve TRUE when associating a dbxref with the base table \"$base_table\"");
   }
 
 }
