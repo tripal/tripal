@@ -103,9 +103,9 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Revealed config object.
    *
-   * @var object
+   * @var \Drupal\Core\Config\ImmutableConfig
    */
-  protected object $config;
+  protected ImmutableConfig $config;
 
   /**
    * {@inheritdoc}
