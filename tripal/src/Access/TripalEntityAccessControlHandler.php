@@ -8,6 +8,8 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Access\AccessResult;
+use Drupal\tripal\Entity\TripalEntityType;
+use Drupal\user\Entity\Role;
 
 /**
  * Access controller for the Tripal Content entity (i.e. TripalEntity).
@@ -412,6 +414,28 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
     }
 
     return FALSE;
+  }
+
+  /**
+   * Grants the "view all {content_type} content" permission to the given user.
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $entity_type
+   *   The Tripal entity type.
+   * @param string $role
+   *   The user role to grant the permission to.
+   */
+  public static function grantViewAllPermission(TripalEntityType $entity_type, string $role) {
+    // Load the given user role.
+    $user_role = Role::load($role);
+
+    $type_id = $entity_type->id();
+    $permission_to_grant = "view all $type_id content";
+
+    // Grant the permissions to the given user role.
+    if ($user_role) {
+      $user_role->grantPermission($permission_to_grant);
+      $user_role->save();
+    }
   }
 
 }
