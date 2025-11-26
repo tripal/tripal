@@ -77,13 +77,6 @@ class TripalDbxUnitTest extends UnitTestCase {
   protected ImmutableConfig $config;
 
   /**
-   * Prophesize container object.
-   *
-   * @var Prophecy\Prophecy\ObjectProphecy
-   */
-  protected ObjectProphecy $proContainer;
-
-  /**
    * Drupal container object used in the tests.
    *
    * @var Drupal\Core\DependencyInjection\ContainerBuilder
