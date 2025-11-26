@@ -292,7 +292,6 @@ class SchemaTest extends TripalTestKernelBase {
     // Hack to bypass protected restriction.
     $getPrefixInfo = function ($table = 'default', $add_prefix = TRUE) {
       return $this->getPrefixInfo($table, $add_prefix);
-
     };
     $prefix_info = $getPrefixInfo->call($scmock, 'something');
     $this->assertEquals(

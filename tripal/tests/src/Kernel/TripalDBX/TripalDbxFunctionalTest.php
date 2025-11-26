@@ -92,9 +92,9 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
   /**
    * Revealed config factory object.
    *
-   * @var object
+   * @var Drupal\Core\Config\ConfigFactory
    */
-  protected object $configFactory;
+  protected ConfigFactory $configFactory;
 
   /**
    * Prophesize config object.
@@ -106,9 +106,9 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
   /**
    * Revealed config object.
    *
-   * @var object
+   * @var Drupal\Core\Config\ImmutableConfig
    */
-  protected object $config;
+  protected ImmutableConfig $config;
 
   /**
    * {@inheritdoc}
