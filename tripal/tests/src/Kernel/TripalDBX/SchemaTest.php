@@ -136,13 +136,9 @@ class SchemaTest extends TripalTestKernelBase {
    * @var Prophecy\Prophecy\ObjectProphecy
    */
   protected ObjectProphecy $proConfig;
-
-  /**
-   * Revealed config object.
-   *
-   * @var object
+   * @var Drupal\Core\Config\ImmutableConfig
    */
-  protected object $config;
+  protected ImmutableConfig $config;
 
   /**
    * {@inheritdoc}
