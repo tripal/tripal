@@ -89,9 +89,9 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Revealed config factory object.
    *
-   * @var object
+   * @var \Drupal\Core\Config\ConfigFactory
    */
-  protected object $configFactory;
+  protected ConfigFactory $configFactory;
 
   /**
    * Prophesize config object.
