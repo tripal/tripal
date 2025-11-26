@@ -19,11 +19,11 @@ use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
  * there is a single schema. As such the core Drupal implementations focus on
  * managing tables within a single schema.
  *
- * This implementation extends that table-management functionality to also include
- * Schema-focused management including creation, cloning, renaming, dropping
- * and definition export. Additionally, it removes the assumption of a single
- * schema by allowing the default schema to be set based on a Tripal DBX
- * connection.
+ * This implementation extends that table-management functionality to also
+ * include Schema-focused management including creation, cloning, renaming,
+ * dropping, and definition export. Additionally, it removes the assumption of
+ * a single schema by allowing the default schema to be set based on a Tripal
+ * DBX connection.
  *
  * Here are some useful functions to know that are inherited from Drupal Schema
  * classes (core + PgSchema implementation):
@@ -44,9 +44,9 @@ abstract class TripalDbxSchema extends PgSchema {
    *
    * OVERRIDES \Drupal\Core\Database\Schema:$defaultSchema.
    *
-   * Drupal assumes that the default schema name is public. However, for multiple
-   * schema support, we need to set this dynamically in the constructor and
-   * thus set it to empty here.
+   * Drupal assumes that the default schema name is public. However, for
+   * multiple schema support, we need to set this dynamically in the
+   * constructor and thus set it to empty here.
    *
    * @var string
    */
@@ -57,7 +57,8 @@ abstract class TripalDbxSchema extends PgSchema {
    *
    * OVERRIDES \Drupal\Core\Database\Schema:$quotedDefaultSchema.
    *
-   * Same reasoning as above since this is generated based on the default schema.
+   * Same reasoning as above since this is generated based on the
+   * default schema.
    *
    * @var string
    */
@@ -88,8 +89,8 @@ abstract class TripalDbxSchema extends PgSchema {
    *   - 'source': either 'database' to extract data from database or 'file' to
    *     get the data from a static YAML file.
    *     Default: 'file'.
-   *   - 'version': version of the Tripal DBX managed schema to fetch from a file.
-   *     Ignored for 'database' source.
+   *   - 'version': version of the Tripal DBX managed schema to fetch from a
+   *     file. Ignored for 'database' source.
    *     Default: implementation specific.
    *   - 'format': return format, either 'SQL' for an array of SQL string,
    *     'Drupal' for Drupal schema API, 'none' to return nothing or anything
@@ -99,7 +100,7 @@ abstract class TripalDbxSchema extends PgSchema {
    *     Default: TripalDbx::parseTableDdl data structure structure.
    *   - 'clear': if not empty, cache will be cleared.
    *
-   * @return
+   * @return array
    *   An array with details for the current schema version as defined by
    *   $parameters values.
    *
@@ -116,12 +117,12 @@ abstract class TripalDbxSchema extends PgSchema {
    *
    * The TripalDbxSchema object should be instantiated by the
    * TripalDbxConnection::schema() method in order to avoid issues when the
-   * default Tripal DBX managed schema name is changed in the TripalDbxConnection
-   * object which could lead to issues.
+   * default Tripal DBX managed schema name is changed in the
+   * TripalDbxConnection object which could lead to issues.
    *
    * If you choose to instantiate a TripalDbxSchema object yourself, you are
-   * responsible to not change the Tripal DBX managed schema name of the connection
-   * object used to instantiate this TripalDbxSchema.
+   * responsible to not change the Tripal DBX managed schema name of the
+   * connection object used to instantiate this TripalDbxSchema.
    *
    * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $connection
    *   A Tripal DBX connection object.
@@ -129,7 +130,7 @@ abstract class TripalDbxSchema extends PgSchema {
    * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    */
   public function __construct(
-    \Drupal\tripal\TripalDBX\TripalDbxConnection $connection
+    TripalDbxConnection $connection,
   ) {
     $schema_name = $connection->getSchemaName();
     // Get a TripalDbx object.
@@ -145,7 +146,7 @@ abstract class TripalDbxSchema extends PgSchema {
   }
 
   /**
-   *
+   * Class initialization.
    */
   public function initialize() {
     if (!$this->initialized) {
@@ -163,8 +164,7 @@ abstract class TripalDbxSchema extends PgSchema {
         $logger = \Drupal::service('tripal.logger');
         $sql_cloner_path =
           \Drupal::service('extension.list.module')->getPath('tripal')
-          . '/src/TripalDBX/pg-clone-schema/clone_schema.sql'
-        ;
+          . '/src/TripalDBX/pg-clone-schema/clone_schema.sql';
         // Retrieve the SQL file.
         $sql = file_get_contents($sql_cloner_path);
         if (!$sql) {
@@ -209,8 +209,9 @@ abstract class TripalDbxSchema extends PgSchema {
    *
    * OVERRIDES \Drupal\Core\Database\Schema:findTables().
    *
-   * NOTE: In Drupal 10 individually prefixed tables will no longer be supported.
-   *  At this point we should re-evaluate if this override is still needed.
+   * NOTE: In Drupal 10 individually prefixed tables will no longer be
+   *  supported. At this point we should re-evaluate if this override is
+   *  still needed.
    *
    * Overrides the PostgreSQL implementation for two reasons:
    *  1. Switch back to the generic Drupal implementation to prepare for other
@@ -220,6 +221,7 @@ abstract class TripalDbxSchema extends PgSchema {
    *
    * @param string $table_expression
    *   An SQL expression, for example "cache_%" (without the quotes).
+   *
    * @return array
    *   Both the keys and the values are the matching tables.
    */
@@ -241,7 +243,7 @@ abstract class TripalDbxSchema extends PgSchema {
       ->compile($this->connection, $this);
     $results = $this->connection
       ->query("SELECT table_name AS table_name FROM information_schema.tables WHERE " . (string) $condition, $condition
-      ->arguments());
+        ->arguments());
     foreach ($results as $table) {
       $tables[$table->table_name] = $table->table_name;
     }
@@ -268,10 +270,11 @@ abstract class TripalDbxSchema extends PgSchema {
    * isn't clear, if this function is removed then tests will fail due to
    * incorrect table prefixing.
    *
-   * @param string $table_name
+   * @param string $table
    *   The non-prefixed name of the table.
+   *
    * @return object
-   *    An object with two member variables:
+   *   An object with two member variables:
    *     - 'blob_fields' that lists all the blob fields in the table.
    *     - 'sequences' that lists the sequences used in that table.
    */
@@ -318,9 +321,10 @@ OR pg_get_expr(pg_attrdef.adbin, pg_attribute.attrelid) LIKE 'nextval%')
 EOD;
         $result = $this->connection
           ->query($sql, [
-          ':key' => $key,
-        ]);
-      } catch (\Exception $e) {
+            ':key' => $key,
+          ]);
+      }
+      catch (\Exception $e) {
         $this->connection
           ->rollbackSavepoint();
         throw $e;
@@ -357,24 +361,24 @@ EOD;
    *
    * OVERRIDES \Drupal\Core\Database\Schema:indexExists().
    *
-   * Our version of this method adds an optional parameter $exact_name to support
-   * exact name matches since many biological data-focused databases will not
-   * follow the Drupal index naming pattern. For example, Chado does not follow
-   * this pattern.
+   * Our version of this method adds an optional parameter $exact_name to
+   * support exact name matches since many biological data-focused databases
+   * will not follow the Drupal index naming pattern. For example, Chado does
+   * not follow this pattern.
    *
-   * @param $table
+   * @param string $table
    *   The name of the table in Tripal DBX managed schema.
-   * @param $name
+   * @param string $index_name
    *   The full name of the index (including the '_idx' part for instance).
    * @param bool $exact_name
    *   If FALSE, Drupal will append to the given name the '__idx' suffix (added
    *   when ::addIndex is used) and will adjust the name if needed (length). If
    *   TRUE, the function assumes the given index name is complete.
    *
-   * @return
+   * @return bool
    *   TRUE if the given index exists, otherwise FALSE.
    */
-   public function indexExists($table, $index_name, bool $exact_name = FALSE) {
+  public function indexExists($table, $index_name, bool $exact_name = FALSE) {
     if ($exact_name) {
       return (bool) $this->connection
         ->query("SELECT 1 FROM pg_indexes WHERE indexname = '{$index_name}'")
@@ -388,7 +392,7 @@ EOD;
   /**
    * Returns the size in bytes of a PostgreSQL schema.
    *
-   * @return integer
+   * @return int
    *   The size in bytes of the schema or 0 if the size is not available.
    *
    * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
@@ -423,7 +427,7 @@ EOD;
    *
    * @param string $function_name
    *   The name of the function.
-   * @param array $func_parameters
+   * @param array $function_parameters
    *   An ordered array of input parameter types that are part of the function
    *   signature.
    *
@@ -434,10 +438,9 @@ EOD;
    */
   public function functionExists(
     string $function_name,
-    array $function_parameters
+    array $function_parameters,
   ) :bool {
     $schema_name = $this->defaultSchema;
-    $db_name = $this->connection->getDatabaseName();
 
     if (empty($function_name) || !is_array($function_parameters)) {
       throw new SchemaException('Invalid parameters for functionExists().');
@@ -517,7 +520,7 @@ EOD;
   public function sequenceExists(
     ?string $table_name = NULL,
     ?string $column_name = NULL,
-    ?string &$sequence_name = NULL
+    ?string &$sequence_name = NULL,
   ) :bool {
 
     $schema_name = $this->defaultSchema;
@@ -579,14 +582,14 @@ EOD;
    *   The type of constraint. Should be one of "PRIMARY KEY", "UNIQUE", or
    *   "FOREIGN KEY".
    *
-   * @return
+   * @return bool
    *   TRUE if the constraint exists and FALSE otherwise.
    */
   public function constraintExists(
     $table,
     $constraint_name,
-    ?string $type = NULL
-  ) {
+    ?string $type = NULL,
+  ) :bool {
     // Use parent method if no type was specified.
     if (empty($type)) {
       return parent::constraintExists($table, $constraint_name);
@@ -605,8 +608,7 @@ EOD;
         ':name' => $constraint_name,
         ':type' => $type,
       ])
-      ->fetchField()
-    ;
+      ->fetchField();
 
     return !empty($constraint_exists);
   }
@@ -619,17 +621,17 @@ EOD;
    * @param ?string $column
    *   (optional) The name of the primary key column.
    *
-   * @return
+   * @return bool
    *   TRUE if the primary key meets all the requirements and FALSE otherwise.
    */
   public function primaryKeyExists(
     string $table,
-    ?string $column = NULL
+    ?string $column = NULL,
   ) :bool {
 
     // If they didn't supply the column, then we can look it up.
     if ($column === NULL) {
-      $parameters = ['source' => 'database', 'format' => 'Drupal',];
+      $parameters = ['source' => 'database', 'format' => 'Drupal'];
 
       // Cache the table schema so we don't fetch it thousands of times.
       $cache_id = 'table_def_' . $table . '_' . $parameters;
@@ -685,8 +687,9 @@ EOD;
    * @param string $right_table
    *   The name of the table the foreign key refers to. For the example
    *   above it would be cvterm.
+   *
    * @return array
-   *    The foreign key definition
+   *   The foreign key definition
    */
   public function getForeignKeyDef(string $left_table, string $right_table) {
     $left_def = $this->getTableDef($left_table, ['format' => 'Drupal']);
@@ -705,6 +708,7 @@ EOD;
    * @param string $right_table
    *   The name of the table the foreign key refers to. For the example
    *   above it would be cvterm.
+   *
    * @return bool
    *   TRUE if a foreign key exists, FALSE if not.
    */
@@ -726,15 +730,15 @@ EOD;
    *   The name of the column that is a foreign key in. E.g. 'type_id' for
    *     the feature.type_id => cvterm.cvterm_id foreign key.
    *
-   * @return
+   * @return bool
    *   TRUE if the constraint exists and FALSE otherwise.
    */
   public function foreignKeyConstraintExists(
     string $base_table,
-    string $base_column
-  ) {
-    // Since we don't have a constraint name, we have to use the known pattern for
-    // creating these names in order to make this check.
+    string $base_column,
+  ) :bool {
+    // Since we don't have a constraint name, we have to use the known pattern
+    // for creating these names in order to make this check.
     // This is due to PostgreSQL not storing column information for constraints
     // in the information_schema tables.
     $constraint_name = $base_table . '_' . $base_column . '_fkey';
@@ -774,7 +778,7 @@ EOD;
    *     or a tripal materialized view, or 'other' for other elements.
    */
   public function getTables(
-    array $include = []
+    array $include = [],
   ) :array {
     static $type_to_name = [
       'r' => 'table',
@@ -793,7 +797,7 @@ EOD;
     ];
     $schema_name = $this->defaultSchema;
     $include_types = [];
-    foreach ($include as $index => $type_name) {
+    foreach ($include as $type_name) {
       if (array_key_exists($type_name, $name_to_type)) {
         $include_types[$name_to_type[$type_name]] = TRUE;
       }
@@ -826,8 +830,7 @@ EOD;
           ':schema_name' => $schema_name,
           ':object_types[]' => $include_types,
         ]
-      )
-    ;
+      );
 
     $tables = [];
     // Get original schema to differentiate base and custom.
@@ -843,8 +846,7 @@ EOD;
     foreach ($results as $table) {
       $table_status = array_key_exists($table->relname, $schema_def)
         ? 'base'
-        : 'custom'
-      ;
+        : 'custom';
       if (('r' != $table->relkind)
           || ($base_tables && ($table_status == 'base'))
           || ($custom_tables && ($table_status == 'custom'))
@@ -873,8 +875,8 @@ EOD;
    *     checked, and the lookup will be done in the specified order,
    *     e.g. ['file', 'database'].
    *     Default: 'file'.
-   *   - 'version': version of the Tripal DBX managed schema to fetch from a file.
-   *     Ignored fot 'database' source.
+   *   - 'version': version of the Tripal DBX managed schema to fetch from a
+   *     file. Ignored fot 'database' source.
    *     Default: implementation specific.
    *   - 'format': return format, either 'sql' for an array of SQL string,
    *     'drupal' for Drupal schema API, 'none' to return nothing or anything
@@ -886,7 +888,7 @@ EOD;
    *     Default: TripalDbx::parseTableDdl data structure structure.
    *   - 'clear': if not empty, cache will be cleared.
    *
-   * @return
+   * @return array
    *   An array with details from the specified source for the specified table
    *   using the specified format or an empty array if table not found.
    */
@@ -897,8 +899,7 @@ EOD;
     $sources = (array) ($parameters['source'] ?? 'file');
     $format = strtolower($parameters['format'] ?? '');
     $version = $parameters['version']
-      ?? $this->connection->getVersion()
-    ;
+      ?? $this->connection->getVersion();
     if (!empty($parameters['clear'])) {
       $table_structures = [];
     }
@@ -932,12 +933,14 @@ EOD;
       if (!$table_def && 'tripal' == $source) {
         $valid_source = TRUE;
         $table_def = [];
-        $query = $this->connection->select('tripal_custom_tables','ct');
+        $query = $this->connection->select('tripal_custom_tables', 'ct');
         $query->fields('ct', ['schema']);
         $query->condition('ct.table_name', $table);
         $schema = $query->execute()->fetchField();
         if ($schema) {
-          $table_def = unserialize($schema);
+          // While this is not externally derived content, this allowed_classes
+          // option provides more security.
+          $table_def = unserialize($schema, ['allowed_classes' => FALSE]);
         }
       }
       if (!$table_def && 'database' == $source) {
@@ -976,7 +979,7 @@ EOD;
   /**
    * Retrieves the table DDL (table data definition language).
    *
-   * @param string $table
+   * @param string $table_name
    *   The name of the table to retrieve.
    * @param bool $clear_cache
    *   If TRUE, cache is cleared.
@@ -987,7 +990,7 @@ EOD;
    */
   public function getTableDdl(
     string $table_name,
-    bool $clear_cache = FALSE
+    bool $clear_cache = FALSE,
   ) :string {
     static $db_ddls = [];
 
@@ -1031,7 +1034,7 @@ EOD;
   /**
    * Retrieves tables referencing a given one.
    *
-   * @param string $table
+   * @param string $table_name
    *   The name of the table used as foreign table by other tables.
    * @param bool $clear_cache
    *   If TRUE, cache is cleared.
@@ -1043,7 +1046,7 @@ EOD;
    */
   public function getReferencingTables(
     string $table_name,
-    bool $clear_cache = FALSE
+    bool $clear_cache = FALSE,
   ) :array {
     static $db_dependencies = [];
 
@@ -1078,12 +1081,12 @@ EOD;
       ";
       $all_referencing = $this->connection->query(
           $sql_query,
-          [':schema' => $schema_name, ':table' => $table_name, ]
+          [':schema' => $schema_name, ':table' => $table_name]
       );
       $referencing_tables = [];
       foreach ($all_referencing as $referencing) {
         $referencing_tables[$referencing->deptable] = [
-          $referencing->column => $referencing->depcolumn
+          $referencing->column => $referencing->depcolumn,
         ];
       }
       $db_dependencies[$cache_key] = $referencing_tables;
@@ -1109,8 +1112,8 @@ EOD;
    * @throws \BadMethodCallException
    *   When ::createTableSql() is not implemented in the concrete driver class.
    *
-   * For information about Postgresql version 15 support:
    * @see https://github.com/GMOD/Chado/issues/139
+   * for information about Postgresql version 15 support.
    */
   public function createTable($name, $table) {
 
@@ -1182,16 +1185,13 @@ EOD;
    *
    * @param string $source_schema
    *   Source schema to clone.
-   * @param ?string $target_schema
-   *   Destination schema that will be created and filled with a copy of
-   *   $source_schema. If not set, current schema will be the target.
    *
    * @return int
    *   The new schema size in bytes or 0 if the operation failed or the schema
    *   to clone was empty.
    */
   public function cloneSchema(
-    string $source_schema
+    string $source_schema,
   ) :int {
     $target_schema = $this->defaultSchema;
     // Clone schema.
@@ -1222,12 +1222,15 @@ EOD;
    * @param string $new_schema_name
    *   New name to use.
    *
+   * @return void
+   *   No return value.
+   *
    * @throws \Drupal\Core\Database\DatabaseExceptionWrapper
    * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    *   if there is no current schema name.
    */
   public function renameSchema(
-      string $new_schema_name
+    string $new_schema_name,
   ) :void {
     if (empty($this->defaultSchema)) {
       throw new SchemaException('Unable to rename current schema: no current schema set.');
@@ -1260,7 +1263,7 @@ EOD;
    * We needed to override it because core Drupal makes some assumptions
    * when building the where condition that do not match our multi-schema setup.
    */
-  public function tableExists($table, $add_prefix = true) {
+  public function tableExists($table, $add_prefix = TRUE) {
 
     // We can't use \Drupal::database()->select() here
     // because it would prefix information_schema.tables
@@ -1272,4 +1275,5 @@ EOD;
           [':table' => $table, ':schema' => $this->getSchemaName()])
       ->fetchField();
   }
+
 }
