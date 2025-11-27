@@ -2,8 +2,10 @@
 
 namespace Drupal\Tests\tripal\Functional\Entity;
 
+use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the basic functions of Tripal Content.
@@ -11,8 +13,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal
  * @group Tripal Content
  */
-#[Group('Tripal')]
-#[Group('Tripal Content')]
+#[Group('tripal-content')]
+#[Group('tripal-content')]
+#[RunTestsInSeparateProcesses]
 class TripalContentTest extends TripalTestBrowserBase {
 
   protected static $modules = ['user', 'path', 'tripal'];
@@ -25,21 +28,21 @@ class TripalContentTest extends TripalTestBrowserBase {
     // Setting the default values:
     $random = $this->getRandomGenerator();
     // Provides a title with ~8 latin capitalized words.
-    $values['label'] = $random->sentences(8,TRUE);
+    $values['label'] = $random->sentences(8, TRUE);
     // Provides a machine name for the content type.
-    $values['id'] = $random->sentences(1,TRUE);
+    $values['id'] = $random->sentences(1, TRUE);
     // Provides a category with ~3 latin capitalized words.
-    $values['category'] = $random->sentences(3,TRUE);
+    $values['category'] = $random->sentences(3, TRUE);
     // Provides a title with ~8 latin capitalized words.
     $values['help_text'] = $random->sentences(25);
     // Provides a title with ~8 latin capitalized words.
-    $values['title_format'] = $random->sentences(8,TRUE);
+    $values['title_format'] = $random->sentences(8, TRUE);
     // Provides a category with ~3 latin capitalized words separated by '/'.
-    $values['url_format'] = str_replace(' ', '/', $random->sentences(3,TRUE));
+    $values['url_format'] = str_replace(' ', '/', $random->sentences(3, TRUE));
 
     // Create a mock term to provide to the entity.
-    $term_idspace = $random->sentences(3,TRUE);
-    $term_accession = $random->sentences(3,TRUE);
+    $term_idspace = $random->sentences(3, TRUE);
+    $term_accession = $random->sentences(3, TRUE);
     $term = $this->createMock('\Drupal\tripal\TripalVocabTerms\TripalTerm');
     $term->expects($this->any())
       ->method('getIdSpace')->willReturn($term_idspace);
@@ -48,7 +51,7 @@ class TripalContentTest extends TripalTestBrowserBase {
     $values['term'] = $term;
 
     // Actually creating the type.
-    $entity_type_obj = \Drupal\tripal\Entity\TripalEntityType::create($values);
+    $entity_type_obj = TripalEntityType::create($values);
     $this->assertIsObject($entity_type_obj, "Unable to create a test content type.");
     $entity_type_obj->save();
 
@@ -84,7 +87,7 @@ class TripalContentTest extends TripalTestBrowserBase {
       $assert->pageTextContains('Access denied');
     }
 
-    // Perform a user login with the permissions specified above
+    // Perform a user login with the permissions specified above.
     $this->drupalLogin($web_user);
 
     // Then check that we can load each page with the correct permissions.

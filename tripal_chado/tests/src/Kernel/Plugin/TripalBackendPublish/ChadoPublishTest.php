@@ -1,10 +1,13 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel;
+namespace Drupal\Tests\tripal\Kernel\Plugin\TripalBackendPublish;
 
+use Drupal\tripal\Entity\TripalEntityType;
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the publish service for chado-based content types.
@@ -12,8 +15,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group TripalBackendPublish
  * @group ChadoPublish
  */
-#[Group('TripalBackendPublish')]
-#[Group('ChadoPublish')]
+#[Group('tripal-publish')]
+#[Group('chado-publish')]
+#[RunTestsInSeparateProcesses]
 class ChadoPublishTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
@@ -49,29 +53,29 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     // Grab the container.
     $container = \Drupal::getContainer();
 
-    // Create a mocked logger so we can access error messages from the Tripal logger
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    // Create a mocked logger so we can access error messages from the Tripal logger.
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['warning'])
       ->getMock();
     $mock_logger->method('warning')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
           $this->mock_warning .= str_replace(array_keys($context), $context, $message);
           return NULL;
-        });
+      });
     $container->set('tripal.logger', $mock_logger);
 
     // Ensure we install the schema/modules we need.
-    $this->prepareEnvironment(['TripalTerm','TripalEntity']);
+    $this->prepareEnvironment(['TripalTerm', 'TripalEntity']);
     // -- additionally we need tripal_chado config to access the yaml files.
     $this->installConfig('tripal_chado');
 
     // Get connection to drupal database in place.
     $this->public = \Drupal::service('database');
 
-    // Get Chado in place
+    // Get Chado in place.
     $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
-    // Update entity settings to match tripal/config/install/tripal.settings.yml
+    // Update entity settings to match tripal/config/install/tripal.settings.yml.
     $allowed_title_tags = 'em i strong u';
     \Drupal::configFactory()
       ->getEditable('tripal.settings')
@@ -81,7 +85,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     // Create three organisms in chado to be published.
     // Note: We added HTML to the genus (not approved tag) to confirm that
     // unallowed tags are being filtered and allowed ones are being kept.
-    for ($i=1; $i <= 3; $i++) {
+    for ($i = 1; $i <= 3; $i++) {
       $this->connection->insert('1:organism')
         ->fields([
           'genus' => '<p>Tripalus</p>',
@@ -91,7 +95,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     }
 
     // Create three projects in chado to be published.
-    for ($i=1; $i <= 3; $i++) {
+    for ($i = 1; $i <= 3; $i++) {
       $this->connection->insert('1:project')
         ->fields([
           'name' => 'Project No. ' . $i,
@@ -100,7 +104,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     }
 
     // Create three contacts in chado to be published.
-    for ($i=1; $i <= 3; $i++) {
+    for ($i = 1; $i <= 3; $i++) {
       $this->connection->insert('1:contact')
         ->fields([
           'name' => 'Contact No. ' . $i,
@@ -132,17 +136,17 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     }
     // Add a title to the null publication to avoid a warning message.
     $this->connection->update('1:pub')
-        ->fields([
-          'title' => 'Null Publication',
-        ])->condition('pub_id', 1, '=')->execute();
+      ->fields([
+        'title' => 'Null Publication',
+      ])->condition('pub_id', 1, '=')->execute();
 
     // Create the terms for the field property storage types.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    foreach(['OBI','local','TAXRANK','NCBITaxon','SIO','schema','data','NCIT','operation','OBCS','SWO','IAO','TPUB','rdfs'] as $termIdSpace) {
+    foreach (['OBI', 'local', 'TAXRANK', 'NCBITaxon', 'SIO', 'schema', 'data', 'NCIT', 'operation', 'OBCS', 'SWO', 'IAO', 'TPUB', 'rdfs'] as $termIdSpace) {
       $idsmanager->createCollection($termIdSpace, "chado_id_space");
     }
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    foreach(['obi','local','taxonomic_rank','ncbitaxon','SIO','schema','EDAM','ncit','OBCS','swo','IAO','tripal_pub'] as $termVocab) {
+    foreach (['obi', 'local', 'taxonomic_rank', 'ncbitaxon', 'SIO', 'schema', 'EDAM', 'ncit', 'OBCS', 'swo', 'IAO', 'tripal_pub'] as $termVocab) {
       $vmanager->createCollection($termVocab, "chado_vocabulary");
     }
 
@@ -196,12 +200,12 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $this->assertCount(3, $published_entities,
       "We did not publish the expected number of entities.");
 
-    // confirm the entities are added.
+    // Confirm the entities are added.
     $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'organism']);
     $this->assertCount(3, $confirmed_entities,
       "We expected there to be the same number of organism entities as we inserted.");
 
-    // confirm they have the expected titles and URL aliases
+    // Confirm they have the expected titles and URL aliases.
     $i = 1;
     foreach ($confirmed_entities as $key => $entity) {
       $expected_title = "<em>Tripalus databasica $i</em>";
@@ -232,28 +236,28 @@ class ChadoPublishTest extends ChadoTestKernelBase {
         ->fields([
           'genus' => 'Tripalus',
           'species' => 'databasica ' . $key,
-            'comment' => "Entry $key: we are adding a comment to ensure that we do have working fields that are not required.",
-          ])->execute();
+          'comment' => "Entry $key: we are adding a comment to ensure that we do have working fields that are not required.",
+        ])->execute();
       $test_title_format = '=T=' . $template;
       $test_url_format = '/U/' . $template;
-      $organism_bundle = \Drupal\tripal\Entity\TripalEntityType::load('organism');
+      $organism_bundle = TripalEntityType::load('organism');
       $organism_bundle->setTitleFormat($test_title_format);
       $organism_bundle->setURLFormat($test_url_format);
       $organism_bundle->save();
       $published_entities = $this->chado_publish->publish($publish_options);
       $this->assertCount(1, $published_entities,
         "We did not publish the expected number of entities.");
-      // confirm the entities are added.
+      // Confirm the entities are added.
       $all_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'organism']);
       $this->assertCount($key, $all_entities,
         "We expected there to be the same total number of organism entities as we inserted so far.");
 
-      // confirm title and URL are correct
+      // Confirm title and URL are correct.
       $expected_title = '=T=' . $expected[$key];
       $expected_url = '/U/' . $expected[$key];
       $title_string = $all_entities[$key]->getTitle();
       $url_string = $all_entities[$key]->toUrl()->toString();
-      // Publish does not currently support the [TripalEntity__entity_id] on a new entity, see PR #2154
+      // Publish does not currently support the [TripalEntity__entity_id] on a new entity, see PR #2154.
       if ($key != 7) {
         $this->assertEquals($expected_title, $title_string, "Published title differs from the expected value");
       }
@@ -390,7 +394,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $this->assertCount(3, $published_entities,
       "We did not publish the expected number of entities.");
 
-    // confirm the entities are added.
+    // Confirm the entities are added.
     $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'project']);
     $this->assertCount(3, $confirmed_entities,
       "We expected there to be the same number of project entities as we inserted.");
@@ -401,7 +405,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $this->assertContains(count($published_entities), [3, 4],
       "We did not publish the expected number of entities.");
 
-    // confirm the entities are added. Chado defines a default "null" contact, which
+    // Confirm the entities are added. Chado defines a default "null" contact, which
     // may also get published, so expect 4 instead of 3. (Issue #1809)
     $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'contact']);
     $this->assertContains(count($confirmed_entities), [3, 4],
@@ -411,7 +415,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     // Because this is a test environment, we know that the entity IDs
     // that we just published will start with 1, but because of the
     // "null" contact, we will just check the project table.
-    for ($i=1; $i <= 3; $i++) {
+    for ($i = 1; $i <= 3; $i++) {
       $query = \Drupal::entityQuery('tripal_entity')
         ->condition('type', 'project')
         ->condition('project_name.record_id', $i, '=')

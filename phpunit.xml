@@ -62,7 +62,10 @@
     </testsuite>
   </testsuites>
   <!-- Settings for coverage reports. -->
-  <source ignoreSuppressionOfDeprecations="true">
+  <source
+    ignoreSuppressionOfDeprecations="true"
+    ignoreIndirectDeprecations="true"
+    >
     <include>
       <directory suffix=".php">tripal/src</directory>
       <file>tripal/tripal.module</file>

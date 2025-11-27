@@ -6,6 +6,7 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\tripal_chado\Task\ChadoPreparer;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Chado preparer task.
@@ -18,10 +19,10 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado Preparer
  */
 #[CoversClass(ChadoPreparer::class)]
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal Chado Task')]
-#[Group('Tripal Chado Preparer')]
+#[Group('biodb-task')]
+#[group('task-preparer')]
+#[Group('chado-schema')]
+#[RunTestsInSeparateProcesses]
 class ChadoPreparerTest extends ChadoTestBrowserBase {
 
   /**
@@ -82,7 +83,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
       'tripal_gff_temp',
       'tripal_gffcds_temp',
       'tripal_gffprotein_temp',
-      'tripal_obo_temp'
+      'tripal_obo_temp',
     ];
     foreach ($expected_tables as $table_name) {
       $this->assertTrue($schema2check->tableExists($table_name),
@@ -97,7 +98,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
       'organism_feature_count',
       'analysis_organism',
       'db2cv_mview',
-      'cv_root_mview'
+      'cv_root_mview',
     ];
     foreach ($expected_tables as $table_name) {
       $this->assertTrue($schema2check->tableExists($table_name),
@@ -120,7 +121,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
 
     // Check for some specific cv / db which should have been inserted.
     $cv_found = $chado2check->query("SELECT 1 FROM {1:cv} WHERE name = 'tripal_contact'")->fetchField();
-    $this->assertEquals(1, $cv_found, 'Found feature_property CV');
+    $this->assertEquals(1, $cv_found, 'Found tripal_contact CV');
     $db_found = $chado2check->query("SELECT 1 FROM {1:db} WHERE name = 'TAXRANK';")->fetchField();
     $this->assertEquals(1, $db_found, 'Found TAXRANK DB');
     $cvterm_found = $chado2check->query("SELECT 1 FROM {1:cvterm} WHERE name = 'accession'")->fetchField();
@@ -145,9 +146,9 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     // 6: POPULATE CHADO_SEMWEB TABLE.
     // --------------------------------
     // Functionality not complete in the prepare step yet.
-
     // 7: CHADO CVS TO TRIPAL TERMS.
     // --------------------------------
     // Functionality not complete in the prepare step yet.
   }
+
 }
