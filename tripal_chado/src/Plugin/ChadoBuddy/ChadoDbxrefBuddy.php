@@ -648,7 +648,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
             $fields[$key] = $value;
           }
         }
-        $query = $this->chado_connection->insert('1:'.$linking_table);
+        $query = $this->chado_connection->insert('1:' . $linking_table);
         $query->fields($this->removeTablePrefix($fields));
         $query->execute();
       }

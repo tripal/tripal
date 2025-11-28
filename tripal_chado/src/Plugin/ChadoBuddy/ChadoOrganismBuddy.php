@@ -105,8 +105,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   - buddy_record = a ChadoBuddyRecord can be used
    *     in place of or in addition to other keys.
    * @param array $options
-   *   (Optional)
-   *   Associative array of options.
+   *   (Optional) Associative array of options with these supported keys:
    *   - 'case_insensitive' - a single key, or an array of keys
    *     to query case insensitively.
    *
@@ -122,7 +121,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   If an error is encountered.
    */
   public function getOrganism(array $conditions, array $options = []) {
-    // $valid_tables = ['organism', 'cv', 'cvterm', 'db', 'dbxref'];
+    // $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'organism'];
     $valid_tables = ['organism'];
     $valid_columns = $this->getTableColumns($valid_tables);
     $conditions = $this->dereferenceBuddyRecord($conditions);
@@ -140,7 +139,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     $query->leftJoin('1:cv', 'cv', 'cvterm.cv_id = cv.cv_id');
     $query->leftJoin('1:dbxref', 'dbxref', 'cvterm.dbxref_id = dbxref.dbxref_id');
     $query->leftJoin('1:db', 'db', 'dbxref.db_id = db.db_id');
-     */
+    */
     $this->addConditions($query, $conditions, $options);
 
     try {
@@ -161,6 +160,100 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     }
 
     return $buddies;
+  }
+
+  /**
+   * Insert a new organism.
+   *
+   * @param array $values
+   *   An associative array that describes the values to be inserted into the
+   *   chado.organism table. Valid keys include:
+   *   - organism.genus
+   *   - organism.species
+   *   - organism.infraspecific_name
+   *   - organism.type_id
+   *   - organism.abbreviation
+   *   - organism.common_name
+   *   - organism.comment
+   *   - cvterm.name
+   *   - cvterm.is_obsolete
+   *   - cv.name
+   *   - dbxref.accession
+   *   - db.name
+   *   - buddy_record = a ChadoBuddyRecord can be used
+   *     in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional) Associative array of options with these supported keys:
+   *   - create_cvterm - set to TRUE (default FALSE) if you specified the
+   *     necessary fields and want to create the dbxref and cvterm for
+   *     organism.type_id when creating this organism, if they do not exist.
+   *     NOTE: This is NOT recommended. We suggest you import ontologies first.
+   *
+   * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
+   *   The inserted ChadoBuddyRecord will be returned on success and an
+   *   exception will be thrown if an error is encountered. If the record
+   *   already exists then an error will be thrown. If this is not the desired
+   *   behaviour, then use the upsert version of this method.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered.
+   */
+  public function insertOrganism(array $values, array $options = []) {
+
+    $valid_tables = ['organism'];
+    if (array_key_exists('create_cvterm', $options) and $options['create_cvterm']) {
+      // @todo perhaps also check here if required keys are provided
+      $valid_tables[] = ['cv', 'cvterm', 'db', 'dbxref'];
+    }
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
+    $this->validateInput($values, $valid_columns);
+
+    // Check if provided an infraspecific_name for this organism.
+    // If so, type_id is also required.
+    if (array_key_exists('organism.infraspecific_name', $values)) {
+      if (!array_key_exists('organism.type_id', $values)) {
+        if (array_key_exists('cvterm.cvterm_id', $values)) {
+          $values['organism.type_id'] = $values['cvterm.cvterm_id'];
+        }
+        elseif ($options['create_cvterm'] ?? FALSE) {
+          // If a term was not passed, we can create it if the required
+          // fields were included. For safety, this is an opt-in setting.
+          // Use the buddy manager dependency to create a Cvterm buddy instance.
+          if (!isset($this->cvterm_instance)) {
+            $this->cvterm_instance = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
+          }
+          // Call the Cvterm buddy to perform the insert.
+          $cvterm_values = $this->subsetInput($values, ['db', 'dbxref', 'cv', 'cvterm']);
+          $cvterm_record = $this->cvterm_instance->upsertCvterm($cvterm_values, $options);
+          $type_id = $cvterm_record->getValue('cvterm.cvterm_id');
+          $values['organism.type_id'] = $type_id;
+        }
+        else {
+          throw new ChadoBuddyException("ChadoBuddy insertOrganism error, neither cvterm.cvterm_id nor organism.type_id were specified and 'create_cvterm' option is not enabled");
+        }
+      }
+    }
+
+    // Insert the organism record.
+    try {
+      $query = $this->chado_connection->insert('1:organism');
+      // Create a subset of the passed $values for just the organism table.
+      $organism_values = $this->subsetInput($values, ['organism']);
+      $query->fields($this->removeTablePrefix($organism_values));
+      $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy insertOrganism database error ' . $e->getMessage());
+    }
+
+    // Retrieve the newly inserted record.
+    $existing_records = $this->getOrganism($organism_values, $options);
+
+    // Validate that exactly one record was obtained.
+    $this->validateOutput($existing_records, $values);
+
+    return $existing_records[0];
   }
 
 }
