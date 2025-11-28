@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - 4.x
-      - tv4g9-2377-autodetectPhpunitConfig
   schedule:
     - cron: '0 6 * * *'
 
