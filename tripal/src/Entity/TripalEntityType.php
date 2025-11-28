@@ -718,37 +718,40 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       'required' => TRUE,
     ];
 
-    $instances = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->id);
-    foreach ($instances as $instance) {
+    // The id may not yet be defined during inital gui construction.
+    if ($this->id) {
+      $instances = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->id);
+      foreach ($instances as $instance) {
 
-      $use_field = TRUE;
-      $field_name = $instance->getName();
+        $use_field = TRUE;
+        $field_name = $instance->getName();
 
-      // Remove base fields.
-      if (in_array($field_name, ['id', 'type', 'uid', 'term_id', 'title', 'status', 'created', 'changed'])) {
-        continue;
-      }
+        // Remove base fields.
+        if (in_array($field_name, ['id', 'type', 'uid', 'term_id', 'title', 'status', 'created', 'changed'])) {
+          continue;
+        }
 
-      // If only required fields should be returned,
-      // skip this field if it's not required.
-      if (!$instance->isRequired() and $options['required only']) {
-        continue;
-      }
+        // If only required fields should be returned,
+        // skip this field if it's not required.
+        if (!$instance->isRequired() and $options['required only']) {
+          continue;
+        }
 
-      // Iterate through the TripalEntity fields and see if they have
-      // sub-elements, if so, add those as tokens too.
-      // @todo handle sub-elements once TripalField's are implemented.
-      // If we have no elements to add then just add the field as is.
-      if ($use_field) {
-        // Build the token from the field information.
-        $token = $field_name;
-        $tokens[$token] = [
-          'label' => $instance->getLabel(),
-          'description' => $instance->getDescription(),
-          'token' => $token,
-          'field_name' => $field_name,
-          'required' => $instance->isRequired(),
-        ];
+        // Iterate through the TripalEntity fields and see if they have
+        // sub-elements, if so, add those as tokens too.
+        // @todo handle sub-elements once TripalField's are implemented.
+        // If we have no elements to add then just add the field as is.
+        if ($use_field) {
+          // Build the token from the field information.
+          $token = $field_name;
+          $tokens[$token] = [
+            'label' => $instance->getLabel(),
+            'description' => $instance->getDescription(),
+            'token' => $token,
+            'field_name' => $field_name,
+            'required' => $instance->isRequired(),
+          ];
+        }
       }
     }
 
