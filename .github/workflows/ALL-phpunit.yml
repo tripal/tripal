@@ -21,7 +21,7 @@ jobs:
           - '8.4'
         pgsql-version:
           - '14'
-          - '17'
+          - '18'
         drupal-version:
           - '10.4.x-dev'
           - '10.5.x-dev'
@@ -72,7 +72,7 @@ jobs:
           # will be tested on merge to 4.x.
           # Note: Drupal 11.1 is already only tested on one postgresql
           # version since it requires 16+.
-          - pgsql-version: '17'
+          - pgsql-version: '18'
             drupal-version: '10.5.x-dev'
     steps:
       # Check out the repo
