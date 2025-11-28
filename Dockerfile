@@ -36,14 +36,8 @@ RUN service apache2 start \
   && rm -rf /tripal_app \
   && allmodules="${tripalmodules} ${modules}" \
   && vendor/bin/drush en ${allmodules} -y \
-  && if $(dpkg --compare-versions "${drupalversion}" "le" "10.9"); then \
-     rm web/modules/contrib/tripal/phpunit.xml \
-     && ln -s web/modules/contrib/tripal/phpunit.9.xml web/modules/contrib/tripal/phpunit.xml; \
-     elif $(dpkg --compare-versions "${drupalversion}" "le" "11.1.x-dev"); then \
-     rm web/modules/contrib/tripal/phpunit.xml \
-     && ln -s web/modules/contrib/tripal/phpunit.10.xml web/modules/contrib/tripal/phpunit.xml; \
-  fi \
-  && service apache2 stop \
+  && rm web/modules/contrib/tripal/phpunit.xml \
+  && bash set_phpunit_config.sh \
   && service postgresql stop
 
 RUN service apache2 start \
