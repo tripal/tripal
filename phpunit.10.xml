@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  generate for use with
+
+  PHPUnit 10
+
+  -->
 <!-- For how to customize PHPUnit configuration, see core/tests/README.md. -->
 <!-- PHPUnit expects functional tests to be run with either a privileged user
  or your current system user. See core/tests/README.md and
