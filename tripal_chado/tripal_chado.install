@@ -6,6 +6,7 @@
 
 use \Drupal\Core\Config\FileStorage;
 use \Drupal\Core\Database\Database;
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use \Drupal\Core\Utility\UpdateException;
 use \Drupal\Component\Serialization\Yaml;
 use \Drupal\field\Entity\FieldConfig;
@@ -1155,6 +1156,18 @@ function tripal_chado_update_10417() {
 
     add_field_from_yaml($general_fields_yaml, ['speciestree_phylotreevis', 'speciestree_settings']);
     add_field_from_yaml($genomic_fields_yaml, ['phylotree_phylotreevis', 'phylotree_settings']);
+
+    // Hides existing fields that have now been set to hidden in yaml.
+    $fields_to_hide = [
+      'tripal_entity.speciestree.default' => 'speciestree_dbxref',
+      'tripal_entity.phylotree.default' => 'phylotree_type',
+    ];
+    foreach ($fields_to_hide as $display => $field) {
+      $entity_view_display = EntityViewDisplay::load($display);
+      if ($entity_view_display) {
+        $entity_view_display->removeComponent($field)->save();
+      }
+    }
   }
   catch (\Exception $e) {
     throw new UpdateException('Could not update phylotree: ' . $e->getMessage());
