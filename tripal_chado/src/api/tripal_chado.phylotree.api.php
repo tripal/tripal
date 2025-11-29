@@ -792,129 +792,129 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
     if (!empty($tree['length']) and $tree['length'] != '') {
       $values['distance'] = $tree['length'];
     }
-    // Set the type of node.
+
+    // Set the type of node and its parent.
     if (isset($tree['is_root']) && $tree['is_root'] == true) {
       $values['type_id'] = $vocab['root'];
     }
-    else {
-      if (isset($tree['is_internal']) && $tree['is_internal'] == true) {
-        $values['type_id'] = $vocab['internal'];
-        $values['parent_phylonode_id'] = $parent['phylonode_id'];
-        // TODO: a feature may be associated here but it is recommended that it
-        // be a feature of type SO:match and should represent the alignment of
-        // all features beneath it.
-      }
-      else {
-        if (isset($tree['is_leaf']) && $tree['is_leaf']) {
-          $values['type_id'] = $vocab['leaf'];
-          $values['parent_phylonode_id'] = $parent['phylonode_id'];
+    else if (isset($tree['is_internal']) && $tree['is_internal'] == true) {
+      $values['type_id'] = $vocab['internal'];
+      $values['parent_phylonode_id'] = $parent['phylonode_id'];
+    }
+    else if (isset($tree['is_leaf']) && $tree['is_leaf']) {
+      $values['type_id'] = $vocab['leaf'];
+      $values['parent_phylonode_id'] = $parent['phylonode_id'];
+    }
 
-          // Match this leaf node with an organism or feature depending on the
-          // type of tree. But we can't do that if we don't have a name.
-          if (!empty($tree['name']) and $tree['name'] != '') {
-            if (!($options['leaf_type'] == 'taxonomy')) {
+    // Associate features.
+    if (!($options['leaf_type'] == 'taxonomy')) {
+      // @todo: a feature may be associated to internal nodes, but it is
+      // recommended that it be a feature of type SO:match and should
+      // represent the alignment of all features beneath it.
+      if ($values['type_id'] == $vocab['leaf']) {
+        // Match this leaf node with an organism or feature depending on the
+        // type of tree. But we can't do that if we don't have a name.
+        if (!empty($tree['name']) and $tree['name'] != '') {
 
-              // This is a sequence-based tree. Try to match leaf nodes with
-              // features.
-              // First, get the name and uniquename for the feature.
-              $matches = [];
-              $sel_values = [];
-              if ($options['match'] == "name") {
-                $sel_values['name'] = $tree['name'];
-                $re = $options['name_re'];
-                if (($re) and (preg_match("/$re/", $tree['name'], $matches))) {
-                  $sel_values['name'] = $matches[1];
-                }
-              }
-              else {
-                $sel_values['uniquename'] = $tree['name'];
-                $re = $options['name_re'];
-                if (($re) and (preg_match("/$re/", $tree['name'], $matches))) {
-                  $sel_values['uniquename'] = $matches[1];
-                }
-              }
-              $sel_values['type_id'] = [
-                'name' => $options['leaf_type'],
-                'cv_id' => [
-                  'name' => 'sequence',
-                ],
-              ];
-              $sel_columns = ['feature_id'];
+          // This is a sequence-based tree. Try to match leaf nodes with
+          // features.
+          // First, get the name and uniquename for the feature.
+          $matches = [];
+          $sel_values = [];
+          if ($options['match'] == "name") {
+            $sel_values['name'] = $tree['name'];
+            $re = $options['name_re'];
+            if (($re) and (preg_match("/$re/", $tree['name'], $matches))) {
+              $sel_values['name'] = $matches[1];
+            }
+          }
+          else {
+            $sel_values['uniquename'] = $tree['name'];
+            $re = $options['name_re'];
+            if (($re) and (preg_match("/$re/", $tree['name'], $matches))) {
+              $sel_values['uniquename'] = $matches[1];
+            }
+          }
+          $sel_values['type_id'] = [
+            'name' => $options['leaf_type'],
+            'cv_id' => [
+              'name' => 'sequence',
+            ],
+          ];
+          $sel_columns = ['feature_id'];
 
-              // Find the cv_id for sequence
-              $cv_id = $chado->select('1:cv', 'cv')->fields('cv')->condition('name', 'sequence')->execute()->fetchObject()->cv_id;
+          // Find the cv_id for sequence. @todo this is crazy inefficient.
+          $cv_id = $chado->select('1:cv', 'cv')->fields('cv')->condition('name', 'sequence')->execute()->fetchObject()->cv_id;
 
-              // Find the cvterm_id for $options['leaf_type']
-              $cvterm_id = $chado->select('1:cvterm', 'cvterm')->fields('cvterm')
-                ->condition('name', $options['leaf_type'])
-                ->condition('cv_id', $cv_id)
-                ->execute()
-                ->fetchObject()->cvterm_id;
+          // Find the cvterm_id for $options['leaf_type']
+          $cvterm_id = $chado->select('1:cvterm', 'cvterm')->fields('cvterm')
+            ->condition('name', $options['leaf_type'])
+            ->condition('cv_id', $cv_id)
+            ->execute()
+            ->fetchObject()->cvterm_id;
 
-              $feature = $chado->select('1:feature', 'feature')
-                ->fields('feature')
-                ->condition('type_id', $cvterm_id);
-              if (isset($sel_values['name'])) {
-                $feature = $feature->condition('name', $sel_values['name']);
-              }
-              else if (isset($sel_values['uniquename'])) {
-                $feature = $feature->condition('uniquename', $sel_values['uniquename']);
-              }
+          $feature = $chado->select('1:feature', 'feature')
+            ->fields('feature')
+            ->condition('type_id', $cvterm_id);
+          if (isset($sel_values['name'])) {
+            $feature = $feature->condition('name', $sel_values['name']);
+          }
+          else if (isset($sel_values['uniquename'])) {
+            $feature = $feature->condition('uniquename', $sel_values['uniquename']);
+          }
 
-              $feature = $feature->execute()
-                ->fetchAll();
+          $feature = $feature->execute()
+            ->fetchAll();
 
-              if (count($feature) > 1) {
-                // Found multiple features, cannot make an association.
-                \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to associate to a feature,'
-                    . ' more than one feature matches the %matchtype: %value',
-                    ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']] ]);
-              }
-              else {
-                if (count($feature) == 1) {
-                  $values['feature_id'] = $feature[0]->feature_id;
-                  $n_associated++;
-                  \Drupal::service('tripal.logger')->info('Import phylotree: Associated'
-                    . ' %value by %matchtype to feature_id: %fid',
-                    ['%matchtype' => $options['match'],
-                     '%value' => $sel_values[$options['match']],
-                     '%fid' => $values['feature_id'] ]);
-                }
-                else {
-                  // Could not find a feature that matches the name or uniquename
-                  $n_not_associated++;
-                  \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to associate to a'
-                    . ' feature that matches the %matchtype: %value',
-                    ['%matchtype' => $options['match'],
-                     '%value' => $sel_values[$options['match']] ]);
-                }
-              }
+          if (count($feature) > 1) {
+            // Found multiple features, cannot make an association.
+            \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to associate to a feature,'
+                . ' more than one feature matches the %matchtype: %value',
+                ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']] ]);
+          }
+          else {
+            if (count($feature) == 1) {
+              $values['feature_id'] = $feature[0]->feature_id;
+              $n_associated++;
+              \Drupal::service('tripal.logger')->info('Import phylotree: Associated'
+                . ' %value by %matchtype to feature_id: %fid',
+                ['%matchtype' => $options['match'],
+                 '%value' => $sel_values[$options['match']],
+                 '%fid' => $values['feature_id'] ]);
             }
             else {
-              // This is a taxonomy (species) tree. Try to match leaf nodes
-              // with organisms.
-              $organism_name = $tree['name'];
-              $re = isset($options['name_re']) ? $options['name_re'] : NULL;
-              if (($re) and (preg_match("/$re/", $organism_name, $matches))) {
-                $organism_name = $matches[1];
-              }
-              $organism_id = chado_phylogeny_lookup_organism_by_name($organism_name, $schema_name);
-              if ($organism_id) {
-                $tree['organism_id'] = $organism_id;
-                $n_associated++;
-                \Drupal::service('tripal.logger')->info(
-                  'Import phylotree: Associated %name to organism_id: %organism_id',
-                  ['%name' => $tree['name'], '%organism_id' => $organism_id]);
-              }
-              else {
-                $n_not_associated++;
-                \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to'
-                  . ' associate to an organism that matches %name',
-                  ['%name' => $tree['name']]);
-              }
+              // Could not find a feature that matches the name or uniquename
+              $n_not_associated++;
+              \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to associate to a'
+                . ' feature that matches the %matchtype: %value',
+                ['%matchtype' => $options['match'],
+                 '%value' => $sel_values[$options['match']] ]);
             }
           }
         }
+      }
+    }
+    else {
+      // This is a taxonomy (species) tree. Try to match all nodes
+      // with organisms, e.g. there may be a species and also subspecies.
+      $organism_name = $tree['name'];
+      $re = isset($options['name_re']) ? $options['name_re'] : NULL;
+      if (($re) and (preg_match("/$re/", $organism_name, $matches))) {
+        $organism_name = $matches[1];
+      }
+      $organism_id = chado_phylogeny_lookup_organism_by_name($organism_name, $schema_name);
+      if ($organism_id) {
+        $tree['organism_id'] = $organism_id;
+        $n_associated++;
+        \Drupal::service('tripal.logger')->info(
+          'Import phylotree: Associated %name to organism_id: %organism_id',
+          ['%name' => $tree['name'], '%organism_id' => $organism_id]);
+      }
+      else {
+        $n_not_associated++;
+        \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to'
+          . ' associate to an organism that matches %name',
+          ['%name' => $tree['name']]);
       }
     }
 
