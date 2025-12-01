@@ -69,6 +69,38 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     );
     $organism_id = $values['get']['organism.organism_id'];
     $this->assertTrue(is_numeric($organism_id), 'We did not retrieve an integer organism_id for the new organism "Tripal: Tripalus databasica"');
+
+    // TEST: Updating a non-existent Organism should return FALSE.
+    $chado_buddy_records = $instance->updateOrganism(
+      [
+        'organism.abbreviation' => 'notorg',
+        'organism.common_name' => 'notanorganism',
+      ],
+      [
+        'organism.genus' => 'notanorganismgenus',
+        'organism.species' => 'notanorganismspecies',
+      ]
+    );
+    $this->assertFalse($chado_buddy_records, "We received a value other than FALSE for an update to an Organism that does not exist");
+
+    // TEST: We should be able to update an existing Organism record.
+    $test_records = [];
+    $test_records['set'] = $instance->updateOrganism(
+      ['organism.abbreviation' => 'Trp'],
+      $simple_organism_values,
+    );
+    $test_records['get'] = $instance->getOrganism(
+      ['organism.common_name' => 'Tripal'],
+    );
+    $values = $this->multiAssert(
+      'updateOrganism',
+      $test_records,
+      'organism',
+      'organism.organism_id',
+      'Organism "Tripal" updated with abbreviation "Trp"',
+      8
+    );
+    $this->assertEquals('Trp', $values['get']['organism.abbreviation'], 'The Organism abbreviation was not updated for Organism "Tripal"');
   }
 
 }

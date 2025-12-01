@@ -139,7 +139,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     $query->leftJoin('1:cv', 'cv', 'cvterm.cv_id = cv.cv_id');
     $query->leftJoin('1:dbxref', 'dbxref', 'cvterm.dbxref_id = dbxref.dbxref_id');
     $query->leftJoin('1:db', 'db', 'dbxref.db_id = db.db_id');
-    */
+     */
     $this->addConditions($query, $conditions, $options);
 
     try {
@@ -254,6 +254,86 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     $this->validateOutput($existing_records, $values);
 
     return $existing_records[0];
+  }
+
+  /**
+   * Updates an existing organism record.
+   *
+   * @param array $values
+   *   An associative array that describes the values to be updated for a
+   *   record in the chado.organism table. Valid keys include:
+   *     - organism.genus
+   *     - organism.species
+   *     - organism.infraspecific_name
+   *     - organism.type_id
+   *     - organism.abbreviation
+   *     - organism.common_name
+   *     - organism.comment
+   *     - cvterm.name
+   *     - cvterm.is_obsolete
+   *     - cv.name
+   *     - dbxref.accession
+   *     - db.name
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys.
+   * @param array $conditions
+   *   An associative array of the conditions to find the record to update.
+   *   The same keys are supported as those indicated for $values.
+   * @param array $options
+   *   (Optional) Associative array of options with these supported keys:
+   *   - create_cvterm - set to TRUE (default FALSE) if you specified the
+   *     necessary fields and want to create the dbxref and cvterm for
+   *     organism.type_id when creating this organism, if they do not exist.
+   *     NOTE: This is NOT recommended. We suggest you import ontologies first.
+   *
+   * @return bool|ChadoBuddyRecord
+   *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
+   *   returned if no record was found to update.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered.
+   */
+  public function updateOrganism(array $values, array $conditions, array $options = []) {
+    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'organism'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
+    $this->validateInput($values, $valid_columns);
+    $this->validateInput($conditions, $valid_columns);
+
+    $existing_records = $this->getOrganism($conditions, $options);
+    if (count($existing_records) < 1) {
+      return FALSE;
+    }
+    if (count($existing_records) > 1) {
+      throw new ChadoBuddyException("ChadoBuddy updateOrganism error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
+    }
+
+    // Update query will only be based on the organism_id,
+    // which we get from the retrieved record.
+    $organism_id = $existing_values['organism.organism_id'];
+    // We do not support changing the organism_id.
+    if (array_key_exists('organism.organism_id', $values)) {
+      unset($values['organism.organism_id']);
+    }
+
+    $query = $this->chado_connection->update('1:organism');
+    $query->condition('organism_id', $organism_id, '=');
+    // Create a subset of the passed $values for just the organism table.
+    $organism_values = $this->subsetInput($values, ['organism']);
+    $query->fields($this->removeTablePrefix($organism_values));
+    try {
+      $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy updateOrganism database error ' . $e->getMessage());
+    }
+    $updated_records = $this->getOrganism(['organism.organism_id' => $organism_id], $options);
+
+    // Validate that exactly one record was obtained.
+    $this->validateOutput($updated_records, $values);
+
+    return $updated_records[0];
   }
 
 }
