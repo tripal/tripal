@@ -364,4 +364,62 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     return $updated_records[0];
   }
 
+  /**
+   * Insert an organism if it doesn't yet exist OR update it if it does.
+   *
+   * @param array $values
+   *   An associative array that describes the values to be inserted/updated in
+   *   the chado.organism table. Valid keys include:
+   *     - organism.genus
+   *     - organism.species
+   *     - organism.infraspecific_name
+   *     - organism.type_id
+   *     - organism.abbreviation
+   *     - organism.common_name
+   *     - organism.comment
+   *     - cvterm.name
+   *     - cvterm.is_obsolete
+   *     - cv.name
+   *     - dbxref.accession
+   *     - db.name
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   (Optional) Associative array of options with these supported keys:
+   *   - create_cvterm - set to TRUE (default FALSE) if you specified the
+   *     necessary fields and want to create the dbxref and cvterm for
+   *     organism.type_id when creating this organism, if they do not exist.
+   *     NOTE: This is NOT recommended. We suggest you import ontologies first.
+   *
+   * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
+   *   The inserted/updated ChadoBuddyRecord will be returned on success.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered.
+   */
+  public function upsertOrganism(array $values, array $options = []) {
+    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'organism'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
+    $this->validateInput($values, $valid_columns);
+
+    // For upsert, the query conditions are a subset consisting of
+    // only the columns that are part of a unique constraint:
+    // genus + species + type_id + infraspecific_name.
+    $key_columns = $this->getTableColumns($valid_tables, 'unique');
+    $conditions = $this->makeUpsertConditions($values, $key_columns);
+
+    $existing_records = $this->getOrganism($conditions, $options);
+    if (count($existing_records) > 0) {
+      if (count($existing_records) > 1) {
+        throw new ChadoBuddyException("ChadoBuddy upsertOrganism error, more than one record matched the specified values\n" . print_r($values, TRUE));
+      }
+      $new_record = $this->updateOrganism($values, $conditions, $options);
+    }
+    else {
+      $new_record = $this->insertOrganism($values, $options);
+    }
+    return $new_record;
+  }
+
 }
