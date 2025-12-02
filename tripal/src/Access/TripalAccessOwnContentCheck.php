@@ -8,6 +8,8 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Routing\Access\AccessInterface;
 
 /**
+ * Access control for Tripal Data Collections.
+ *
  * Checks that users have access to only their own content
  * given a user account and a permission to check if it's their content.
  * Permission is only granted if it's the users content and they have
@@ -30,6 +32,7 @@ class TripalAccessOwnContentCheck implements AccessInterface {
    *   The access result.
    *
    * @see tripal.routing.yml
+   * @see _tripal_own_content_access_check
    */
   public function access(UserInterface $user, AccountInterface $account) {
 
