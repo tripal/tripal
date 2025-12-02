@@ -985,7 +985,7 @@ vocabularies:
                 description: 'a versioned dataset is a dataset with a particular release date or release number.'
     -   name: 'PBO'
         label: 'Plant Breeding Ontology'
-        url: 'http://purl.obolibrary.org/obo/PBO'
+        url: 'https://agroportal.lirmm.fr/ontologies/PBO'
         idSpaces:
             -   name: 'PBO'
                 description: 'Plant Breeding Ontology (PBO): an ontology for the plant breeding community which captures more than 2200 entries where 80 represent the core terms.'
