@@ -10,7 +10,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 
 /**
- * Plugin implementation of the 'chado_stockcollection_db_type_default' field type.
+ * Plugin implementation of 'chado_stockcollection_db_type_default' field type.
  */
 #[TripalFieldType(
   id: 'chado_stockcollection_db_type_default',
@@ -134,9 +134,6 @@ class ChadoStockcollectionDBTypeDefault extends ChadoFieldItemBase {
     else {
       $linker_fkey_term = self::getColumnTermId($base_table, $linker_fkey_column, self::$record_id_term);
     }
-
-    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $stockcollection_type_len = $cvterm_schema_def['fields']['name']['size'];
 
     $properties = [];
 

@@ -9,7 +9,7 @@ use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
- * Plugin implementation of the 'chado_stockcollection_db_widget_default' field widget.
+ * Plugin implementation of 'chado_stockcollection_db_widget_default' widget.
  */
 #[TripalFieldWidget(
   id: 'chado_stockcollection_db_widget_default',
@@ -107,7 +107,9 @@ class ChadoStockcollectionDbWidgetDefault extends ChadoWidgetBase {
    * {@inheritdoc}
    */
   public static function defaultSettings() {
-    return self::defaultSelectSettings() + parent::defaultSettings();
+    $default_settings = self::defaultSelectSettings();
+    $default_settings['match_limit'] = 50;
+    return $default_settings + parent::defaultSettings();
   }
 
   /**

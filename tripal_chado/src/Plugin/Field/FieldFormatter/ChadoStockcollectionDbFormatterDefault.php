@@ -8,7 +8,7 @@ use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * Plugin implementation of the 'chado_stockcollection_db_formatter_default' field formatter.
+ * Implementation of 'chado_stockcollection_db_formatter_default' formatter.
  */
 #[TripalFieldFormatter(
   id: 'chado_stockcollection_db_formatter_default',
