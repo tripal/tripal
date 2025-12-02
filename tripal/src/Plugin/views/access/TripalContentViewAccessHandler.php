@@ -141,7 +141,7 @@ class TripalContentViewAccessHandler extends AccessPluginBase {
   }
 
   /**
-   * Grabs paramters from route for use with the TripalEntity Access Controller.
+   * Gets parameters from route for use with the TripalEntity Access Controller.
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The user to check permissions for.
