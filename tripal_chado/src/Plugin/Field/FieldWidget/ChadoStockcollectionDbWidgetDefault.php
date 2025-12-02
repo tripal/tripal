@@ -108,7 +108,8 @@ class ChadoStockcollectionDbWidgetDefault extends ChadoWidgetBase {
    */
   public static function defaultSettings() {
     $default_settings = self::defaultSelectSettings();
-    $default_settings['match_limit'] = 50;
+    $default_settings['match_limit'] = 20;
+    $default_settings['widget_select_limit'] = 20;
     return $default_settings + parent::defaultSettings();
   }
 
