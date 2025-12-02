@@ -1072,6 +1072,33 @@ fields:
               region: 'content'
               weight: 60
 
+    -   name: 'germcollection_db'
+        content_type: 'germcollection'
+        label: 'Database'
+        type: 'chado_stockcollection_db_type_default'
+        description: 'Indicates that a current stock collection is from a specific DB.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'stockcollection'
+                linker_table: 'stockcollection_db'
+                linker_fkey_column: 'db_id'
+        settings:
+            termIdSpace: 'ERO'
+            termAccession: '0001716'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 68
+          form:
+            default:
+              region: 'content'
+              weight: 68
+
     -   name: 'germcollection_stock'
         content_type: 'germcollection'
         label: 'Germplasm'
