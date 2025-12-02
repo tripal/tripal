@@ -308,6 +308,34 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     if (count($existing_records) > 1) {
       throw new ChadoBuddyException("ChadoBuddy updateOrganism error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
     }
+    $existing_values = $existing_records[0]->getValues();
+
+    // Check if provided an infraspecific_name for this organism.
+    // If so, type_id is also required.
+    if (array_key_exists('organism.infraspecific_name', $values)) {
+      $combined_values = array_merge($values, $existing_values);
+      if (!array_key_exists('organism.type_id', $combined_values)) {
+        if (array_key_exists('cvterm.cvterm_id', $combined_values)) {
+          $values['organism.type_id'] = $values['cvterm.cvterm_id'];
+        }
+        elseif ($options['create_cvterm'] ?? FALSE) {
+          // If a term was not passed, we can create it if the required
+          // fields were included. For safety, this is an opt-in setting.
+          // Use the buddy manager dependency to create a Cvterm buddy instance.
+          if (!isset($this->cvterm_instance)) {
+            $this->cvterm_instance = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
+          }
+          // Call the Cvterm buddy to perform the insert.
+          $cvterm_values = $this->subsetInput($values, ['db', 'dbxref', 'cv', 'cvterm']);
+          $cvterm_record = $this->cvterm_instance->upsertCvterm($cvterm_values, $options);
+          $type_id = $cvterm_record->getValue('cvterm.cvterm_id');
+          $values['organism.type_id'] = $type_id;
+        }
+        else {
+          throw new ChadoBuddyException("ChadoBuddy insertOrganism error, neither cvterm.cvterm_id nor organism.type_id were specified and 'create_cvterm' option is not enabled");
+        }
+      }
+    }
 
     // Update query will only be based on the organism_id,
     // which we get from the retrieved record.
