@@ -149,6 +149,17 @@ class OboImporterTest extends ChadoTestKernelBase {
     // Inserts records with the SQL to generate needed materialized views.
     $this->populateMviewSql();
 
+    // Create a conflicting dbxref and cv term to test issue #2382 problem.
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $term_values = [
+      'db.name' => 'data',
+      'cv.name' => 'EDAM',
+      'dbxref.accession' => 'has_format',
+      'cvterm.name' => 'has format',
+      'cvterm.definition' => 'Tests a conflicting existing dbxref for a cvterm.',
+    ];
+    $cvterm_buddy->insertCvterm($term_values, []);
   }
 
   /**
@@ -281,7 +292,7 @@ class OboImporterTest extends ChadoTestKernelBase {
 
     // Test that expected counts before import are one less.
     foreach ($current_scenario['expect'] as $expect) {
-      $expected_count = ($expect['count'] ?? 1) - 1;
+      $expected_count = $expect['precount'] ?? 0;
       $query = $this->chado_connection->select('1:' . $expect['table'], 'T');
       $query->condition('T.' . $expect['column'], $expect['value'], '=');
       $query->fields('T', [$expect['column']]);
