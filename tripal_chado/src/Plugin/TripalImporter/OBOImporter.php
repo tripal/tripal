@@ -1787,7 +1787,6 @@ class OBOImporter extends ChadoImporterBase {
     $query->fields('CVT');
     $query->condition('CVT.name', $name);
     $query->condition('CVT.cv_id', $cv->cv_id);
-    // $query->condition('CVT.dbxref_id', $dbxref->dbxref_id);
     $results = $query->execute();
     while ($check_cvterm = $results->fetchObject()) {
 
