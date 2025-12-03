@@ -1787,7 +1787,7 @@ class OBOImporter extends ChadoImporterBase {
     $query->fields('CVT');
     $query->condition('CVT.name', $name);
     $query->condition('CVT.cv_id', $cv->cv_id);
-    $query->condition('CVT.dbxref_id', $dbxref->dbxref_id);
+    // $query->condition('CVT.dbxref_id', $dbxref->dbxref_id);
     $results = $query->execute();
     while ($check_cvterm = $results->fetchObject()) {
 
@@ -1814,7 +1814,7 @@ class OBOImporter extends ChadoImporterBase {
       // first and no longer has its own entry.
       $check_stanza = $this->getCachedTermStanza($check_accession);
       if (!$check_stanza) {
-        $new_name = $check_cvterm->getValue('name') . ' (' . $check_accession . ')';
+        $new_name = $check_cvterm->name . ' (' . $check_accession . ')';
         $query = $chado->update('1:cvterm');
         $query->fields([
           'name' => $new_name,
