@@ -1075,7 +1075,7 @@ function tripal_update_10403() {
 /**
  * Implements hook_update_10404().
  *
- * Updates hook to grant new permissions to anonymous users.
+ * Grants anonymous user permission to view Tripal Content by default.
  */
 function tripal_update_10404() {
   // Load the anonymous role.

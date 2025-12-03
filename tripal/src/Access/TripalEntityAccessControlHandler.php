@@ -38,10 +38,10 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
     }
 
     // For view, update, delete we want to use bundle-specific permissions
-    // so lets get the bundle now.
+    // so let's get the bundle now.
     $entity_bundle = $entity->getType();
 
-    // Now, lets check the permission based on the bundle and operation.
+    // Now, let's check the permission based on the bundle and operation.
     // Always return allow if has permission in order to allow other
     // implementations to override this functionality.
     switch ($operation) {
@@ -364,7 +364,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
   }
 
   /**
-   * Returns an array of content types the user has 'create TYPE content'.
+   * Returns an array of content types the user can 'create TYPE content'.
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The account of the user to check access for.
