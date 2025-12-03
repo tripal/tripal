@@ -101,6 +101,47 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       8
     );
     $this->assertEquals('Trp', $values['get']['organism.abbreviation'], 'The Organism abbreviation was not updated for Organism "Tripal"');
+
+    // TEST: Upsert should insert an Organism record that doesn't exist.
+    $test_records = [];
+    $upsert_organism_values = [
+      'organism.genus' => 'Genus02',
+      'organism.species' => 'species02',
+      'organism.common_name' => 'Organism02',
+    ];
+    $test_records['set'] = $instance->upsertOrganism($upsert_organism_values);
+    $test_records['get'] = $instance->getOrganism($upsert_organism_values);
+    $values = $this->multiAssert(
+      'upsertOrganism',
+      $test_records,
+      'organism',
+      'organism.organism_id',
+      'Organism "Organism02" inserted via upsert',
+      8
+    );
+    $organism_id = $values['get']['organism.organism_id'];
+    $this->assertTrue(is_numeric($organism_id), 'We did not retrieve an integer organism_id for the new organism "Organism02: Genus02 species02"');
+
+    // TEST: Upsert should update an Organism record that does exist.
+    $test_records = [];
+    $upsert_organism_values['organism.common_name'] = 'UPDATED02';
+    $test_records['set'] = $instance->upsertOrganism($upsert_organism_values);
+    $test_records['get'] = $instance->getOrganism($upsert_organism_values);
+    $values = $this->multiAssert(
+      'upsertOrganism',
+      $test_records,
+      'organism',
+      'organism.organism_id',
+      'Organism "Organism02" updated via upsert',
+      8
+    );
+    $organism_id_2 = $values['get']['organism.organism_id'];
+    $this->assertTrue(is_numeric($organism_id_2), 'We did not retrieve an integer organism_id for the updated organism "UPDATED02: Genus02 species02"');
+    // Make sure the retrieved organism_id is the same as when it was inserted.
+    $this->assertEquals($organism_id, $organism_id_2, 'The organism_id changed after upserting the same organism twice, when it should have stayed the same.');
+    foreach ($upsert_organism_values as $column => $value) {
+      $this->assertEquals($value, $values['get'][$column], "The value for column $column after upserting with the intent to update did not match the expected value.");
+    }
   }
 
 }
