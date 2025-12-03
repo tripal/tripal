@@ -1821,6 +1821,8 @@ class OBOImporter extends ChadoImporterBase {
         ]);
         $query->condition('cvterm_id', $check_cvterm->cvterm_id);
         $query->execute();
+        $this->logger->notice('Renamed conflicting cv term ":old_name" to ":new_name"',
+          [':old_name' => $check_cvterm->name, ':new_name' => $new_name]);
         return TRUE;
       }
       // Case 2:  The conflicting term is in the OBO file (ie. has a stanza) and
