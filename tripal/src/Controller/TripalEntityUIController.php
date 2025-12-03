@@ -67,7 +67,7 @@ class TripalEntityUIController extends ControllerBase {
       $rendered_message = Markup::create($message);
 
       // Display the message to create a vocabulary.
-      $this->messenger->addMessage($rendered_message, 'warning');
+      $this->messenger()->addMessage($rendered_message, 'warning');
     }
 
     // Finally, let tripal-entity-content-add-list.html.twig add the markup.
