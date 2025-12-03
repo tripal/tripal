@@ -105,7 +105,7 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
           'The selected base table cannot support synonyms.');
     }
     else {
-      $linker_fkey_column = array_keys($linker_table_def['foreign keys'][$base_table]['columns'])[0];
+      $linker_fkey_column = self::getChadoForeignKeyColumn($linker_table, $base_table, $schema);
       if ($drupal_10_2) {
         $form_state->setvalue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'linker_table'], $linker_table);
         $form_state->setvalue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'linker_fkey_column'], $linker_fkey_column);

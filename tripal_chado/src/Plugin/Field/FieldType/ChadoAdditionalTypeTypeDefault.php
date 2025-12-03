@@ -123,7 +123,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     if ($type_table != $base_table) {
       $type_table_def = self::getChadoTableDef($type_table, $schema);
       $type_pkey_col = $type_table_def['primary key'];
-      $type_fkey_col = array_keys($type_table_def['foreign keys'][$base_table]['columns'])[0];
+      $type_fkey_col = self::getChadoForeignKeyColumn($type_table, $base_table, $schema);
       $link_term = self::getColumnTermId($type_table, $type_fkey_col, self::$record_id_term);
       $value_term = self::getColumnTermId($type_table, 'value', 'NCIT:C25712');
 
@@ -414,9 +414,9 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       // For each of these tables, if there is a column with a foreign key to the
       // cvterm table, return table+column, formatted for use in the form select.
       foreach ($fkey_list as $type_table) {
-        $type_schema_def = self::getChadoTableDef($type_table, $schema);
-        if (isset($type_schema_def['foreign keys']['cvterm']['columns'])) {
-          foreach ($type_schema_def['foreign keys']['cvterm']['columns'] as $column_name => $table) {
+        $fk_def = self::getChadoForeignKeyDef($type_table, 'cvterm', $schema);
+        if ($fk_def) {
+          foreach ($fk_def['columns'] as $column_name) {
             $fkey = $type_table . self::$table_column_delimiter . $column_name;
             $type_fkeys[$fkey] = $fkey;
           }
