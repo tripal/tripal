@@ -41,7 +41,6 @@ manage tripal data collections:
 # Tripal Content (TripalEntity).
 #
 # Specifically,
-# - Tripal Content Listing: 'access tripal content overview'
 # - Publish Tripal Content: 'publish tripal content'
 # - Add Tripal Content Listing: ANY 1+ 'create TYPE content' permission(s)
 # The following forms will have TYPE in the route and need the matching
@@ -61,10 +60,6 @@ administer tripal content:
   title: 'Administer Tripal Content'
   description: 'Allows users to use all aspects of Tripal Content management including the administrative listing, publishing and per type create/edit/delete/unpublish.'
   restrict access: true
-
-access tripal content overview:
-  title: 'Access Tripal Content listing'
-  description: 'Allows the user to access the Tripal content listing in the administration pages.'
 
 publish tripal content:
   title: 'Publish Tripal Content'

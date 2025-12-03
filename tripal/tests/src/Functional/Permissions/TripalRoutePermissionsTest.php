@@ -234,7 +234,6 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    *
    * Permissions to test:
    *  - administer tripal content: Allows users to access the Tripal Content listing and add, edit, delete Tripal content of any type.
-   *  - access tripal content overview: Allows the user to access the Tripal content listing.
    *  - publish tripal content: Allows the user to publish Tripal content of all Tripal Content Types for online access.
    *  - create TYPE content: Create new Tripal Content
    *  - edit any TYPE content: Edit Tripal Content

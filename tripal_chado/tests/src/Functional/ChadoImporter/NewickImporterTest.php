@@ -249,7 +249,6 @@ class NewickImporterTest extends ChadoTestBrowserBase {
       'administer tripal',
       'administer users',
       'administer permissions',
-      'access tripal content overview',
       'allow tripal import',
       'administer tripal content',
       'admin tripal files',
