@@ -1735,9 +1735,11 @@ class OBOImporter extends ChadoImporterBase {
           'is_relationshiptype' => $is_relationshiptype,
           'is_obsolete' => $is_obsolete,
         ]);
-        $success = $query->execute();
-        if (!$success) {
-          throw new \Exception('Could not insert the cvterm, "' . $name . '"');
+        try {
+          $query->execute();
+        }
+        catch (\Exception $e) {
+          $this->logger->error("Could not insert the cvterm \"$name\": " . $e->getMessage());
         }
         $cvterm = $this->getChadoCVtermByName($cv->cv_id, $name);
       }
