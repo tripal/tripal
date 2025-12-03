@@ -35,24 +35,27 @@ class TripalContentViewAccessHandler extends AccessPluginBase {
   /**
    * {@inheritdoc}
    */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-
-    // Which content types the permissions should be restricted to.
-    $options['content_types'] = ['default' => ['all' => 'ALL Existing Content Types']];
-    // The way to handle multiple content types.
-    $options['mode'] = ['default' => 'any'];
-    // The CRUD operation permission for those content types to check.
-    $options['operation'] = ['default' => 'view'];
-
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
+
+    $form['msg'] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => 'Regardless of the settings chosen on this page, the following will remain true:',
+      ],
+      [
+        '#theme' => 'item_list',
+        '#items' => [
+          "Any user with the 'administer tripal content' permission will be given access to this view.",
+          'A user will only see content they have view permission for.',
+        ],
+      ],
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'br',
+      ],
+    ];
 
     // Get all Tripal Content Types.
     $entity_types = \Drupal::service('entity_type.manager')
@@ -104,6 +107,41 @@ class TripalContentViewAccessHandler extends AccessPluginBase {
       ],
     ];
 
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+
+    $access_options = $form_state->getValue('access_options');
+    $selected_content_types = $access_options['content_types'];
+
+    // If someone accidentaly selected 'all' and individual content types,
+    // let's just remove 'all' for them.
+    if ((count($selected_content_types) > 1) and array_key_exists('all', $selected_content_types)) {
+      unset($selected_content_types['all']);
+      $access_options['content_types'] = $selected_content_types;
+      $form_state->setValue('access_options', $access_options);
+      $this->messenger()->addWarning("We detected both 'all' and individual content types selected. As such, we fixed the selection to no longer include 'all'.");
+    }
+
+    // Now let's summarize their choice.
+    $operation = $access_options['operation'];
+    // - Expand mode to fit in the statement.
+    $mode_string = 'at least 1 of';
+    if ($this->options['mode'] === 'all') {
+      $mode_string = 'all of';
+    }
+    // - if all selected...
+    if (array_key_exists('all', $selected_content_types)) {
+      $content_types_string = 'the existing content types';
+    }
+    else {
+      $content_types_string = 'the following content types: ' . implode(', ', $selected_content_types);
+    }
+    // - finally, compile the message.
+    $this->messenger()->addStatus("Settings saved successfully. Now a user will only be able to access this view if the have the $operation permission for $mode_string $content_types_string.");
   }
 
   /**
