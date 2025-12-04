@@ -1101,3 +1101,58 @@ function tripal_update_10404() {
     $anonymous_role->save();
   }
 }
+
+/**
+ * Implements hook_update_10405().
+ *
+ * Checks old Tripal content permissions and grants the new dynamic permissions.
+ */
+function tripal_update_10405() {
+  $roles = Role::loadMultiple();
+
+  // Load all Tripal entity types.
+  $entity_types = \Drupal::service('entity_type.manager')
+    ->getStorage('tripal_entity_type')
+    ->loadByProperties([]);
+
+  foreach ($roles as $role) {
+
+    // Get current Tripal content entity permissions.
+    $curr_permissions = $role->getPermissions();
+
+    // Map old permissions to new dynamic permissions.
+    if (in_array('add tripal content entities', $curr_permissions)) {
+      foreach ($entity_types as $entity_type) {
+        $entity_id = $entity_type->id();
+
+        // Grant 'create' permission for each Tripal content entity type.
+        $role->grantPermission("create $entity_id content");
+      }
+    }
+    if (in_array('view tripal content entities', $curr_permissions)) {
+      foreach ($entity_types as $entity_type) {
+        $entity_id = $entity_type->id();
+
+        // Grant 'view all' permission for each Tripal content entity type.
+        $role->grantPermission("view all $entity_id content");
+      }
+    }
+    if (in_array('edit tripal content entities', $curr_permissions)) {
+      foreach ($entity_types as $entity_type) {
+        $entity_id = $entity_type->id();
+
+        // Grant 'edit any' permission for each Tripal content entity type.
+        $role->grantPermission("edit any $entity_id content");
+      }
+    }
+    if (in_array('delete tripal content entities', $curr_permissions)) {
+      foreach ($entity_types as $entity_type) {
+        $entity_id = $entity_type->id();
+
+        // Grant 'delete any' permission for each Tripal content entity type.
+        $role->grantPermission("delete any $entity_id content");
+      }
+    }
+    $role->save();
+  }
+}
