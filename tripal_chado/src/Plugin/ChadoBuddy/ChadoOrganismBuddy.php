@@ -211,9 +211,12 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     // If so, type_id is also required.
     if (array_key_exists('organism.infraspecific_name', $values)) {
       if (!array_key_exists('organism.type_id', $values)) {
+        // If provided a cvterm_id, use that as the organism.type_id.
         if (array_key_exists('cvterm.cvterm_id', $values)) {
           $values['organism.type_id'] = $values['cvterm.cvterm_id'];
         }
+        // @todo check for other cvterm identifiers and use ChadoCvtermBuddy
+        // to retrieve the cvterm_id.
         elseif ($options['create_cvterm'] ?? FALSE) {
           // If a term was not passed, we can create it if the required
           // fields were included. For safety, this is an opt-in setting.
@@ -306,16 +309,17 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     if (count($existing_records) > 1) {
       throw new ChadoBuddyException("ChadoBuddy updateOrganism error, more than one record matched the conditions specified:\n" . print_r($conditions, TRUE));
     }
-    $existing_values = $existing_records[0]->getValues();
 
     // Check if provided an infraspecific_name for this organism.
     // If so, type_id is also required.
     if (array_key_exists('organism.infraspecific_name', $values)) {
-      $combined_values = array_merge($values, $existing_values);
-      if (!array_key_exists('organism.type_id', $combined_values)) {
-        if (array_key_exists('cvterm.cvterm_id', $combined_values)) {
+      if (!array_key_exists('organism.type_id', $values)) {
+        // If provided a cvterm_id, just use that as the organism.type_id.
+        if (array_key_exists('cvterm.cvterm_id', $values)) {
           $values['organism.type_id'] = $values['cvterm.cvterm_id'];
         }
+        // @todo check for other cvterm identifiers and use ChadoCvtermBuddy
+        // to retrieve the cvterm_id.
         elseif ($options['create_cvterm'] ?? FALSE) {
           // If a term was not passed, we can create it if the required
           // fields were included. For safety, this is an opt-in setting.
@@ -337,7 +341,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
 
     // Update query will only be based on the organism_id,
     // which we get from the retrieved record.
-    $organism_id = $existing_values['organism.organism_id'];
+    $organism_id = $existing_records[0]->getValue('organism.organism_id');
     // We do not support changing the organism_id.
     if (array_key_exists('organism.organism_id', $values)) {
       unset($values['organism.organism_id']);
