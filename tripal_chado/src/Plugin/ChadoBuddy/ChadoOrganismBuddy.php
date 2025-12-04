@@ -447,7 +447,8 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       throw new ChadoBuddyException("ChadoBuddy getOrganismScientificName error, more than one organism record matches the specified conditions:\n" . print_r($conditions, TRUE));
     }
     // Grab the genus and species.
-    $organism_name = $organism_records['organism.organism_genus'] . ' ' . $organism_records['organism.organism_species'];
+    $organism_values = $organism_records[0]->getValues();
+    $organism_name = $organism_values['organism.genus'] . ' ' . $organism_values['organism.species'];
 
     // @todo Check for rank and infraspecific name
     return $organism_name;

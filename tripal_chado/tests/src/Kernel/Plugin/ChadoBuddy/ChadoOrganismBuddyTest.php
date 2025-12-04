@@ -142,6 +142,10 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     foreach ($upsert_organism_values as $column => $value) {
       $this->assertEquals($value, $values['get'][$column], "The value for column $column after upserting with the intent to update did not match the expected value.");
     }
+
+    // TEST: Try grabbing the scientific name of one of our test organisms.
+    $simple_organism_name = $instance->getOrganismScientificName($simple_organism_values);
+    $this->assertEquals('Tripalus databasica', $simple_organism_name, 'We did not retrieve the correct organism scientific name for an organism we inserted: Tripalus databasica');
   }
 
 }
