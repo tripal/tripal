@@ -1265,7 +1265,8 @@ class ChadoRecords {
       return;
     }
     $fkeys = $table_def['foreign keys'];
-    foreach ($fkeys as $fk_table => $info) {
+    foreach ($fkeys as $info) {
+      $fk_table = $info['table'];
       foreach ($info['columns'] as $lcol => $rcol) {
 
         $lcol_aliases = $this->getColumnFieldAliases($base_table, $base_table, $delta, $lcol);
