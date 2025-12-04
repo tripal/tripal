@@ -306,7 +306,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       return FALSE;
     }
     if (count($existing_records) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy updateOrganism error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy updateOrganism error, more than one record matched the conditions specified:\n" . print_r($conditions, TRUE));
     }
     $existing_values = $existing_records[0]->getValues();
 
@@ -412,7 +412,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     $existing_records = $this->getOrganism($conditions, $options);
     if (count($existing_records) > 0) {
       if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy upsertOrganism error, more than one record matched the specified values\n" . print_r($values, TRUE));
+        throw new ChadoBuddyException("ChadoBuddy upsertOrganism error, more than one record matched the specified values:\n" . print_r($values, TRUE));
       }
       $new_record = $this->updateOrganism($values, $conditions, $options);
     }
@@ -420,6 +420,37 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       $new_record = $this->insertOrganism($values, $options);
     }
     return $new_record;
+  }
+
+  /**
+   * Retrieves the scientific name for a specific organism.
+   *
+   * @param array $conditions
+   *   Supports all the same keys as getOrganism().
+   *   @see ::getOrganism()
+   * @param array $options
+   *   No options are yet supported.
+   *
+   * @return string
+   *   The fully formatted scientific name for the retrieved organism.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered.
+   */
+  public function getOrganismScientificName(array $conditions, array $options = []) {
+    $organism_records = $this->getOrganism($conditions, $options);
+    // Check if we have exactly one record.
+    if (count($organism_records) < 1) {
+      throw new ChadoBuddyException("ChadoBuddy getOrganismScientificName error, could not find an organism record that matches the specified conditions:\n" . print_r($conditions, TRUE));
+    }
+    elseif (count($organism_records) > 1) {
+      throw new ChadoBuddyException("ChadoBuddy getOrganismScientificName error, more than one organism record matches the specified conditions:\n" . print_r($conditions, TRUE));
+    }
+    // Grab the genus and species.
+    $organism_name = $organism_records['organism.organism_genus'] . ' ' . $organism_records['organism.organism_species'];
+
+    // @todo Check for rank and infraspecific name
+    return $organism_name;
   }
 
 }
