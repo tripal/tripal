@@ -65,7 +65,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       'organism',
       'organism.organism_id',
       'Organism "Tripal: Tripalus databasica"',
-      8
+      28
     );
     $organism_id = $values['get']['organism.organism_id'];
     $this->assertTrue(is_numeric($organism_id), 'We did not retrieve an integer organism_id for the new organism "Tripal: Tripalus databasica"');
@@ -98,7 +98,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       'organism',
       'organism.organism_id',
       'Organism "Tripal" updated with abbreviation "Trp"',
-      8
+      28
     );
     $this->assertEquals('Trp', $values['get']['organism.abbreviation'], 'The Organism abbreviation was not updated for Organism "Tripal"');
 
@@ -117,7 +117,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       'organism',
       'organism.organism_id',
       'Organism "Organism02" inserted via upsert',
-      8
+      28
     );
     $organism_id = $values['get']['organism.organism_id'];
     $this->assertTrue(is_numeric($organism_id), 'We did not retrieve an integer organism_id for the new organism "Organism02: Genus02 species02"');
@@ -133,7 +133,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       'organism',
       'organism.organism_id',
       'Organism "Organism02" updated via upsert',
-      8
+      28
     );
     $organism_id_2 = $values['get']['organism.organism_id'];
     $this->assertTrue(is_numeric($organism_id_2), 'We did not retrieve an integer organism_id for the updated organism "UPDATED02: Genus02 species02"');

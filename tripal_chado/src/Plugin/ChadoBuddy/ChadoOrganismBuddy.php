@@ -121,13 +121,16 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   If an error is encountered.
    */
   public function getOrganism(array $conditions, array $options = []) {
-    // $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'organism'];
-    $valid_tables = ['organism'];
+    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'organism'];
     $valid_columns = $this->getTableColumns($valid_tables);
     $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
 
     $query = $this->chado_connection->select('1:organism', 'organism');
+    $query->leftJoin('1:cvterm', 'cvterm', 'cvterm.cvterm_id = organism.type_id');
+    $query->leftJoin('1:cv', 'cv', 'cv.cv_id = cvterm.cv_id');
+    $query->leftJoin('1:dbxref', 'dbxref', 'dbxref.dbxref_id = cvterm.dbxref_id');
+    $query->leftJoin('1:db', 'db', 'db.db_id = dbxref.db_id');
 
     // Return the joined fields aliased to the unique names
     // as listed in this function's header.
@@ -135,11 +138,6 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       $parts = explode('.', $key);
       $query->addField($parts[0], $parts[1], $this->makeAlias($key));
     }
-    /*
-    $query->leftJoin('1:cv', 'cv', 'cvterm.cv_id = cv.cv_id');
-    $query->leftJoin('1:dbxref', 'dbxref', 'cvterm.dbxref_id = dbxref.dbxref_id');
-    $query->leftJoin('1:db', 'db', 'dbxref.db_id = db.db_id');
-     */
     $this->addConditions($query, $conditions, $options);
 
     try {
