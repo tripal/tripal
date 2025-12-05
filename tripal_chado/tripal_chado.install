@@ -1134,7 +1134,7 @@ function tripal_chado_update_10416() {
 /**
  * Add a phylogenetic tree visualization field. PR 2244.
  */
-function tripal_chado_update_10417() {
+function tripal_chado_update_10418() {
   try {
     $messenger = \Drupal::messenger();
     // Adds a new CV term for storing phylotree visualization settings.
