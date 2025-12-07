@@ -255,7 +255,7 @@ class ChadoMview extends ChadoCustomTable {
   }
 
   /**
-   * Destroyes the materialized view completely.
+   * Deletes the materialized view completely.
    *
    * Tripal will no longer know about the table and the table will be removed
    * from Chado. After this function is executed this object is no longer
@@ -270,11 +270,11 @@ class ChadoMview extends ChadoCustomTable {
    * @return bool
    *   True if successful. False otherwise.
    */
-  public function destroy() {
+  public function delete(): bool {
     $logger = \Drupal::service('tripal.logger');
     if (!$this->getTableId()) {
       $logger->error('Cannot destroy the materialized view. Please, first run the init() function.');
-      return False;
+      return FALSE;
     }
 
     $public = \Drupal::database();
@@ -284,6 +284,7 @@ class ChadoMview extends ChadoCustomTable {
 
     $this->mview_id = NULL;
 
-    return parent::destroy();
+    return parent::delete();
   }
+
 }
