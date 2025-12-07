@@ -6,6 +6,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\ChadoCustomTables;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoCustomTables\ChadoMview;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -57,6 +58,14 @@ class ChadoMviewTest extends ChadoTestKernelBase {
   protected array $organism_ids;
 
   /**
+   * The most recent error message from the mocked tripal logger.
+   *
+   * @var string
+   *   The error message.
+   */
+  protected string $mock_error = '';
+
+  /**
    * Test initialization, get database connections.
    */
   protected function setUp(): void {
@@ -71,6 +80,17 @@ class ChadoMviewTest extends ChadoTestKernelBase {
 
     // Install required schemas.
     $this->installSchema('tripal_chado', ['tripal_custom_tables', 'tripal_mviews']);
+
+    // Capture tripal logger errors.
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
+      ->onlyMethods(['error'])
+      ->getMock();
+    $mock_logger->method('error')
+      ->willReturnCallback(function ($message, $context, $options) {
+          $this->mock_error .= str_replace(array_keys($context), $context, $message);
+          return NULL;
+      });
+    \Drupal::getContainer()->set('tripal.logger', $mock_logger);
 
     // Create organism records, common name length is 19 characters.
     $this->organism_ids[] = $this->chado_connection
@@ -116,11 +136,14 @@ class ChadoMviewTest extends ChadoTestKernelBase {
     // Create the ChadoMview.
     $schema_name = $this->chado_connection->getSchemaName();
     $mview = new ChadoMview($schema['table'], $schema_name);
-    $mview->setTableSchema($schema);
+    $check = $mview->setTableSchema($schema);
+    $this->assertTrue($check, 'Set schema successfully');
     $mview->setSqlQuery($populateSql);
-    $mview->setComment('Comment Okay');
-    $id = (int) $mview->getMviewId();
-    $this->assertGreaterThanOrEqual(1, $id, 'Created mview has an ID value');
+    $this->assertTrue($check, 'Set SQL query successfully');
+    $check = $mview->setComment('Comment Okay');
+    $this->assertTrue($check, 'Set comment successfully');
+    $check = $mview->setLastUpdate(1234567890);
+    $this->assertTrue($check, 'Set last update successfully');
 
     // Assert metadata rows exist.
     $customTableCount = (int) $this->drupal_connection
@@ -140,6 +163,18 @@ class ChadoMviewTest extends ChadoTestKernelBase {
       ->fetchField();
     $this->assertEquals(1, $mviewMetaCount, 'Mview metadata row is present after create().');
 
+    // Test class functions.
+    $mview_id = (int) $mview->getMviewId();
+    $this->assertGreaterThanOrEqual(1, $mview_id, 'Created mview has an ID value');
+    $check = $mview->getSqlQuery();
+    $this->assertEquals($populateSql, $check, 'Retrieved SQL matches expected');
+    $check = $mview->getStatus();
+    $this->assertEquals('', $check, 'Retrieved empty status matches expected');
+    $check = (int) $mview->getLastUpdate();
+    $this->assertEquals(1234567890, $check, 'Retrieved update timestamp matches expected');
+    $check = $mview->comment();
+    $this->assertEquals('Comment Okay', $check, 'Retrieved comment matches expected');
+
     // Table should be empty before being populated.
     $rowCount = (int) $this->chado_connection
       ->select('1:' . $schema['table'])
@@ -150,7 +185,8 @@ class ChadoMviewTest extends ChadoTestKernelBase {
     $this->assertEquals(0, $rowCount, 'Mview table is empty before being populated');
 
     // Populate and verify rows were inserted.
-    $mview->populate();
+    $check = $mview->populate();
+    $this->assertTrue($check, 'populate() returned TRUE');
     $organismCount = (int) $this->chado_connection
       ->select('1:organism', 't')
       ->fields('t', ['*'])
@@ -181,6 +217,8 @@ class ChadoMviewTest extends ChadoTestKernelBase {
       ->execute()
       ->fetchField();
     $this->assertEquals(0, $second_value, 'Value for second organism is correct');
+    $check = $mview->getStatus();
+    $this->assertEquals('Populated with 2 rows', $check, 'Retrieved status matches expected');
 
     // Delete and assert cleanup.
     $mview->delete();
@@ -203,6 +241,45 @@ class ChadoMviewTest extends ChadoTestKernelBase {
       ->execute()
       ->fetchField();
     $this->assertEquals(0, $mviewMetaCountAfter, 'Mview metadata was removed on delete().');
+
+    // Test various class functions with an improperly initialized object.
+    $caught = FALSE;
+    try {
+      $mview = new ChadoMview('', $schema_name);
+    }
+    catch (\Exception $e) {
+      $caught = TRUE;
+      $this->assertStringContainsString('Please provide a value', $e->getMessage(), 'Creating a materialized view with an empty name throws an exception');
+    }
+    $this->assertTrue($caught, 'Creating a materialized view with an empty name throws an exception');
+
+    // At this point $mview is not properly initialized because
+    // of the exception we just caught. Let's try to break things.
+    $this->mock_error = '';
+    $check = $mview->setSqlQuery($populateSql);
+    $this->assertFalse($check, 'Set SQL query on invalid mview object should return false');
+    $this->assertStringContainsString('ChadoMview object was not properly initialized', $this->mock_error, 'Set SQL query on invalid mview object should log an error');
+
+    $this->mock_error = '';
+    $check = $mview->setComment('Comment Okay');
+    $this->assertFalse($check, 'Set comment on invalid mview object should return false');
+    $this->assertStringContainsString('ChadoMview object was not properly initialized', $this->mock_error, 'Set comment on invalid mview object should log an error');
+
+    $this->mock_error = '';
+    $check = $mview->setLastUpdate(1234567890);
+    $this->assertFalse($check, 'Set last update on invalid mview object should return false');
+    $this->assertStringContainsString('ChadoMview object was not properly initialized', $this->mock_error, 'Set last update on invalid mview object should log an error');
+
+    $this->mock_error = '';
+    $check = $mview->populate();
+    $this->assertFalse($check, 'Populate on invalid mview object should return false');
+    $this->assertStringContainsString('ChadoMview object was not properly initialized', $this->mock_error, 'Populate on invalid mview object should log an error');
+
+    $this->mock_error = '';
+    $check = $mview->delete();
+    $this->assertFalse($check, 'Delete on invalid mview object should return false');
+    $this->assertStringContainsString('ChadoMview object was not properly initialized', $this->mock_error, 'Delete on invalid mview object should log an error');
+
   }
 
 }
