@@ -124,7 +124,7 @@ class ChadoMview extends ChadoCustomTable {
   public function setSqlQuery(string $query) {
     $logger = \Drupal::service('tripal.logger');
     if (!$this->getTableId()) {
-      $logger->error('Cannot set the SQL query for the materialized view. Please, first run the init() function.');
+      $logger->error('Cannot set the SQL query for the materialized view, ChadoMview object was not properly initialized.');
       return False;
     }
     return $this->setTableValue('query', $query);
@@ -148,7 +148,7 @@ class ChadoMview extends ChadoCustomTable {
   private function setStatus($status) {
     $logger = \Drupal::service('tripal.logger');
     if (!$this->getTableId()) {
-      $logger->error('Cannot set status for the materialized view. Please, first run the init() function.');
+      $logger->error('Cannot set status for the materialized view, ChadoMview object was not properly initialized.');
       return False;
     }
     return $this->setTableValue('status', $status);
@@ -186,7 +186,7 @@ class ChadoMview extends ChadoCustomTable {
 
     $logger = \Drupal::service('tripal.logger');
     if (!$this->getTableId()) {
-      $logger->error('Cannot set the comment for the materialized view. Please, first run the init() function.');
+      $logger->error('Cannot set the comment for the materialized view, ChadoMview object was not properly initialized.');
       return False;
     }
     return $this->setTableValue('last_update', $timestamp);
@@ -207,7 +207,7 @@ class ChadoMview extends ChadoCustomTable {
   public function setComment(string $comment) {
     $logger = \Drupal::service('tripal.logger');
     if (!$this->getTableId()) {
-      $logger->error('Cannot set the comment for the materialized view. Please, first run the init() function.');
+      $logger->error('Cannot set the comment for the materialized view, ChadoMview object was not properly initialized.');
       return False;
     }
     return $this->setTableValue('comment', $comment);
@@ -231,7 +231,7 @@ class ChadoMview extends ChadoCustomTable {
   public function populate() {
     $logger = \Drupal::service('tripal.logger');
     if (!$this->getTableId()) {
-      $logger->error('Cannot populate the materialized view. Please, first run the init() function.');
+      $logger->error('Cannot populate the materialized view, ChadoMview object was not properly initialized.');
       return False;
     }
 
@@ -277,7 +277,7 @@ class ChadoMview extends ChadoCustomTable {
   public function delete(): bool {
     $logger = \Drupal::service('tripal.logger');
     if (!$this->getTableId()) {
-      $logger->error('Cannot destroy the materialized view. Please, first run the init() function.');
+      $logger->error('Cannot destroy the materialized view, ChadoMview object was not properly initialized.');
       return FALSE;
     }
 
