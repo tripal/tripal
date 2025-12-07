@@ -90,13 +90,17 @@ class ChadoMview extends ChadoCustomTable {
    *   The column name to set the value for.
    * @param mixed $value
    *   The value to set.
+   *
+   * @return bool
+   *   Returns TRUE for success. Any error will be an exception.
    */
-  private function setTableValue($column, $value) {
+  private function setTableValue($column, $value): bool {
     $public = \Drupal::database();
     $update = $public->update('tripal_mviews');
     $update->fields([$column => $value]);
     $update->condition('table_id', $this->getTableId());
     $update->execute();
+    return TRUE;
   }
 
   /**
