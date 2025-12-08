@@ -23,6 +23,8 @@
     <ini name="error_reporting" value="32767"/>
     <!-- Do not limit the amount of memory tests take to run. -->
     <ini name="memory_limit" value="-1"/>
+    <!-- We do not do deprecation testing on the lowest Drupal versions -->
+    <env name="SYMFONY_DEPRECATIONS_HELPER" value="disabled"/>
     <!-- Handling of functional tests. See core/phpunit.xml.dist -->
     <env name="MINK_DRIVER_CLASS" value=""/>
     <env name="MINK_DRIVER_ARGS" value=""/>
