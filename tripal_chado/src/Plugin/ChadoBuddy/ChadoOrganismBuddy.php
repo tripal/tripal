@@ -478,6 +478,48 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
   }
 
   /**
+   * Retrieves an organism record from its scientific name.
+   *
+   * @param string $scientific_name
+   *   The scientific name of the desired organism record. At minimum, this
+   *   includes the organism genus and species concatenated together. If the
+   *   organism has an infraspecific type, it is to be included after species
+   *   and before the infraspecific name and can be abbreviated or not.
+   *   Note: There is the option to specify an organism's abbreviation or common
+   *   name here instead - please see $options.
+   * @param array $options
+   *   (Optional) Associative array of options with these supported keys:
+   *   - check_abbreviation: If TRUE and $scientific_name did not match the
+   *     scientific name, then check organism.abbreviation.
+   *   - check_common_name: If TRUE and $scientific_name did not match the
+   *     scientific name, then check organism.common_name.
+   *   - case_sensitive: If TRUE then all searches should be case sensitive.
+   *     Default is FALSE.
+   *   If no options are specified, search is for a match of $scientific_name to
+   *   the combination of genus + species + rank + infraspecific name only, case
+   *   insensitive.
+   *
+   * @return array
+   *   An array of ChadoBuddyRecord objects. More specifically,
+   *   (1) if the select values return a single record then we return an
+   *     array containing a single ChadoBuddyRecord describing the record.
+   *   (2) if the select values return multiple records, then we return an
+   *     array of ChadoBuddyRecords describing the results.
+   *   (3) if there are no results then we return an empty array.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered.
+   */
+  public function getOrganismFromScientificName(string $scientific_name, array $options = []) {
+    $buddies = [];
+    // Handle empty $scientific_name by returning an empty array.
+    if (!$scientific_name) {
+      return $buddies;
+    }
+
+  }
+
+  /**
    * A helper method to abbreviate the infraspecific rank of an organism.
    *
    * @param string $rank
