@@ -517,6 +517,39 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       return $buddies;
     }
 
+    // Check scientific name first, and if a match is found, nothing
+    // else specified by $options will be checked.
+    // Split our string up into a maximum of 4 substrings or parts.
+    $parts = preg_split('/\s+/', $scientific_name, 4);
+    // $scientific_name could be a single word, so make sure this is defined.
+    $parts[1] = $parts[1] ?? '';
+
+    // Setup our conditions for lookup.
+    $conditions = [
+      'organism.genus' => $parts[0],
+      'organism.species' => $parts[1],
+    ];
+    // Remove the abbreviation from rank if it exists.
+    if (array_key_exists(2, $parts)) {
+      $conditions['cvterm.name'] = unabbreviateInfraspecificRank($parts[2]);
+    }
+    if (array_key_exists(3, $parts)) {
+      $conditions['organism.infraspecific_name'] = $parts[3];
+    }
+
+    // Check 'case_sensitive' option and pass it through to our getter.
+    $lookup_options = [];
+    if ($options['case_sensitive'] ?? FALSE) {
+      foreach ($conditions as $key => $value) {
+        $lookup_options['case_insensitive'][] = $key;
+      }
+    }
+
+    $buddies = $this->getOrganism($conditions, $lookup_options);
+
+    // @todo Check other search modes only when no match was found.
+
+    return $buddies;
   }
 
   /**
@@ -546,6 +579,48 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       default => $rank,
     };
     return $abb;
+  }
+
+  /**
+   * A helper method to expand the infraspecific rank of an abbreviated one.
+   *
+   * @param string $rank
+   *   The rank below species or its abbreviation.
+   *   A period at the end of the abbreviation is optional.
+   *
+   * @return string
+   *   The proper unabbreviated form for the rank.
+   */
+  public function unabbreviateInfraspecificRank(string $rank) {
+    if (preg_match('/^subsp\.?$/i', $rank)) {
+      $rank = 'subspecies';
+    }
+    elseif (preg_match('/^ssp\.?$/i', $rank)) {
+      $rank = 'subspecies';
+    }
+    elseif (preg_match('/^var\.?$/i', $rank)) {
+      $rank = 'varietas';
+    }
+    elseif (preg_match('/^subvar\.?$/i', $rank)) {
+      $rank = 'subvarietas';
+    }
+    elseif (preg_match('/^convar\.?$/i', $rank)) {
+      $rank = 'convariety';
+    }
+    elseif (preg_match('/^cv\.?$/i', $rank)) {
+      $rank = 'cultivar';
+    }
+    elseif (preg_match('/^group$/i', $rank)) {
+      $rank = 'cultivar group';
+    }
+    elseif (preg_match('/^f\.?$/i', $rank)) {
+      $rank = 'forma';
+    }
+    elseif (preg_match('/^subf\.?$/i', $rank)) {
+      $rank = 'subforma';
+    }
+    // If none of the above matched, rank is returned unchanged.
+    return $rank;
   }
 
 }

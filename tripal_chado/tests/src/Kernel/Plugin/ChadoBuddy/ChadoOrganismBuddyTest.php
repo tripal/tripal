@@ -146,6 +146,11 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     // TEST: Try grabbing the scientific name of one of our test organisms.
     $simple_organism_name = $instance->getOrganismScientificName($simple_organism_values);
     $this->assertEquals('Tripalus databasica', $simple_organism_name, 'We did not retrieve the correct organism scientific name for an organism we inserted: Tripalus databasica');
+
+    // TEST: Try grabbing the organism record again using its scientific name.
+    $organism_buddy_from_scientific_name = $instance->getOrganismFromScientificName($simple_organism_name);
+    $this->assertIsArray($organism_buddy_from_scientific_name, 'We did not retrieve an array for an Organism record using its scientific name.');
+    $this->assertEquals(1, count($organism_buddy_from_scientific_name), 'We did not retrieve a single array for an Organism record using its scientific name.');
   }
 
 }
