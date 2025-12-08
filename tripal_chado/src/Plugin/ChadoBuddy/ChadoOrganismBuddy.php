@@ -451,9 +451,59 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     // Grab the genus and species.
     $organism_values = $organism_records[0]->getValues();
     $organism_name = $organism_values['organism.genus'] . ' ' . $organism_values['organism.species'];
+    // If this organism has a rank and infraspecific name, we need to add it
+    // to its scientific name.
+    $rank = '';
+    if ($organism_values['organism.type_id']) {
+      $cvterm_id = $organism_values['organism.type_id'];
+      // We need a cvterm buddy to grab the name of the rank.
+      if (!isset($this->cvterm_instance)) {
+        $this->cvterm_instance = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
+      }
+      $cvterm_record = $this->cvterm_instance->getCvterm(['cvterm.cvterm_id' => $cvterm_id]);
+      $rank = $cvterm_record[0]->getValue('cvterm.name');
+    }
+    // If we successfully grabbed the name of the rank, find its abbreviation.
+    if ($rank) {
+      $rank = abbreviateInfraspecificRank($rank);
+      $organism_name .= ' ' . $rank . ' ' . $organism_values['infraspecific_name'];
+    }
+    // If we're missing a rank but have an infraspecific name, tag that onto the
+    // end.
+    elseif ($organism_values['organism.infraspecific_name']) {
+      $organism_name .= ' ' . $organism_values['organism.infraspecific_name'];
+    }
 
-    // @todo Check for rank and infraspecific name
     return $organism_name;
+  }
+
+  /**
+   * A helper method to abbreviate the infraspecific rank of an organism.
+   *
+   * @param string $rank
+   *   The rank below species.
+   *
+   * @return string
+   *   The proper abbreviation for the rank.
+   */
+  public function abbreviateInfraspecificRank(string $rank) {
+    $abb = '';
+    $rank = strtolower($rank);
+    $abb = match ($rank) {
+      'no_rank' => '',
+      'subspecies' => 'subsp.',
+      'varietas' => 'var.',
+      'variety' => 'var.',
+      'subvarietas' => 'subvar.',
+      'subvariety' => 'subvar.',
+      'convariety' => 'convar.',
+      'cultivar' => 'cv.',
+      'cultivar group' => 'Group',
+      'forma' => 'f.',
+      'subforma' => 'subf.',
+      default => $rank,
+    };
+    return $abb;
   }
 
 }
