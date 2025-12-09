@@ -51,13 +51,13 @@ class TripalTextTypeItem extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    $values = [];
+    $value = [];
 
     $random = new Random();
-    $values['record_id'] = 0;
-    $values['value'] = $random->sentences(9);
+    $value['record_id'] = 0;
+    $value['value'] = $random->sentences(9);
 
-    return $values;
+    return [$value];
   }
 
   /**
