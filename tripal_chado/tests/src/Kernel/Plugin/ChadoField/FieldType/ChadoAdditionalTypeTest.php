@@ -131,6 +131,7 @@ class ChadoAdditionalTypeTest extends ChadoTestKernelBase {
 
     // Next setup the environment according to the system under test.
     $this->setupChadoEntityFieldTestEnvironment($this->system_under_test);
+    $this->installSchema('tripal_chado', ['tripal_custom_tables', 'tripal_mviews']);
   }
 
   /**
@@ -193,6 +194,53 @@ class ChadoAdditionalTypeTest extends ChadoTestKernelBase {
     $updated_entity = TripalEntity::load($created_entity->id());
     // @debug print_r($updated_entity->toArray());
     $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, $current_scenario['label'] . ' EDIT ');
+  }
+
+  /**
+   * Tests non-CRUD methods for the field types.
+   *
+   * Specifically,
+   *  - generateSampleValue()
+   *  - isCompatible()
+   */
+  public function testFieldTypeHelperMethods() {
+    // Retrieve the first scenario.
+    $current_scenario = $this->getYamlScenario(0, 'Default Values Only');
+
+    // Create the entity with that value set.
+    $entity = TripalEntity::create([
+      'title' => $this->randomString(),
+      'type' => $this->bundle_name,
+    ] + $current_scenario['create']['user_input']);
+    $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
+    $status = $entity->save();
+    $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
+
+    // For each of the fields in the system under test...
+    foreach ($this->system_under_test['fields'] as $field_info) {
+      $field_name = $field_info['name'];
+      $field_class = $field_info['type_class'];
+      $field_defn = $this->fieldConfig[$field_name];
+      $field_item = $entity->get($field_name)->first();
+
+      // Check that we can generate a sample value.
+      $generated_value = $field_class::generateSampleValue($field_defn);
+      $this->assertIsArray($generated_value, "We expected $field_name::generateSampleValue() to generate an array.");
+      $this->assertArrayHasKey('record_id', $generated_value[0], "We expected the $field_name generated value to have a record_id.");
+
+      // Check that we can confirm it is compatible with the current bundle.
+      $compatible = $field_item->isCompatible($entity->getBundle());
+      $this->assertTrue($compatible, "We expect the $field_name field to be compatible with the current bundle (i.e. " . $this->bundle_name . ").");
+
+      // Check that it is not compatible with a bundle that doesn't have
+      // a chado table set.
+      $sad_bundle = $this->createTripalContentType();
+      $this->chado_connection->query('CREATE TABLE IF NOT EXISTS {1:emptytable} (amount real)');
+      $sad_bundle->setThirdPartySetting('tripal', 'chado_base_table', 'emptytable');
+      $sad_bundle->save();
+      $compatible = $field_item->isCompatible($sad_bundle);
+      $this->assertFalse($compatible, "We don't expect the $field_name field to be compatible with a bundle that has no chado table set.");
+    }
   }
 
 }
