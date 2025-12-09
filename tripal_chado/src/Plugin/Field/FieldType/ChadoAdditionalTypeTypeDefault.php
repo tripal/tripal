@@ -513,12 +513,14 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       $compatible = TRUE;
     }
 
-    $prop_def = self::getChadoTableDef($base_table . 'prop', $schema);
-    // If the property table exists, and has a foreign key to the base table,
-    // then this content type is compatible.
-    if ($prop_def) {
-      if (array_key_exists($base_table, $prop_def['foreign keys'])) {
-        $compatible = TRUE;
+    if ($schema->tableExists($base_table . 'prop')) {
+      $prop_def = self::getChadoTableDef($base_table . 'prop', $schema);
+      // If the property table exists, and has a foreign key to the base table,
+      // then this content type is compatible.
+      if ($prop_def) {
+        if (array_key_exists($base_table, $prop_def['foreign keys'])) {
+          $compatible = TRUE;
+        }
       }
     }
 
