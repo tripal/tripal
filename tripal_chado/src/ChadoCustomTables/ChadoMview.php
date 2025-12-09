@@ -277,7 +277,7 @@ class ChadoMview extends ChadoCustomTable {
   public function delete(): bool {
     $logger = \Drupal::service('tripal.logger');
     if (!$this->getTableId()) {
-      $logger->error('Cannot destroy the materialized view, ChadoMview object was not properly initialized.');
+      $logger->error('Cannot delete the materialized view, ChadoMview object was not properly initialized.');
       return FALSE;
     }
 
