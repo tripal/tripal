@@ -153,4 +153,73 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     $this->assertEquals(1, count($organism_buddy_from_scientific_name), 'We did not retrieve a single array for an Organism record using its scientific name.');
   }
 
+  /**
+   * Tests the helper methods for infraspecific ranks.
+   *
+   * Specifically:
+   *   - abbreviateInfraspecificRank()
+   *   - unabbreviateInfraspecificRank()
+   */
+  public function testInfraspecificRankHelpers() {
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $instance = $type->createInstance('chado_organism_buddy', []);
+
+    // Data to test abbreviation of infraspecific rank, where key = full rank
+    // and value = abbreviation.
+    $expected_abbreviated = [
+      'no_rank' => '',
+      'subspecies' => 'subsp.',
+      'varietas' => 'var.',
+      'variety' => 'var.',
+      'subvarietas' => 'subvar.',
+      'subvariety' => 'subvar.',
+      'convariety' => 'convar.',
+      'cultivar' => 'cv.',
+      'cultivar group' => 'Group',
+      'forma' => 'f.',
+      'subforma' => 'subf.',
+      'anything_else' => 'anything_else',
+    ];
+
+    foreach ($expected_abbreviated as $full => $abbrev) {
+      $abbrev_result = $instance->abbreviateInfraspecificRank($full);
+      $this->assertEquals(
+        $abbrev_result,
+        $abbrev,
+        'Did not properly abbreviate "' . $full . '", abbreviateInfraspecificRank() returned "' . $abbrev_result . '" instead.'
+      );
+    }
+
+    // An array of infraspecific ranks to test, where key = abbreviation and
+    // value = full (unabbreviated) rank.
+    $expected_unabbreviated = [
+      '' => '',
+      'subsp' => 'subspecies',
+      'subsp.' => 'subspecies',
+      'ssp' => 'subspecies',
+      'ssp.' => 'subspecies',
+      'var' => 'varietas',
+      'var.' => 'varietas',
+      'subvar' => 'subvarietas',
+      'subvar.' => 'subvarietas',
+      'cv' => 'cultivar',
+      'cv.' => 'cultivar',
+      'f' => 'forma',
+      'f.' => 'forma',
+      'subf' => 'subforma',
+      'subf.' => 'subforma',
+      'anything_else' => 'anything_else',
+      'anything_else.' => 'anything_else.',
+    ];
+
+    foreach ($expected_unabbreviated as $abbrev => $full) {
+      $full_result = $instance->unabbreviateInfraspecificRank($abbrev);
+      $this->assertEquals(
+        $full_result,
+        $full,
+        'Did not properly unabbreviate "' . $abbrev . '", unabbreviateInfraspecificRank() returned "' . $full_result . '" instead.'
+      );
+    }
+  }
+
 }
