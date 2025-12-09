@@ -202,6 +202,7 @@ class ChadoAdditionalTypeTest extends ChadoTestKernelBase {
    * Specifically,
    *  - generateSampleValue()
    *  - isCompatible()
+   *  - getConstraints()
    */
   public function testFieldTypeHelperMethods() {
     // Retrieve the first scenario.
@@ -215,6 +216,13 @@ class ChadoAdditionalTypeTest extends ChadoTestKernelBase {
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
     $status = $entity->save();
     $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
+
+    // Create another content type with a chado_table not compatible with
+    // any fields.
+    $sad_bundle = $this->createTripalContentType();
+    $this->chado_connection->query('CREATE TABLE IF NOT EXISTS {1:emptytable} (amount real)');
+    $sad_bundle->setThirdPartySetting('tripal', 'chado_base_table', 'emptytable');
+    $sad_bundle->save();
 
     // For each of the fields in the system under test...
     foreach ($this->system_under_test['fields'] as $field_info) {
@@ -232,14 +240,14 @@ class ChadoAdditionalTypeTest extends ChadoTestKernelBase {
       $compatible = $field_item->isCompatible($entity->getBundle());
       $this->assertTrue($compatible, "We expect the $field_name field to be compatible with the current bundle (i.e. " . $this->bundle_name . ").");
 
-      // Check that it is not compatible with a bundle that doesn't have
-      // a chado table set.
-      $sad_bundle = $this->createTripalContentType();
-      $this->chado_connection->query('CREATE TABLE IF NOT EXISTS {1:emptytable} (amount real)');
-      $sad_bundle->setThirdPartySetting('tripal', 'chado_base_table', 'emptytable');
-      $sad_bundle->save();
+      // Check that it is not compatible with a bundle that has no compatible
+      // columns for any field.
       $compatible = $field_item->isCompatible($sad_bundle);
       $this->assertFalse($compatible, "We don't expect the $field_name field to be compatible with a bundle that has no chado table set.");
+
+      // Check that we can retrieve constraints.
+      $constraints = $field_item->getConstraints();
+      $this->assertIsArray($constraints, "We expected to at least be given an empty array when trying to retrieve the constraints for $field_name.");
     }
   }
 
