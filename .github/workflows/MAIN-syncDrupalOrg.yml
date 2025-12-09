@@ -13,7 +13,7 @@ jobs:
     runs-on: 'ubuntu-latest'
     name: 'Push to Drupal.org'
     steps:
-      - uses: 'actions/checkout@v4'
+      - uses: 'actions/checkout@v6'
         name: 'Check out all history for all tags + branches'
         with:
           fetch-depth: 0
