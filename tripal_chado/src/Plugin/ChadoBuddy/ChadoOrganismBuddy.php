@@ -490,9 +490,9 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
    *   - check_abbreviation: If TRUE and $scientific_name did not match the
-   *     scientific name, then check organism.abbreviation.
+   *     scientific name, then check organism.abbreviation. Default is FALSE.
    *   - check_common_name: If TRUE and $scientific_name did not match the
-   *     scientific name, then check organism.common_name.
+   *     scientific name, then check organism.common_name. Default is FALSE.
    *   - case_sensitive: If TRUE then all searches should be case sensitive.
    *     Default is FALSE.
    *   If no options are specified, search is for a match of $scientific_name to
@@ -547,7 +547,22 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
 
     $buddies = $this->getOrganism($conditions, $lookup_options);
 
-    // @todo Check other search modes only when no match was found.
+    // Check other search modes only when no match was found.
+    if (empty($buddies)) {
+      // Try to find $scientific_name in the abbreviation column. This does not
+      // have a unique constraint, so there may be more than one match.
+      if ($options['check_abbreviation'] ?? FALSE) {
+        $abbrev_conditions = ['organism.abbreviation' => $scientific_name];
+        $buddies = $this->getOrganism($abbrev_conditions, $lookup_options);
+      }
+
+      // Try to find $scientific_name in the common_name column. This does not
+      // have a unique constraint, so there may be more than one match.
+      if ($options['check_common_name'] ?? FALSE) {
+        $common_conditions = ['organism.common_name' => $scientific_name];
+        $buddies[] = $this->getOrganism($common_conditions, $lookup_options);
+      }
+    }
 
     return $buddies;
   }
