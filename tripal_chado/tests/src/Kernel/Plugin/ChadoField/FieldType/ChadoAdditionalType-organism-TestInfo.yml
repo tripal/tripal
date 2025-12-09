@@ -1,132 +1,132 @@
 system-under-test:
   chado_version: 1.3.3.013
   bundle:
-    label: Organism
-    termIdSpace: OBI
+    label: 'Organism'
+    termIdSpace: 'OBI'
     termAccession: '0100026'
-    id: organism
+    id: 'organism'
     settings:
-      chado_base_table: organism
+      chado_base_table: 'organism'
   fields:
-    - name: organism_abbreviation
-      type: chado_string_type_default
-      type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault
+    - name: 'organism_abbreviation'
+      type: 'chado_string_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
       cardinality: 1
-      widget: chado_string_type_widget
-      formatter: chado_string_type_formatter
-      termIdSpace: local
-      termAccession: abbreviation
+      widget: 'chado_string_type_widget'
+      formatter: 'chado_string_type_formatter'
+      termIdSpace: 'local'
+      termAccession: 'abbreviation'
       settings:
-        termIdSpace: local
-        termAccession: abbreviation
+        termIdSpace: 'local'
+        termAccession: 'abbreviation'
         debug: false
         max_length: 255
-        storage_plugin_id: chado_storage
+        storage_plugin_id: 'chado_storage'
         storage_plugin_settings:
-          base_table: organism
-          base_column: abbreviation
-    - name: organism_comment
-      type: chado_text_type_default
-      type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault
+          base_table: 'organism'
+          base_column: 'abbreviation'
+    - name: 'organism_comment'
+      type: 'chado_text_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
       cardinality: 1
-      widget: chado_text_type_widget
-      formatter: chado_text_type_formatter
-      termIdSpace: schema
-      termAccession: description
+      widget: 'chado_text_type_widget'
+      formatter: 'chado_text_type_formatter'
+      termIdSpace: 'schema'
+      termAccession: 'description'
       settings:
-        termIdSpace: schema
-        termAccession: description
+        termIdSpace: 'schema'
+        termAccession: 'description'
         debug: false
-        storage_plugin_id: chado_storage
+        storage_plugin_id: 'chado_storage'
         storage_plugin_settings:
-          base_table: organism
-          base_column: comment
-    - name: organism_common_name
-      type: chado_string_type_default
-      type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault
+          base_table: 'organism'
+          base_column: 'comment'
+    - name: 'organism_common_name'
+      type: 'chado_string_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
       cardinality: 1
-      widget: chado_string_type_widget
-      formatter: chado_string_type_formatter
-      termIdSpace: NCBITaxon
-      termAccession: common_name
+      widget: 'chado_string_type_widget'
+      formatter: 'chado_string_type_formatter'
+      termIdSpace: 'NCBITaxon'
+      termAccession: 'common_name'
       settings:
-        termIdSpace: NCBITaxon
-        termAccession: common_name
+        termIdSpace: 'NCBITaxon'
+        termAccession: 'common_name'
         debug: false
         max_length: 255
-        storage_plugin_id: chado_storage
+        storage_plugin_id: 'chado_storage'
         storage_plugin_settings:
-          base_table: organism
-          base_column: common_name
-    - name: organism_genus
-      type: chado_string_type_default
-      type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault
+          base_table: 'organism'
+          base_column: 'common_name'
+    - name: 'organism_genus'
+      type: 'chado_string_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
       cardinality: 1
-      widget: chado_string_type_widget
-      formatter: chado_string_type_formatter
-      termIdSpace: TAXRANK
+      widget: 'chado_string_type_widget'
+      formatter: 'chado_string_type_formatter'
+      termIdSpace: 'TAXRANK'
       termAccession: '0000005'
       settings:
-        termIdSpace: TAXRANK
+        termIdSpace: 'TAXRANK'
         termAccession: '0000005'
         debug: false
         max_length: 255
-        storage_plugin_id: chado_storage
+        storage_plugin_id: 'chado_storage'
         storage_plugin_settings:
-          base_table: organism
-          base_column: genus
-    - name: organism_infraspecific_name
-      type: chado_string_type_default
-      type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault
+          base_table: 'organism'
+          base_column: 'genus'
+    - name: 'organism_infraspecific_name'
+      type: 'chado_string_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
       cardinality: 1
-      widget: chado_string_type_widget
-      formatter: chado_string_type_formatter
-      termIdSpace: TAXRANK
+      widget: 'chado_string_type_widget'
+      formatter: 'chado_string_type_formatter'
+      termIdSpace: 'TAXRANK'
       termAccession: '0000045'
       settings:
-        termIdSpace: TAXRANK
+        termIdSpace: 'TAXRANK'
         termAccession: '0000045'
         debug: false
         max_length: 1024
-        storage_plugin_id: chado_storage
+        storage_plugin_id: 'chado_storage'
         storage_plugin_settings:
-          base_table: organism
-          base_column: infraspecific_name
-    - name: organism_infraspecific_type
-      type: chado_additional_type_type_default
-      type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAdditionalTypeTypeDefault
+          base_table: 'organism'
+          base_column: 'infraspecific_name'
+    - name: 'organism_infraspecific_type'
+      type: 'chado_additional_type_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAdditionalTypeTypeDefault'
       cardinality: 1
-      widget: chado_additional_type_widget_default
-      formatter: chado_additional_type_formatter_default
-      termIdSpace: local
-      termAccession: infraspecific_type
+      widget: 'chado_additional_type_widget_default'
+      formatter: 'chado_additional_type_formatter_default'
+      termIdSpace: 'local'
+      termAccession: 'infraspecific_type'
       settings:
-        termIdSpace: local
-        termAccession: infraspecific_type
+        termIdSpace: 'local'
+        termAccession: 'infraspecific_type'
         debug: false
         fixed_value: ''
-        storage_plugin_id: chado_storage
+        storage_plugin_id: 'chado_storage'
         storage_plugin_settings:
-          base_table: organism
-          type_table: organism
-          type_column: type_id
-    - name: organism_species
-      type: chado_string_type_default
-      type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault
+          base_table: 'organism'
+          type_table: 'organism'
+          type_column: 'type_id'
+    - name: 'organism_species'
+      type: 'chado_string_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
       cardinality: 1
-      widget: chado_string_type_widget
-      formatter: chado_string_type_formatter
-      termIdSpace: TAXRANK
+      widget: 'chado_string_type_widget'
+      formatter: 'chado_string_type_formatter'
+      termIdSpace: 'TAXRANK'
       termAccession: '0000006'
       settings:
-        termIdSpace: TAXRANK
+        termIdSpace: 'TAXRANK'
         termAccession: '0000006'
         debug: false
         max_length: 255
-        storage_plugin_id: chado_storage
+        storage_plugin_id: 'chado_storage'
         storage_plugin_settings:
-          base_table: organism
-          base_column: species
+          base_table: 'organism'
+          base_column: 'species'
 scenarios:
   - label: 'Default Values Only'
     description: 'Creates a page using only default values for each field.'
@@ -151,7 +151,7 @@ scenarios:
           - record_id: 0
             type_id: 2900
             term_name: 'subfamily'
-            id_space: TAXRANK
+            id_space: 'TAXRANK'
             accession: '0000024'
         organism_species:
           - record_id: 0
@@ -176,7 +176,7 @@ scenarios:
           - record_id: 1
             type_id: 2900
             term_name: 'subfamily'
-            id_space: TAXRANK
+            id_space: 'TAXRANK'
             accession: '0000024'
         organism_species:
           - record_id: 1
@@ -202,7 +202,7 @@ scenarios:
           - record_id: 1
             type_id: 2899
             term_name: 'subspecies'
-            id_space: TAXRANK
+            id_space: 'TAXRANK'
             accession: '0000023'
         organism_species:
           - record_id: 1
@@ -227,7 +227,7 @@ scenarios:
           - record_id: 1
             type_id: 2899
             term_name: 'subspecies'
-            id_space: TAXRANK
+            id_space: 'TAXRANK'
             accession: '0000023'
         organism_species:
           - record_id: 1
