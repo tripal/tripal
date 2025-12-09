@@ -2,7 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\core\Field\FieldDefinitionInterface;
+use Drupal\Component\Utility\Random;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
@@ -25,13 +26,29 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 )]
 class ChadoStringTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "chado_string_type_default";
 
-  // This is a flag to the ChadoFieldItemBase parent
-  // class to provide a column selector in the form
+  /**
+   * Indicate if we should provide a column selector in the add field form.
+   *
+   * @var bool
+   *   If TRUE then provide the select element for the column; if FALSE don't.
+   * @see ChadoFieldItemBase
+   */
   protected static $select_base_column = TRUE;
 
-  // Valid column types to pass to the ChadoFieldItemBase parent class.
+  /**
+   * Indicate the types of base table columns this field can manage.
+   *
+   * @var array
+   *   Simple list of valid base column types for this field to manage.
+   * @see ChadoFieldItemBase
+   */
   protected static $valid_base_column_types = ['character', 'character varying'];
 
   /**
@@ -57,6 +74,11 @@ class ChadoStringTypeDefault extends ChadoFieldItemBase {
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
     $values = [];
+
+    $random = new Random();
+    $values['record_id'] = 0;
+    $values['value'] = $random->sentences(3, TRUE);
+
     return $values;
   }
 
@@ -72,10 +94,10 @@ class ChadoStringTypeDefault extends ChadoFieldItemBase {
         'value' => [
           'Length' => [
             'max' => $max_length,
-            'maxMessage' => t('%name: may not be longer than @max characters.', [
+            'maxMessage' => $this->t('%name: may not be longer than @max characters.', [
               '%name' => $this
-              ->getFieldDefinition()
-              ->getLabel(),
+                ->getFieldDefinition()
+                ->getLabel(),
               '@max' => $max_length,
             ]),
           ],
@@ -128,10 +150,10 @@ class ChadoStringTypeDefault extends ChadoFieldItemBase {
 
     $elements['max_length'] = [
       '#type' => 'number',
-      '#title' => t('Maximum length'),
+      '#title' => $this->t('Maximum length'),
       '#default_value' => $this->getSetting('max_length'),
       '#required' => TRUE,
-      '#description' => t('The maximum length of the field in characters.'),
+      '#description' => $this->t('The maximum length of the field in characters.'),
       '#min' => 1,
       '#disabled' => $has_data,
     ];
@@ -141,6 +163,7 @@ class ChadoStringTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {

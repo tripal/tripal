@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
+use Drupal\Component\Utility\Random;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -22,6 +23,11 @@ use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 )]
 class TripalStringTypeItem extends TripalFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "tripal_string_type";
 
   /**
@@ -50,14 +56,14 @@ class TripalStringTypeItem extends TripalFieldItemBase {
     $elements = [];
     $elements['max_length'] = [
       '#type' => 'number',
-      '#title' => t('Maximum length'),
+      '#title' => $this->t('Maximum length'),
       '#default_value' => $this->getSetting('max_length'),
       '#required' => TRUE,
-      '#description' => t('The maximum length of the field in characters.'),
+      '#description' => $this->t('The maximum length of the field in characters.'),
       '#min' => 1,
       '#disabled' => $has_data,
     ];
-    return $elements + parent::storageSettingsForm($form,$form_state,$has_data);
+    return $elements + parent::storageSettingsForm($form, $form_state, $has_data);
   }
 
   /**
@@ -66,8 +72,9 @@ class TripalStringTypeItem extends TripalFieldItemBase {
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
     $values = [];
 
-    $random = new \Drupal\Component\Utility\Random();
-    $values['value'] = $random->word(mt_rand(1, $field_definition->getSetting('max_length')));
+    $random = new Random();
+    $values['record_id'] = 0;
+    $values['value'] = $random->sentences(3, TRUE);
 
     return $values;
   }
@@ -83,10 +90,10 @@ class TripalStringTypeItem extends TripalFieldItemBase {
         'value' => [
           'Length' => [
             'max' => $max_length,
-            'maxMessage' => t('%name: may not be longer than @max characters.', [
+            'maxMessage' => $this->t('%name: may not be longer than @max characters.', [
               '%name' => $this
-              ->getFieldDefinition()
-              ->getLabel(),
+                ->getFieldDefinition()
+                ->getLabel(),
               '@max' => $max_length,
             ]),
           ],

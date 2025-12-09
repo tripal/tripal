@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Component\Utility\Random;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\Entity\TripalEntityType;
@@ -55,6 +57,19 @@ class ChadoTextTypeDefault extends ChadoFieldItemBase {
     $settings = parent::defaultStorageSettings();
     $settings['storage_plugin_settings']['base_column'] = '';
     return $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $values = [];
+
+    $random = new Random();
+    $values['record_id'] = 0;
+    $values['value'] = $random->sentences(9);
+
+    return $values;
   }
 
   /**
