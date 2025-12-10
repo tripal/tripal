@@ -21,7 +21,7 @@ use PHPUnit\Framework\Attributes\Test;
  * @group service-chado-custom-table
  */
 #[CoversClass(ChadoMview::class)]
-#[Group('tripal-chado')]
+#[Group('service-chado-mview')]
 #[Group('service-chado-custom-table')]
 #[RunTestsInSeparateProcesses]
 class ChadoMviewTest extends ChadoTestKernelBase {
@@ -107,7 +107,7 @@ class ChadoMviewTest extends ChadoTestKernelBase {
    * Kernel test for ChadoMview create/populate/delete lifecycle.
    */
   #[Test]
-  public function createPopulateDeleteMviewTest(): void {
+  public function testCreatePopulateDeleteMview(): void {
     // Define a minimal mview.
     $schema = [
       'table' => 'mv_test_organism_len',
