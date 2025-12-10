@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
@@ -88,6 +89,40 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     $storage_settings['storage_plugin_settings']['linker_fkey_column'] = '';
     $storage_settings['storage_plugin_settings']['object_table'] = self::$object_table;
     return $storage_settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    // Get the Chado table and column this field maps to.
+    $settings = $field_definition->getSettings();
+    $storage_settings = $settings['storage_plugin_settings'];
+    $base_table = $storage_settings['base_table'];
+    // @todo look this up.
+    $linker_table = 'UNKNOWN';
+
+    $value['record_id'] = 0;
+    $value['entity_id'] = 0;
+    if ($base_table == $linker_table) {
+      $value[self::$object_id] = 0;
+    }
+    else {
+      $value['linker_id'] = 0;
+      $value['link'] = 0;
+      $value[self::$object_id] = 0;
+    }
+
+    // Do we want to conditionally include type_id and rank?
+    $value['linker_type_id'] = mt_rand(1, 500);
+    $value['linker_rank'] = 0;
+
+    // Object table properties.
+    // @todo look these up in tripalTypes().
+    //
+    return [$value];
   }
 
   /**
