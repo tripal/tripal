@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
@@ -151,6 +152,88 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     $organism_buddy_from_scientific_name = $instance->getOrganismFromScientificName($simple_organism_name);
     $this->assertIsArray($organism_buddy_from_scientific_name, 'We did not retrieve an array for an Organism record using its scientific name.');
     $this->assertEquals(1, count($organism_buddy_from_scientific_name), 'We did not retrieve a single array for an Organism record using its scientific name.');
+  }
+
+  /**
+   * Data Provider: provides scenarios with organisms' scientific names.
+   *
+   * @return array
+   *   An array of test scenarios, each containing:
+   *   - organism_values: An array of organism column values to insert. This
+   *     array is nested to handle multiple organisms.
+   *   - query_scientific_name: The scientific name to query using
+   *     getOrganismFromScientificName().
+   *   - expected_scientific_name: The scientifc name we expect to be returned
+   *     by getOrganismScientificName().
+   *   - options: An array of options given to getOrganismFromScientificName().
+   */
+  public static function provideOrganismScientificNameScenarios() {
+    $scenarios = [];
+
+    // #0: An organism without infraspecific rank.
+    $scenarios[] =
+    [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+      ],
+      'Tripalus databasica',
+      'Tripalus databasica',
+      [],
+    ];
+
+    return $scenarios;
+  }
+
+  /**
+   * Tests the getter methods that deal with scientific name of an organism.
+   *
+   * Specifically:
+   *   - getOrganismScientificName()
+   *   - getOrganismFromScientificName()
+   *
+   * @param array $organism_values
+   *   An array of organism column values to insert. This array is nested to
+   *   handle multiple organisms.
+   * @param string $query_scientific_name
+   *   The scientific name to query using getOrganismFromScientificName().
+   * @param string $expected_scientific_name
+   *   The expected scientifc name returned by getOrganismScientificName().
+   * @param array $options
+   *   An array of options given to getOrganismFromScientificName().
+   *
+   * @dataProvider provideOrganismScientificNameScenarios
+   */
+  #[DataProvider('provideOrganismScientificNameScenarios')]
+  public function testOrganismScientificNameMethods($organism_values, $query_scientific_name, $expected_scientific_name, $options) {
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $instance = $type->createInstance('chado_organism_buddy', []);
+
+    // Insert any organisms to test with.
+    foreach ($organism_values as $values) {
+      $organism_buddy = $instance->insertOrganism($values);
+      // Try grabbing the scientific name of our test organism.
+      $retrieved_scientific_name = $instance->getOrganismScientificName($values);
+      $this->assertEquals(
+        $expected_scientific_name,
+        $retrieved_scientific_name,
+        'The scientific name retrieved did not match the expected scientific name.'
+      );
+      // Now try grabbing the organism record using its scientific name.
+      $retrieved_buddy = $instance->getOrganismFromScientificName($query_scientific_name, $options);
+      $this->assertIsArray($retrieved_buddy, 'We did not retrieve an array for an Organism record using its scientific name.');
+      $this->assertEquals(1, count($retrieved_buddy), 'We did not retrieve a single array for an Organism record using its scientific name.');
+      // @todo Compare buddies.
+      /*
+      $this->assertEquals(
+        $organism_buddy,
+        $retrieved_buddy,
+        'The organism record retrieved using scientific name did not match the initial inserted organism.',
+      );
+      */
+    }
   }
 
   /**
