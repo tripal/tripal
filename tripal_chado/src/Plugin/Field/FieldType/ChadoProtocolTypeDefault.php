@@ -23,8 +23,31 @@ use Drupal\tripal\Entity\TripalEntityType;
 )]
 class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = 'chado_protocol_type_default';
+
+  /**
+   * The chado table which is the object of the relationship.
+   *
+   * Note: this should be in all fields linking a base table to another
+   * main chado table (i.e. object table).
+   *
+   * @var string
+   */
   protected static $object_table = 'protocol';
+
+  /**
+   * The foreign key that links the linking table to the object table.
+   *
+   * Note: this should be in all fields linking a base table to another
+   * main chado table (i.e. object table).
+   *
+   * @var string
+   */
   protected static $object_id = 'protocol_id';
 
   /**
@@ -60,7 +83,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'protocol'
+    // CV Term is 'protocol'.
     $field_settings['termIdSpace'] = 'sep';
     $field_settings['termAccession'] = '00101	';
     return $field_settings;
@@ -82,27 +105,32 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
     }
 
     // Get the various tables and columns needed for this field.
-    // We will get the property terms by using the Chado table columns they map to.
+    // We will get the terms by using the Chado table columns they map to.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
-    // Base table
+    // Base table.
     $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
-    // Object table
+    // Object table.
     $object_table = self::$object_table;
     $object_schema_def = self::getChadoTableDef($object_table, $schema);
     $object_pkey_col = $object_schema_def['primary key'];
 
-    // Columns specific to the object table
-    $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');  // text
-    $uri_term = self::getColumnTermId($object_table, 'uri', 'data:1047');  // text
-    $protocoldescription_term = self::getColumnTermId($object_table, 'protocoldescription', 'schema:description');  // text
-    $hardwaredescription_term = self::getColumnTermId($object_table, 'hardwaredescription', 'EFO:0000548');  // text
-    $softwaredescription_term = self::getColumnTermId($object_table, 'softwaredescription', 'SWO:0000001');  // text
+    // Columns specific to the object table.
+    // Text.
+    $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
+    // Text.
+    $uri_term = self::getColumnTermId($object_table, 'uri', 'data:1047');
+    // Text.
+    $protocoldescription_term = self::getColumnTermId($object_table, 'protocoldescription', 'schema:description');
+    // Text.
+    $hardwaredescription_term = self::getColumnTermId($object_table, 'hardwaredescription', 'EFO:0000548');
+    // Text.
+    $softwaredescription_term = self::getColumnTermId($object_table, 'softwaredescription', 'SWO:0000001');
 
-    // Columns from linked tables
+    // Columns from linked tables.
     $cvterm_schema_def = self::getChadoTableDef('cvterm', $schema);
     $protocol_type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $protocol_type_len = $cvterm_schema_def['fields']['name']['size'];
@@ -117,14 +145,15 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
     if ($linker_table != $base_table) {
       $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
       $linker_pkey_col = $linker_schema_def['primary key'];
-      // the following should be the same as $base_pkey_col @todo make sure it is
+      // The following should be the same as $base_pkey_col.
+      // @todo make sure it is.
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
       $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
       $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
 
-      // Some but not all linker tables contain rank, type_id, and maybe other columns.
-      // These are conditionally added only if they exist in the linker
-      // table, and if a term is defined for them.
+      // Some but not all linker tables contain rank, type_id, and maybe
+      // other columns. These are conditionally added only if they exist in
+      // the linker table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
           $term = self::getColumnTermId($linker_table, $column, 'NCIT:C25712');
@@ -158,7 +187,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
       'fkey' => $linker_fkey_column,
     ]);
 
-    // Base table links directly
+    // Base table links directly.
     if ($base_table == $linker_table) {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
         'action' => 'store',
@@ -194,9 +223,10 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
         'empty_value' => 0,
       ]);
 
-      // Other columns in the linker table. Set in the widget, but currently not implemented in the formatter.
-      // Typically these are type_id and rank, but are not present in all linker tables,
-      // so they are added only if present in the linker table.
+      // Other columns in the linker table.
+      // Set in the widget, but currently not implemented in the formatter.
+      // Typically these are type_id and rank, but are not present in all
+      // linker tables, so they are added only if present in the linker table.
       foreach ($extra_linker_columns as $column => $term) {
         $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
           'action' => 'store',
@@ -208,7 +238,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
     }
 
     // The object table, the destination table of the linker table
-    // The protocol name
+    // The protocol name.
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_name', $name_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -216,25 +246,25 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
       'as' => 'protocol_name',
     ]);
 
-    // The type of protocol
+    // The type of protocol.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'protocol_type', $protocol_type_term, $protocol_type_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
+      . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
       'as' => 'protocol_type',
     ]);
 
-    // The linked publication title
+    // The linked publication title.
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_pub_title', $pub_title_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.pub_id>pub.pub_id;title',
+      . ';' . $object_table . '.pub_id>pub.pub_id;title',
       'as' => 'protocol_pub_title',
     ]);
 
-    // The protocol uri
+    // The protocol uri.
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_uri', $uri_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -242,7 +272,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
       'as' => 'protocol_uri',
     ]);
 
-    // The protocol description
+    // The protocol description.
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_protocoldescription', $protocoldescription_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -250,7 +280,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
       'as' => 'protocol_protocoldescription',
     ]);
 
-    // The protocol hardware description
+    // The protocol hardware description.
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_hardwaredescription', $hardwaredescription_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -258,7 +288,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
       'as' => 'protocol_hardwaredescription',
     ]);
 
-    // The protocol software description
+    // The protocol software description.
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_softwaredescription', $softwaredescription_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -270,7 +300,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;accession',
+      . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;accession',
       'as' => 'protocol_database_accession',
     ]);
 
@@ -278,7 +308,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
+      . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
       'as' => 'protocol_database_name',
     ]);
 
@@ -287,6 +317,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -303,12 +334,18 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
-      array $field_instances, array $options = []): array {
+  public static function discover(
+    TripalEntityType $bundle,
+    string $field_id,
+    array $field_types,
+    array $field_instances,
+    array $options = [],
+  ): array {
 
-    // Specific settings for this field
+    // Specific settings for this field.
     $options += [
       'id' => self::$id,
       'table' => self::$object_table,
@@ -318,7 +355,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
       'description' => 'A protocol is a process which is a parameterizable description of a process.',
     ];
 
-    // Call the parent discover() with this field's specific options
+    // Call the parent discover() with this field's specific options.
     $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
 
     return $field_list;
