@@ -19,6 +19,14 @@ scenarios:
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAnalysisTypeDefault'
       widget_id: 'chado_analysis_widget_default'
       formatter_id: 'chado_analysis_formatter_default'
+      bundle_name: 'feature'
+      field_name: 'feature_analysis'
+      settings:
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+          base_table: feature
+          linker_table: analysisfeature
+          linker_fkey_column: analysis_id
   -
       field_type: 'chado_array_design_type_default'
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoArrayDesignTypeDefault'

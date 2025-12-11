@@ -80,6 +80,28 @@ class FieldStaticMethodTest extends ChadoTestKernelBase {
     // First retrieve info from the YAML file for this particular test.
     [$this->system_under_test, $this->scenarios] = $this->getTestInfoFromYaml($this->yaml_info_file);
 
+    // Get Chado in place.
+    $this->chado_connection = $this->getTestSchema(
+      ChadoTestKernelBase::PREPARE_TEST_CHADO
+    );
+
+    // We need to setup the test environment for creating fields.
+    // We don't pass in anything so no bundles/fields will be created.
+    $this->setupChadoEntityFieldTestEnvironment();
+
+    // Now create the fields.
+    // createFieldInstance() will save all fields created to the fieldConfig.
+    // property which is keyed by field name. The field names will be
+    // generated and saved in each scenario as will the other values.
+    $options = [
+      'vocab_plugin_id' => 'chado_vocabulary',
+      'idspace_plugin_id' => 'chado_id_space',
+    ];
+    foreach (array_keys($this->scenarios) as $scenario_key) {
+      $this->createFieldInstance('feature', $this->scenarios[$scenario_key], $options);
+      break;
+    }
+
   }
 
   /**
@@ -90,6 +112,8 @@ class FieldStaticMethodTest extends ChadoTestKernelBase {
     foreach ($this->scenarios as $scenario) {
       $field_class = $scenario['field_class'];
       $field_id = $scenario['field_type'];
+      $field_name = $scenario['field_name'];
+      $field_defn = $this->fieldConfig[$field_name];
 
       $mainPropertyNameMSG = 'indicates the property required for this field not to be considered empty';
       $mainDisplayPropertyNameMSG = 'indicates the property used as the value for field-specific Tripal Tokens';
@@ -136,6 +160,14 @@ class FieldStaticMethodTest extends ChadoTestKernelBase {
       $this->assertIsArray($field_settings, "$field_class::defaultFieldSettings() should $fieldSettingsMSG.");
       $this->assertArrayHasKey('termIdSpace', $field_settings, "$field_class::defaultFieldSettings() should define the termIdSpace.");
       $this->assertArrayHasKey('termAccession', $field_settings, "$field_class::defaultFieldSettings() should define the termAccession.");
+
+      // Generate Sample Value.
+      // Check that we can generate a sample value.
+      $generated_value = $field_class::generateSampleValue($field_defn);
+      $this->assertIsArray($generated_value, "We expected $field_name::generateSampleValue() to generate an array.");
+      $this->assertArrayHasKey('record_id', $generated_value[0], "We expected the $field_name generated value to have a record_id.");
+
+      return;
     }
   }
 
