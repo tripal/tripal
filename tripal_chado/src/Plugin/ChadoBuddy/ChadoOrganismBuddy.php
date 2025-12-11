@@ -198,11 +198,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    */
   public function insertOrganism(array $values, array $options = []) {
 
-    $valid_tables = ['organism'];
-    if (array_key_exists('create_cvterm', $options) and $options['create_cvterm']) {
-      // @todo perhaps also check here if required keys are provided
-      $valid_tables[] = ['cv', 'cvterm', 'db', 'dbxref'];
-    }
+    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'organism'];
     $valid_columns = $this->getTableColumns($valid_tables);
     $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
@@ -465,8 +461,8 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     }
     // If we successfully grabbed the name of the rank, find its abbreviation.
     if ($rank) {
-      $rank = abbreviateInfraspecificRank($rank);
-      $organism_name .= ' ' . $rank . ' ' . $organism_values['infraspecific_name'];
+      $rank = $this->abbreviateInfraspecificRank($rank);
+      $organism_name .= ' ' . $rank . ' ' . $organism_values['organism.infraspecific_name'];
     }
     // If we're missing a rank but have an infraspecific name, tag that onto the
     // end.
@@ -531,7 +527,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     ];
     // Remove the abbreviation from rank if it exists.
     if (array_key_exists(2, $parts)) {
-      $conditions['cvterm.name'] = unabbreviateInfraspecificRank($parts[2]);
+      $conditions['cvterm.name'] = $this->unabbreviateInfraspecificRank($parts[2]);
     }
     if (array_key_exists(3, $parts)) {
       $conditions['organism.infraspecific_name'] = $parts[3];

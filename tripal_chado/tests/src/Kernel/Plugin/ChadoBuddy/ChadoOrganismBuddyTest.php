@@ -184,6 +184,22 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       [],
     ];
 
+    // #1: An organism with infraspecific rank and name.
+    $scenarios[] =
+    [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'cvterm.name' => 'subspecies',
+          'organism.infraspecific_name' => 'chadoii',
+        ],
+      ],
+      'Tripalus databasica subsp. chadoii',
+      'Tripalus databasica subsp. chadoii',
+      [],
+    ];
+
     return $scenarios;
   }
 
@@ -213,7 +229,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
 
     // Insert any organisms to test with.
     foreach ($organism_values as $values) {
-      $organism_buddy = $instance->insertOrganism($values);
+      $organism_buddy = $instance->insertOrganism($values, ['create_cvterm' => TRUE]);
       // Try grabbing the scientific name of our test organism.
       $retrieved_scientific_name = $instance->getOrganismScientificName($values);
       $this->assertEquals(
