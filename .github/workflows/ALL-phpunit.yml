@@ -29,7 +29,7 @@ jobs:
           - '11.3.x-dev'
           - '11.x-dev'
         exclude:
-          # Only Drupal 11.x supports PHP 8.4
+          # Only Drupal 11.x supports PHP 8.4+
           - php-version: '8.4'
             drupal-version: '10.5.x-dev'
           - php-version: '8.4'
@@ -46,7 +46,7 @@ jobs:
           # Drupal 11+ requires at least php 8.3.
           - php-version: '8.2'
             drupal-version: '11.2.x-dev'
-          - php-version: '8.3'
+          - php-version: '8.2'
             drupal-version: '11.3.x-dev'
           # Drupal 11.x is the bleeding edge so only run it on the latest php.
           - php-version: '8.2'
