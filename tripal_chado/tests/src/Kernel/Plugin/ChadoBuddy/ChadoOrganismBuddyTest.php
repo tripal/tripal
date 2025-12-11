@@ -229,7 +229,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
 
     // Insert any organisms to test with.
     foreach ($organism_values as $values) {
-      $organism_buddy = $instance->insertOrganism($values, ['create_cvterm' => TRUE]);
+      $test_records['set'] = $instance->insertOrganism($values, ['create_cvterm' => TRUE]);
       // Try grabbing the scientific name of our test organism.
       $retrieved_scientific_name = $instance->getOrganismScientificName($values);
       $this->assertEquals(
@@ -238,17 +238,17 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
         'The scientific name retrieved did not match the expected scientific name.'
       );
       // Now try grabbing the organism record using its scientific name.
-      $retrieved_buddy = $instance->getOrganismFromScientificName($query_scientific_name, $options);
-      $this->assertIsArray($retrieved_buddy, 'We did not retrieve an array for an Organism record using its scientific name.');
-      $this->assertEquals(1, count($retrieved_buddy), 'We did not retrieve a single array for an Organism record using its scientific name.');
-      // @todo Compare buddies.
-      /*
-      $this->assertEquals(
-        $organism_buddy,
-        $retrieved_buddy,
-        'The organism record retrieved using scientific name did not match the initial inserted organism.',
+      $test_records['get'] = $instance->getOrganismFromScientificName($query_scientific_name, $options);
+      $this->assertEquals(1, count($test_records['get']), 'We did not retrieve a single array for an Organism record using its scientific name.');
+      $test_values = $this->multiAssert(
+        'getOrganismFromScientificName',
+        $test_records,
+        'organism',
+        'organism.organism_id',
+        "Organism $expected_scientific_name",
+        28
       );
-      */
+      $this->assertEquals($test_values['set']['organism.organism_id'], $test_values['get']['organism.organism_id'], "We did not retrieve the same organism ID using getOrganismFromScientificName as the organism we inserted.");
     }
   }
 
