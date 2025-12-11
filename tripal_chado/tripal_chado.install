@@ -1129,3 +1129,38 @@ function tripal_chado_update_10416() {
     throw new UpdateException('Could not perform update: ' . $e->getMessage());
   }
 }
+
+/**
+ * Fix blank name in tripal_obo_cv table. PR 2364.
+ */
+function tripal_chado_update_10417() {
+  try {
+    $n_updated = 0;
+    $messenger = \Drupal::messenger();
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('0:tripal_cv_obo', 't');
+    $or_condition_group = $query->orConditionGroup();
+    $or_condition_group->condition('t.name', '', '=');
+    $or_condition_group->isNull('t.name');
+    $query->condition($or_condition_group);
+    $query->fields('t', ['obo_id', 'path']);
+    $needs_fixing = $query->execute();
+    foreach ($needs_fixing as $record) {
+      // Use the filename from the path as the replacement name.
+      $name = basename($record->path, '.obo');
+      $n_updated += $chado->update('0:tripal_cv_obo')
+        ->fields(['name' => $name])
+        ->condition('obo_id', $record->obo_id, '=')
+        ->execute();
+    }
+    if ($n_updated) {
+      $messenger->addMessage("Updated $n_updated tripal_cv_obo record(s) without names");
+    }
+    else {
+      $messenger->addMessage("No changes needed");
+    }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not perform update: ' . $e->getMessage());
+  }
+}
