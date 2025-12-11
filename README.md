@@ -10,39 +10,28 @@ Tested on ![PostgreSQL 14](https://img.shields.io/badge/PostreSQL-14-success) - 
 
 The following table proves the compatibility for the current development version of Tripal.
 
-<<<<<<< HEAD
-| Drupal      | 10.4.x              | 10.5.x              | 11.1.x              | 11.2.x              |
+| Drupal      | 10.5.x              | 10.6.x              | 11.2.x              | 11.3.x              |
 |-------------|---------------------|---------------------|---------------------|---------------------|
-| **PHP 8.2** | ![Grid82-104-Badge] | ![Grid82-105-Badge] |                     |                     |
-| **PHP 8.3** | ![Grid83-104-Badge] | ![Grid83-105-Badge] | ![Grid83-111-Badge] | ![Grid83-112-Badge] |
-| **PHP 8.4** |                     |                     | ![Grid84-111-Badge] | ![Grid84-112-Badge] |
-| **PHP 8.5** |                     |                     | ![Grid85-111-Badge] | ![Grid85-112-Badge] |
-=======
-| PHP\Drupal | 10.4.x-dev          | 10.5.x-dev          | 11.1.x-dev          | 11.2.x-dev          |
-|------------|---------------------|---------------------|---------------------|---------------------|
-| **PHP8.1** | ![Grid81-104-Badge] | ![Grid81-105-Badge] |                     |                     |
-| **PHP8.2** | ![Grid82-104-Badge] | ![Grid82-105-Badge] |                     |                     |
-| **PHP8.3** | ![Grid83-104-Badge] | ![Grid83-105-Badge] | ![Grid83-111-Badge] | ![Grid83-112-Badge] |
-| **PHP8.4** |                     |                     | ![Grid84-111-Badge] | ![Grid84-112-Badge] |
+| **PHP 8.2** | ![Grid82-105-Badge] | ![Grid82-106-Badge] |                     |                     |
+| **PHP 8.3** | ![Grid83-105-Badge] | ![Grid83-106-Badge] | ![Grid83-112-Badge] | ![Grid83-113-Badge] |
+| **PHP 8.4** | ![Grid84-105-Badge] | ![Grid84-106-Badge] | ![Grid84-112-Badge] | ![Grid84-113-Badge] |
+| **PHP 8.5** |                     |                     |                     | ![Grid85-113-Badge] |
 
->>>>>>> origin/4.x
-
-[Grid81-104-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_4x.yml/badge.svg
-[Grid81-105-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_5x.yml/badge.svg
-
-[Grid82-104-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_4x.yml/badge.svg
 [Grid82-105-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_5x.yml/badge.svg
+[Grid82-106-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_6x.yml/badge.svg
 
-[Grid83-104-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D10_4x.yml/badge.svg
 [Grid83-105-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D10_5x.yml/badge.svg
-[Grid83-111-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_1x.yml/badge.svg
+[Grid83-106-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D10_6x.yml/badge.svg
+
+[Grid84-105-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.4_D10_5x.yml/badge.svg
+[Grid84-106-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.4_D10_6x.yml/badge.svg
+
 [Grid83-112-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_2x.yml/badge.svg
+[Grid83-113-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_3x.yml/badge.svg
 
-[Grid84-111-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.4_D11_1x.yml/badge.svg
 [Grid84-112-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.4_D11_2x.yml/badge.svg
-
-[Grid85-111-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.5_D11_1x.yml/badge.svg
-[Grid85-112-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.5_D11_2x.yml/badge.svg
+[Grid84-113-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.4_D11_3x.yml/badge.svg
+[Grid85-113-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.5_D11_3x.yml/badge.svg
 
 ### Code Coverage
 
@@ -61,7 +50,7 @@ This project uses QLTY Cloud to determine the quality of our codebase and the co
 | 4.0-alpha1 | >=9.2 <=10.0        | >=8.0 <=8.1 | >=13 <=16  |
 | 4.0-alpha2 | >=10.0 <= 10.1      | >=8.1 <=8.2 | >=13 <=16  |
 | 4.0-alpha3 | >=10.4 <= 11.2      | >=8.1 <=8.3 | >=13 <=17  |
-| 4.0-dev    | >=10.4 <= 11.x.dev  | >=8.2 <=8.5 | >=14 <=18  |
+| 4.0-dev    | >=10.5 <= 11.x.dev  | >=8.2 <=8.5 | >=14 <=18  |
 
 ## Current Timeline
 

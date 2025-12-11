@@ -14,7 +14,7 @@ permissions: read-all
 
 jobs:
   running-tests:
-    name: 'PHP 8.4 - Drupal 11.1.x-dev - PostgreSQL 18'
+    name: 'PHP 8.2 - Drupal 10.6.x-dev - PostgreSQL 18'
     runs-on: 'ubuntu-latest'
     steps:
       - name: 'Checkout Repository'
@@ -24,8 +24,8 @@ jobs:
         with:
           directory-name: 'tripal'
           modules: 'tripal, tripal_biodb, tripal_chado, tripal_layout'
-          php-version: '8.4'
-          drupal-version: '11.1.x-dev'
+          php-version: '8.2'
+          drupal-version: '10.6.x-dev'
           pgsql-version: '18'
           build-image: TRUE
           dockerfile: 'Dockerfile'

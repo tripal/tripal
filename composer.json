@@ -23,7 +23,7 @@
   ],
   "require": {
     "php": "^8.2",
-    "drupal/core": "^10.4 | ^11.1",
+    "drupal/core": "^10.5 | ^11.2",
     "drupal/field_group": "^3.6 | ^4.0",
     "drupal/field_group_table": "1.x-dev@dev"
   },
