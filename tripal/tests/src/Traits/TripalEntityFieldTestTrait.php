@@ -385,7 +385,12 @@ trait TripalEntityFieldTestTrait {
       $bundle = \Drupal::entityTypeManager()
         ->getStorage('tripal_entity_type')
         ->loadByProperties(['id' => $values['bundle_name']]);
-      $bundle = array_pop($bundle);
+      if ($bundle) {
+        $bundle = array_pop($bundle);
+      }
+      else {
+        $bundle = $this->createTripalContentType(['id' => $values['bundle_name']]);
+      }
     }
     else {
       $bundle = $this->createTripalContentType();
