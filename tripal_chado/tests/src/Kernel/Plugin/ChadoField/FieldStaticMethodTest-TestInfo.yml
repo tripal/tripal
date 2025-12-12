@@ -70,6 +70,7 @@ scenarios:
 #       widget_id: 'chado_boolean_type_widget'
 #       formatter_id: 'chado_boolean_type_formatter'
   -
+      label: 'Contact through linker table'
       field_type: 'chado_contact_type_default'
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoContactTypeDefault'
       widget_id: 'chado_contact_widget_default'
@@ -83,6 +84,7 @@ scenarios:
           linker_table: 'feature_contact'
           linker_fkey_column: 'contact_id'
   -
+      label: 'Contact in base table'
       field_type: 'chado_contact_type_default'
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoContactTypeDefault'
       widget_id: 'chado_contact_widget_default'
@@ -95,11 +97,20 @@ scenarios:
             base_table: 'biomaterial'
             linker_table: 'biomaterial'
             linker_fkey_column: 'biosourceprovider_id'
-#   -
-#       field_type: 'chado_contact_by_role_type_default'
-#       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoContactByRoleTypeDefault'
-#       widget_id: 'chado_contact_widget_default'
-#       formatter_id: 'chado_contact_formatter_default'
+  -
+      label: 'Contact BY TYPE through linker table'
+      field_type: 'chado_contact_by_role_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoContactByRoleTypeDefault'
+      widget_id: 'chado_contact_widget_default'
+      formatter_id: 'chado_contact_formatter_default'
+      bundle_name: 'feature'
+      field_name: 'feature_contact_role'
+      settings:
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+          base_table: 'feature'
+          linker_table: 'feature_contact'
+          linker_fkey_column: 'contact_id'
   -
       field_type: 'chado_dbxref_type_default'
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoDbxrefTypeDefault'
@@ -131,25 +142,40 @@ scenarios:
 #       widget_id: 'chado_source_data_widget_default'
 #       formatter_id: 'chado_source_data_formatter_default'
   -
+      label: 'Feature through linker table'
       field_type: 'chado_feature_type_default'
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoFeatureTypeDefault'
       widget_id: 'chado_feature_widget_default'
       formatter_id: 'chado_feature_formatter_default'
-      bundle_name: 'feature'
-      field_name: 'feature_type'
+      bundle_name: 'expression'
+      field_name: 'feature_expression'
       settings:
-        fixed_value: 'SO:0000704'
         storage_plugin_id: 'chado_storage'
         storage_plugin_settings:
-          base_table: 'feature'
-          type_table: 'feature'
-          type_column: 'type_id'
+          base_table: 'expression'
+          linker_table: 'feature_expression'
+          linker_fkey_column: 'feature_id'
+  -
+      label: 'Feature linked in base table'
+      field_type: 'chado_feature_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoFeatureTypeDefault'
+      widget_id: 'chado_feature_widget_default'
+      formatter_id: 'chado_feature_formatter_default'
+      bundle_name: 'phylonode'
+      field_name: 'phylonode_feature'
+      settings:
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+          base_table: 'phylonode'
+          linker_table: 'phylonode'
+          linker_fkey_column: 'feature_id'
 #   -
 #       field_type: 'chado_featuremap_type_default'
 #       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoFeatureMapTypeDefault'
 #       widget_id: 'chado_featuremap_widget_default'
 #       formatter_id: 'chado_featuremap_formatter_default'
   -
+      label: 'Sequence Checksum'
       field_type: 'chado_sequence_checksum_type_default'
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceChecksumTypeDefault'
       widget_id: 'chado_sequence_checksum_widget_default'
@@ -158,11 +184,12 @@ scenarios:
       field_name: 'feature_checksum'
       settings:
         fixed_value: '1'
-        storage_plugin_id: chado_storage
+        storage_plugin_id: 'chado_storage'
         storage_plugin_settings:
-          base_table: feature
-          base_column: md5checksum
+          base_table: 'feature'
+          base_column: 'md5checksum'
   -
+      label: 'Sequence Length'
       field_type: 'chado_sequence_length_type_default'
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceLengthTypeDefault'
       widget_id: 'chado_sequence_length_widget_default'
@@ -181,6 +208,7 @@ scenarios:
 #       widget_id: 'chado_integer_type_widget'
 #       formatter_id: 'chado_integer_type_formatter'
   -
+      label: 'Organism in Base Table'
       field_type: 'chado_organism_type_default'
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoOrganismTypeDefault'
       widget_id: 'chado_organism_widget_default'
@@ -192,6 +220,20 @@ scenarios:
         storage_plugin_settings:
           base_table: 'feature'
           base_column: 'organism_id'
+  -
+      label: 'Organism through linking table'
+      field_type: 'chado_organism_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoOrganismTypeDefault'
+      widget_id: 'chado_organism_widget_default'
+      formatter_id: 'chado_organism_formatter_default'
+      bundle_name: 'featuremap'
+      field_name: 'featuremap_organism'
+      settings:
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+          base_table: 'featuremap'
+          linker_table: 'featuremap_organism'
+          linker_fkey_column: 'organism_id'
 #   -
 #       field_type: 'chado_project_type_default'
 #       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoProjectTypeDefault'
@@ -218,6 +260,7 @@ scenarios:
 #       widget_id: 'chado_relationship_widget_default'
 #       formatter_id: 'chado_relationship_formatter_default'
   -
+      label: 'Sequence Coordinates'
       field_type: 'chado_sequence_coordinates_default'
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceCoordinatesDefault'
       widget_id: 'chado_sequence_coordinates_widget_default'
@@ -231,6 +274,7 @@ scenarios:
           linker_table: 'featureloc'
           linker_fkey_column: 'feature_id'
   -
+      label: 'Sequence'
       field_type: 'chado_sequence_type_default'
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceTypeDefault'
       widget_id: 'chado_sequence_widget_default'

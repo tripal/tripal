@@ -100,8 +100,7 @@ class ChadoDbxrefTypeDefault extends ChadoFieldItemBase {
     $settings = $field_definition->getSettings();
     $storage_settings = $settings['storage_plugin_settings'];
     $base_table = $storage_settings['base_table'];
-    // @todo look this up.
-    $linker_table = 'UNKNOWN';
+    $linker_table = array_key_exists('linker_table', $storage_settings) ? $storage_settings['linker_table'] : $base_table;
 
     $value['record_id'] = 0;
     $value['entity_id'] = 0;
