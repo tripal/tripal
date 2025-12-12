@@ -99,7 +99,6 @@ class FieldStaticMethodTest extends ChadoTestKernelBase {
     ];
     foreach (array_keys($this->scenarios) as $scenario_key) {
       $this->createFieldInstance('feature', $this->scenarios[$scenario_key], $options);
-      break;
     }
 
   }
@@ -166,8 +165,6 @@ class FieldStaticMethodTest extends ChadoTestKernelBase {
       $generated_value = $field_class::generateSampleValue($field_defn);
       $this->assertIsArray($generated_value, "We expected $field_name::generateSampleValue() to generate an array.");
       $this->assertArrayHasKey('record_id', $generated_value[0], "We expected the $field_name generated value to have a record_id.");
-
-      return;
     }
   }
 
