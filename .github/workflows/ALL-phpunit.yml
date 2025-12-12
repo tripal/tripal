@@ -29,14 +29,10 @@ jobs:
           - '11.3.x-dev'
           - '11.x-dev'
         exclude:
-          # Only Drupal 11.x supports PHP 8.4+
+          # Only Drupal 11.x supports PHP 8.4
           - php-version: '8.4'
             drupal-version: '10.5.x-dev'
           - php-version: '8.4'
-            drupal-version: '10.6.x-dev'
-          - php-version: '8.5'
-            drupal-version: '10.5.x-dev'
-          - php-version: '8.5'
             drupal-version: '10.6.x-dev'
           # Only Drupal 11.3+ supports PHP 8.5
           - php-version: '8.5'
@@ -45,7 +41,7 @@ jobs:
             drupal-version: '10.6.x-dev'
           - php-version: '8.5'
             drupal-version: '11.2.x-dev'
-          # Drupal 11+ requires at least php 8.3.
+          # Drupal 11+ requires PHP 8.3+
           - php-version: '8.2'
             drupal-version: '11.2.x-dev'
           - php-version: '8.2'
@@ -59,20 +55,14 @@ jobs:
             drupal-version: '11.x-dev'
           - php-version: '8.4'
             drupal-version: '11.x-dev'
-          # Drupal 11+ requires at least Postgresql 16.
+          # Drupal 11+ requires PostgreSQL 16+
           - pgsql-version: '14'
-            drupal-version: '11.2.x-dev'
-          - pgsql-version: '15'
             drupal-version: '11.2.x-dev'
           - pgsql-version: '14'
             drupal-version: '11.3.x-dev'
-          - pgsql-version: '15'
-            drupal-version: '11.3.x-dev'
           - pgsql-version: '14'
             drupal-version: '11.x-dev'
-          - pgsql-version: '15'
-            drupal-version: '11.x-dev'
-          # Drupal 11.x is the bleeding edge so only run it on the latest pgsql.
+          # Drupal 11.x is the bleeding edge so only run it on the latest postgreSQL.
           - php-version: '8.4'
             pgsql-version: '14'
             drupal-version: '11.x-dev'
@@ -82,12 +72,10 @@ jobs:
           # Exclude higher postgresql version from middle Drupal versions
           # This is done to reduce combinations; higher postgresql version
           # will be tested on merge to 4.x.
-          # Note: Drupal 11.1 is already only tested on one postgresql
+          # Note: Drupal 11.2+ is already only tested on one postgresql
           # version since it requires 16+.
           - pgsql-version: '18'
             drupal-version: '10.5.x-dev'
-          - pgsql-version: '18'
-            drupal-version: '10.6.x-dev'
     steps:
       # Check out the repo
       - name: 'Checkout Repository'
