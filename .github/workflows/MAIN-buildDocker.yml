@@ -40,10 +40,14 @@ jobs:
           - '11.3.x-dev'
           - '11.x-dev'
         exclude:
-          ## Only Drupal 11.x supports PHP 8.4
+          ## Only Drupal 11.x supports PHP 8.4+
           - php-version: '8.4'
             drupal-version: '10.5.x-dev'
           - php-version: '8.4'
+            drupal-version: '10.6.x-dev'
+          - php-version: '8.5'
+            drupal-version: '10.5.x-dev'
+          - php-version: '8.5'
             drupal-version: '10.6.x-dev'
           # Only Drupal 11.3+ supports PHP 8.5
           - php-version: '8.5'
@@ -52,16 +56,14 @@ jobs:
             drupal-version: '10.6.x-dev'
           - php-version: '8.5'
             drupal-version: '11.2.x-dev'
-          - php-version: '8.5'
-            drupal-version: '11.3.x-dev'
-          ## Drupal 11.x requires PHP 8.3+
+          ## Drupal 11+ requires at least php 8.3.
           - php-version: '8.2'
             drupal-version: '11.2.x-dev'
           - php-version: '8.2'
             drupal-version: '11.3.x-dev'
           - php-version: '8.2'
             drupal-version: '11.x-dev'
-          ## Drupal 11.x requires PostgreSQL 16+
+          ## Drupal 11.x requires at least PostgreSQL 16.
           - pgsql-version: '14'
             drupal-version: '11.2.x-dev'
           - pgsql-version: '15'
