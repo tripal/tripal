@@ -33,9 +33,16 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
   /**
    * Used to store the manager so we can create a buddy.
    *
-   * @var Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
+   * @var \Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
    */
   public ChadoBuddyPluginManager $buddy_manager;
+
+  /**
+   * Used to store the cvterm ChadoBuddy instance.
+   *
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy
+   */
+  protected ChadoCvtermBuddy $cvterm_buddy;
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
@@ -117,7 +124,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *     array of ChadoBuddyRecords describing the results.
    *   (3) if there are no results then we return an empty array.
    *
-   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
    */
   public function getOrganism(array $conditions, array $options = []) {
@@ -193,7 +200,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   already exists then an error will be thrown. If this is not the desired
    *   behaviour, then use the upsert version of this method.
    *
-   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
    */
   public function insertOrganism(array $values, array $options = []) {
@@ -217,12 +224,12 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
           // If a term was not passed, we can create it if the required
           // fields were included. For safety, this is an opt-in setting.
           // Use the buddy manager dependency to create a Cvterm buddy instance.
-          if (!isset($this->cvterm_instance)) {
-            $this->cvterm_instance = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
+          if (!isset($this->cvterm_buddy)) {
+            $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
           }
           // Call the Cvterm buddy to perform the insert.
           $cvterm_values = $this->subsetInput($values, ['db', 'dbxref', 'cv', 'cvterm']);
-          $cvterm_record = $this->cvterm_instance->upsertCvterm($cvterm_values, $options);
+          $cvterm_record = $this->cvterm_buddy->upsertCvterm($cvterm_values, $options);
           $type_id = $cvterm_record->getValue('cvterm.cvterm_id');
           $values['organism.type_id'] = $type_id;
         }
@@ -287,7 +294,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
    *   returned if no record was found to update.
    *
-   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
    */
   public function updateOrganism(array $values, array $conditions, array $options = []) {
@@ -320,12 +327,12 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
           // If a term was not passed, we can create it if the required
           // fields were included. For safety, this is an opt-in setting.
           // Use the buddy manager dependency to create a Cvterm buddy instance.
-          if (!isset($this->cvterm_instance)) {
-            $this->cvterm_instance = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
+          if (!isset($this->cvterm_buddy)) {
+            $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
           }
           // Call the Cvterm buddy to perform the insert.
           $cvterm_values = $this->subsetInput($values, ['db', 'dbxref', 'cv', 'cvterm']);
-          $cvterm_record = $this->cvterm_instance->upsertCvterm($cvterm_values, $options);
+          $cvterm_record = $this->cvterm_buddy->upsertCvterm($cvterm_values, $options);
           $type_id = $cvterm_record->getValue('cvterm.cvterm_id');
           $values['organism.type_id'] = $type_id;
         }
@@ -392,7 +399,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
    *
-   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
    */
   public function upsertOrganism(array $values, array $options = []) {
@@ -432,7 +439,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    * @return string
    *   The fully formatted scientific name for the retrieved organism.
    *
-   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
    */
   public function getOrganismScientificName(array $conditions, array $options = []) {
@@ -453,10 +460,10 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     if ($organism_values['organism.type_id']) {
       $cvterm_id = $organism_values['organism.type_id'];
       // We need a cvterm buddy to grab the name of the rank.
-      if (!isset($this->cvterm_instance)) {
-        $this->cvterm_instance = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
+      if (!isset($this->cvterm_buddy)) {
+        $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
       }
-      $cvterm_record = $this->cvterm_instance->getCvterm(['cvterm.cvterm_id' => $cvterm_id]);
+      $cvterm_record = $this->cvterm_buddy->getCvterm(['cvterm.cvterm_id' => $cvterm_id]);
       $rank = $cvterm_record[0]->getValue('cvterm.name');
     }
     // If we successfully grabbed the name of the rank, find its abbreviation.
@@ -503,7 +510,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *     array of ChadoBuddyRecords describing the results.
    *   (3) if there are no results then we return an empty array.
    *
-   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
    */
   public function getOrganismFromScientificName(string $scientific_name, array $options = []) {
