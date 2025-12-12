@@ -119,8 +119,9 @@ class ChadoProjectTypeDefault extends ChadoFieldItemBase {
     $value['linker_rank'] = 0;
 
     // Object table properties.
-    // @todo look these up in tripalTypes().
-    //
+    $value['project_name'] = '';
+    $value['project_description'] = '';
+
     return [$value];
   }
 

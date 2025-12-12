@@ -122,8 +122,20 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     $value['linker_rank'] = 0;
 
     // Object table properties.
-    // @todo look these up in tripalTypes().
-    //
+    $value['stock_name'] = '';
+    $value['stock_uniquename'] = '';
+    $value['stock_description'] = '';
+    $value['stock_type'] = '';
+    $value['stock_is_obsolete'] = FALSE;
+    $value['stock_genus'] = '';
+    $value['stock_species'] = '';
+    $value['stock_infraspecific_type'] = '';
+    $value['stock_infraspecific_name'] = '';
+    $value['stock_abbreviation'] = '';
+    $value['stock_common_name'] = '';
+    $value['stock_database_accession'] = '';
+    $value['stock_database_name'] = '';
+
     return [$value];
   }
 

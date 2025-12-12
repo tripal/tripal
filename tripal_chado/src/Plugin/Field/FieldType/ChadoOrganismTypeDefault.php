@@ -118,8 +118,15 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     $value['linker_rank'] = 0;
 
     // Object table properties.
-    // @todo look these up in tripalTypes().
-    //
+    $value['organism_genus'] = '';
+    $value['organism_species'] = '';
+    $value['organism_infraspecific_type'] = '';
+    $value['organism_infraspecific_name'] = '';
+    $value['organism_scientific_name'] = '';
+    $value['organism_abbreviation'] = '';
+    $value['organism_common_name'] = '';
+    $value['organism_comment'] = '';
+
     return [$value];
   }
 

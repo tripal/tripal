@@ -119,8 +119,18 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     $value['linker_rank'] = 0;
 
     // Object table properties.
-    // @todo look these up in tripalTypes().
-    //
+    // @todo 'assay_database_accession' and 'assay_database_name' is included
+    // twice in properties, confirm if this is intentional.
+    $value['aasay_name'] = '';
+    $value['assay_description'] = '';
+    $value['assay_arrayidentifier'] = '';
+    $value['assay_arraybatchidentifier'] = '';
+    $value['assay_arraydesign'] = '';
+    $value['assay_protocol'] = '';
+    $value['assay_operator'] = '';
+    $value['assay_database_accession'] = '';
+    $value['assay_database_name'] = '';
+
     return [$value];
   }
 

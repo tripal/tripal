@@ -101,8 +101,25 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
     $value[self::$object_id] = 0;
 
     // Object table properties.
-    // @todo look these up in tripalTypes().
-    //
+    $value['array_design_name'] = '';
+    $value['array_design_description'] = '';
+    $value['array_design_version'] = '';
+    $value['array_design_array_dimensions'] = '';
+    $value['array_design_element_dimensions'] = '';
+    $value['array_design_num_of_elements'] = 0;
+    $value['array_design_num_array_columns'] = 0;
+    $value['array_design_num_array_rows'] = 0;
+    $value['array_design_num_grid_columns'] = 0;
+    $value['array_design_num_grid_rows'] = 0;
+    $value['array_design_num_sub_columns'] = 0;
+    $value['array_design_num_sub_rows'] = 0;
+    $value['array_design_database_accession'] = '';
+    $value['array_design_database_name'] = '';
+    $value['array_design_platformtype'] = '';
+    $value['array_design_substratetype'] = '';
+    $value['array_design_manufacturer'] = '';
+    $value['array_design_protocol'] = '';
+
     return [$value];
   }
 
