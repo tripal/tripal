@@ -118,8 +118,13 @@ class ChadoStudyTypeDefault extends ChadoFieldItemBase {
     $value['linker_rank'] = 0;
 
     // Object table properties.
-    // @todo look these up in tripalTypes().
-    //
+    $value['study_name'] = '';
+    $value['study_description'] = '';
+    $value['study_contact_name'] = '';
+    $value['study_pub_title'] = '';
+    $value['study_database_accession'] = '';
+    $value['study_database_name'] = '';
+
     return [$value];
   }
 

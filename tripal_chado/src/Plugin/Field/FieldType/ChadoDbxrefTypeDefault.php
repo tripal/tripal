@@ -119,8 +119,15 @@ class ChadoDbxrefTypeDefault extends ChadoFieldItemBase {
     $value['linker_rank'] = 0;
 
     // Object table properties.
-    // @todo look these up in tripalTypes().
-    //
+    $value['dbxref_db_id'] = 0;
+    $value['dbxref_accession'] = '';
+    $value['dbxref_version'] = '';
+    $value['dbxref_description'] = '';
+    $value['dbxref_db_name'] = '';
+    $value['dbxref_db_description'] = '';
+    $value['dbxref_db_urlprefix'] = '';
+    $value['dbxref_db_url'] = '';
+
     return [$value];
   }
 

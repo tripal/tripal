@@ -120,8 +120,20 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $value['linker_rank'] = 0;
 
     // Object table properties.
-    // @todo look these up in tripalTypes().
-    //
+    $value['pub_title'] = '';
+    $value['pub_volumetitle'] = '';
+    $value['pub_volume'] = '';
+    $value['pub_series_name'] = '';
+    $value['pub_issue'] = '';
+    $value['pub_pyear'] = '';
+    $value['pub_pages'] = '';
+    $value['pub_miniref'] = '';
+    $value['pub_uniquename'] = '';
+    $value['pub_type'] = '';
+    $value['pub_is_obsolete'] = FALSE;
+    $value['pub_publisher'] = '';
+    $value['pub_pubplace'] = '';
+
     return [$value];
   }
 

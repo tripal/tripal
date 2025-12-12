@@ -119,8 +119,10 @@ class ChadoFeatureMapTypeDefault extends ChadoFieldItemBase {
     $value['linker_rank'] = 0;
 
     // Object table properties.
-    // @todo look these up in tripalTypes().
-    //
+    $value['featuremap_name'] = '';
+    $value['featuremap_description'] = '';
+    $value['featuremap_unittype'] = '';
+
     return [$value];
   }
 

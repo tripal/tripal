@@ -120,8 +120,10 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     $value['linker_rank'] = 0;
 
     // Object table properties.
-    // @todo look these up in tripalTypes().
-    //
+    $value['contact_name'] = '';
+    $value['contact_description'] = '';
+    $value['contact_type'] = '';
+
     return [$value];
   }
 

@@ -119,8 +119,18 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
     $value['linker_rank'] = 0;
 
     // Object table properties.
-    // @todo look these up in tripalTypes().
-    //
+    $value['biomaterial_name'] = '';
+    $value['biomaterial_description'] = '';
+    $value['biomaterial_biosourceprovider'] = '';
+    $value['biomaterial_genus'] = '';
+    $value['biomaterial_species'] = '';
+    $value['biomaterial_infraspecific_type'] = '';
+    $value['biomaterial_infraspecific_name'] = '';
+    $value['biomaterial_abbreviation'] = '';
+    $value['biomaterial_common_name'] = '';
+    $value['biomaterial_database_accession'] = '';
+    $value['biomaterial_database_name'] = '';
+
     return [$value];
   }
 

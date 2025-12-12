@@ -124,8 +124,22 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     $value['linker_rank'] = 0;
 
     // Object table properties.
-    // @todo look these up in tripalTypes().
-    //
+    $value['feature_name'] = '';
+    $value['feature_uniquename'] = '';
+    $value['feature_seqlen'] = 0;
+    $value['feature_md5checksum'] = '';
+    $value['feature_is_analysis'] = FALSE;
+    $value['feature_is_obsolete'] = FALSE;
+    $value['feature_type'] = '';
+    $value['feature_genus'] = '';
+    $value['feature_species'] = '';
+    $value['feature_infraspecific_type'] = '';
+    $value['feature_infraspecific_name'] = '';
+    $value['feature_abbreviation'] = '';
+    $value['feature_common_name'] = '';
+    $value['feature_database_accession'] = '';
+    $value['feature_database_name'] = '';
+
     return [$value];
   }
 

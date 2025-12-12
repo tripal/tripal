@@ -119,8 +119,16 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
     $value['linker_rank'] = 0;
 
     // Object table properties.
-    // @todo look these up in tripalTypes().
-    //
+    $value['protocol_name'] = '';
+    $value['protocol_type'] = '';
+    $value['protocol_pub_title'] = '';
+    $value['protocol_uri'] = '';
+    $value['protocol_protocoldescription'] = '';
+    $value['protocol_hardwaredescription'] = '';
+    $value['protocol_softwaredescription'] = '';
+    $value['protocol_database_accession'] = '';
+    $value['protocol_database_name'] = '';
+
     return [$value];
   }
 
