@@ -10,8 +10,9 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Provides functions related to setting up Tripal test environments
- * and can be used in either Kernel or Functional tests.
+ * Provides functions related to setting up Tripal test environments.
+ *
+ * Note: can be used in either Kernel or Functional tests.
  */
 #[Group('tripal-testing')]
 trait TripalTestTrait {
@@ -22,7 +23,8 @@ trait TripalTestTrait {
    * @param string $entity_type
    *   The machine name of the entity to add the field to (e.g., organism)
    * @param array $values
-   *   These values are passed directly to the create() method. Suggested values are:
+   *   These values are passed directly to the create() method.
+   *   Suggested values are:
    *    - field_name (string)
    *    - field_type (string)
    *    - term (TripalTerm)
@@ -93,13 +95,18 @@ trait TripalTestTrait {
    * Creates a Tripal Vocabulary / ID Space / Term for testing purposes.
    *
    * @param array $values
-   *   These values are passed directly to the create() method. Suggested values are:
+   *   These values are passed directly to the create() method.
+   *   Suggested values are:
    *    - vocab_name (string)
    *    - id_space_name (string)
    *    - term (array)
    *        - name (string)
    *        - definition (string)
    *        - accession (string)
+   * @param string $idspace_plugin_id
+   *   The id space plugin to use when creating terms.
+   * @param string $vocab_plugin_id
+   *   The vocab plugin to use when creating terms.
    *
    * @return \Drupal\tripal\TripalVocabTerms\TripalTerm
    *   Returns the tripal term that was created.
@@ -156,18 +163,19 @@ trait TripalTestTrait {
   }
 
   /**
-   * Creates a Tripal Entity (i.e. a piece of Tripal content) for testing purposes.
+   * Creates a Tripal Entity (i.e. Tripal content) for testing purposes.
    *
    * Currently this function creates a real TripalEntity and saves it.
    * Because this is a testing environment, this does get saved in the
    * Drupal prefixed test tables and dropped after the fact.
    *
    * We went this route intially for maximum code coverage in order to catch
-   * all deprecation notices posed by Drupal. We may want to replace this approach
-   * at a later date.
+   * all deprecation notices posed by Drupal. We may want to replace this
+   * approach at a later date.
    *
    * @param array $values
-   *   These values are passed directly to the create() method. Suggested values are:
+   *   These values are passed directly to the create() method.
+   *   Suggested values are:
    *    - title (string)
    *    - type (string; eg. organism)
    *    - user_id (integer)
@@ -206,11 +214,12 @@ trait TripalTestTrait {
    * Drupal prefixed test tables and dropped after the fact.
    *
    * We went this route intially for maximum code coverage in order to catch
-   * all deprecation notices posed by Drupal. We may want to replace this approach
-   * at a later date.
+   * all deprecation notices posed by Drupal. We may want to replace this
+   * approach at a later date.
    *
    * @param array $values
-   *   These values are passed directly to the create() method. Suggested values are:
+   *   These values are passed directly to the create() method.
+   *   Suggested values are:
    *    -     id (string)
    *    -     label (label; string)
    *    -     termIdSpace (string)
@@ -258,14 +267,17 @@ trait TripalTestTrait {
   }
 
   /**
-   * Creates a content type and associated fields using the
-   * tripalentitytype_collection and tripalfield_collection configuration.
+   * Creates a content type and associated fields based on existing config.
+   *
+   * More specifically, the tripalentitytype_collection and
+   * tripalfield_collection configuration is used.
    *
    * @param string $config_id
-   *   The id from a tripalentitytype_collection config file. Fields will also be
-   *   added if there is a tripalfield_collection with this same id.
+   *   The id from a tripalentitytype_collection config file. Fields will also
+   *   be added if there is a tripalfield_collection with this same id.
    * @param string $content_type_id
-   *   The id of the content type to create. It must exist in the specified YAML.
+   *   The id of the content type to create. It must exist in the
+   *   specified YAML.
    * @param bool $createTerms
    *   Not implemented.
    *
@@ -420,7 +432,7 @@ trait TripalTestTrait {
   }
 
   /**
-   * Warns test developers if they are missing required modules in a kernel test.
+   * Warns developers if they are missing required modules in a kernel test.
    *
    * This is needed because otherwise the exceptions thrown are not very obvious
    * and complicate debugging kernel tests.
@@ -429,7 +441,7 @@ trait TripalTestTrait {
    *   A list of functionality you need to support. Although this method handles
    *   dependencies, you should include all items in the supported keys below
    *   that you need. This is because in some cases you will want to mock rather
-   *   then include in your kernel tests and this way, this method supports that.
+   *   then include in your kernel tests.
    *   Supported keys are:
    *   - TripalTerm
    *   - TripalEntity
@@ -437,6 +449,7 @@ trait TripalTestTrait {
    *   - TripalImporter.
    *
    * @return void
+   *   No return value. Rather missing modules fail an assert.
    */
   protected function suggestRequiredModules(array $functionality) {
     $suggested_modules = [];
