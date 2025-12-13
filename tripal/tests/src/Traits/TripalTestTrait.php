@@ -383,6 +383,43 @@ trait TripalTestTrait {
   }
 
   /**
+   * Retrieves a specific scenario defined in a YAML file.
+   *
+   * If the YAML was preprocessed then the scenarios will be pulled
+   * directly from $this->scenarios. Otherwise, it the YAML saved in
+   * $this->yaml_info_file will first be processed.
+   *
+   * @param int $scenario_key
+   *   The key of the scenario we want to get.
+   * @param string $scenario_label
+   *   The label of the scenario we want to get.
+   *
+   * @return array
+   *   The specific scenario array.
+   */
+  public function getYamlScenario(int $scenario_key, string $scenario_label): array {
+
+    // Process the YAML test file if it hasn't already been done.
+    if (!is_array($this->scenarios) or empty($this->scenarios)) {
+      $this->assertFileIsReadable($this->yaml_info_file, 'The YAML file defining the test (see $this->yaml_info_file) was either not set or is not readable.');
+      [$this->system_under_test, $this->scenarios] = $this->getTestInfoFromYaml($this->yaml_info_file);
+    }
+
+    // Confirm the scenario key exists.
+    $this->assertArrayHasKey($scenario_key, $this->scenarios, "We tried to retrieve the '$scenario_label' (key: $scenario_key) but it didn't exist.");
+
+    // Retrieve the scenario.
+    $scenario = $this->scenarios[$scenario_key];
+
+    // Confirm the label matches our expectations.
+    $this->assertEquals($scenario_label, $scenario['label'], "We tried to retrieve the '$scenario_label' (key: $scenario_key) but its label did not match our expectations.");
+
+    // @todo support processing the scenario (e.g. set type_ids)
+    //
+    return $scenario;
+  }
+
+  /**
    * Warns test developers if they are missing required modules in a kernel test.
    *
    * This is needed because otherwise the exceptions thrown are not very obvious
