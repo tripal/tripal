@@ -1467,7 +1467,7 @@ fields:
         display:
           view:
             default:
-              region: hidden
+              region: content
               label: above
               weight: 15
           form:
