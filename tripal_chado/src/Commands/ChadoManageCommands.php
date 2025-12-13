@@ -420,8 +420,14 @@ use StringTranslationTrait;
     // List of all materialized views, key is numeric ID, value is name.
     $all_mviews = $mview_manager->getTables($schema_name);
     if ($options['list']) {
-      $this->logger->notice($this->t('The following materialized views exist in the "@schema_name" schema: @list.',
-        ['@schema_name' => $schema_name, '@list' => implode(', ', $all_mviews)]));
+      if ($all_mviews) {
+        $this->logger->notice($this->t('The following materialized views exist in the "@schema_name" schema: @list.',
+          ['@schema_name' => $schema_name, '@list' => implode(', ', $all_mviews)]));
+      }
+      else {
+        $this->logger->notice($this->t('No materialized views exist in the "@schema_name" schema.',
+          ['@schema_name' => $schema_name]));
+      }
       return;
     }
     if (!$all_mviews) {
