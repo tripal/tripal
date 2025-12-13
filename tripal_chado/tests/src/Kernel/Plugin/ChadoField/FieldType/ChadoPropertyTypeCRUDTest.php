@@ -175,10 +175,7 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
    *   The scenario to be tested as defined in the YAML.
    */
   public function retrieveCurrentScenario(int $current_scenario_key, string $current_scenario_label) {
-
-    // Retrieve the correct scenario.
-    $current_scenario = $this->scenarios[$current_scenario_key];
-    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+    $current_scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
 
     // Set the project type just in case.
     $type_id = $this->getCvtermID('NCIT', 'C47885');

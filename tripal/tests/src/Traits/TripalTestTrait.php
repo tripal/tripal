@@ -8,6 +8,7 @@ use Drupal\tripal\TripalVocabTerms\Interfaces\TripalVocabularyInterface;
 use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use PHPUnit\Framework\Attributes\Group;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Provides functions related to setting up Tripal test environments.
