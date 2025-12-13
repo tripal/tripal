@@ -256,11 +256,20 @@ scenarios:
         storage_plugin_settings:
           base_table: 'feature'
           prop_table: 'featureprop'
-#   -
-#       field_type: 'chado_protocol_type_default'
-#       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoProtocolTypeDefault'
-#       widget_id: 'chado_protocol_widget_default'
-#       formatter_id: 'chado_protocol_formatter_default'
+  -
+      label: 'Protocol in base table'
+      field_type: 'chado_protocol_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoProtocolTypeDefault'
+      widget_id: 'chado_protocol_widget_default'
+      formatter_id: 'chado_protocol_formatter_default'
+      bundle_name: 'assay'
+      field_name: 'assay_protocol'
+      settings:
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+          base_table: 'assay'
+          linker_table: 'assay'
+          linker_fkey_column: 'protocol_id'
 #   -
 #       field_type: 'chado_pub_type_default'
 #       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPubTypeDefault'
