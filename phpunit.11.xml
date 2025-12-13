@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  generate for use with
+  generated for use with
 
-  PHPUnit 10
+  PHPUnit 11
 
   -->
 <!-- For how to customize PHPUnit configuration, see core/tests/README.md. -->
@@ -26,7 +26,7 @@
          displayDetailsOnPhpunitDeprecations="true"
          displayDetailsOnSkippedTests="true"
          cacheResult="false"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
          cacheDirectory=".phpunit.cache">
   <php>
     <!-- Set error reporting to E_ALL. -->
@@ -39,6 +39,11 @@
     <env name="MINK_DRIVER_ARGS_WEBDRIVER" value=""/>
   </php>
   <extensions>
+    <!-- Debug dump() printer. -->
+    <bootstrap class="Drupal\TestTools\Extension\Dump\DebugDump">
+      <parameter name="colors" value="true"/>
+      <parameter name="printCaller" value="true"/>
+    </bootstrap>
   </extensions>
   <testsuites>
     <testsuite name="unit">
@@ -54,12 +59,12 @@
       <directory>tripal_biodb/tests/src/Kernel</directory>
       <directory>tripal_chado/tests/src/Kernel</directory>
       <directory>tripal_layout/tests/src/Kernel</directory>
-      <directory>tripal_file/tests/src/Kernel</directory>
     </testsuite>
   </testsuites>
   <!-- Settings for coverage reports. -->
   <source
     ignoreSuppressionOfDeprecations="true"
+    ignoreIndirectDeprecations="true"
     >
     <include>
       <directory suffix=".php">tripal/src</directory>
@@ -70,8 +75,6 @@
       <file>tripal_chado/tripal_chado.module</file>
       <directory suffix=".php">tripal_layout/src</directory>
       <file>tripal_layout/tripal_layout.module</file>
-      <directory suffix=".php">tripal_file/src</directory>
-      <file>tripal_file/tripal_file.module</file>
     </include>
     <exclude>
       <!-- Exclude Interface classes from coverage -->
