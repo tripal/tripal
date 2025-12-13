@@ -2,6 +2,7 @@
 namespace Drupal\tripal_chado\Commands;
 
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
 
 /**
@@ -359,36 +360,42 @@ use StringTranslationTrait;
    * @param array $options
    *   Optional settings.
    *
-   * @command tripal-chado:populate-mview
-   * @aliases trp-pop-mview
-   * @option schema-name
-   *   The name of the chado schema.
-   * @option all
-   *   Populate all materialized views.
-   * @option list
-   *   List all materialized views, but do not populate them.
-   * @description aasiufsaiuhaisuh sadfyudsufudsf
-   * @usage drush tripal-chado:populate-mview db2cv_mview,cv_root_mview --schema-name="teacup"
-   *   Populates the db2cv_mview and cv_root_mview materialized views
-   *   in the chado schema named "teacup".
-   * @usage drush trp-pop-mview --all
-   *   Populates all materialized views in the default chado schema.
-   * @usage drush trp-pop-mview --list
-   *   Lists all existing materialized views in the default chado schema.
+   * @return void
+   *   No return value.
    */
-  public function PopulateMview(
-    ?string $view = null,
+  #[CLI\Command(name: 'tripal-chado:populate-mview', aliases: ['trp-pop-mview'])]
+  #[CLI\Argument(
+    name: 'view',
+    description: 'A comma-delimited list of one or more materialized views to populate. Required unless --all or --list is specified.',
+  )]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the chado schema.')]
+  #[CLI\Option(name: 'all', description: 'Populate all materialized views.')]
+  #[CLI\Option(name: 'list', description: 'List all materialized views, but do not populate them.')]
+  #[CLI\Option(name: 'time', description: 'Show elapsed time to populate a materialized view.')]
+  #[CLI\Usage(
+    name: 'drush tripal-chado:populate-mview db2cv_mview,cv_root_mview --schema-name="teacup"',
+    description: 'Populates the db2cv_mview and cv_root_mview materialized views in the chado schema named "teacup".',
+  )]
+  #[CLI\Usage(
+    name: 'drush trp-pop-mview --all --time',
+    description: 'Populates all materialized views in the default chado schema and shows elapsed time for each.',
+  )]
+  #[CLI\Usage(
+    name: 'drush trp-pop-mview --list',
+    description: 'Lists all existing materialized views in the default chado schema.',
+  )]
+  public function populateMview(
+    ?string $view = NULL,
     array $options = [
       'schema-name' => NULL,
       'all' => FALSE,
       'list' => FALSE,
+      'time' => FALSE,
     ],
   ): void {
 
     /** @var Drupal\tripal\TripalDBX\TripalDbx $tripal_dbx */
     $tripal_dbx = \Drupal::service('tripal.dbx');
-    /** @var Drupal\pgsql\Driver\Database\pgsql\Connection $drupal_connection */
-    $drupal_connection = \Drupal::database();
     /** @var Drupal\Core\Config\ConfigFactory $config_factory */
     $config_factory = \Drupal::service('config.factory');
     /** @var Drupal\tripal_chado\Services\ChadoMviewsManager $mview_manager */
@@ -413,12 +420,8 @@ use StringTranslationTrait;
     // List of all materialized views, key is numeric ID, value is name.
     $all_mviews = $mview_manager->getTables($schema_name);
     if ($options['list']) {
-      $text = 'The following materialized views exist in the "@schema_name" schema: @list.';
-      $args = [
-        '@schema_name' => $schema_name,
-        '@list' => implode(', ', $all_mviews),
-      ];
-      $this->logger->notice($this->t($text, $args));
+      $this->logger->notice($this->t('The following materialized views exist in the "@schema_name" schema: @list.',
+        ['@schema_name' => $schema_name, '@list' => implode(', ', $all_mviews)]));
       return;
     }
     if (!$all_mviews) {
@@ -442,11 +445,17 @@ use StringTranslationTrait;
       if (in_array($view_name, $all_mviews)) {
         $this->logger->notice($this->t('Populating "@view_name"',
           ['@view_name' => $view_name]));
+        $start_time = microtime(TRUE);
         $mview = $mview_manager->loadByName($view_name, $schema_name);
         $mview->populate();
+        if ($options['time']) {
+          $etime = sprintf('%0.6f', microtime(TRUE) - $start_time);
+          $this->logger->notice($this->t('Elapsed time @etime seconds.',
+            ['@etime' => $etime]));
+        }
       }
       else {
-        $this->logger->error($this->t('Materialized view "@view_name" does not exist',
+        $this->logger->error($this->t('Materialized view "@view_name" does not exist. Use the --list option to list available views.',
           ['@view_name' => $view_name]));
       }
     }
