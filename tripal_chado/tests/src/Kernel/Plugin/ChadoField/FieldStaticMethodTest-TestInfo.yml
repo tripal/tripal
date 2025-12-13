@@ -41,16 +41,62 @@ scenarios:
         storage_plugin_settings:
             base_table: 'assay'
             base_column: 'arraydesign_id'
-#   -
-#       field_type: 'chado_assay_type_default'
-#       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAssayTypeDefault'
-#       widget_id: 'chado_assay_widget_default'
-#       formatter_id: 'chado_assay_formatter_default'
-#   -
-#       field_type: 'chado_biomaterial_type_default'
-#       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoBiomaterialTypeDefault'
-#       widget_id: 'chado_biomaterial_widget_default'
-#       formatter_id: 'chado_biomaterial_formatter_default'
+  -
+      label: 'Assay through linker table'
+      field_type: 'chado_assay_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAssayTypeDefault'
+      widget_id: 'chado_assay_widget_default'
+      formatter_id: 'chado_assay_formatter_default'
+      bundle_name: 'biomaterial'
+      field_name: 'biomaterial_assay'
+      settings:
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+            base_table: 'biomaterial'
+            linker_table: 'assay_biomaterial'
+            linker_fkey_column: 'assay_id'
+  -
+      label: 'Assay in base table'
+      field_type: 'chado_assay_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAssayTypeDefault'
+      widget_id: 'chado_assay_widget_default'
+      formatter_id: 'chado_assay_formatter_default'
+      bundle_name: 'control'
+      field_name: 'control_assay'
+      settings:
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+            base_table: 'control'
+            linker_table: 'control'
+            linker_fkey_column: 'assay_id'
+  -
+      label: 'Biomaterial through linking table'
+      field_type: 'chado_biomaterial_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoBiomaterialTypeDefault'
+      widget_id: 'chado_biomaterial_widget_default'
+      formatter_id: 'chado_biomaterial_formatter_default'
+      bundle_name: 'assay'
+      field_name: 'assay_biomaterial'
+      settings:
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+          base_table: 'assay'
+          linker_table: 'assay_biomaterial'
+          linker_fkey_column: 'biomaterial_id'
+  -
+      label: 'Biomaterial through linking table'
+      field_type: 'chado_biomaterial_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoBiomaterialTypeDefault'
+      widget_id: 'chado_biomaterial_widget_default'
+      formatter_id: 'chado_biomaterial_formatter_default'
+      bundle_name: 'treatment'
+      field_name: 'treatment_biomaterial'
+      settings:
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+          base_table: 'treatment'
+          linker_table: 'treatment'
+          linker_fkey_column: 'biomaterial_id'
 #   -
 #       field_type: 'chado_boolean_type_default'
 #       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoBooleanTypeDefault'
@@ -335,11 +381,20 @@ scenarios:
         storage_plugin_settings:
           base_table: 'feature'
           base_column: 'name'
-#   -
-#       field_type: 'chado_study_type_default'
-#       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStudyTypeDefault'
-#       widget_id: 'chado_study_widget_default'
-#       formatter_id: 'chado_study_formatter_default'
+  -
+      label: 'Study through linker table'
+      field_type: 'chado_study_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStudyTypeDefault'
+      widget_id: 'chado_study_widget_default'
+      formatter_id: 'chado_study_formatter_default'
+      bundle_name: 'assay'
+      field_name: 'study_assay'
+      settings:
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+          base_table: 'assay'
+          linker_table: 'study_assay'
+          linker_fkey_column: 'study_id'
   -
       field_type: 'chado_synonym_type_default'
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSynonymTypeDefault'
