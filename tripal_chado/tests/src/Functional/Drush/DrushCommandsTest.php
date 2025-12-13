@@ -2,13 +2,12 @@
 
 namespace Drupal\Tests\tripal\Functional\Drush;
 
-use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drush\TestTraits\DrushTestTrait;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\Services\ChadoMviewsManager;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
-
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * Tests the drush command to populate materialized views.
@@ -42,7 +41,12 @@ class DrushCommandsTest extends ChadoTestBrowserBase {
    */
   protected ChadoConnection $chado_connection;
 
-  protected $mview_manager;
+  /**
+   * Materialized view service.
+   *
+   * @var Drupal\tripal_chado\Services\ChadoMviewsManager
+   */
+  protected ChadoMviewsManager $mview_manager;
 
   /**
    * {@inheritdoc}
@@ -51,8 +55,7 @@ class DrushCommandsTest extends ChadoTestBrowserBase {
     parent::setUp();
 
     // Initialize services.
-    $this->connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
-#$this->connection = $this->test_connection;
+    $this->chado_connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
     $this->mview_manager = \Drupal::service('tripal_chado.materialized_views');
   }
 
@@ -93,7 +96,7 @@ class DrushCommandsTest extends ChadoTestBrowserBase {
     $this->assertStringContainsString('Populating "db2cv_mview"', $command_output,
       'Expected log message should be generated');
     $nrecords = $this->countViewRecords('db2cv_mview');
-    # Expect 30 records, but could change if we add dbs in the future.
+    // Expect 30 records, but could change if we add dbs in the future.
     $this->assertGreaterThanOrEqual(30, $nrecords, 'At least 30 records should have been populated in the db2cv_mview');
 
     // Test the --list option with a view present.
@@ -108,16 +111,18 @@ class DrushCommandsTest extends ChadoTestBrowserBase {
     $this->deleteViewRecords('db2cv_mview');
     $nrecords = $this->countViewRecords('db2cv_mview');
     $this->assertEquals(0, $nrecords, 'View should have been cleared');
-    $this->drush('tripal-chado:populate-mview', [''], ['schema-name' => $this->testSchemaName, 'all' => NULL]);
+    $this->drush('tripal-chado:populate-mview', [''],
+      ['schema-name' => $this->testSchemaName, 'all' => NULL]);
     $command_output = $this->getOutputRaw() . $this->getErrorOutputRaw();
     $this->assertStringContainsString('Populating "db2cv_mview"', $command_output,
       'Expected log message should be generated');
     $nrecords = $this->countViewRecords('db2cv_mview');
-    # Expect 30 records again.
+    // Expect 30 records again.
     $this->assertGreaterThanOrEqual(30, $nrecords, 'At least 30 records should have been repopulated in the db2cv_mview');
 
     // Test the --time option.
-    $this->drush('tripal-chado:populate-mview', ['db2cv_mview'], ['schema-name' => $this->testSchemaName, 'time' => NULL]);
+    $this->drush('tripal-chado:populate-mview', ['db2cv_mview'],
+      ['schema-name' => $this->testSchemaName, 'time' => NULL]);
     $command_output = $this->getOutputRaw() . $this->getErrorOutputRaw();
     $this->assertStringContainsString('Elapsed time', $command_output,
       'Elapsed time should be included if --time option is specified.');
@@ -133,7 +138,7 @@ class DrushCommandsTest extends ChadoTestBrowserBase {
    *   The number of records in the materialized view.
    */
   private function countViewRecords(string $view_name): int {
-    $count = $this->connection
+    $count = $this->chado_connection
       ->select('1:' . $view_name, 'v')
       ->fields('v', ['*'])
       ->countQuery()
@@ -152,7 +157,7 @@ class DrushCommandsTest extends ChadoTestBrowserBase {
    *   No return value.
    */
   private function deleteViewRecords(string $view_name): void {
-    $count = $this->connection
+    $this->chado_connection
       ->delete('1:' . $view_name)
       ->execute();
   }
@@ -214,7 +219,7 @@ class DrushCommandsTest extends ChadoTestBrowserBase {
       ORDER BY DB.name
     ";
 
-    $schema_name = $this->connection->getSchemaName();
+    $schema_name = $this->chado_connection->getSchemaName();
     $mview = $this->mview_manager->create($view_name, $schema_name);
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
