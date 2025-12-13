@@ -442,21 +442,23 @@ use StringTranslationTrait;
     // Populate the materialized views.
     foreach ($populate_list as $view_name) {
       $view_name = trim($view_name);
-      if (in_array($view_name, $all_mviews)) {
-        $this->logger->notice($this->t('Populating "@view_name"',
-          ['@view_name' => $view_name]));
-        $start_time = microtime(TRUE);
-        $mview = $mview_manager->loadByName($view_name, $schema_name);
-        $mview->populate();
-        if ($options['time']) {
-          $etime = sprintf('%0.6f', microtime(TRUE) - $start_time);
-          $this->logger->notice($this->t('Elapsed time @etime seconds.',
-            ['@etime' => $etime]));
+      if ($view_name) {
+        if (in_array($view_name, $all_mviews)) {
+          $this->logger->notice($this->t('Populating "@view_name"',
+            ['@view_name' => $view_name]));
+          $start_time = microtime(TRUE);
+          $mview = $mview_manager->loadByName($view_name, $schema_name);
+          $mview->populate();
+          if ($options['time']) {
+            $etime = sprintf('%0.6f', microtime(TRUE) - $start_time);
+            $this->logger->notice($this->t('Elapsed time @etime seconds.',
+              ['@etime' => $etime]));
+          }
         }
-      }
-      else {
-        $this->logger->error($this->t('Materialized view "@view_name" does not exist. Use the --list option to list available views.',
-          ['@view_name' => $view_name]));
+        else {
+          $this->logger->error($this->t('Materialized view "@view_name" does not exist. Use the --list option to list available views.',
+            ['@view_name' => $view_name]));
+        }
       }
     }
   }
