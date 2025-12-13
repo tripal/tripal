@@ -162,13 +162,13 @@ scenarios:
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoFeatureMapTypeDefault'
       widget_id: 'chado_featuremap_widget_default'
       formatter_id: 'chado_featuremap_formatter_default'
-      bundle_name: 'pub'
-      field_name: 'featuremap_pub'
+      bundle_name: 'stock'
+      field_name: 'featuremap_stock'
       settings:
         storage_plugin_id: 'chado_storage'
         storage_plugin_settings:
-          base_table: 'pub'
-          linker_table: 'featuremap_pub'
+          base_table: 'stock'
+          linker_table: 'stock_featuremap'
           linker_fkey_column: 'featuremap_id'
   -
       label: 'Sequence Checksum'
@@ -222,13 +222,13 @@ scenarios:
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoOrganismTypeDefault'
       widget_id: 'chado_organism_widget_default'
       formatter_id: 'chado_organism_formatter_default'
-      bundle_name: 'featuremap'
-      field_name: 'featuremap_organism'
+      bundle_name: 'cvterm'
+      field_name: 'cvterm_organism'
       settings:
         storage_plugin_id: 'chado_storage'
         storage_plugin_settings:
-          base_table: 'featuremap'
-          linker_table: 'featuremap_organism'
+          base_table: 'cvterm'
+          linker_table: 'organism_cvterm'
           linker_fkey_column: 'organism_id'
   -
       field_type: 'chado_project_type_default'

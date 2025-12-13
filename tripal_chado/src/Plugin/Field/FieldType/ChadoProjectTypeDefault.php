@@ -169,6 +169,9 @@ class ChadoProjectTypeDefault extends ChadoFieldItemBase {
       // Some but not all linker tables contain rank, type_id, and maybe
       // other columns. These are conditionally added only if they exist in
       // the linker table, and if a term is defined for them.
+      // @see https://github.com/GMOD/Chado/issues/140
+      // No project linker tables have extra fields so this cannot yet be tested
+      // however, the mentioned issue will add a type + rank.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
           $term = self::getColumnTermId($linker_table, $column, 'NCIT:C25712');
@@ -226,6 +229,9 @@ class ChadoProjectTypeDefault extends ChadoFieldItemBase {
     // Set in the widget, but currently not implemented in the formatter.
     // Typically these are type_id and rank, but are not present in all
     // linker tables, so they are added only if present in the linker table.
+    // @see https://github.com/GMOD/Chado/issues/140
+    // No project linker tables have extra fields so this cannot yet be tested
+    // however, the mentioned issue will add a type + rank.
     foreach ($extra_linker_columns as $column => $term) {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
         'action' => 'store',

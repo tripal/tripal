@@ -95,23 +95,11 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
     $value = [];
 
-    // Get the Chado table and column this field maps to.
-    $settings = $field_definition->getSettings();
-    $storage_settings = $settings['storage_plugin_settings'];
-    $base_table = $storage_settings['base_table'];
-    // @todo look this up.
-    $linker_table = 'UNKNOWN';
-
     $value['record_id'] = 0;
     $value['entity_id'] = 0;
-    if ($base_table == $linker_table) {
-      $value[self::$object_id] = 0;
-    }
-    else {
-      $value['linker_id'] = 0;
-      $value['link'] = 0;
-      $value[self::$object_id] = 0;
-    }
+    $value['linker_id'] = 0;
+    $value['link'] = 0;
+    $value[self::$object_id] = 0;
 
     // Do we want to conditionally include type_id and rank?
     $value['linker_type_id'] = mt_rand(1, 500);
@@ -169,6 +157,8 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
 
     $extra_linker_columns = [];
+    $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
+    $linker_fkey_path = $base_table . '.' . $linker_fkey_column;
     if ($linker_table != $base_table) {
       $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
       $linker_pkey_col = $linker_schema_def['primary key'];
@@ -176,11 +166,14 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       // @todo make sure it is.
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
       $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
-      $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
+      $linker_fkey_path = $linker_table . '.' . $linker_fkey_column;
 
       // Some but not all linker tables contain rank, type_id, and maybe
       // other columns. These are conditionally added only if they exist in
       // the linker table, and if a term is defined for them.
+      // @see https://github.com/GMOD/Chado/issues/140
+      // No contact linker tables have extra fields so this cannot yet be tested
+      // however, the mentioned issue will add a type + rank.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
           $term = self::getColumnTermId($linker_table, $column, 'NCIT:C25712');
@@ -189,9 +182,6 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
           }
         }
       }
-    }
-    else {
-      $linker_fkey_term = self::getColumnTermId($base_table, $linker_fkey_column, self::$record_id_term);
     }
 
     $properties = [];
@@ -214,18 +204,16 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       'fkey' => $linker_fkey_column,
     ]);
 
-    // Base table links directly.
-    if ($base_table == $linker_table) {
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
-        'action' => 'store',
-        'drupal_store' => TRUE,
-        'path' => $base_table . '.' . $linker_fkey_column,
-        'delete_if_empty' => TRUE,
-        'empty_value' => 0,
-      ]);
-    }
-    // An intermediate linker table is used.
-    else {
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
+      'action' => 'store',
+      'drupal_store' => TRUE,
+      'path' => $linker_fkey_path,
+      'delete_if_empty' => TRUE,
+      'empty_value' => 0,
+    ]);
+
+    // If an intermediate linker table is used.
+    if ($base_table != $linker_table) {
       // Define the linker table that links the base table to the object table.
       // E.g.:  project_contact.project_contact_id.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', self::$record_id_term, [
@@ -256,6 +244,9 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       // Set in the widget, but currently not implemented in the formatter.
       // Typically these are type_id and rank, but are not present in all
       // linker tables, so they are added only if present in the linker table.
+      // @see https://github.com/GMOD/Chado/issues/140
+      // No contact linker tables have extra fields so this cannot yet be tested
+      // however, the mentioned issue will add a type + rank.
       foreach ($extra_linker_columns as $column => $term) {
         $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
           'action' => 'store',
