@@ -1,12 +1,15 @@
 <?php
 namespace Drupal\tripal_chado\Commands;
 
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drush\Commands\DrushCommands;
 
 /**
  * Drush commands
  */
 class ChadoManageCommands extends DrushCommands {
+
+use StringTranslationTrait;
 
   /**
    * Install the Chado schema.
@@ -358,19 +361,20 @@ class ChadoManageCommands extends DrushCommands {
    *
    * @command tripal-chado:populate-mview
    * @aliases trp-pop-mview
-   * @options schema-name
+   * @option schema-name
    *   The name of the chado schema.
-   * @options all
+   * @option all
    *   Populate all materialized views.
-   * @options list
+   * @option list
    *   List all materialized views, but do not populate them.
    * @description aasiufsaiuhaisuh sadfyudsufudsf
-   * @usage drush tripal-chado:populate-mview db2cv_mview,cv_root_mview --schema-name="chado"
-   *   Populates the db2cv_mview and cv_root_mview materialized views.
+   * @usage drush tripal-chado:populate-mview db2cv_mview,cv_root_mview --schema-name="teacup"
+   *   Populates the db2cv_mview and cv_root_mview materialized views
+   *   in the chado schema named "teacup".
    * @usage drush trp-pop-mview --all
    *   Populates all materialized views in the default chado schema.
    * @usage drush trp-pop-mview --list
-   *   Lists all existing materialized views.
+   *   Lists all existing materialized views in the default chado schema.
    */
   public function PopulateMview(
     ?string $view = null,
@@ -396,29 +400,34 @@ class ChadoManageCommands extends DrushCommands {
     }
     $schema_exists = $tripal_dbx->schemaExists($schema_name);
     if (!$schema_exists) {
-      $this->logger->error("The schema \"$schema_name\" does not exist.");
+      $this->logger->error($this->t('The schema "@schema_name" does not exist.',
+        ['@schema_name' => $schema_name]));
       return;
     }
 
     if (!$options['all'] && !$options['list'] && !$view) {
-      $this->logger->error('Provide a materialized view name or use --all or --list.');
+      $this->logger->error($this->t('Provide a materialized view name or use --all or --list, or use --help for options.'));
       return;
     }
 
     // List of all materialized views, key is numeric ID, value is name.
     $all_mviews = $mview_manager->getTables($schema_name);
     if ($options['list']) {
-      $output = "The following materialized views exist in the \"$schema_name\" schema: ";
-      $output .= implode(', ', $all_mviews) . '.';
-      $this->logger->notice($output);
+      $text = 'The following materialized views exist in the "@schema_name" schema: @list.';
+      $args = [
+        '@schema_name' => $schema_name,
+        '@list' => implode(', ', $all_mviews),
+      ];
+      $this->logger->notice($this->t($text, $args));
       return;
     }
     if (!$all_mviews) {
-      $this->logger->error("No materialized views exist in the \"$schema_name\" schema.");
+      $this->logger->error($this->t('No materialized views exist in the "@schema_name" schema.',
+        ['@schema_name' => $schema_name]));
       return;
     }
 
-    // List of views to populate.
+    // List of views to populate as specified by the drush command.
     $populate_list = [];
     if ($view) {
       $populate_list = explode(',', $view);
@@ -427,16 +436,18 @@ class ChadoManageCommands extends DrushCommands {
       $populate_list = $all_mviews;
     }
 
-    // Populate the specified materialized views.
+    // Populate the materialized views.
     foreach ($populate_list as $view_name) {
       $view_name = trim($view_name);
       if (in_array($view_name, $all_mviews)) {
-        $this->logger->notice("Populating \"$view_name\"");
+        $this->logger->notice($this->t('Populating "@view_name"',
+          ['@view_name' => $view_name]));
         $mview = $mview_manager->loadByName($view_name, $schema_name);
         $mview->populate();
       }
       else {
-        $this->logger->error("Materialized view \"$view_name\" does not exist");
+        $this->logger->error($this->t('Materialized view "@view_name" does not exist',
+          ['@view_name' => $view_name]));
       }
     }
   }
