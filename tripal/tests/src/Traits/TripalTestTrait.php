@@ -346,6 +346,43 @@ trait TripalTestTrait {
   }
 
   /**
+   * Sets the 'fields' by specifying the top level key of a YAML file.
+   *
+   * @param string $yaml_file
+   *   The full path to a yaml file which follows the format descripbed above.
+   *
+   * @return array
+   *   The first array returned describes the state of the test environment to
+   *   be setup and the second describes the scenarios to test. For a
+   *   description of the structure of these arrays, see the YAML file directly.
+   */
+  public function getTestInfoFromYaml(string $yaml_file): array {
+
+    if (!file_exists($yaml_file)) {
+      throw new \Exception("Cannot open YAML file $yaml_file.");
+    }
+
+    $file_contents = file_get_contents($yaml_file);
+    if (empty($file_contents)) {
+      throw new \Exception("Unable to retrieve contents for YAML file $yaml_file.");
+    }
+
+    $yaml_data = Yaml::parse($file_contents);
+    if (empty($yaml_data)) {
+      throw new \Exception("Unable to parse YAML file $yaml_file.");
+    }
+
+    if (!array_key_exists('system-under-test', $yaml_data)) {
+      throw new \Exception("The 'system-under-test' key is missing from the $yaml_file.");
+    }
+    if (!array_key_exists('scenarios', $yaml_data)) {
+      throw new \Exception("The 'scenarios' key is missing from the $yaml_file.");
+    }
+
+    return [$yaml_data['system-under-test'], $yaml_data['scenarios']];
+  }
+
+  /**
    * Warns test developers if they are missing required modules in a kernel test.
    *
    * This is needed because otherwise the exceptions thrown are not very obvious
