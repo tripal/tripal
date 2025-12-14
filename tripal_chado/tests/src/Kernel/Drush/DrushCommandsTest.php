@@ -71,18 +71,18 @@ class DrushCommandsTest extends ChadoTestKernelBase {
     $mock_logger = $this->getMockBuilder(LoggerInterface::class)
       ->getMock();
     $mock_logger->method('notice')
-      ->willReturnCallback(function($message, $options) {
+      ->willReturnCallback(function ($message, $options) {
           $this->log_output .= $message;
           return NULL;
-        });
+      });
     $mock_logger->method('error')
-      ->willReturnCallback(function($message, $options) {
+      ->willReturnCallback(function ($message, $options) {
           $this->log_output .= $message;
           return NULL;
-        });
+      });
 
     // An instance of the chado drush command class.
-    $this->drush_command = new ChadoManageCommands;
+    $this->drush_command = new(ChadoManageCommands);
     $this->drush_command->setLogger($mock_logger);
 
   }
@@ -161,7 +161,7 @@ class DrushCommandsTest extends ChadoTestKernelBase {
       'Elapsed time should be included if --time option is specified.');
 
     // Test populating a view that does not exist.
-    $this->drush_command->populateMview('db2cv_mview, bogus_mview', ['schema-name' => $this->testSchemaName, 'time' => TRUE]);
+    $this->drush_command->populateMview('db2cv_mview, bogus_mview', ['schema-name' => $this->testSchemaName]);
     $this->assertStringContainsString('does not exist', $this->getLogOutput(),
       'An error should be included for a materialized view that does not exist.');
   }
