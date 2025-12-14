@@ -82,7 +82,7 @@ class DrushCommandsTest extends ChadoTestKernelBase {
       });
 
     // An instance of the chado drush command class.
-    $this->drush_command = new(ChadoManageCommands);
+    $this->drush_command = new ChadoManageCommands();
     $this->drush_command->setLogger($mock_logger);
 
   }
