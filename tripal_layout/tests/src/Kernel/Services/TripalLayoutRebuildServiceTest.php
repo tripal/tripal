@@ -49,7 +49,7 @@ class TripalLayoutRebuildServiceTest extends ChadoTestKernelBase {
    * Describes the environment to setup for this test.
    *
    * @var array
-   *   Currently an empty array here for consistency.
+   *   Not used by this test, but here for consistency with other tests.
    */
   protected array $system_under_test;
 

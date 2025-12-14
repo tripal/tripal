@@ -386,10 +386,10 @@ trait TripalTestTrait {
     }
 
     if (!array_key_exists('system-under-test', $yaml_data)) {
-      throw new \Exception("The 'system-under-test' key is missing from the $yaml_file.");
+      throw new \Exception("The 'system-under-test' key is missing from the YAML file $yaml_file.");
     }
     if (!array_key_exists('scenarios', $yaml_data)) {
-      throw new \Exception("The 'scenarios' key is missing from the $yaml_file.");
+      throw new \Exception("The 'scenarios' key is missing from the YAML file $yaml_file.");
     }
 
     return [$yaml_data['system-under-test'], $yaml_data['scenarios']];
@@ -450,7 +450,7 @@ trait TripalTestTrait {
    *   - TripalImporter.
    *
    * @return void
-   *   No return value. Rather missing modules fail an assert.
+   *   No return value. Rather, missing modules fail an assert.
    */
   protected function suggestRequiredModules(array $functionality) {
     $suggested_modules = [];
