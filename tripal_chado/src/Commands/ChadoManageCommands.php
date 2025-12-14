@@ -401,7 +401,12 @@ use StringTranslationTrait;
     /** @var Drupal\tripal_chado\Services\ChadoMviewsManager $mview_manager */
     $mview_manager = \Drupal::service('tripal_chado.materialized_views');
 
+    // Get options or set default if not specified.
     $schema_name = $options['schema-name'] ?? NULL;
+    $option_all = $options['all'] ?? FALSE;
+    $option_list = $options['list'] ?? FALSE;
+    $option_time = $options['time'] ?? FALSE;
+
     if (!$schema_name) {
       $schema_name = $config_factory->get('tripal_chado.settings')->get('default_schema');
     }
@@ -412,14 +417,14 @@ use StringTranslationTrait;
       return;
     }
 
-    if (!$options['all'] && !$options['list'] && !$view) {
+    if (!$option_all && !$option_list && !$view) {
       $this->logger->error($this->t('Provide a materialized view name or use --all or --list, or use --help for options.'));
       return;
     }
 
     // List of all materialized views, key is numeric ID, value is name.
     $all_mviews = $mview_manager->getTables($schema_name);
-    if ($options['list']) {
+    if ($option_list) {
       if ($all_mviews) {
         $this->logger->notice($this->t('The following materialized views exist in the "@schema_name" schema: @list.',
           ['@schema_name' => $schema_name, '@list' => implode(', ', $all_mviews)]));
@@ -455,7 +460,7 @@ use StringTranslationTrait;
           $start_time = microtime(TRUE);
           $mview = $mview_manager->loadByName($view_name, $schema_name);
           $mview->populate();
-          if ($options['time']) {
+          if ($option_time) {
             $etime = sprintf('%0.6f', microtime(TRUE) - $start_time);
             $this->logger->notice($this->t('Elapsed time @etime seconds.',
               ['@etime' => $etime]));
