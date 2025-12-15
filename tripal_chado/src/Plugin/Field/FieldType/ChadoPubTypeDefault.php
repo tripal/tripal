@@ -101,23 +101,20 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $settings = $field_definition->getSettings();
     $storage_settings = $settings['storage_plugin_settings'];
     $base_table = $storage_settings['base_table'];
-    // @todo look this up.
-    $linker_table = 'UNKNOWN';
+    $linker_table = array_key_exists('linker_table', $storage_settings) ? $storage_settings['linker_table'] : $base_table;
 
     $value['record_id'] = 0;
     $value['entity_id'] = 0;
-    if ($base_table == $linker_table) {
-      $value[self::$object_id] = 0;
-    }
-    else {
+    $value[self::$object_id] = 0;
+    if ($base_table !== $linker_table) {
       $value['linker_id'] = 0;
       $value['link'] = 0;
       $value[self::$object_id] = 0;
-    }
 
-    // Do we want to conditionally include type_id and rank?
-    $value['linker_type_id'] = mt_rand(1, 500);
-    $value['linker_rank'] = 0;
+      // Do we want to conditionally include type_id and rank?
+      $value['linker_type_id'] = mt_rand(1, 500);
+      $value['linker_rank'] = 0;
+    }
 
     // Object table properties.
     $value['pub_title'] = '';

@@ -111,7 +111,7 @@ class FieldStaticMethodTest extends ChadoTestKernelBase {
     foreach (array_keys($this->scenarios) as $scenario_key) {
       $scenario_bundle_name = $this->scenarios[$scenario_key]['bundle_name'];
       $this->scenarios[$scenario_key]['bundle'] = $this->tripalEntityType[$scenario_bundle_name];
-      $this->createFieldInstance('feature', $this->scenarios[$scenario_key], $options);
+      $this->createFieldInstance($scenario_bundle_name, $this->scenarios[$scenario_key], $options);
     }
 
   }
@@ -194,17 +194,12 @@ class FieldStaticMethodTest extends ChadoTestKernelBase {
       }
 
       // TRIPAL VALUES TEMPLATE.
-      $property_values = $field_item->tripalValuesTemplate($field_defn);
+      $property_values = $field_item->tripalValuesTemplate($field_defn, $scenario['default_value']);
       $this->assertIsArray($property_values, "$scenario_label: We expected $field_name::tripalValuesTemplate() to generate an array.");
       foreach ($property_values as $property_val) {
         $property_key = $property_val->getKey();
         $this->assertArrayHasKey($property_key, $scenario['expected_properties'], "$scenario_label: $field_name::tripalValuesTemplate() returned this property but we did not expect it to.");
       }
-
-      // IS COMPATIBLE.
-      // print "Testing $field_name compatibility on " . $scenario['bundle']->getID() . " and chado table " . $scenario['bundle']->getThirdPartySetting('tripal', 'chado_base_table') . "\n";
-      // $is_compatible = $field_item->isCompatible($scenario['bundle']);
-      // $this->assertTrue($is_compatible, "$scenario_label: We expect this field to be compatible with the entity type we created it for.");
     }
   }
 
