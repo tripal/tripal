@@ -109,9 +109,8 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $base_pkey_col = self::getPrimaryKey($base_table, $schema);
-    $prop_schema_def = self::getChadoTableDef($prop_table, $schema);
-    $prop_pkey_col = $prop_schema_def['primary key'];
-    $prop_fk_col = array_keys($prop_schema_def['foreign keys'][$base_table]['columns'])[0];
+    $prop_pkey_col = self::getPrimaryKey($prop_table, $schema);
+    $prop_fk_col = self::getChadoForeignKeyColumn($prop_table, $base_table, $schema);
 
     // Get the property terms by using the Chado table columns they map to.
     $link_term = self::getColumnTermId($prop_table, $prop_fk_col, self::$record_id_term);
