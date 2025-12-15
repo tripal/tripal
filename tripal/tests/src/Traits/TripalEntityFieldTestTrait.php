@@ -385,9 +385,11 @@ trait TripalEntityFieldTestTrait {
       $bundle = \Drupal::entityTypeManager()
         ->getStorage('tripal_entity_type')
         ->loadByProperties(['id' => $values['bundle_name']]);
+      // If we were able to retrieve the bundle then just use it.
       if ($bundle) {
         $bundle = array_pop($bundle);
       }
+      // Otherwise, create one.
       else {
         $bundle = $this->createTripalContentType(['id' => $values['bundle_name']]);
       }
