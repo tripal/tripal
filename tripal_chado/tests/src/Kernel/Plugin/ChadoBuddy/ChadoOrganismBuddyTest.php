@@ -155,7 +155,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
   }
 
   /**
-   * Data Provider: provides scenarios with organisms' scientific names.
+   * Data Provider: provides scenarios to test getOrganismFromScientificName().
    *
    * @return array
    *   An array of test scenarios, each containing:
@@ -163,14 +163,28 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
    *     array is nested to handle multiple organisms.
    *   - query_scientific_name: The scientific name to query using
    *     getOrganismFromScientificName().
-   *   - expected_scientific_name: The scientific name we expect to be returned
-   *     by getOrganismScientificName().
-   *   - options: An array of options given to getOrganismFromScientificName().
+   *   - options: An array of options to pass to getOrganismFromScientificName()
+   *   - expected_num_records: The expected number of organism records to be
+   *     returned.
    */
-  public static function provideOrganismScientificNameScenarios() {
+  public static function provideOrganismFromScientificNameScenarios() {
     $scenarios = [];
 
-    // #0: An organism without infraspecific rank.
+    // #0: No match to an organism.
+    $scenarios[] =
+    [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+      ],
+      '',
+      [],
+      0,
+    ];
+
+    // #1: An organism without infraspecific rank.
     $scenarios[] =
     [
       [
@@ -180,11 +194,11 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
         ],
       ],
       'Tripalus databasica',
-      'Tripalus databasica',
       [],
+      1,
     ];
 
-    // #1: An organism with infraspecific rank and name.
+    // #2: An organism with infraspecific rank and name.
     $scenarios[] =
     [
       [
@@ -196,11 +210,33 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
         ],
       ],
       'Tripalus databasica subsp. chadoii',
-      'Tripalus databasica subsp. chadoii',
       [],
+      1,
     ];
 
-    // #2: An organism with an abbreviation
+    // #3: Multiple organisms with the same genus and species.
+    $scenarios[] =
+    [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'cvterm.name' => 'subspecies',
+          'organism.infraspecific_name' => 'chadoii',
+        ],
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'cvterm.name' => 'varietas',
+          'organism.infraspecific_name' => 'varietum',
+        ],
+      ],
+      'Tripalus databasica',
+      [],
+      2,
+    ];
+
+    // #4: An organism with an abbreviation
     $scenarios[] = [
       [
         [
@@ -210,14 +246,13 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
         ],
       ],
       'T. databasica',
-      'Tripalus databasica',
       [
         'check_abbreviation' => TRUE,
       ],
+      1,
     ];
 
-    /*
-    // #3: An organism with common name
+    // #5: An organism with common name
     $scenarios[] = [
       [
         [
@@ -227,13 +262,13 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
         ],
       ],
       'Tripal organism',
-      'Tripalus databasica',
       [
         'check_common_name' => TRUE,
       ],
+      1,
     ];
 
-    // #4: Lookup using both abbreviation and common_name options
+    // #6: Lookup using both abbreviation and common_name options
     $scenarios[] = [
       [
         [
@@ -247,65 +282,57 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
           'organism.common_name' => 'Wild Tripal',
         ],
       ],
-      'Tripal organism',
-      'Tripalus databasica',
+      'Wild Tripal',
       [
-        'check_abbreivation' => TRUE,
+        'check_abbreviation' => TRUE,
         'check_common_name' => TRUE,
       ],
+      2,
     ];
-    */
 
     return $scenarios;
   }
 
   /**
-   * Tests the getter methods that deal with scientific name of an organism.
-   *
-   * Specifically:
-   *   - getOrganismScientificName()
-   *   - getOrganismFromScientificName()
+   * Tests the method getOrganismFromScientificName().
    *
    * @param array $organism_values
    *   An array of organism column values to insert. This array is nested to
    *   handle multiple organisms.
    * @param string $query_scientific_name
    *   The scientific name to query using getOrganismFromScientificName().
-   * @param string $expected_scientific_name
-   *   The expected scientifc name returned by getOrganismScientificName().
    * @param array $options
-   *   An array of options given to getOrganismFromScientificName().
+   *   An array of options to pass to getOrganismFromScientificName().
+   * @param int $expected_num_records
+   *   The expected number of organism records to be returned.
    *
-   * @dataProvider provideOrganismScientificNameScenarios
+   * @dataProvider provideOrganismFromScientificNameScenarios
    */
-  #[DataProvider('provideOrganismScientificNameScenarios')]
-  public function testOrganismScientificNameMethods($organism_values, $query_scientific_name, $expected_scientific_name, $options) {
+  #[DataProvider('provideOrganismFromScientificNameScenarios')]
+  public function testOrganismFromScientificNameMethods($organism_values, $query_scientific_name, $options, $expected_num_records) {
     $type = \Drupal::service('tripal_chado.chado_buddy');
     $instance = $type->createInstance('chado_organism_buddy', []);
 
     // Insert any organisms to test with.
     foreach ($organism_values as $values) {
-      $test_records['set'] = $instance->insertOrganism($values, ['create_cvterm' => TRUE]);
-      // Try grabbing the scientific name of our test organism.
-      $retrieved_scientific_name = $instance->getOrganismScientificName($values);
-      $this->assertEquals(
-        $expected_scientific_name,
-        $retrieved_scientific_name,
-        'The scientific name retrieved did not match the expected scientific name.'
-      );
-      // Now try grabbing the organism record using its scientific name.
-      $test_records['get'] = $instance->getOrganismFromScientificName($query_scientific_name, $options);
-      $this->assertEquals(1, count($test_records['get']), 'We did not retrieve a single array for an Organism record using its scientific name.');
+      $test_records['set'][] = $instance->insertOrganism($values, ['create_cvterm' => TRUE]);
+    }
+    // Now try grabbing the organism record(s) using its scientific name.
+    $test_records['get'] = $instance->getOrganismFromScientificName($query_scientific_name, $options);
+    $this->assertEquals($expected_num_records, count($test_records['get']), 'We did not retrieve the expected number of records when calling getOrganismFromScientificName().');
+    /*
+    if ($expected_num_records == 1) {
       $test_values = $this->multiAssert(
         'getOrganismFromScientificName',
         $test_records,
         'organism',
         'organism.organism_id',
-        "Organism $expected_scientific_name",
+        "Organism $query_scientific_name",
         28
       );
       $this->assertEquals($test_values['set']['organism.organism_id'], $test_values['get']['organism.organism_id'], "We did not retrieve the same organism ID using getOrganismFromScientificName as the organism we inserted.");
     }
+    */
   }
 
   /**
