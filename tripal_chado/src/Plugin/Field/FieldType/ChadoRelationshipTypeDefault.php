@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
@@ -92,6 +93,32 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $field_settings['termIdSpace'] = self::$termIdSpace;
     $field_settings['termAccession'] = self::$termAccession;
     return $field_settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    $value['record_id'] = 0;
+    $value['linker_id'] = 0;
+
+    $value['subject_id'] = 0;
+    $value['subject_entity_id'] = 0;
+    $value['subject_name'] = '';
+
+    $value['object_id'] = 0;
+    $value['object_entity_id'] = 0;
+    $value['object_name'] = '';
+
+    $value['type_id'] = mt_rand(1, 500);
+    $value['type_name'] = '';
+
+    $value['relationship_value'] = '';
+    $value['relationship_rank'] = 0;
+
+    return [$value];
   }
 
   /**
