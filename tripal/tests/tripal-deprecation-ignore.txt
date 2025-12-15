@@ -4,7 +4,7 @@
 # because they are in external modules.
 # These excludes are appended to the excludes defined by Drupal.
 # This is done by tripal/test/tripal-bootstrap.php.
-# @see Tripal PR #2361 where these were added.
+# @see Tripal PR #2395 where these were added.
 
 # Module: Field Group Module
 # Location: /var/www/drupal/web/core/lib/Drupal/Core/Hook/HookCollectorPass.php:591
