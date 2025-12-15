@@ -45,7 +45,6 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
   protected function setUp() :void {
     parent::setUp();
 
-$this->bogus = 42; // should trigger deprecation!
     // Grab the container.
     $container = \Drupal::getContainer();
 
