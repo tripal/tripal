@@ -162,55 +162,6 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Retrieves the current scenario based on the data provider.
-   *
-   * NOTE: Also ensures the type_ids match what is currently in the database.
-   *
-   * @param int $current_scenario_key
-   *   The key of the scenario in the YAML.
-   * @param string $current_scenario_label
-   *   The label of the scenario in the YAML.
-   *
-   * @return array
-   *   The scenario to be tested as defined in the YAML.
-   */
-  public function retrieveCurrentScenario(int $current_scenario_key, string $current_scenario_label) {
-
-    // Retrieve the correct scenario.
-    $current_scenario = $this->scenarios[$current_scenario_key];
-    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
-
-    // Set the project type just in case.
-    $type_id = $this->getCvtermID('NCIT', 'C47885');
-    $current_scenario['create']['user_input']['project_type'][0]['type_id'] = $type_id;
-    $current_scenario['create']['expected']['project_type'][0]['type_id'] = $type_id;
-    $current_scenario['edit']['expected']['project_type'][0]['type_id'] = $type_id;
-    // Set the property field types just in case.
-    $comment_type_id = $this->getCvtermID('rdfs', 'comment');
-    $location_type_id = $this->getCvtermID('NCIT', 'C25341');
-    foreach (['create', 'edit'] as $process_key) {
-      foreach (['user_input', 'expected'] as $input_type) {
-        if (array_key_exists('project_prop1', $current_scenario[$process_key][$input_type])) {
-          foreach ($current_scenario[$process_key][$input_type]['project_prop1'] as $delta => $values) {
-            if ($values['type_id'] === 181) {
-              $current_scenario[$process_key][$input_type]['project_prop1'][$delta]['type_id'] = $comment_type_id;
-            }
-          }
-        }
-        if (array_key_exists('project_prop2', $current_scenario[$process_key][$input_type])) {
-          foreach ($current_scenario[$process_key][$input_type]['project_prop2'] as $delta => $values) {
-            if ($values['type_id'] === 159) {
-              $current_scenario[$process_key][$input_type]['project_prop2'][$delta]['type_id'] = $location_type_id;
-            }
-          }
-        }
-      }
-    }
-
-    return $current_scenario;
-  }
-
-  /**
    * Tests the ChadoPropertyType field through TripalEntity->save().
    *
    * @param int $current_scenario_key
@@ -222,7 +173,7 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
    */
   #[DataProvider('provideScenarios')]
   public function testChadoPropertyTypeEntityCrud(int $current_scenario_key, string $current_scenario_label) {
-    $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
+    $current_scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
 
     // 1. Create the entity with that value set.
     $entity = TripalEntity::create([
