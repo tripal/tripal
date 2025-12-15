@@ -1,0 +1,19 @@
+
+# Patterns starting at this point are defined by Tripal.
+# We are ignoring these phpunit deprecation notices under Drupal 11.3+
+# because they are in external modules.
+# These excludes are appended to the excludes defined by Drupal.
+# This is done by tripal/test/tripal-bootstrap.php.
+# @see Tripal PR #2361 where these were added.
+
+# Module: Field Group Module
+# Location: /var/www/drupal/web/core/lib/Drupal/Core/Hook/HookCollectorPass.php:591
+# Deprecation: field_group_module_implements_alter without a #[LegacyModuleImplementsAlter] attribute is deprecated in drupal:11.2.0 and removed in drupal:12.0.0. See https://www.drupal.org/node/3496788
+# Example test that triggers this: testTripalEmptyContentTypes
+%field_group_module_implements_alter without a #\[LegacyModuleImplementsAlter\] attribute%
+
+# Module: Drupal
+# Location: /var/www/drupal/vendor/symfony/error-handler/DebugClassLoader.php:347
+# Deprecation: Method "Twig\Extension\ExtensionInterface::getFunctions()" might add "array" as a native return type declaration in the future. Do the same in implementation "Drupal\devel\Twig\Extension\Debug" now to avoid errors or add an explicit @return annotation to suppress this message.
+# Example test that triggers this: testTripalEmptyContentTypes
+%Method "Twig\\Extension\\ExtensionInterface::getFunctions\(\)" might add "array"%
