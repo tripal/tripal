@@ -163,7 +163,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
    *     array is nested to handle multiple organisms.
    *   - query_scientific_name: The scientific name to query using
    *     getOrganismFromScientificName().
-   *   - expected_scientific_name: The scientifc name we expect to be returned
+   *   - expected_scientific_name: The scientific name we expect to be returned
    *     by getOrganismScientificName().
    *   - options: An array of options given to getOrganismFromScientificName().
    */
@@ -199,6 +199,62 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       'Tripalus databasica subsp. chadoii',
       [],
     ];
+
+    // #2: An organism with an abbreviation
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.abbreviation' => 'T. databasica',
+        ],
+      ],
+      'T. databasica',
+      'Tripalus databasica',
+      [
+        'check_abbreviation' => TRUE,
+      ],
+    ];
+
+    /*
+    // #3: An organism with common name
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.common_name' => 'Tripal organism',
+        ],
+      ],
+      'Tripal organism',
+      'Tripalus databasica',
+      [
+        'check_common_name' => TRUE,
+      ],
+    ];
+
+    // #4: Lookup using both abbreviation and common_name options
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.abbreviation' => 'Wild Tripal',
+        ],
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'chadoii',
+          'organism.common_name' => 'Wild Tripal',
+        ],
+      ],
+      'Tripal organism',
+      'Tripalus databasica',
+      [
+        'check_abbreivation' => TRUE,
+        'check_common_name' => TRUE,
+      ],
+    ];
+    */
 
     return $scenarios;
   }
