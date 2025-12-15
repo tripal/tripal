@@ -17,3 +17,12 @@
 # Deprecation: Method "Twig\Extension\ExtensionInterface::getFunctions()" might add "array" as a native return type declaration in the future. Do the same in implementation "Drupal\devel\Twig\Extension\Debug" now to avoid errors or add an explicit @return annotation to suppress this message.
 # Example test that triggers this: testTripalEmptyContentTypes
 %Method "Twig\\Extension\\ExtensionInterface::getFunctions\(\)" might add "array"%
+
+# Module: Devel
+# Module: Gin
+# Location: modules/contrib/devel/devel.install:28
+# Location: modules/contrib/gin_toolbar/gin_toolbar.module:657
+# Location: modules/contrib/gin_toolbar/gin_toolbar.install:13
+# Deprecation: devel_requirements without a #[LegacyRequirementsHook] attribute is deprecated in drupal:11.3.0 and removed in drupal:13.0.0.
+# Example test that triggers this: EntityAccessTest
+%without a #\[LegacyRequirementsHook\] attribute is deprecated%
