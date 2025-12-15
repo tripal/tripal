@@ -101,7 +101,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     $value['linker_id'] = 0;
     $value['link'] = 0;
     $value[self::$object_id] = 0;
-
+    $value['linker_channel_id'] = 0;
     // Do we want to conditionally include type_id and rank?
     $value['linker_type_id'] = mt_rand(1, 500);
     $value['linker_rank'] = 0;
@@ -109,7 +109,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     // Object table properties.
     // @todo 'assay_database_accession' and 'assay_database_name' is included
     // twice in properties, confirm if this is intentional.
-    $value['aasay_name'] = '';
+    $value['assay_name'] = '';
     $value['assay_description'] = '';
     $value['assay_arrayidentifier'] = '';
     $value['assay_arraybatchidentifier'] = '';

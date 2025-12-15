@@ -111,11 +111,13 @@ class ChadoDbxrefTypeDefault extends ChadoFieldItemBase {
       $value['linker_id'] = 0;
       $value['link'] = 0;
       $value[self::$object_id] = 0;
-    }
+      $value['linker_is_current'] = 0;
+      $value['linker_pub_id'] = 0;
 
-    // Do we want to conditionally include type_id and rank?
-    $value['linker_type_id'] = mt_rand(1, 500);
-    $value['linker_rank'] = 0;
+      // Do we want to conditionally include type_id and rank?
+      $value['linker_type_id'] = mt_rand(1, 500);
+      $value['linker_rank'] = 0;
+    }
 
     // Object table properties.
     $value['dbxref_db_id'] = 0;

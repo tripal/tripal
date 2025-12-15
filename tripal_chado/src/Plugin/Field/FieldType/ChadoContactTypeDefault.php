@@ -95,18 +95,26 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
     $value = [];
 
+    // Get the Chado table and column this field maps to.
+    $settings = $field_definition->getSettings();
+    $storage_settings = $settings['storage_plugin_settings'];
+    $base_table = $storage_settings['base_table'];
+    [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, self::$object_id);
+
     $value['record_id'] = 0;
     $value['entity_id'] = 0;
-    $value['linker_id'] = 0;
-    $value['link'] = 0;
-    $value[self::$object_id] = 0;
+    $value[$linker_fkey_column] = 0;
+    if ($base_table !== $linker_table) {
+      $value['linker_id'] = 0;
+      $value['link'] = 0;
 
-    // Do we want to conditionally include type_id and rank?
-    $value['linker_type_id'] = mt_rand(1, 500);
-    $value['linker_rank'] = 0;
+      // Do we want to conditionally include type_id and rank?
+      $value['linker_type_id'] = mt_rand(1, 500);
+      $value['linker_rank'] = 0;
+    }
 
     // Object table properties.
-    $value['conatct_name'] = '';
+    $value['contact_name'] = '';
     $value['contact_description'] = '';
     $value['contact_type'] = '';
 
