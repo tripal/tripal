@@ -563,7 +563,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       // have a unique constraint, so there may be more than one match.
       if ($options['check_common_name'] ?? FALSE) {
         $common_conditions = ['organism.common_name' => $scientific_name];
-        $buddies[] = $this->getOrganism($common_conditions, $lookup_options);
+        $buddies = $this->getOrganism($common_conditions, $lookup_options);
       }
     }
 

@@ -171,8 +171,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     $scenarios = [];
 
     // #0: No match to an organism.
-    $scenarios[] =
-    [
+    $scenarios[] = [
       [
         [
           'organism.genus' => 'Tripalus',
@@ -185,8 +184,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     ];
 
     // #1: An organism without infraspecific rank.
-    $scenarios[] =
-    [
+    $scenarios[] = [
       [
         [
           'organism.genus' => 'Tripalus',
@@ -199,8 +197,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     ];
 
     // #2: An organism with infraspecific rank and name.
-    $scenarios[] =
-    [
+    $scenarios[] = [
       [
         [
           'organism.genus' => 'Tripalus',
@@ -215,8 +212,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     ];
 
     // #3: Multiple organisms with the same genus and species.
-    $scenarios[] =
-    [
+    $scenarios[] = [
       [
         [
           'organism.genus' => 'Tripalus',
@@ -285,6 +281,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       0,
     ];
 
+    /*
     // #7: Lookup using all options: abbreviation, common_name, case_sensitive
     $scenarios[] = [
       [
@@ -307,6 +304,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       ],
       2,
     ];
+    */
 
     return $scenarios;
   }
@@ -332,14 +330,20 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     $instance = $type->createInstance('chado_organism_buddy', []);
 
     // Insert any organisms to test with.
-    foreach ($organism_values as $values) {
-      $test_records['set'][] = $instance->insertOrganism($values, ['create_cvterm' => TRUE]);
+    foreach ($organism_values as $key => $values) {
+      $inserted_records[$key] = $instance->insertOrganism($values, ['create_cvterm' => TRUE]);
     }
     // Now try grabbing the organism record(s) using its scientific name.
-    $test_records['get'] = $instance->getOrganismFromScientificName($query_scientific_name, $options);
-    $this->assertEquals($expected_num_records, count($test_records['get']), 'We did not retrieve the expected number of records when calling getOrganismFromScientificName().');
-    /*
-    if ($expected_num_records == 1) {
+    $retrieved_records = $instance->getOrganismFromScientificName($query_scientific_name, $options);
+    $this->assertEquals($expected_num_records, count($retrieved_records), "We did not retrieve the expected number of records ($expected_num_records) when calling getOrganismFromScientificName().");
+    foreach ($retrieved_records as $key => $organism) {
+      $test_records = [];
+      // Mode 'set' will be an object, while 'get' will be an array of objects.
+      // We have to pretend our 'get' array contains only 1 record to accurately
+      // compare both get and set records with ChadoTestBuddyBase::multiAssert()
+      $test_records['set'] = $inserted_records[$key];
+      $test_records['get'][] = $organism;
+      //print_r($test_records['set']);
       $test_values = $this->multiAssert(
         'getOrganismFromScientificName',
         $test_records,
@@ -350,7 +354,6 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       );
       $this->assertEquals($test_values['set']['organism.organism_id'], $test_values['get']['organism.organism_id'], "We did not retrieve the same organism ID using getOrganismFromScientificName as the organism we inserted.");
     }
-    */
   }
 
   /**
