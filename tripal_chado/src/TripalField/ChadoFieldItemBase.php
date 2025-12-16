@@ -653,22 +653,28 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         // Map for easy lookup.
         $all_fkeys = [];
         foreach ($table_schema_def['foreign keys'] as $foreign_key) {
-          // For example, a table with a type_id column, here we would store
-          // $all_fkeys['a_table'] = ['type_id' => 'cvterm_id']
-          $all_fkeys[$foreign_key['table']] = $foreign_key['columns'];
+          // We reverse the order here for easy lookup. For example,
+          // array_design table has an operator_id column which is a foreign
+          // key to contact.contact_id. We want the key to be contact_id.
+          // Similarly, for a type_id we would store cvterm_id as the key
+          // $all_fkeys['a_table'] = ['cvterm_id' => 'type_id'].
+          $all_fkeys[$foreign_key['table']] = [];
+          foreach ($foreign_key['columns'] as $base_col => $fk_col) {
+            $all_fkeys[$foreign_key['table']][$fk_col] = $base_col;
+          }
         }
 
-        if ($all_fkeys[$object_table] ?? FALSE) {
-          // If the current table is the base table, we have a direct
-          // reference to the object table, otherwise it is a linker table,
-          // and needs to also have a foreign key to the base table.
-          if ($table_name == $base_table) {
-            $linker_tables[] = [$table_name, $all_fkeys[$base_table][$base_pkey_col]];
-          }
-          else if ($all_fkeys[$object_table][$object_pkey_col] ?? FALSE) {
+        if ($all_fkeys[$object_table][$object_pkey_col] ?? FALSE) {
+          // At this point we found a foreign key to the object table.
+          // If the current table is the base table, this is a direct
+          // reference to the object table. If the current table is a
+          // linker table, then we also need to check that we also have
+          // a foreign key to the base table.
+          if ( ($table_name == $base_table) or ($all_fkeys[$base_table][$base_pkey_col] ?? FALSE)) {
             $linker_tables[] = [$table_name, $all_fkeys[$object_table][$object_pkey_col]];
           }
         }
+
       }
     }
     return $linker_tables;
