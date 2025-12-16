@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
@@ -23,6 +24,11 @@ use Drupal\tripal\Entity\TripalEntityType;
 )]
 class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "chado_source_data_type_default";
 
   /**
@@ -48,7 +54,6 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
     $settings = parent::defaultFieldSettings();
     $settings['termIdSpace'] = 'local';
     $settings['termAccession'] = 'source_data';
-    $settings['termFixed'] = FALSE;
     return $settings;
   }
 
@@ -64,18 +69,32 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function tripalTypes($field_definition)  {
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    $value['record_id'] = 0;
+    $value['sourceuri'] = '';
+    $value['sourcename'] = '';
+    $value['sourceversion'] = '';
+
+    return [$value];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function tripalTypes($field_definition) {
 
     // Create variables for easy access to settings.
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Get the property terms by using the Chado table columns they map to.
-
     $src_uri_term = self::getColumnTermId('analysis', 'sourceuri', 'data:1047');
     $src_name_term = self::getColumnTermId('analysis', 'sourcename', 'schema:name');
     $src_vers_term = self::getColumnTermId('analysis', 'sourceversion', 'IAO:0000129');
 
-    // Get property terms using Chado table columns they map to. Return the properties for this field.
+    // Get property terms using Chado table columns they map to.
+    // Return the properties for this field.
     $properties = [];
 
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
@@ -103,6 +122,7 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -110,7 +130,7 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
 
     // Get the base table for the content type.
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-    // This is a "specialty" field for a single content type
+    // This is a "specialty" field for a single content type.
     if ($base_table == 'analysis') {
       $compatible = TRUE;
     }
