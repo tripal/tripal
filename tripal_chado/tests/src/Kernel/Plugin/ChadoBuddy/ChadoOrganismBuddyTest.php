@@ -268,7 +268,24 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
-    // #6: Lookup using both abbreviation and common_name options
+    // #6: Use the case sensitive option = no matched records
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'cvterm.name' => 'subspecies',
+          'organism.infraspecific_name' => 'chadoii',
+        ],
+      ],
+      'Tripalus databasica subsp. CHADOII',
+      [
+        'case_sensitive' => TRUE,
+      ],
+      0,
+    ];
+
+    // #7: Lookup using all options: abbreviation, common_name, case_sensitive
     $scenarios[] = [
       [
         [
@@ -286,6 +303,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       [
         'check_abbreviation' => TRUE,
         'check_common_name' => TRUE,
+        'case_sensitive' => TRUE,
       ],
       2,
     ];

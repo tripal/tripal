@@ -542,7 +542,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
 
     // Check 'case_sensitive' option and pass it through to our getter.
     $lookup_options = [];
-    if ($options['case_sensitive'] ?? FALSE) {
+    if (!($options['case_sensitive'] ?? FALSE)) {
       foreach ($conditions as $key => $value) {
         $lookup_options['case_insensitive'][] = $key;
       }
