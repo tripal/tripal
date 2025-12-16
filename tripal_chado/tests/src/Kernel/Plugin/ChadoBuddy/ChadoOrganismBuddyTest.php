@@ -281,30 +281,53 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       0,
     ];
 
-    /*
     // #7: Lookup using all options: abbreviation, common_name, case_sensitive
     $scenarios[] = [
       [
         [
           'organism.genus' => 'Tripalus',
           'organism.species' => 'databasica',
-          'organism.abbreviation' => 'Wild Tripal',
+          'organism.abbreviation' => 'Tripal',
         ],
         [
           'organism.genus' => 'Tripalus',
           'organism.species' => 'chadoii',
-          'organism.common_name' => 'Wild Tripal',
+          'organism.common_name' => 'Tripal',
+        ],
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'cvterm.name' => 'varietas',
+          'organism.infraspecific_name' => 'varietum',
+          'organism.common_name' => 'Tripal',
         ],
       ],
-      'Wild Tripal',
+      'Tripal',
       [
         'check_abbreviation' => TRUE,
         'check_common_name' => TRUE,
         'case_sensitive' => TRUE,
       ],
-      2,
+      3,
     ];
-    */
+
+    // #8: Lookup the same organism using common name + abbreviation
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.common_name' => 'Tripal',
+          'organism.abbreviation' => 'Tripal',
+        ],
+      ],
+      'Tripal',
+      [
+        'check_abbreviation' => TRUE,
+        'check_common_name' => TRUE,
+      ],
+      1,
+    ];
 
     return $scenarios;
   }
@@ -343,7 +366,6 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       // compare both get and set records with ChadoTestBuddyBase::multiAssert()
       $test_records['set'] = $inserted_records[$key];
       $test_records['get'][] = $organism;
-      //print_r($test_records['set']);
       $test_values = $this->multiAssert(
         'getOrganismFromScientificName',
         $test_records,
