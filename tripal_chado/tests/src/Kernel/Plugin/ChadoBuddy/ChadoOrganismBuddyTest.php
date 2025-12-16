@@ -152,6 +152,18 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     $organism_buddy_from_scientific_name = $instance->getOrganismFromScientificName($simple_organism_name);
     $this->assertIsArray($organism_buddy_from_scientific_name, 'We did not retrieve an array for an Organism record using its scientific name.');
     $this->assertEquals(1, count($organism_buddy_from_scientific_name), 'We did not retrieve a single array for an Organism record using its scientific name.');
+
+    // TEST: Try getting the scientific name of an organism with infraspecific
+    // rank.
+    $infraspecific_organism_values = [
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+      'cvterm.name' => 'subspecies',
+      'organism.infraspecific_name' => 'chadoii',
+    ];
+    $instance->insertOrganism($infraspecific_organism_values, ['create_cvterm' => TRUE]);
+    $infraspecific_organism_name = $instance->getOrganismScientificName($infraspecific_organism_values);
+    $this->assertEquals('Tripalus databasica subsp. chadoii', $infraspecific_organism_name, 'We did not retrieve the correct organism scientific name for an organism we inserted with infraspecific rank: Tripalus databasica subsp. chadoii');
   }
 
   /**
