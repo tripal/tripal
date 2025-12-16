@@ -73,8 +73,8 @@ class ChadoSequenceChecksumTypeDefault extends ChadoFieldItemBase {
     $value = [];
 
     $value['record_id'] = 0;
-    $value['seqlen'] = 9;
-    $value['md5checksum'] = md5('AATGCGCTT');
+    $value['seqlen'] = 18;
+    $value['md5checksum'] = md5('ACCCGCATTCCGGCGCTG');
 
     return [$value];
   }

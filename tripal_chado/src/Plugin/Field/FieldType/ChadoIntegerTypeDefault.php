@@ -69,7 +69,7 @@ class ChadoIntegerTypeDefault extends ChadoFieldItemBase {
     $value = [];
 
     $value['record_id'] = 0;
-    $value['value'] = mt_rand(0, 500);
+    $value['value'] = mt_rand(-500, 500);
 
     return [$value];
   }

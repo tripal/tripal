@@ -72,7 +72,7 @@ class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
     $value = [];
 
     $value['record_id'] = 0;
-    $value['seqlen'] = 9;
+    $value['seqlen'] = 18;
 
     return [$value];
   }

@@ -75,9 +75,9 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
     $value = [];
 
     $value['record_id'] = 0;
-    $value['residues'] = 'AATGCGCTT';
-    $value['seqlen'] = 9;
-    $value['md5checksum'] = md5('AATGCGCTT');
+    $value['residues'] = 'ACCCGCATTCCGGCGCTG';
+    $value['seqlen'] = 18;
+    $value['md5checksum'] = md5('ACCCGCATTCCGGCGCTG');
 
     return [$value];
   }
