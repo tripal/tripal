@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
@@ -22,8 +23,31 @@ use Drupal\tripal\Entity\TripalEntityType;
 )]
 class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = 'chado_contact_by_role_type_default';
+
+  /**
+   * The chado table which is the object of the relationship.
+   *
+   * Note: this should be in all fields linking a base table to another
+   * main chado table (i.e. object table).
+   *
+   * @var string
+   */
   protected static $object_table = 'contact';
+
+  /**
+   * The foreign key that links the linking table to the object table.
+   *
+   * Note: this should be in all fields linking a base table to another
+   * main chado table (i.e. object table).
+   *
+   * @var string
+   */
   protected static $object_id = 'contact_id';
 
   /**
@@ -70,6 +94,30 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    $value['record_id'] = 0;
+    $value['entity_id'] = 0;
+    $value['linker_id'] = 0;
+    $value['link'] = 0;
+    $value[self::$object_id] = 0;
+
+    // Do we want to conditionally include type_id and rank?
+    $value['linker_type_id'] = mt_rand(1, 500);
+    $value['linker_rank'] = 0;
+
+    // Object table properties.
+    $value['contact_name'] = '';
+    $value['contact_description'] = '';
+    $value['contact_type'] = '';
+
+    return [$value];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function tripalTypes($field_definition) {
 
     $entity_type_id = $field_definition->getTargetEntityTypeId();
@@ -89,44 +137,44 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     $mappingObj = \Drupal::entityTypeManager()->getStorage('chado_term_mapping')->load('core_mapping');
 
     // Get the column, term and any other schema-related details.
-    // A) BASE TABLE
+    // A) BASE TABLE.
     $base_schema_def = $schemaObj->getTableDef($base_table, ['format' => 'Drupal']);
-    //    - primary key
+    // - primary key
     $base_pkey_col = $base_schema_def['primary key'];
     $terms['base_pkey'] = $terms['record_id'];
     // B) OBJECT TABLE (i.e. contact)
     $object_table = self::$object_table;
     $object_schema_def = $schemaObj->getTableDef($object_table, ['format' => 'Drupal']);
-    //    - primary key
+    // - primary key
     $object_pkey_col = $object_schema_def['primary key'];
     $terms['object_pkey'] = $terms['record_id'];
-    //    - name
+    // - name
     $terms['name'] = $mappingObj->getColumnTermId($object_table, 'name') ?: 'schema:name';
     $max_lengths['name'] = $object_schema_def['fields']['name']['size'];
-    //    - description
+    // - description
     $terms['description'] = $mappingObj->getColumnTermId($object_table, 'description') ?: 'schema:description';
     $max_lengths['description'] = $object_schema_def['fields']['description']['size'];
-    //    - contact type
+    // - contact type
     $cvterm_schema_def = $schemaObj->getTableDef('cvterm', ['format' => 'Drupal']);
     $terms['contact_type'] = $mappingObj->getColumnTermId('cvterm', 'name') ?: 'schema:additionalType';
     $max_lengths['contact_type'] = $cvterm_schema_def['fields']['name']['size'];
     // C) LINKING TABLE.
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
     $linker_schema_def = $schemaObj->getTableDef($linker_table, ['format' => 'Drupal']);
-    //    - primary key
+    // - primary key
     $linker_pkey_col = $linker_schema_def['primary key'];
     $terms['linker_pkey'] = $terms['record_id'];
-    //    - left table foreign key
+    // - left table foreign key
     $linker_left_col = self::getChadoForeignKeyColumn($linker_table, $base_table, $schemaObj);
     $terms['linker_left'] = $mappingObj->getColumnTermId($linker_table, $linker_left_col) ?: self::$record_id_term;
-    //    - right table foreign key
+    // - right table foreign key
     $terms['linker_right'] = $mappingObj->getColumnTermId($linker_table, $linker_fkey_column) ?: self::$record_id_term;
-    //    - linking type
+    // - linking type
     $terms['linker_type_id'] = $mappingObj->getColumnTermId($linker_table, 'type_id') ?: 'schema:additionalType';
     if (empty($terms['linker_type_id'])) {
       $terms['linker_type_id'] = $terms['contact_type'];
     }
-    //    - rank
+    // - rank
     $terms['linker_rank'] = $mappingObj->getColumnTermId($linker_table, 'rank') ?: 'OBCS:0000117';
 
     // We need to create a table alias for our linker table in order to ensure
@@ -136,7 +184,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     // table alias.
     $field_settings = $field_definition->getSettings();
     $term = $field_settings['termIdSpace'] . ':' . $field_settings['termAccession'];
-    $table_alias = $linker_table . '_' . preg_replace( '/[^a-z0-9]+/', '', strtolower( $term ) );
+    $table_alias = $linker_table . '_' . preg_replace('/[^a-z0-9]+/', '', strtolower($term));
     $table_mapping = [$table_alias => $linker_table];
 
     // FINALLY, THE PROPERTIES!
@@ -186,7 +234,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
       'empty_value' => 0,
     ]);
 
-    // Linker type_id
+    // Linker type_id.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_type_id', $terms['linker_type_id'], [
       'action' => 'store',
       'drupal_store' => FALSE,
@@ -195,7 +243,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
       'as' => 'linker_type_id',
     ]);
 
-    // Linker Rank
+    // Linker Rank.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_rank', $terms['linker_rank'], [
       'action' => 'store',
       'drupal_store' => FALSE,
@@ -205,7 +253,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     ]);
 
     // The object table, the destination table of the linker table
-    // The contact name
+    // The contact name.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $terms['name'], $max_lengths['name'], [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -214,7 +262,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
       'as' => 'contact_name',
     ]);
 
-    // The contact description
+    // The contact description.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_description', $terms['description'], $max_lengths['description'], [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -223,12 +271,12 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
       'as' => 'contact_description',
     ]);
 
-    // The type of contact
+    // The type of contact.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_type', $terms['contact_type'], $max_lengths['contact_type'], [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $table_alias . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
+      . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
       'table_alias_mapping' => $table_mapping,
       'as' => 'contact_type',
     ]);
@@ -243,6 +291,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
    * `type_id` property a default value.
    *
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\TripalFieldItemBase::tripalValuesTemplate()
    */
   public function tripalValuesTemplate($field_definition, $default_value = NULL) {
@@ -271,6 +320,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -300,9 +350,10 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     }
 
     // Only compatible if there is a linker and it has a type_id.
-    if ($has_linker AND $has_type_id) {
+    if ($has_linker and $has_type_id) {
       return TRUE;
     }
     return FALSE;
   }
+
 }

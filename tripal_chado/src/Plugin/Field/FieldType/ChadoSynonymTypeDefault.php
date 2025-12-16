@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
@@ -24,6 +25,11 @@ use Drupal\core\Form\FormStateInterface;
 )]
 class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "chado_synonym_type_default";
 
   /**
@@ -52,7 +58,6 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
     return $settings;
   }
 
-
   /**
    * {@inheritdoc}
    */
@@ -63,18 +68,19 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
     return $settings;
   }
 
-
   /**
    * {@inheritdoc}
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = parent::storageSettingsForm($form, $form_state, $has_data);
-    $elements['storage_plugin_settings']['base_table']['#element_validate'] = [[static::class, 'storageSettingsFormValidate']];
+    $elements['storage_plugin_settings']['base_table']['#element_validate'] = [
+      [static::class, 'storageSettingsFormValidate'],
+    ];
     return $elements;
   }
 
   /**
-   * Form element validation handler
+   * Form element validation handler.
    *
    * @param array $form
    *   The form where the settings form is being included in.
@@ -82,7 +88,7 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
    *   The form state of the (entire) configuration form.
    */
   public static function storageSettingsFormValidate(array $form, FormStateInterface $form_state) {
-    // For Drupal ≥10.2 our values are now in the subform
+    // For Drupal ≥10.2 our values are now in the subform.
     $drupal_10_2 = $form_state->getValue(['field_storage']);
     if ($drupal_10_2) {
       $settings = $form_state->getValue(['field_storage', 'subform', 'settings']);
@@ -117,6 +123,24 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    $value['record_id'] = 0;
+    $value['linker_pkey_id'] = 0;
+    $value['linker_base_fkey_id'] = 0;
+    $value['linker_synonym_fkey_id'] = 0;
+    $value['is_current'] = TRUE;
+    $value['is_internal'] = FALSE;
+    $value['linker_pub_id'] = 0;
+    $value['name'] = 'fred';
+    $value['synonym_type'] = 'subspecies';
+
+    return [$value];
+  }
 
   /**
    * {@inheritdoc}
@@ -147,14 +171,13 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
 
     // Create variables to store the terms for the properties. We can use terms
     // from Chado tables if appropriate.
-
-    // Synonym table fields
+    // Synonym table fields.
     $syn_name_term = self::getColumnTermId('synonym', 'name', 'schema:name');
     $syn_name_len = $synonym_table_def['fields']['name']['size'];
     $syn_type_id_term = self::getColumnTermId('synonym', 'type_id', 'schema:additionalType');
     $syn_type_name_len = $cvterm_table_def['fields']['name']['size'];
 
-    // Synonym linker table fields
+    // Synonym linker table fields.
     $linker_fkey_id_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
     $linker_synonym_id_term = self::getColumnTermId($linker_table, 'synonym_id', 'schema:alternateName');
     $linker_is_current_term = self::getColumnTermId($linker_table, 'is_current', 'local:is_current');
@@ -173,42 +196,42 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
     //
     // Properties corresponding to the synonym linker table.
     //
-    // E.g. feature_synonym.feature_synonym_id
+    // E.g. feature_synonym.feature_synonym_id.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_pkey_id', $linker_synonym_id_term, [
       'action' => 'store_pkey',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_table_pkey,
     ]);
-    // E.g. feature.feature_id => feature_synonym.feature_id
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_base_fkey_id' , $linker_fkey_id_term, [
+    // E.g. feature.feature_id => feature_synonym.feature_id.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_base_fkey_id', $linker_fkey_id_term, [
       'action' => 'store_link',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_fkey_column,
     ]);
-    // E.g. feature_synonym.synonym_id
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_synonym_fkey_id' , $linker_fkey_id_term, [
+    // E.g. feature_synonym.synonym_id.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_synonym_fkey_id', $linker_fkey_id_term, [
       'action' => 'store',
       'drupal_store' => TRUE,
       'path' => $linker_table . '.synonym_id',
       'delete_if_empty' => TRUE,
       'empty_value' => 0,
     ]);
-    // E.g. feature_synonym.is_current
+    // E.g. feature_synonym.is_current.
     $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'is_current', $linker_is_current_term, [
       'action' => 'store',
       'path' => $linker_table . '.is_current',
       'drupal_store' => FALSE,
-      'empty_value' => TRUE
+      'empty_value' => TRUE,
     ]);
-    // E.g. feature_synonym.is_internal
+    // E.g. feature_synonym.is_internal.
     $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'is_internal', $linker_is_internal_term, [
       'action' => 'store',
       'path' => $linker_table . '.is_internal',
       'drupal_store' => FALSE,
-      'empty_value' => FALSE
+      'empty_value' => FALSE,
     ]);
-    // E.g. feature_synonym.pub_id
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_pub_id' , $linker_pub_id_term, [
+    // E.g. feature_synonym.pub_id.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_pub_id', $linker_pub_id_term, [
       'action' => 'store',
       'path' => $linker_table . '.pub_id',
       'drupal_store' => FALSE,
@@ -217,14 +240,16 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
     //
     // Properties corresponding to the synonym table.
     //
-    // E.g. feature_synonym.synonym_id>synonym.synonym_id : synonym.name as synonym_name
+    // E.g. feature_synonym.synonym_id>synonym.synonym_id
+    // synonym.name as synonym_name.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'name', $syn_name_term, $syn_name_len, [
       'action' => 'read_value',
       'path' => $linker_table . '.synonym_id>synonym.synonym_id;name',
       'as' => 'synonym_name',
       'drupal_store' => FALSE,
     ]);
-    // E.g. feature_synonym.synonym_id>synonym.synonym_id;synonym.type_id>cvterm.cvterm_id : cvterm.name as synonym_type
+    // E.g. feature_synonym.synonym_id>synonym.synonym_id;synonym.type_id>cvterm.cvterm_id
+    // cvterm.name as synonym_type.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'synonym_type', $syn_type_id_term, $syn_type_name_len, [
       'action' => 'read_value',
       'path' => $linker_table . '.synonym_id>synonym.synonym_id;synonym.type_id>cvterm.cvterm_id;name',
@@ -237,6 +262,7 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
