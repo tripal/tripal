@@ -2,7 +2,11 @@
 
 namespace Drupal\tripal\Commands;
 
+use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\tripal\Services\SyncTripalFieldStorage;
+use Drupal\tripal\Services\TripalEntityTypeCollection;
+use Drupal\tripal\Services\TripalFieldCollection;
 use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
 
@@ -14,15 +18,30 @@ class TripalCommands extends DrushCommands {
   use StringTranslationTrait;
 
   /**
+   * TripalCommands Drush command class constructor.
+   *
+   * This is used to inject the services used by the various commands.
+   */
+  public function __construct(
+    protected AccountSwitcherInterface $accountSwitcherService,
+    protected TripalEntityTypeCollection $entityTypeCollectionService,
+    protected TripalFieldCollection $fieldCollectionService,
+    protected SyncTripalFieldStorage $syncFieldStorageService,
+  ) {
+    // Parent currently doesn't do anything here.
+    parent::__construct();
+  }
+
+  /**
    * Helper function to set the proper user when running the drush command.
    *
-   * @param string $uname
+   * @param string|null $uname
    *   The name of the user to be switched to.
    *
    * @return bool
    *   True if successful, false if not.
    */
-  protected function switchUser(string $uname): bool {
+  protected function switchUser(?string $uname): bool {
     if (!$uname) {
       $this->logger->error($this->t('The --username argument is required.'));
       return FALSE;
@@ -33,7 +52,7 @@ class TripalCommands extends DrushCommands {
       $this->logger->error($this->t('The --username argument does not specify a valid user.'));
       return FALSE;
     }
-    \Drupal::service('account_switcher')->switchTo($user);
+    $this->accountSwitcherService->switchTo($user);
     return TRUE;
   }
 
@@ -47,7 +66,7 @@ class TripalCommands extends DrushCommands {
   #[CLI\Option(name: 'parallel', description: 'Set to 1 if the job is allowed to run in parallel with other Tripal jobs.')]
   #[CLI\Option(name: 'job_id', description: 'The numeric ID of the job. If no job ID is provided then all of the jobs waiting in the queue will be run.')]
   #[CLI\Option(name: 'max_jobs', description: 'The maximum number of jobs that should be run concurrently. If -1 then unlimited.')]
-  #[CLI\Option(name: 'single', description: 'Ensures only a single job is run rather then the entire queue.')]
+  #[CLI\Option(name: 'single', description: 'Ensures only a single job is run rather than the entire queue.')]
   #[CLI\Option(name: 'username', description: 'The name of the user for whom the job run is associated.')]
   #[CLI\Usage(
     name: 'drush trp-run-jobs --username=[USERNAME]',
@@ -78,7 +97,7 @@ class TripalCommands extends DrushCommands {
     }
 
     $this->output()->writeln("\n" . date('Y-m-d H:i:s'));
-    $this->output()->writeln('Tripal Job Launcher' . $parallel ? ' (in parallel)' : '');
+    $this->output()->writeln('Tripal Job Launcher' . ($parallel ? ' (in parallel)' : ''));
     if ($max_jobs !== -1) {
       $this->output()->writeln("Maximum number of jobs is " . $max_jobs);
     }
@@ -97,7 +116,7 @@ class TripalCommands extends DrushCommands {
   #[CLI\Option(name: 'parallel', description: 'Set to 1 if the job is allowed to run in parallel with other Tripal jobs.')]
   #[CLI\Option(name: 'job_id', description: 'The numeric ID of the job. If no job ID is provided then all of the jobs waiting in the queue will be run.')]
   #[CLI\Option(name: 'max_jobs', description: 'The maximum number of jobs that should be run concurrently. If -1 then unlimited.')]
-  #[CLI\Option(name: 'single', description: 'Ensures only a single job is run rather then the entire queue.')]
+  #[CLI\Option(name: 'single', description: 'Ensures only a single job is run rather than the entire queue.')]
   #[CLI\Option(name: 'username', description: 'The name of the user for whom the job run is associated.')]
   #[CLI\Usage(
     name: 'drush trp-run-job --job_id=[JOB_ID] --username=[USERNAME]',
@@ -131,7 +150,7 @@ class TripalCommands extends DrushCommands {
     $new_job_id = tripal_rerun_job($job_id, FALSE);
 
     $this->output()->writeln("\n" . date('Y-m-d H:i:s'));
-    $this->output()->writeln('Tripal Job Launcher' . $parallel ? ' (in parallel)' : '');
+    $this->output()->writeln('Tripal Job Launcher' . ($parallel ? ' (in parallel)' : ''));
     $this->output()->writeln("Running as user '$username'");
     $this->output()->writeln("-------------------");
     tripal_launch_job($parallel, $new_job_id, $max_jobs, $single);
@@ -139,14 +158,14 @@ class TripalCommands extends DrushCommands {
 
   /**
    * Returns the current version of Tripal that is installed.
-   *
-   * @command tripal:version
-   * @aliases trp-version
-   * @usage drush trp-version
-   *   Returns the current Tripal version string.
    */
+  #[CLI\Command(name: 'tripal:version', aliases: ['trp-version'])]
+  #[CLI\Usage(
+    name: 'drush trp-version',
+    description: 'Returns the current Tripal version string.',
+  )]
   public function tripalVersion() {
-    // Don't use logger here so output is plain since this
+    // Don't use logger here so that output is plain since this
     // could be used in a script.
     $this->output()->writeln(tripal_version());
   }
@@ -181,10 +200,8 @@ class TripalCommands extends DrushCommands {
       return;
     }
 
-    $content_type_setup = \Drupal::service('tripal.tripalentitytype_collection');
-
     // Check that the id supplied is valid.
-    $collections = $content_type_setup->getTypeCollections();
+    $collections = $this->entityTypeCollectionService->getTypeCollections();
     if (!array_key_exists($options['collection_id'], $collections)) {
       $this->logger->notice($this->t('The following collection identifiers are defined:'));
       foreach ($collections as $id => $details) {
@@ -199,11 +216,10 @@ class TripalCommands extends DrushCommands {
     $chosen_collection_ids = [$options['collection_id']];
 
     // Import the content types.
-    $content_type_setup->install($chosen_collection_ids);
+    $this->entityTypeCollectionService->install($chosen_collection_ids);
 
     // Import the fields.
-    $fields = \Drupal::service('tripal.tripalfield_collection');
-    $fields->install($chosen_collection_ids);
+    $this->fieldCollectionService->install($chosen_collection_ids);
 
   }
 
@@ -217,8 +233,7 @@ class TripalCommands extends DrushCommands {
 
     $this->logger->notice($this->t("Checking Tripal Entity types for discrepancies between field schema definitions and the underlying Drupal tables."));
 
-    $columns_added = \Drupal::service('tripal.sync_tripal_field_storage')
-      ->resolveDifferences();
+    $columns_added = $this->syncFieldStorageService->resolveDifferences();
 
     foreach ($columns_added as $field_name => $field_differences) {
       $this->logger->notice($this->t('@fn needed @fd difference(s) fixed.',
