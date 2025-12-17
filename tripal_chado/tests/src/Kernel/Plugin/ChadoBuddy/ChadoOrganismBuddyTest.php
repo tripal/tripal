@@ -168,7 +168,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     // grab the scientific name again.
     $instance->updateOrganism(
       [
-        'cvterm.name' => 'supspecies',
+        'cvterm.name' => 'subspecies',
       ],
       $infraspecific_organism_values,
       ['create_cvterm' => TRUE]
