@@ -1290,15 +1290,48 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   The chado schema definition.
    *
    * @return array
-   *   The the foreign key definition, or an empty array if none exists.
+   *   The foreign key definition, or an empty array if none exists.
    */
   public static function getChadoForeignKeyDef(string $left_table, ?string $right_table = NULL, ?ChadoSchema $schema = NULL): array {
+    $fk_def = [];
     $table_def = self::getChadoTableDef($left_table, $schema);
-    $definition = $table_def['foreign keys'] ?? [];
+    $definitions = $table_def['foreign keys'] ?? [];
     if ($right_table) {
-      $definition = $definition[$right_table] ?? [];
+      foreach ($definitions as $definition) {
+        if ($definition['table'] == $right_table) {
+          $fk_def = $definition;
+          break;
+        }
+      }
     }
-    return $definition;
+    else {
+      $fk_def = $definitions;
+    }
+    return $fk_def;
+  }
+
+  /**
+   * Get the column with a foreign key definition for a chado table.
+   *
+   * @param string $left_table
+   *   The name of the table the foreign key resides in. E.g. 'feature' for
+   *   the feature.type_id => cvterm.cvterm_id foreign key.
+   * @param string $right_table
+   *   The name of the table the foreign key refers to. For the example
+   *   above it would be cvterm. If NULL, then all foreign keys are returned.
+   * @param ?Drupal\tripal_chado\Database\ChadoSchema $schema
+   *   The chado schema definition.
+   *
+   * @return string
+   *   The name of the foreign key column, or an empty string if none exists.
+   */
+  public static function getChadoForeignKeyColumn(string $left_table, string $right_table, ?ChadoSchema $schema = NULL): string {
+    $fk_def = self::getChadoForeignKeyDef($left_table, $right_table, $schema);
+    $column = '';
+    if ($fk_def['columns'] ?? NULL) {
+      $column = reset($fk_def['columns']);
+    }
+    return $column;
   }
 
 }
