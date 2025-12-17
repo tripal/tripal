@@ -1,16 +1,18 @@
 <?php
+
 namespace Drupal\tripal_chado\Commands;
 
+use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
 
 /**
- * Drush commands
+ * Drush commands.
  */
 class ChadoManageCommands extends DrushCommands {
 
-use StringTranslationTrait;
+  use StringTranslationTrait;
 
   /**
    * Install the Chado schema.
@@ -26,11 +28,11 @@ use StringTranslationTrait;
    */
   public function installChado($options = ['schema-name' => 'chado', 'chado-version' => 1.3]) {
 
-    $this->output()->writeln('Installing chado version ' . $options['chado-version'] . ' in a schema named "' . $options['schema-name']. '"');
+    $this->output()->writeln('Installing chado version ' . $options['chado-version'] . ' in a schema named "' . $options['schema-name'] . '"');
 
     $installer = \Drupal::service('tripal_chado.installer');
     $installer->setParameters([
-      'output_schemas' => [  $options['schema-name']  ],
+      'output_schemas' => [$options['schema-name']],
       'version' => $options['chado-version'],
     ]);
     if ($installer->performTask()) {
@@ -66,7 +68,7 @@ use StringTranslationTrait;
       'input_schemas' => [$options['schema-name']],
     ]);
 
-    // Look up the install ID
+    // Look up the install ID.
     $migrator->lookupInstallID();
 
     // Determine what work is to be done and format into a table.
@@ -104,7 +106,8 @@ use StringTranslationTrait;
         $success = $migrator->performTask();
         if ($success) {
           $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully migrated to the most recent version.'));
-        } else {
+        }
+        else {
           throw new \Exception("Unable to migrate chado in schema '" . $options['schema-name'] . "'");
         }
       }
@@ -147,7 +150,8 @@ use StringTranslationTrait;
    * @aliases trp-prep-chado
    * @options schema-name
    *   The name of the chado schema to prepare. Only a single chado schema
-   *   should be prepared with Tripal and this will become the default chado schema.
+   *   should be prepared with Tripal and this will become the default
+   *   chado schema.
    * @usage drush trp-prep-chado --schema-name="chado"
    *   Prepare the Tripal Chado system and set the schema named "chado" as the
    *   default Chado instance to use with Tripal.
@@ -184,10 +188,6 @@ use StringTranslationTrait;
   /**
    * Publish Chado Records as Tripal Content.
    *
-   * @command tripal-chado:publish
-   * @aliases trp-chado-publish
-   * @options schema-name
-   *   The name of the chado schema to use.
    * @param string $bundle
    *   The id of the TripalContentType you would like to publish content for.
    * @param array $options
@@ -196,7 +196,12 @@ use StringTranslationTrait;
    *   'datastore' => 'chado_storage'
    *   'migration-file' => ''
    *   'lenient-migration' => FALSE
-   *   'batch-size' => '1000'
+   *   'batch-size' => '1000'.
+   *
+   * @command tripal-chado:publish
+   * @aliases trp-chado-publish
+   * @options schema-name
+   *   The name of the chado schema to use.
    * @usage drush trp-chado-publish organism
    *   Submits a standard chado publish job for the organism content type which
    *   publishes records in the default chado schema organism table.
@@ -204,13 +209,17 @@ use StringTranslationTrait;
    *   Submits a chado publish job for the organism content type which
    *   publishes records in the prod.organism table.
    */
-  public function publish(string $bundle, array $options = [
-    'schema-name' => '',
-    'datastore' => 'chado_storage',
-    'batch-size' => '1000',
-    'migration-file' => '',
-    'lenient-migration' => FALSE,
-    'republish' => FALSE]) {
+  public function publish(
+    string $bundle,
+    array $options = [
+      'schema-name' => '',
+      'datastore' => 'chado_storage',
+      'batch-size' => '1000',
+      'migration-file' => '',
+      'lenient-migration' => FALSE,
+      'republish' => FALSE,
+    ],
+  ) {
 
     if ($options['migration-file'] and !file_exists($options['migration-file'])) {
       $this->output()->writeln('The specified file "' . $options['migration-file'] . '" does not exist');
@@ -235,7 +244,7 @@ use StringTranslationTrait;
     ];
 
     $datastore = $options['datastore'];
-    \Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager::runTripalJob(
+    TripalBackendPublishManager::runTripalJob(
        $bundle, $datastore, $values);
   }
 
@@ -270,7 +279,8 @@ use StringTranslationTrait;
       'schema-name' => '',
       'datastore' => 'chado_storage',
       'all' => FALSE,
-    ]) {
+    ],
+  ) {
 
     // If schema not supplied then grab default chado schema.
     if (!$options['schema-name']) {
@@ -284,12 +294,14 @@ use StringTranslationTrait;
     ];
 
     $datastore = $options['datastore'];
-    \Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager::runTripalJob(
+    TripalBackendPublishManager::runTripalJob(
       $bundle, $datastore, $values);
   }
 
   /**
-   * Add a Chado schema to Tripal. Does not set this schema as the default, as
+   * Add a Chado schema to Tripal.
+   *
+   * This command does not set this schema as the default, as
    * there can be more than one Chado schema added to Tripal.
    * See the command tripal-chado:set_default for this functionality.
    *
@@ -299,7 +311,6 @@ use StringTranslationTrait;
    *   The name of the chado schema to add to Tripal.
    * @usage drush trp-add-chado --schema-name="chado"
    *   Adds the specified Chado to Tripal.
-   *
    */
   public function addToTripal($options = ['schema-name' => 'chado']) {
 
@@ -308,7 +319,7 @@ use StringTranslationTrait;
     $integrator = \Drupal::service('tripal_chado.integrator');
     $integrator->setParameters(
       [
-        'input_schemas' => [$options['schema-name']]
+        'input_schemas' => [$options['schema-name']],
       ]
     );
 
@@ -318,8 +329,9 @@ use StringTranslationTrait;
   }
 
   /**
-   * Sets a specified Chado schema to be the default in Tripal. Only one
-   * schema may be set to default at a time.
+   * Sets a specified Chado schema to be the default in Tripal.
+   *
+   * Only one schema may be set to default at a time.
    *
    * @command tripal-chado:set_default_schema
    * @aliases trp-set-default
@@ -327,7 +339,6 @@ use StringTranslationTrait;
    *   The name of the chado schema to be set to default in Tripal.
    * @usage drush trp-set-default --schema-name="chado"
    *   Sets the specified Chado to be default in Tripal.
-   *
    */
   public function setDefault($options = ['schema-name' => 'chado']) {
 
@@ -336,10 +347,9 @@ use StringTranslationTrait;
     // Ensure that the provided schema exists.
     $tripaldbx = \Drupal::service('tripal.dbx');
 
-   if ($tripaldbx->schemaExists($options['schema-name'])) {
+    if ($tripaldbx->schemaExists($options['schema-name'])) {
       $config = \Drupal::service('config.factory')
-        ->getEditable('tripal_chado.settings')
-      ;
+        ->getEditable('tripal_chado.settings');
       $success = $config->set('default_schema', $options['schema-name'])->save();
 
       if ($success) {

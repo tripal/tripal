@@ -6,7 +6,7 @@ use Drush\Commands\DrushCommands;
 use Drush\Drush;
 
 /**
- * Drush commands
+ * Drush commands.
  */
 class TripalCommands extends DrushCommands {
 
@@ -49,8 +49,15 @@ class TripalCommands extends DrushCommands {
    *   Executes a job, using the provided job ID and associates the run with
    *   the provided user.
    */
-  public function runJobs($options = ['username' => NULL, 'job_id' => NULL,
-    'parallel' => FALSE, 'max_jobs' => -1, 'single' => 0]) {
+  public function runJobs(
+    $options = [
+      'username' => NULL,
+      'job_id' => NULL,
+      'parallel' => FALSE,
+      'max_jobs' => -1,
+      'single' => 0,
+    ],
+  ) {
 
     $parallel = $options['parallel'];
     $job_id = $options['job_id'];
@@ -98,8 +105,15 @@ class TripalCommands extends DrushCommands {
    * @usage drush trp-run-job --job_id=[JOB_ID] --username=[USERNAME]
    *   Re-runs a job by first resubmitting it then executing it.
    */
-  public function rerunJob($options = ['username' => NULL, 'job_id' => NULL,
-    'parallel' => FALSE, 'max_jobs' => -1, 'single' => 0]) {
+  public function rerunJob(
+    $options = [
+      'username' => NULL,
+      'job_id' => NULL,
+      'parallel' => FALSE,
+      'max_jobs' => -1,
+      'single' => 0,
+    ],
+  ) {
 
     $parallel = $options['parallel'];
     $job_id = $options['job_id'];
@@ -131,7 +145,7 @@ class TripalCommands extends DrushCommands {
   }
 
   /**
-   * Returns the current version of Tripal that is installed
+   * Returns the current version of Tripal that is installed.
    *
    * @command tripal:version
    * @aliases trp-version
@@ -143,19 +157,22 @@ class TripalCommands extends DrushCommands {
   }
 
   /**
-   * Imports a collection of Tripal Content Types and associated fields
-   * for a specific collection id.
+   * Imports a collection of Tripal Content Types and associated fields.
+   *
+   * Requires specifying a username and a specific collection id.
    *
    * @command tripal:trp-import-types
    * @aliases trp-import-types
    * @options collection_id
-   *   The id specified in the YAML file for the particular TripalEntityType-Collection
-   *   you would like to import. Note: fields will also be added automatically if the
+   *   The id specified in the YAML file for the particular
+   *   TripalEntityType-Collection you would like to import.
+   *   Note: fields will also be added automatically if the
    *   TripalField-Collection YAML file has the same id.
    * @options username
    *   The name of the user for whom the content types created are associated.
    * @usage drush trp-import-types --username=[USERNAME] --collection_id=genomic_chado
-   *   Runs a job importing the genomic content types focused on a Chado backend.
+   *   Runs a job importing the genomic content types focused on
+   *   a Chado backend.
    */
   public function tripalImportContentTypes($options = ['username' => NULL, 'collection_id' => NULL]) {
 
@@ -168,20 +185,19 @@ class TripalCommands extends DrushCommands {
 
     $content_type_setup = \Drupal::service('tripal.tripalentitytype_collection');
 
-
     // Check that the id supplied is valid.
     $collections = $content_type_setup->getTypeCollections();
     if (!array_key_exists($options['collection_id'], $collections)) {
       Drush::logger()->notice('The following are the found collection ids:');
-      foreach($collections as $id => $details) {
+      foreach ($collections as $id => $details) {
         Drush::logger()->notice('  - ' . $id . ' (' . $details['description'] . ')');
       }
       throw new \Exception('The collection ID you provided was not valid. Please try again with one of the above listed ids (e.g. general_chado).');
     }
 
-    $chosen_collection_ids = [ $options['collection_id'] ];
+    $chosen_collection_ids = [$options['collection_id']];
 
-    // Import the content types
+    // Import the content types.
     $content_type_setup->install($chosen_collection_ids);
 
     // Import the fields.
@@ -215,4 +231,5 @@ class TripalCommands extends DrushCommands {
       $this->output()->writeln("\nNo discrepancies found.\n");
     }
   }
+
 }
