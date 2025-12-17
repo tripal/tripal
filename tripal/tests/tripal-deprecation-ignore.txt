@@ -26,3 +26,9 @@
 # Deprecation: devel_requirements without a #[LegacyRequirementsHook] attribute is deprecated in drupal:11.3.0 and removed in drupal:13.0.0.
 # Example test that triggers this: EntityAccessTest
 %without a #\[LegacyRequirementsHook\] attribute is deprecated%
+
+# Module: DrushCommands (Drupal 11.1 only)
+# Location: vendor/consolidation/annotated-command/src/State/SavableState.php:11
+# Deprecation: Method "Consolidation\AnnotatedCommand\State\SavableState::currentState()" might add "State" as a native return type declaration in the future. Do the same in implementation "Drush\Commands\DrushCommands" now to avoid errors or add an explicit @return annotation to suppress this message.
+# Example test that triggers this: testDrushMviewPopulate
+%Method "Consolidation\\AnnotatedCommand\\State\\SavableState::currentState\(\)" might add "State"%
