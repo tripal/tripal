@@ -445,15 +445,20 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *   table+dot+column name, values are for that table+column.
    * @param array $valid_tables
    *   An array listing which tables should have keys returned.
+   * @param array $options
+   *   Associative array of options.
+   *   The only supported option is 'strict'. If after subsetting there are no
+   *   values left, and this option is set to TRUE, then an exception is thrown.
+   *   If FALSE, returns an empty array. Defaults to TRUE.
    *
    * @return array
    *   The subset of passed $user_values with table prefixes
    *   present in the $valid_tables array.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If after subsetting there is nothing left.
+   *   If after subsetting there is nothing left and 'strict' option is TRUE.
    */
-  protected function subsetInput(array $user_values, array $valid_tables) {
+  protected function subsetInput(array $user_values, array $valid_tables, array $options = []) {
     $subset = [];
     foreach ($user_values as $key => $value) {
       $parts = explode('.', $key, 2);
@@ -461,7 +466,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
         $subset[$key] = $value;
       }
     }
-    if (!$subset) {
+    if (!$subset && (array_key_exists('strict', $options) ? $options['strict'] : TRUE)) {
       $calling_function = debug_backtrace()[1]['function'];
       throw new ChadoBuddyException("ChadoBuddy $calling_function error, no valid values were specified for tables: "
         . implode(', ', $valid_tables));

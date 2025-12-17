@@ -154,16 +154,28 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     $this->assertEquals(1, count($organism_buddy_from_scientific_name), 'We did not retrieve a single array for an Organism record using its scientific name.');
 
     // TEST: Try getting the scientific name of an organism with infraspecific
-    // rank.
+    // name, but no rank.
     $infraspecific_organism_values = [
       'organism.genus' => 'Tripalus',
       'organism.species' => 'databasica',
-      'cvterm.name' => 'subspecies',
       'organism.infraspecific_name' => 'chadoii',
     ];
-    $instance->insertOrganism($infraspecific_organism_values, ['create_cvterm' => TRUE]);
+    $instance->insertOrganism($infraspecific_organism_values);
     $infraspecific_organism_name = $instance->getOrganismScientificName($infraspecific_organism_values);
-    $this->assertEquals('Tripalus databasica subsp. chadoii', $infraspecific_organism_name, 'We did not retrieve the correct organism scientific name for an organism we inserted with infraspecific rank: Tripalus databasica subsp. chadoii');
+    $this->assertEquals('Tripalus databasica chadoii', $infraspecific_organism_name, 'We did not retrieve the correct organism scientific name for an organism we inserted with an infraspecific name: Tripalus databasica chadoii');
+
+    // TEST: Update our organism with infraspecific name to have a rank, then
+    // grab the scientific name again.
+    $instance->updateOrganism(
+      [
+        'cvterm.name' => 'supspecies',
+      ],
+      $infraspecific_organism_values,
+      ['create_cvterm' => TRUE]
+    );
+    $infraspecific_rank_organism_name = $instance->getOrganismScientificName($infraspecific_organism_values);
+    $this->assertEquals('Tripalus databasica subsp. chadoii', $infraspecific_rank_organism_name, 'We did not retrieve the correct organism scientific name for an organism we inserted with infraspecific rank: Tripalus databasica subsp. chadoii');
+
   }
 
   /**
