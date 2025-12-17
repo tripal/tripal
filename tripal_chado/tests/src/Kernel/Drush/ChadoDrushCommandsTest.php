@@ -82,8 +82,7 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
       });
 
     // An instance of the chado drush command class.
-    $this->drush_command = \Drupal::service('tripal_chado.chadomanagecommands');
-#    $this->drush_command = new ChadoManageCommands();
+    $this->drush_command = new ChadoManageCommands();
     $this->drush_command->setLogger($mock_logger);
 
   }
