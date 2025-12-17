@@ -175,7 +175,139 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     );
     $infraspecific_rank_organism_name = $instance->getOrganismScientificName($infraspecific_organism_values);
     $this->assertEquals('Tripalus databasica subsp. chadoii', $infraspecific_rank_organism_name, 'We did not retrieve the correct organism scientific name for an organism we inserted with infraspecific rank: Tripalus databasica subsp. chadoii');
+  }
 
+  /**
+   * Data Provider: Trigger exceptions in ChadoOrganismBuddy methods.
+   *
+   * @return array
+   *   An array of test scenarios, each containing:
+   *   - method_name: The ChadoOrganismBuddy method to call.
+   *   - method_input: The input array to give to the desired method. Depending
+   *     on the method, this can include an array of values for insert, array of
+   *     conditions for lookup, or both. It can also include an array of
+   *     options, though not required.
+   *   - expected_exception_message: The expected exception message.
+   */
+  public static function provideOrganismBuddyExceptionScenarios() {
+    $scenarios = [];
+
+    /*
+     * @todo Figure out how to trigger the following cases:
+     * - ChadoBuddy getOrganism database error
+     * - ChadoBuddy insertOrganism database error
+     * - ChadoBuddy updateOrganism database error
+     */
+
+    // #0: insertOrganism() when a record with these values already exists.
+    $scenarios[] = [
+      'insertOrganism',
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+      ],
+      "ChadoBuddy insertOrganism error, more than one record (2) was retrieved, only one was expected",
+    ];
+
+    // #1: updateOrganism() finds more than one organism record that matches.
+    $scenarios[] = [
+      'updateOrganism',
+      [
+        [
+          'organism.common_name' => 'Tripal',
+        ],
+        [
+          'organism.abbreviation' => 'Trp',
+        ],
+      ],
+      "ChadoBuddy updateOrganism error, more than one record matched the conditions specified:",
+    ];
+
+    // #2: upsertOrganism() finds more than one organism record that matches.
+    $scenarios[] = [
+      'upsertOrganism',
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.abbreviation' => 'Trp',
+        ],
+      ],
+      "ChadoBuddy upsertOrganism error, more than one record matched the specified values:",
+    ];
+
+    // #3: getOrganismScientificName() does not find a matching organism.
+    $scenarios[] = [
+      'getOrganismScientificName',
+      [
+        [
+          'organism.genus' => 'NoGenus',
+          'organism.species' => 'NoSpecies',
+        ],
+      ],
+      "ChadoBuddy getOrganismScientificName error, could not find an organism record that matches the specified conditions:",
+    ];
+
+    // #4: getOrganismScientificName() finds multiple matching organisms.
+    $scenarios[] = [
+      'getOrganismScientificName',
+      [
+        [
+          'organism.abbreviation' => 'Trp',
+        ],
+      ],
+      "ChadoBuddy getOrganismScientificName error, more than one organism record matches the specified conditions:",
+    ];
+
+    return $scenarios;
+  }
+
+  /**
+   * Test method to trigger exceptions in ChadoOrganismBuddy class.
+   *
+   * @param string $method_name
+   *   The ChadoOrganismBuddy method to call.
+   * @param array $method_input
+   *   The input array to give to the desired method. Depending on the method,
+   *   this can include an array of values for insert, array of conditions for
+   *   lookup, or both. It can also include an array of options, though not
+   *   required.
+   * @param string $expected_exception_message
+   *   The expected exception message.
+   *
+   * @dataProvider provideOrganismBuddyExceptionScenarios
+   */
+  #[DataProvider('provideOrganismBuddyExceptionScenarios')]
+  public function testOrganismBuddyExceptionScenarios(string $method_name, array $method_input, string $expected_exception_message) {
+    // Insert our organisms needed by our test scenarios.
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $instance = $type->createInstance('chado_organism_buddy', []);
+    $instance->insertOrganism([
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+      'organism.abbreviation' => 'Trp',
+    ]);
+    $instance->insertOrganism([
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+      'organism.infraspecific_name' => 'chadoii',
+      'cvterm.name' => 'subspecies',
+      'organism.abbreviation' => 'Trp',
+    ]);
+
+    // Now call the method for this scenario.
+    try {
+      $results = $instance->$method_name(...$method_input);
+      $this->fail("Did not receive an expected exception when calling $method_name()");
+    }
+    catch (\Exception $e) {
+      $this->assertStringContainsString(
+        $expected_exception_message,
+        $e->getMessage(),
+        "Did not receive expected exception message when calling $method_name()",
+      );
+    }
   }
 
   /**

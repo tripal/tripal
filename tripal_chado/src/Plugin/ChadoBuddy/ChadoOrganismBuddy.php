@@ -521,9 +521,6 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   (2) if the select values return multiple records, then we return an
    *     array of ChadoBuddyRecords describing the results.
    *   (3) if there are no results then we return an empty array.
-   *
-   * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If an error is encountered.
    */
   public function getOrganismFromScientificName(string $scientific_name, array $options = []) {
     $buddies = [];
