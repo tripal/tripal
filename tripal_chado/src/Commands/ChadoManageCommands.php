@@ -368,7 +368,7 @@ class ChadoManageCommands extends DrushCommands {
    * @param string|null $view
    *   The name of a materialized view, required unless --all or --list is used.
    * @param array $options
-   *   Optional settings.
+   *   Options passed on the drush command line.
    *
    * @return void
    *   No return value.
