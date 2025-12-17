@@ -254,7 +254,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $default_linker_column =  $storage_settings['linker_fkey_column'] ?? '';
     $default_linker_table_and_column = $storage_settings['linker_table_and_column'] ?? '';
     if (!$default_linker_table_and_column and $default_linker_table and $default_linker_column) {
-      $default_linker_table_and_column = $default_linker_table . self::$table_column_delimiter  . $default_linker_column;
+      $default_linker_table_and_column = $default_linker_table . self::$table_column_delimiter . $default_linker_column;
     }
 
     // Base tables presented in this case are only those that either have
@@ -317,13 +317,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    */
   public function storageSettingsFormBaseTableAjaxCallback($form, &$form_state) {
     $response = new AjaxResponse();
-    $drupal_10_2 = $form_state->getValue(['field_storage']);
-    if ($drupal_10_2) {
-      $response->addCommand(new ReplaceCommand('#edit-base_column', $form['field_storage']['subform']['settings']['storage_plugin_settings']['base_column']));
-    }
-    else {
-      $response->addCommand(new ReplaceCommand('#edit-base_column', $form['settings']['storage_plugin_settings']['base_column']));
-    }
+    $response->addCommand(new ReplaceCommand('#edit-base_column', $form['field_storage']['subform']['settings']['storage_plugin_settings']['base_column']));
     return $response;
   }
 
@@ -338,13 +332,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    */
   public function storageSettingsFormLinkingMethodAjaxCallback($form, &$form_state) {
     $response = new AjaxResponse();
-    $drupal_10_2 = $form_state->getValue(['field_storage']);
-    if ($drupal_10_2) {
-      $response->addCommand(new ReplaceCommand('#edit-linker_table', $form['field_storage']['subform']['settings']['storage_plugin_settings']['linker_table_and_column']));
-    }
-    else {
-      $response->addCommand(new ReplaceCommand('#edit-linker_table', $form['settings']['storage_plugin_settings']['linker_table_and_column']));
-    }
+    $response->addCommand(new ReplaceCommand('#edit-linker_table', $form['field_storage']['subform']['settings']['storage_plugin_settings']['linker_table_and_column']));
     return $response;
   }
 
@@ -366,7 +354,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     if ($schema->tableExists($base_table)) {
-      $form_state->setValue(['settings', 'storage_plugin_settings', 'base_table'], $base_table);
+      $form_state->setValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_table'], $base_table);
     }
     else {
       $form_state->setErrorByName('settings][storage_plugin_settings][base_table',
@@ -434,8 +422,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $linker_table_and_column = $settings['storage_plugin_settings']['linker_table_and_column'];
     $parts = explode(self::$table_column_delimiter, $linker_table_and_column);
     if (count($parts) == 2) {
-      $form_state->setValue(['settings', 'storage_plugin_settings', 'linker_table'], $parts[0]);
-      $form_state->setValue(['settings', 'storage_plugin_settings', 'linker_fkey_column'], $parts[1]);
+      $form_state->setValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'linker_table'], $parts[0]);
+      $form_state->setValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'linker_fkey_column'], $parts[1]);
     }
     else {
       $form_state->setErrorByName('settings][storage_plugin_settings][linker_table_and_column',
