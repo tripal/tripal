@@ -841,6 +841,52 @@ scenarios:
         seqlen: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         md5checksum: 'Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType'
   -
+      label: 'Stock Collection through linker table'
+      field_type: 'chado_stockcollection_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStockCollectionTypeDefault'
+      widget_id: 'chado_stockcollection_widget_default'
+      formatter_id: 'chado_stockcollection_formatter_default'
+      bundle_name: 'stock'
+      field_name: 'stock_stockcollection'
+      settings:
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+          base_table: 'stock'
+          linker_table: 'stockcollection_stock'
+          linker_fkey_column: 'stockcollection_id'
+      default_value: NULL
+      expected_properties:
+        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        stockcollection_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        stockcollection_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+        stockcollection_uniquename: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+        stockcollection_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+  -
+      label: 'Stock Collection DB through linker table'
+      field_type: 'chado_stockcollection_db_type_default'
+      field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStockCollectionDbTypeDefault'
+      widget_id: 'chado_stockcollection_db_widget_default'
+      formatter_id: 'chado_stockcollection_db_formatter_default'
+      bundle_name: 'stock'
+      field_name: 'stock_stockcollection_db'
+      settings:
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+          base_table: 'stockcollection'
+          linker_table: 'stockcollection_db'
+          linker_fkey_column: 'db_id'
+      default_value: NULL
+      expected_properties:
+        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        db_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        db_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+  -
       label: 'Stock through linking table'
       field_type: 'chado_stock_type_default'
       field_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStockTypeDefault'

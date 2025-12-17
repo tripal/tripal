@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\Entity\TripalEntityType;
@@ -28,7 +29,7 @@ class ChadoStockcollectionDBTypeDefault extends ChadoFieldItemBase {
    *
    * @var string
    */
-  public static $id = 'chado_stockcollection_type_default';
+  public static $id = 'chado_stockcollection_db_type_default';
 
   /**
    * The linked table which is the object of this relationship.
@@ -77,6 +78,24 @@ class ChadoStockcollectionDBTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    $value['record_id'] = 0;
+    $value['entity_id'] = 0;
+    $value['linker_id'] = 0;
+    $value['link'] = 0;
+    $value[self::$object_id] = 0;
+
+    // Object table properties.
+    $value['db_name'] = '';
+
+    return [$value];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function tripalTypes($field_definition) {
 
     // Create a variable for easy access to settings.
@@ -110,14 +129,17 @@ class ChadoStockcollectionDBTypeDefault extends ChadoFieldItemBase {
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
 
     $extra_linker_columns = [];
+    $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
+    $linker_fkey_path = $base_table . '.' . $linker_fkey_column;
     if ($linker_table != $base_table) {
       $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
       $linker_pkey_col = $linker_schema_def['primary key'];
       // The following should be the same as $base_pkey_col.
       // @todo make sure it is.
-      $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
+      $linker_left_col = self::getChadoForeignKeyColumn($linker_table, $base_table, $schema);
       $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
       $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
+      $linker_fkey_path = $linker_table . '.' . $linker_fkey_column;
 
       // Some but not all linker tables contain rank, type_id, and maybe other
       // columns. These are conditionally added only if they exist in the
@@ -130,9 +152,6 @@ class ChadoStockcollectionDBTypeDefault extends ChadoFieldItemBase {
           }
         }
       }
-    }
-    else {
-      $linker_fkey_term = self::getColumnTermId($base_table, $linker_fkey_column, self::$record_id_term);
     }
 
     $properties = [];
@@ -155,53 +174,40 @@ class ChadoStockcollectionDBTypeDefault extends ChadoFieldItemBase {
       'fkey' => $linker_fkey_column,
     ]);
 
-    // Base table links directly.
-    if ($base_table == $linker_table) {
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, self::$object_id, $linker_fkey_term, [
-        'action' => 'store',
-        'drupal_store' => TRUE,
-        'path' => $base_table . '.' . $linker_fkey_column,
-        'delete_if_empty' => TRUE,
-        'empty_value' => 0,
-      ]);
-    }
-    // An intermediate linker table is used.
-    else {
-      // Define the linker table that links the base table to the object table.
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, 'linker_id', self::$record_id_term, [
-        'action' => 'store_pkey',
-        'drupal_store' => TRUE,
-        'path' => $linker_table . '.' . $linker_pkey_col,
-      ]);
+    // Define the linker table that links the base table to the object table.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, 'linker_id', self::$record_id_term, [
+      'action' => 'store_pkey',
+      'drupal_store' => TRUE,
+      'path' => $linker_table . '.' . $linker_pkey_col,
+    ]);
 
-      // Define the link between the base table and the linker table.
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, 'link', $linker_left_term, [
-        'action' => 'store_link',
+    // Define the link between the base table and the linker table.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, 'link', $linker_left_term, [
+      'action' => 'store_link',
+      'drupal_store' => FALSE,
+      'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
+    ]);
+
+    // Define the link between the linker table and the object table.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, self::$object_id, $linker_fkey_term, [
+      'action' => 'store',
+      'drupal_store' => TRUE,
+      'path' => $linker_fkey_path,
+      'delete_if_empty' => TRUE,
+      'empty_value' => 0,
+    ]);
+
+    // Other columns in the linker table. Set in the widget, but currently
+    // not implemented in the formatter. Typically these are type_id and
+    // rank, but are not present in all linker tables, so they are added
+    // only if present in the linker table.
+    foreach ($extra_linker_columns as $column => $term) {
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, 'linker_' . $column, $term, [
+        'action' => 'store',
         'drupal_store' => FALSE,
-        'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
+        'path' => $linker_table . '.' . $column,
+        'as' => 'linker_' . $column,
       ]);
-
-      // Define the link between the linker table and the object table.
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, self::$object_id, $linker_fkey_term, [
-        'action' => 'store',
-        'drupal_store' => TRUE,
-        'path' => $linker_table . '.' . $linker_fkey_column,
-        'delete_if_empty' => TRUE,
-        'empty_value' => 0,
-      ]);
-
-      // Other columns in the linker table. Set in the widget, but currently
-      // not implemented in the formatter. Typically these are type_id and
-      // rank, but are not present in all linker tables, so they are added
-      // only if present in the linker table.
-      foreach ($extra_linker_columns as $column => $term) {
-        $properties[] = new ChadoIntStoragePropertyType($entity_type_id, $field_id, 'linker_' . $column, $term, [
-          'action' => 'store',
-          'drupal_store' => FALSE,
-          'path' => $linker_table . '.' . $column,
-          'as' => 'linker_' . $column,
-        ]);
-      }
     }
 
     // The object table, the destination table of the linker table.
