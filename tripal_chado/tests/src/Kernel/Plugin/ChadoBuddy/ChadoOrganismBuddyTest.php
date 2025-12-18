@@ -193,7 +193,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     $scenarios = [];
 
     /*
-     * @todo Figure out how to trigger the following cases:
+     * NOTE: Does not currently trigger the following cases:
      * - ChadoBuddy getOrganism database error
      * - ChadoBuddy insertOrganism database error
      * - ChadoBuddy updateOrganism database error
@@ -208,7 +208,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
           'organism.species' => 'databasica',
         ],
       ],
-      "ChadoBuddy insertOrganism error, more than one record (2) was retrieved, only one was expected",
+      "ChadoBuddy insertOrganism error, an organism record already exists that matches the specified values:",
     ];
 
     // #1: updateOrganism() finds more than one organism record that matches.
@@ -297,17 +297,20 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     ]);
 
     // Now call the method for this scenario.
+    $exception_caught = FALSE;
     try {
       $results = $instance->$method_name(...$method_input);
-      $this->fail("Did not receive an expected exception when calling $method_name()");
     }
     catch (\Exception $e) {
-      $this->assertStringContainsString(
-        $expected_exception_message,
-        $e->getMessage(),
-        "Did not receive expected exception message when calling $method_name()",
-      );
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
     }
+    $this->assertTrue($exception_caught, "Did not catch an expected exception when calling $method_name()");
+    $this->assertStringContainsString(
+      $expected_exception_message,
+      $exception_message,
+      "Did not receive expected exception message when calling $method_name()",
+    );
   }
 
   /**

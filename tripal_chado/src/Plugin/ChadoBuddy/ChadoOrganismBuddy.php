@@ -115,6 +115,9 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   (Optional) Associative array of options with these supported keys:
    *   - 'case_insensitive' - a single key, or an array of keys
    *     to query case insensitively.
+   *   - 'skip_validate' - if TRUE, skips the input validation step. This option
+   *     is used internally by other methods that have already validated input.
+   *     Default is FALSE.
    *
    * @return array
    *   An array of ChadoBuddyRecord objects. More specifically,
@@ -131,7 +134,9 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'organism'];
     $valid_columns = $this->getTableColumns($valid_tables);
     $conditions = $this->dereferenceBuddyRecord($conditions);
-    $this->validateInput($conditions, $valid_columns);
+    if (!($options['skip_validate'] ?? FALSE)) {
+      $this->validateInput($conditions, $valid_columns);
+    }
 
     $query = $this->chado_connection->select('1:organism', 'organism');
     $query->leftJoin('1:cvterm', 'cvterm', 'cvterm.cvterm_id = organism.type_id');
@@ -222,7 +227,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
         // is not required.
         $cvterm_values = $this->subsetInput($values, ['db', 'dbxref', 'cv', 'cvterm'], ['strict' => FALSE]);
         if ($cvterm_values) {
-          // Use the buddy manager dependency to create a Cvterm buddy instance.
+          // Use the buddy manager to create a Cvterm buddy instance.
           if (!isset($this->cvterm_buddy)) {
             $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
           }
@@ -243,6 +248,16 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
           // cvterm for organism.type_id but cvterm values were provided?
         }
       }
+    }
+
+    // Now that we may have an organism.type_id, check if the organism already
+    // exists. This is needed because Chado does not ensure a unique constraint
+    // on organism.
+    // Skip the validate step since the values have already been checked.
+    $options['skip_validate'] = TRUE;
+    $existing_records = $this->getOrganism($values, $options);
+    if (count($existing_records) > 0) {
+      throw new ChadoBuddyException("ChadoBuddy insertOrganism error, an organism record already exists that matches the specified values:\n" . print_r($values, TRUE));
     }
 
     // Insert the organism record.
@@ -331,7 +346,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
         // is not required.
         $cvterm_values = $this->subsetInput($values, ['db', 'dbxref', 'cv', 'cvterm'], ['strict' => FALSE]);
         if ($cvterm_values) {
-          // Use the buddy manager dependency to create a Cvterm buddy instance.
+          // Use the buddy manager to create a Cvterm buddy instance.
           if (!isset($this->cvterm_buddy)) {
             $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
           }
