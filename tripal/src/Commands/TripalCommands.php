@@ -164,14 +164,14 @@ class TripalCommands extends DrushCommands {
     $single = $options['single'] ?? 0;
     $uname = $options['username'] ?? NULL;
 
-    if (!$this->validateJobId($job_id, TRUE)) {
-      return;
-    }
     if (!$this->switchUser($uname)) {
       return;
     }
+    if (!$this->validateJobId($job_id, TRUE)) {
+      return;
+    }
 
-    $new_job_id = tripal_rerun_job($job_id, FALSE);
+    $new_job_id = tripal_rerun_job($job_id);
 
     $this->output()->writeln("\n" . date('Y-m-d H:i:s'));
     $this->output()->writeln('Tripal Job Launcher' . ($parallel ? ' (in parallel)' : ''));
@@ -208,36 +208,32 @@ class TripalCommands extends DrushCommands {
     description: 'The id specified in the YAML file for the particular TripalEntityType-Collection you would like to import.
       Note: fields will also be added automatically if the TripalField-Collection YAML file has the same id.',
   )]
-  #[CLI\Option(name: 'username', description: 'The name of the user for whom the content types created are associated.')]
   #[CLI\Usage(
     name: 'drush trp-import-types --username=[USERNAME] --collection_id=genomic_chado',
     description: 'Runs a job importing the genomic content types focused on a Chado backend.',
   )]
-  public function tripalImportContentTypes(array $options = ['username' => NULL, 'collection_id' => NULL]) {
+  public function tripalImportContentTypes(array $options = ['collection_id' => NULL]) {
 
-    if (!$options['username']) {
-      $this->logger->error($this->t('The --username argument is required.'));
-      return;
-    }
-    if (!$options['collection_id']) {
+    $collection_id = $options['collection_id'] ?? NULL;
+    if (!$collection_id) {
       $this->logger->error($this->t('The --collection_id argument is required.'));
       return;
     }
 
     // Check that the id supplied is valid.
     $collections = $this->entityTypeCollectionService->getTypeCollections();
-    if (!array_key_exists($options['collection_id'], $collections)) {
+    if (!array_key_exists($collection_id, $collections)) {
       $this->logger->notice($this->t('The following collection identifiers are defined:'));
       foreach ($collections as $id => $details) {
         $this->logger->notice($this->t('- "@id" (@description)',
           ['@id' => $id, '@description' => $details['description']]));
       }
       $this->logger->error($this->t('The collection identifier "@id" is not valid. Please try again with one of the identifiers listed above (e.g. general_chado).',
-        ['@id' => $options['collection_id']]));
+        ['@id' => $collection_id]));
       return;
     }
 
-    $chosen_collection_ids = [$options['collection_id']];
+    $chosen_collection_ids = [$collection_id];
 
     // Import the content types.
     $this->entityTypeCollectionService->install($chosen_collection_ids);
