@@ -2,8 +2,18 @@
 
 namespace Drupal\tripal_chado\Commands;
 
-use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
+use Drupal\tripal\TripalDBX\TripalDbx;
+use Drupal\tripal_chado\Task\ChadoApplyMigrations;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\Task\ChadoInstaller;
+use Drupal\tripal_chado\Task\ChadoIntegrator;
+use Drupal\tripal_chado\Services\ChadoMviewsManager;
+use Drupal\tripal_chado\Task\ChadoPreparer;
+use Drupal\tripal_chado\Task\ChadoRemover;
 use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
 
@@ -13,6 +23,27 @@ use Drush\Commands\DrushCommands;
 class ChadoManageCommands extends DrushCommands {
 
   use StringTranslationTrait;
+
+  /**
+   * TripalCommands Drush command class constructor.
+   *
+   * This is used to inject the services used by the various commands.
+   */
+  public function __construct(
+    protected ConfigFactory $config_factory,
+    protected DateFormatter $date_formatter,
+    protected TripalDbx $tripaldbx,
+    protected ChadoApplyMigrations $migrator,
+    protected ChadoConnection $chado_connection,
+    protected ChadoInstaller $installer,
+    protected ChadoIntegrator $integrator,
+    protected ChadoMviewsManager $mview_manager,
+    protected ChadoPreparer $preparer,
+    protected ChadoRemover $remover,
+  ) {
+    // Parent currently doesn't do anything here.
+    parent::__construct();
+  }
 
   /**
    * Install the Chado schema.
@@ -30,12 +61,11 @@ class ChadoManageCommands extends DrushCommands {
 
     $this->output()->writeln('Installing chado version ' . $options['chado-version'] . ' in a schema named "' . $options['schema-name'] . '"');
 
-    $installer = \Drupal::service('tripal_chado.installer');
-    $installer->setParameters([
+    $this->installer->setParameters([
       'output_schemas' => [$options['schema-name']],
       'version' => $options['chado-version'],
     ]);
-    if ($installer->performTask()) {
+    if ($this->installer->performTask()) {
       $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully installed.'));
     }
     else {
@@ -56,30 +86,28 @@ class ChadoManageCommands extends DrushCommands {
   public function migrateChado($options = ['schema-name' => 'chado']) {
 
     // Confirm the schema exists.
-    $tripaldbx = \Drupal::service('tripal.dbx');
-    $schema_exists = $tripaldbx->schemaExists($options['schema-name']);
+    $schema_exists = $this->tripaldbx->schemaExists($options['schema-name']);
     if (!$schema_exists) {
       throw new \Exception("The schema '" . $options['schema-name'] . "' does not exist and therefore cannot be migrated.");
     }
 
     // First setup our task.
-    $migrator = \Drupal::service('tripal_chado.apply_migrations');
-    $migrator->setParameters([
+    $this->migrator->setParameters([
       'input_schemas' => [$options['schema-name']],
     ]);
 
     // Look up the install ID.
-    $migrator->lookupInstallID();
+    $this->migrator->lookupInstallID();
 
     // Determine what work is to be done and format into a table.
-    $all_migrations = $migrator->checkMigrationStatus();
+    $all_migrations = $this->migrator->checkMigrationStatus();
     $header = ['Chado Version', 'Description', 'Applied On', 'Status'];
     $rows = [];
     $pending_migrations = 0;
     foreach ($all_migrations as $migration) {
       $formatted_date = '';
       if ($migration->applied_on) {
-        $formatted_date = \Drupal::service('date.formatter')->format($migration->applied_on, 'html_date');
+        $formatted_date = $this->date_formatter->format($migration->applied_on, 'html_date');
       }
       $rows[] = [
         $migration->version,
@@ -103,7 +131,7 @@ class ChadoManageCommands extends DrushCommands {
         TRUE
       );
       if ($response) {
-        $success = $migrator->performTask();
+        $success = $this->migrator->performTask();
         if ($success) {
           $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully migrated to the most recent version.'));
         }
@@ -130,11 +158,10 @@ class ChadoManageCommands extends DrushCommands {
    */
   public function dropChado($options = ['schema-name' => 'chado']) {
 
-    $remover = \Drupal::service('tripal_chado.remover');
-    $remover->setParameters([
+    $this->remover->setParameters([
       'output_schemas' => [$options['schema-name']],
     ]);
-    if ($remover->performTask()) {
+    if ($this->remover->performTask()) {
       $this->output()->writeln('<info>[Success]</info> Chado was successfully dropped.');
     }
     else {
@@ -160,11 +187,10 @@ class ChadoManageCommands extends DrushCommands {
 
     $this->output()->writeln('Preparing Drupal ("public") + Chado ("' . $options['schema-name'] . '")...');
 
-    $preparer = \Drupal::service('tripal_chado.preparer');
-    $preparer->setParameters([
+    $this->preparer->setParameters([
       'output_schemas' => [$options['schema-name']],
     ]);
-    if ($preparer->performTask()) {
+    if ($this->preparer->performTask()) {
       $this->output()->writeln('<info>[Success]</info> Preparation complete.');
     }
     else {
@@ -231,8 +257,7 @@ class ChadoManageCommands extends DrushCommands {
     }
     // If schema not supplied then grab default chado schema.
     if (!$options['schema-name']) {
-      $chado = \Drupal::service('tripal_chado.database');
-      $default_chado_schema = $chado->getSchemaName();
+      $default_chado_schema = $this->chado_connection->getSchemaName();
       $options['schema-name'] = $default_chado_schema;
     }
     $values = [
@@ -284,8 +309,7 @@ class ChadoManageCommands extends DrushCommands {
 
     // If schema not supplied then grab default chado schema.
     if (!$options['schema-name']) {
-      $chado = \Drupal::service('tripal_chado.database');
-      $default_chado_schema = $chado->getSchemaName();
+      $default_chado_schema = $this->chado_connection->getSchemaName();
       $options['schema-name'] = $default_chado_schema;
     }
     $values = [
@@ -316,14 +340,13 @@ class ChadoManageCommands extends DrushCommands {
 
     $this->output()->writeln('Adding the schema "' . $options['schema-name'] . '" to Tripal...');
 
-    $integrator = \Drupal::service('tripal_chado.integrator');
-    $integrator->setParameters(
+    $this->integrator->setParameters(
       [
         'input_schemas' => [$options['schema-name']],
       ]
     );
 
-    if ($integrator->performTask()) {
+    if ($this->integrator->performTask()) {
       $this->output()->writeln('Successfully added the schema "' . $options['schema-name'] . '" to Tripal.');
     }
   }
@@ -345,11 +368,8 @@ class ChadoManageCommands extends DrushCommands {
     $this->output()->writeln('Setting the schema "' . $options['schema-name'] . '" to be default in Tripal...');
 
     // Ensure that the provided schema exists.
-    $tripaldbx = \Drupal::service('tripal.dbx');
-
-    if ($tripaldbx->schemaExists($options['schema-name'])) {
-      $config = \Drupal::service('config.factory')
-        ->getEditable('tripal_chado.settings');
+    if ($this->tripaldbx->schemaExists($options['schema-name'])) {
+      $config = $this->config_factory->getEditable('tripal_chado.settings');
       $success = $config->set('default_schema', $options['schema-name'])->save();
 
       if ($success) {
@@ -404,13 +424,6 @@ class ChadoManageCommands extends DrushCommands {
     ],
   ): void {
 
-    /** @var Drupal\tripal\TripalDBX\TripalDbx $tripal_dbx */
-    $tripal_dbx = \Drupal::service('tripal.dbx');
-    /** @var Drupal\Core\Config\ConfigFactory $config_factory */
-    $config_factory = \Drupal::service('config.factory');
-    /** @var Drupal\tripal_chado\Services\ChadoMviewsManager $mview_manager */
-    $mview_manager = \Drupal::service('tripal_chado.materialized_views');
-
     // Get options or set default if not specified.
     $schema_name = $options['schema-name'] ?? NULL;
     $option_all = $options['all'] ?? FALSE;
@@ -418,9 +431,9 @@ class ChadoManageCommands extends DrushCommands {
     $option_time = $options['time'] ?? FALSE;
 
     if (!$schema_name) {
-      $schema_name = $config_factory->get('tripal_chado.settings')->get('default_schema');
+      $schema_name = $this->config_factory->get('tripal_chado.settings')->get('default_schema');
     }
-    $schema_exists = $tripal_dbx->schemaExists($schema_name);
+    $schema_exists = $this->tripaldbx->schemaExists($schema_name);
     if (!$schema_exists) {
       $this->logger->error($this->t('The schema "@schema_name" does not exist.',
         ['@schema_name' => $schema_name]));
@@ -433,7 +446,7 @@ class ChadoManageCommands extends DrushCommands {
     }
 
     // List of all materialized views, key is numeric ID, value is name.
-    $all_mviews = $mview_manager->getTables($schema_name);
+    $all_mviews = $this->mview_manager->getTables($schema_name);
     if ($option_list) {
       if ($all_mviews) {
         $this->logger->notice($this->t('The following materialized views exist in the "@schema_name" schema: @list.',
@@ -468,7 +481,7 @@ class ChadoManageCommands extends DrushCommands {
           $this->logger->notice($this->t('Populating "@view_name"',
             ['@view_name' => $view_name]));
           $start_time = microtime(TRUE);
-          $mview = $mview_manager->loadByName($view_name, $schema_name);
+          $mview = $this->mview_manager->loadByName($view_name, $schema_name);
           $mview->populate();
           if ($option_time) {
             $etime = sprintf('%0.6f', microtime(TRUE) - $start_time);

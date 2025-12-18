@@ -1,6 +1,17 @@
 services:
   tripal_chado.chadomanagecommands:
     class: '\Drupal\tripal_chado\Commands\ChadoManageCommands'
+    arguments:
+      - '@config.factory'
+      - '@date.formatter'
+      - '@tripal.dbx'
+      - '@tripal_chado.apply_migrations'
+      - '@tripal_chado.database'
+      - '@tripal_chado.installer'
+      - '@tripal_chado.integrator'
+      - '@tripal_chado.materialized_views'
+      - '@tripal_chado.preparer'
+      - '@tripal_chado.remover'
     tags:
       - { name: 'drush.command' }
   tripal_chado.chadochecktermsagainstyaml:
