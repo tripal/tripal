@@ -215,6 +215,15 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
+    // Check if this organism already exists. This is needed because Chado does
+    // not ensure a unique constraint on organism.
+    // Skip the validate step since the values have already been checked.
+    $options['skip_validate'] = TRUE;
+    $existing_records = $this->getOrganism($values, $options);
+    if (count($existing_records) > 0) {
+      throw new ChadoBuddyException("ChadoBuddy insertOrganism error, an organism record already exists that matches the specified values:\n" . print_r($values, TRUE));
+    }
+
     // Check if not provided an organism.type_id for this organism.
     if (!array_key_exists('organism.type_id', $values)) {
       // If provided a cvterm_id, use that as the organism.type_id.
@@ -248,16 +257,6 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
           // cvterm for organism.type_id but cvterm values were provided?
         }
       }
-    }
-
-    // Now that we may have an organism.type_id, check if the organism already
-    // exists. This is needed because Chado does not ensure a unique constraint
-    // on organism.
-    // Skip the validate step since the values have already been checked.
-    $options['skip_validate'] = TRUE;
-    $existing_records = $this->getOrganism($values, $options);
-    if (count($existing_records) > 0) {
-      throw new ChadoBuddyException("ChadoBuddy insertOrganism error, an organism record already exists that matches the specified values:\n" . print_r($values, TRUE));
     }
 
     // Insert the organism record.

@@ -51,7 +51,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     $this->assertIsArray($chado_buddy_records, 'We did not retrieve an array for an Organism record that does not exist');
     $this->assertEquals(0, count($chado_buddy_records), 'We did not retrieve an empty array for an Organism record that does not exist');
 
-    // TEST: Try to insert an organism record without an infraspecific_name.
+    // TEST: Insert an organism record with genus, species, and common name.
     $simple_organism_values = [
       'organism.genus' => 'Tripalus',
       'organism.species' => 'databasica',
@@ -70,6 +70,29 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     );
     $organism_id = $values['get']['organism.organism_id'];
     $this->assertTrue(is_numeric($organism_id), 'We did not retrieve an integer organism_id for the new organism "Tripal: Tripalus databasica"');
+
+    // TEST: Insert an organism record with an infraspecific rank and name.
+    $infraspecific_organism_values = [
+      'organism.genus' => 'Genus01',
+      'organism.species' => 'species01',
+      'cvterm.name' => 'varietas',
+      'organism.infraspecific_name' => 'varietum',
+      'organism.common_name' => 'Genus01 species01 variety',
+    ];
+    $test_records = [];
+    $test_records['set'] = $instance->insertOrganism($infraspecific_organism_values, ['create_cvterm' => TRUE]);
+    $test_records['get'] = $instance->getOrganism($infraspecific_organism_values);
+    $this->assertCount(1, $test_records['get'], 'Did not retrieve exactly one organism record after inserting an organism with infraspecific rank and name.');
+    $values = $this->multiAssert(
+      'insertOrganism with infraspecific rank',
+      $test_records,
+      'organism',
+      'organism.organism_id',
+      'Organism "Genus01 species01 var. varietum"',
+      28
+    );
+
+    // Test: Insert an organism with a cvterm.cvterm_id.
 
     // TEST: Updating a non-existent Organism should return FALSE.
     $chado_buddy_records = $instance->updateOrganism(
@@ -195,8 +218,6 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     /*
      * NOTE: Does not currently trigger the following cases:
      * - ChadoBuddy getOrganism database error
-     * - ChadoBuddy insertOrganism database error
-     * - ChadoBuddy updateOrganism database error
      */
 
     // #0: insertOrganism() when a record with these values already exists.
@@ -211,7 +232,18 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy insertOrganism error, an organism record already exists that matches the specified values:",
     ];
 
-    // #1: updateOrganism() finds more than one organism record that matches.
+    // #1: insertOrganism() with insufficient values.
+    $scenarios[] = [
+      'insertOrganism',
+      [
+        [
+          'organism.genus' => 'LonesomeGenus',
+        ],
+      ],
+      "ChadoBuddy insertOrganism database error ",
+    ];
+
+    // #2: updateOrganism() finds more than one organism record that matches.
     $scenarios[] = [
       'updateOrganism',
       [
@@ -225,7 +257,21 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy updateOrganism error, more than one record matched the conditions specified:",
     ];
 
-    // #2: upsertOrganism() finds more than one organism record that matches.
+    // #3: updateOrganism() with a cvterm_id that does not exist.
+    $scenarios[] = [
+      'updateOrganism',
+      [
+        [
+          'cvterm.cvterm_id' => 999999,
+        ],
+        [
+          'organism.organism_id' => 1,
+        ],
+      ],
+      "ChadoBuddy updateOrganism database error ",
+    ];
+
+    // #4: upsertOrganism() finds more than one organism record that matches.
     $scenarios[] = [
       'upsertOrganism',
       [
@@ -237,7 +283,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy upsertOrganism error, more than one record matched the specified values:",
     ];
 
-    // #3: getOrganismScientificName() does not find a matching organism.
+    // #5: getOrganismScientificName() does not find a matching organism.
     $scenarios[] = [
       'getOrganismScientificName',
       [
@@ -249,7 +295,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy getOrganismScientificName error, could not find an organism record that matches the specified conditions:",
     ];
 
-    // #4: getOrganismScientificName() finds multiple matching organisms.
+    // #6: getOrganismScientificName() finds multiple matching organisms.
     $scenarios[] = [
       'getOrganismScientificName',
       [
@@ -299,7 +345,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     // Now call the method for this scenario.
     $exception_caught = FALSE;
     try {
-      $results = $instance->$method_name(...$method_input);
+      $instance->$method_name(...$method_input);
     }
     catch (\Exception $e) {
       $exception_caught = TRUE;
