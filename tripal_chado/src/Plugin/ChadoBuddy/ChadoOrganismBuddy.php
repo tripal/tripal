@@ -586,19 +586,15 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       // Try to find $scientific_name in the common_name column. This does not
       // have a unique constraint, so there may be more than one match.
       if ($options['check_common_name'] ?? FALSE) {
-        $temp_buddies = [];
         $common_conditions = ['organism.common_name' => $scientific_name];
+        // Avoid adding duplicates if identical records were found via
+        // abbreviation.
+        $temp_buddies = [];
         $temp_buddies = $this->getOrganism($common_conditions, $lookup_options);
-        foreach ($temp_buddies as $temp_buddy) {
-          foreach ($buddies as $buddy) {
-            // Avoid adding duplicates if the same record was found via
-            // abbreviation.
-            if ($temp_buddy->getValue('organism.organism_id') == $buddy->getValue('organism.organism_id')) {
-              unset($temp_buddies[array_search($temp_buddy, $temp_buddies)]);
-            }
-          }
-        }
-        $buddies = array_merge($buddies, $temp_buddies);
+        $buddy_comparator = function (ChadoBuddyRecord $x, ChadoBuddyRecord $y): int {
+          return ChadoBuddyRecord::compareTo($x, $y, 'organism.organism_id');
+        };
+        $buddies = array_merge($buddies, array_udiff($temp_buddies, $buddies, $buddy_comparator));
       }
     }
 
