@@ -46,13 +46,36 @@ class TripalCommands extends DrushCommands {
       $this->logger->error($this->t('The --username argument is required.'));
       return FALSE;
     }
-
     $user = user_load_by_name($uname);
     if (!$user) {
       $this->logger->error($this->t('The --username argument does not specify a valid user.'));
       return FALSE;
     }
     $this->accountSwitcherService->switchTo($user);
+    return TRUE;
+  }
+
+  /**
+   * Helper function to validate a job_id value.
+   *
+   * @param string|null $job_id
+   *   The job_id value, should be a positive integer.
+   * @param bool $required
+   *   If $required is true, generate an error if job_id is empty.
+   *
+   * @return bool
+   *   True if valid, false if not.
+   */
+  protected function validateJobId(?string $job_id, bool $required): bool {
+    if (!$job_id && $required) {
+      $this->logger->error($this->t('The --job_id argument is required.'));
+      return FALSE;
+    }
+    if ($job_id && !preg_match('/^\d+$/', $job_id)) {
+      $this->logger->error($this->t('The --job_id argument must be a positive integer.'));
+      return FALSE;
+    }
+    // @todo It would be desirable to validate that the job ID exists.
     return TRUE;
   }
 
@@ -93,6 +116,9 @@ class TripalCommands extends DrushCommands {
     $uname = $options['username'] ?? NULL;
 
     if (!$this->switchUser($uname)) {
+      return;
+    }
+    if (!$this->validateJobId($job_id, FALSE)) {
       return;
     }
 
@@ -138,11 +164,9 @@ class TripalCommands extends DrushCommands {
     $single = $options['single'] ?? 0;
     $uname = $options['username'] ?? NULL;
 
-    if (!$job_id) {
-      $this->logger->error($this->t('The --job_id argument is required.'));
+    if (!$this->validateJobId($job_id, TRUE)) {
       return;
     }
-
     if (!$this->switchUser($uname)) {
       return;
     }
@@ -220,7 +244,6 @@ class TripalCommands extends DrushCommands {
 
     // Import the fields.
     $this->fieldCollectionService->install($chosen_collection_ids);
-
   }
 
   /**
