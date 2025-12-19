@@ -171,10 +171,47 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
         'cvterm.name' => 'subspecies',
       ],
       $infraspecific_organism_values,
-      ['create_cvterm' => TRUE]
     );
     $infraspecific_rank_organism_name = $instance->getOrganismScientificName($infraspecific_organism_values);
     $this->assertEquals('Tripalus databasica subsp. chadoii', $infraspecific_rank_organism_name, 'We did not retrieve the correct organism scientific name for an organism we inserted with infraspecific rank: Tripalus databasica subsp. chadoii');
+
+    // TEST: Update the infraspecific name and rank again but this time create
+    // the cvterm.
+    $test_records = [];
+    $test_records['set'] = $instance->updateOrganism(
+      [
+        'cvterm.name' => 'brandnewcvtermname',
+        'cvterm.definition' => 'brandnewcvtermdefinition',
+        'cv.name' => 'local',
+        'db.name' => 'local',
+        'dbxref.accession' => 'brandnewdbxrefaccession',
+        'organism.infraspecific_name' => 'varietum',
+      ],
+      $infraspecific_organism_values,
+      [
+        'create_cvterm' => TRUE,
+      ]
+    );
+    $test_records['get'] = $instance->getOrganism([
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+      'organism.infraspecific_name' => 'varietum',
+    ]);
+    $values = $this->multiAssert(
+      'updateOrganism',
+      $test_records,
+      'organism',
+      'organism.organism_id',
+      'Organism with infraspecific rank updated to have newly created cvterm',
+      28
+    );
+    $infraspecific_newrank_organism_name = $instance->getOrganismScientificName([
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+      'organism.infraspecific_name' => 'varietum',
+    ]);
+    $this->assertEquals('Tripalus databasica brandnewcvtermname varietum', $infraspecific_newrank_organism_name, 'We did not retrieve the correct organism scientific name for an organism we inserted with infraspecific rank: Tripalus databasica brandnewcvtermname varietum');
+
   }
 
   /**
@@ -235,7 +272,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
         'organism.species' => 'databasica',
         // cvterm_id for 'subspecies'.
         'cvterm.cvterm_id' => 2899,
-        'infraspecific_name' => 'chadoii',
+        'organism.infraspecific_name' => 'chadoii',
       ],
       [],
       1,

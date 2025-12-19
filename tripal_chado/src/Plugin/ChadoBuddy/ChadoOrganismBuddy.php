@@ -351,8 +351,8 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
           }
           // @todo Handle if we retrieve multiple possible cvterms?
           $cvterm_record = $this->cvterm_buddy->getCvterm($cvterm_values, $options);
-          $type_id = $cvterm_record[0]->getValue('cvterm.cvterm_id', ['strict' => FALSE]);
-          if ($type_id) {
+          if ($cvterm_record) {
+            $type_id = $cvterm_record[0]->getValue('cvterm.cvterm_id', ['strict' => FALSE]);
             $values['organism.type_id'] = $type_id;
           }
           // If a cvterm could not be found, try to create it if the required
