@@ -175,7 +175,7 @@ class TripalCommands extends DrushCommands {
 
     $this->output()->writeln("\n" . date('Y-m-d H:i:s'));
     $this->output()->writeln('Tripal Job Launcher' . ($parallel ? ' (in parallel)' : ''));
-    $this->output()->writeln("Running as user '$username'");
+    $this->output()->writeln("Running as user '$uname'");
     $this->output()->writeln("-------------------");
     tripal_launch_job($parallel, $new_job_id, $max_jobs, $single);
   }
