@@ -49,7 +49,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *
    * We are injecting an additional dependency here, the
    * ChadoBuddyPluginManager, so that this buddy can have
-   * access to the Dbxref buddy.
+   * access to the Cvterm/Dbxref buddies.
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static
    * function will be called behind the scenes when a Plugin Manager uses
@@ -227,6 +227,9 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     // Check if not provided an organism.type_id for this organism.
     if (!array_key_exists('organism.type_id', $values)) {
       // If provided a cvterm_id, use that as the organism.type_id.
+      // @todo This assumes that the user is providing a valid cvterm_id. This
+      // is a big time save if the user already performed the lookup, but
+      // alternativately we can play it safe and perform a lookup ourselves?
       if (array_key_exists('cvterm.cvterm_id', $values)) {
         $values['organism.type_id'] = $values['cvterm.cvterm_id'];
       }
@@ -336,6 +339,9 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     // Check if not provided an organism.type_id for this organism.
     if (!array_key_exists('organism.type_id', $values)) {
       // If provided a cvterm_id, use that as the organism.type_id.
+      // @todo This assumes that the user is providing a valid cvterm_id. This
+      // is a big time save if the user already performed the lookup, but
+      // alternativately we can play it safe and perform a lookup ourselves?
       if (array_key_exists('cvterm.cvterm_id', $values)) {
         $values['organism.type_id'] = $values['cvterm.cvterm_id'];
       }
