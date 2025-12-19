@@ -11,7 +11,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 /**
  * Tests the Chado Organism Buddy.
  *
- * @group ChadoBuddy
+ * @group bio-organism
+ * @group plugin-chado-buddy
  */
 #[Group('bio-organism')]
 #[Group('plugin-chado-buddy')]
@@ -82,7 +83,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
         'organism.species' => 'notanorganismspecies',
       ]
     );
-    $this->assertFalse($chado_buddy_records, "We received a value other than FALSE for an update to an Organism that does not exist");
+    $this->assertFalse($chado_buddy_records, "We received a value other than FALSE for an update to an organism that does not exist");
 
     // TEST: We should be able to update an existing Organism record.
     $test_records = [];
@@ -162,7 +163,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     ];
     $instance->insertOrganism($infraspecific_organism_values);
     $infraspecific_organism_name = $instance->getOrganismScientificName($infraspecific_organism_values);
-    $this->assertEquals('Tripalus databasica chadoii', $infraspecific_organism_name, 'We did not retrieve the correct organism scientific name for an organism we inserted with an infraspecific name: Tripalus databasica chadoii');
+    $this->assertEquals('Tripalus databasica chadoii', $infraspecific_organism_name, 'We did not retrieve the correct scientific name for an organism we inserted with just an infraspecific name: Tripalus databasica chadoii');
 
     // TEST: Update our organism with infraspecific name to have a rank, then
     // grab the scientific name again.
@@ -173,7 +174,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       $infraspecific_organism_values,
     );
     $infraspecific_rank_organism_name = $instance->getOrganismScientificName($infraspecific_organism_values);
-    $this->assertEquals('Tripalus databasica subsp. chadoii', $infraspecific_rank_organism_name, 'We did not retrieve the correct organism scientific name for an organism we inserted with infraspecific rank: Tripalus databasica subsp. chadoii');
+    $this->assertEquals('Tripalus databasica subsp. chadoii', $infraspecific_rank_organism_name, 'We did not retrieve the correct scientific name for an organism we inserted with infraspecific rank: Tripalus databasica subsp. chadoii');
 
     // TEST: Update the infraspecific name and rank again but this time create
     // the cvterm.
@@ -210,7 +211,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       'organism.species' => 'databasica',
       'organism.infraspecific_name' => 'varietum',
     ]);
-    $this->assertEquals('Tripalus databasica brandnewcvtermname varietum', $infraspecific_newrank_organism_name, 'We did not retrieve the correct organism scientific name for an organism we inserted with infraspecific rank: Tripalus databasica brandnewcvtermname varietum');
+    $this->assertEquals('Tripalus databasica brandnewcvtermname varietum', $infraspecific_newrank_organism_name, 'We did not retrieve the correct scientific name for an organism we updated with infraspecific rank: Tripalus databasica brandnewcvtermname varietum');
 
   }
 
@@ -294,7 +295,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
    * @dataProvider provideInsertOrganismScenarios
    */
   #[DataProvider('provideInsertOrganismScenarios')]
-  public function testInsertOrganismScenarios(array $values, array $options, int $num_expected_records) {
+  public function testInsertOrganism(array $values, array $options, int $num_expected_records) {
     $type = \Drupal::service('tripal_chado.chado_buddy');
     $instance = $type->createInstance('chado_organism_buddy', []);
 
@@ -320,7 +321,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       28
     );
     $organism_id = $results['get']['organism.organism_id'];
-    $this->assertTrue(is_numeric($organism_id), 'We did not retrieve an integer organism_id for the new organism inserted via insertOrganism() method');
+    $this->assertTrue(is_numeric($organism_id), 'We did not retrieve a numeric organism_id for the new organism inserted via insertOrganism() method');
   }
 
   /**
@@ -448,7 +449,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
    * @dataProvider provideOrganismBuddyExceptionScenarios
    */
   #[DataProvider('provideOrganismBuddyExceptionScenarios')]
-  public function testOrganismBuddyExceptionScenarios(string $method_name, array $method_input, string $expected_exception_message) {
+  public function testOrganismBuddyExceptions(string $method_name, array $method_input, string $expected_exception_message) {
     // Insert our organisms needed by our test scenarios.
     $type = \Drupal::service('tripal_chado.chado_buddy');
     $instance = $type->createInstance('chado_organism_buddy', []);
@@ -676,7 +677,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
    * @dataProvider provideOrganismFromScientificNameScenarios
    */
   #[DataProvider('provideOrganismFromScientificNameScenarios')]
-  public function testOrganismFromScientificNameMethods($organism_values, $query_scientific_name, $options, $expected_num_records) {
+  public function testGetOrganismFromScientificName($organism_values, $query_scientific_name, $options, $expected_num_records) {
     $type = \Drupal::service('tripal_chado.chado_buddy');
     $instance = $type->createInstance('chado_organism_buddy', []);
 
