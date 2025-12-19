@@ -395,7 +395,24 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy updateOrganism database error ",
     ];
 
-    // #4: upsertOrganism() finds more than one organism record that matches.
+    // #4: updateOrganism() with only organism_id of an existing record.
+    $scenarios[] = [
+      'updateOrganism',
+      [
+        [
+          'organism.organism_id' => 100,
+        ],
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.infraspecific_name' => 'chadoii',
+          'cvterm.name' => 'subspecies',
+        ],
+      ],
+      "ChadoBuddy updateOrganism error, no valid values were specified for tables: organism",
+    ];
+
+    // #5: upsertOrganism() finds more than one organism record that matches.
     $scenarios[] = [
       'upsertOrganism',
       [
@@ -407,7 +424,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy upsertOrganism error, more than one record matched the specified values:",
     ];
 
-    // #5: getOrganismScientificName() does not find a matching organism.
+    // #6: getOrganismScientificName() does not find a matching organism.
     $scenarios[] = [
       'getOrganismScientificName',
       [
@@ -419,7 +436,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy getOrganismScientificName error, could not find an organism record that matches the specified conditions:",
     ];
 
-    // #6: getOrganismScientificName() finds multiple matching organisms.
+    // #7: getOrganismScientificName() finds multiple matching organisms.
     $scenarios[] = [
       'getOrganismScientificName',
       [
