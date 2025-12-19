@@ -43,16 +43,33 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
   protected string $log_output = '';
 
   /**
+   * Name of the Drupal user for testing.
+   *
+   * @var string
+   */
+  protected string $username;
+
+  /**
+   * A tripal job for testing.
+   *
+   * @var int
+   */
+  protected int $job_id;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
     parent::setUp();
 
+    // Install items required for these tests.
     $this->installEntitySchema('user');
     $this->installSchema('tripal', ['tripal_jobs']);
+    $this->installConfig('system');
 
     // Create and log-in a user.
-    $this->setUpCurrentUser();
+    $user = $this->setUpCurrentUser();
+    $this->username = \Drupal::currentUser()->getAccountName();
 
     // Create a mock logger to access log output.
     $mock_logger = $this->getMockBuilder(LoggerInterface::class)
@@ -68,7 +85,7 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
           return NULL;
       });
 
-    // Create a mock io to access its output.
+    // Create a mock io to access io output.
     $mock_io = $this->createMock(OutputInterface::class);
     $mock_io->method('writeln')
       ->willReturnCallback(function ($message, $options) {
@@ -80,6 +97,16 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
     $this->drush_command = $this->container->get('tripal.command');
     $this->drush_command->setLogger($mock_logger);
     $this->drush_command->setOutput($mock_io);
+
+    // Create a tripal job.
+    $details = [
+      'job_name' => 'Do-nothing job',
+      'modulename' => 'tripal',
+      'callback' => '\Drupal\Tests\tripal\Kernel\Services\TripalJob\FakeClasses\callableClassForTripalJobs::myCallbackMethod',
+      'arguments' => [],
+      'uid' => $user->id(),
+    ];
+    $this->job_id = \Drupal::service('tripal.job')->create($details);
   }
 
   /**
@@ -112,13 +139,21 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
     $this->assertStringContainsString('The --username argument does not specify a valid use', $this->getLogOutput(),
       'Need a valid user name to run a job');
 
-    $username = \Drupal::currentUser()->getAccountName();
-    $this->drush_command->runJobs(['username' => $username]);
+    // Tripal jobs write directly to the console! Need to capture it.
+    ob_start();
+    $this->drush_command->runJobs(['username' => $this->username]);
+    $this->log_output .= ob_get_clean();
     $this->assertStringContainsString('Tripal Job Launcher', $this->getLogOutput(),
       'All jobs launch with a valid user');
 
-    $username = \Drupal::currentUser()->getAccountName();
-    $this->drush_command->runJobs(['username' => $username, 'job_id' => '123NotValidInt456']);
+    $this->drush_command->runJobs(['username' => $this->username, 'max_jobs' => 2, 'parallel' => 1]);
+    $output = $this->getLogOutput();
+    $this->assertStringContainsString('Maximum number of jobs is 2', $output,
+      'max_jobs parameter should work');
+    $this->assertStringContainsString('in parallel', $output,
+      'parallel parameter should work');
+
+    $this->drush_command->runJobs(['username' => $this->username, 'job_id' => '123NotValidInt456']);
     $this->assertStringContainsString('The --job_id argument must be a positive integer', $this->getLogOutput(),
       'Invalid job ID generates an error');
 
@@ -131,23 +166,29 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
     $this->assertStringContainsString('The --username argument does not specify a valid use', $this->getLogOutput(),
       'Need a valid user name to run a job');
 
-    $username = \Drupal::currentUser()->getAccountName();
-    $this->drush_command->rerunJob(['username' => $username]);
+    $this->drush_command->rerunJob(['username' => $this->username]);
     $this->assertStringContainsString('The --job_id argument is required', $this->getLogOutput(),
       'Need a job_id to rerun a job');
 
-    $this->drush_command->rerunJob(['username' => $username, 'job_id' => '123NotValidInt456']);
+    $this->drush_command->rerunJob(['username' => $this->username, 'job_id' => '123NotValidInt456']);
     $this->assertStringContainsString('The --job_id argument must be a positive integer', $this->getLogOutput(),
       'Invalid job ID generates an error');
 
     $caught = FALSE;
     try {
-      $this->drush_command->rerunJob(['username' => $username, 'job_id' => '1']);
+      $this->drush_command->rerunJob(['username' => $this->username, 'job_id' => '1000']);
     }
     catch (\Exception $e) {
       $caught = TRUE;
     }
     $this->assertTrue($caught, 'An invalid job_id throws an exception');
+
+    // Tripal jobs write directly to the console! Need to capture it.
+    ob_start();
+    $this->drush_command->rerunJob(['username' => $this->username, 'job_id' => $this->job_id]);
+    $this->log_output .= ob_get_clean();
+    $this->assertStringContainsString('Tripal Job Launcher', $this->getLogOutput(),
+      'A valid job_id can be rerun');
 
     // Case: tripal:trp-import-types.
     $this->drush_command->tripalImportContentTypes([]);
@@ -161,6 +202,8 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
       'Need to specify a valid collection to import');
 
     // Case: tripal:trp-sync-field-schema.
+    // The underlying service is functionally tested elsewhere by
+    // SyncTripalFieldStorageTest.php.
     $this->drush_command->tripalSyncFieldSchema([]);
     $this->assertStringContainsString('No discrepancies found.', $this->getLogOutput(),
       'No discrepancies expected in the test environment');
