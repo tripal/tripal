@@ -1,14 +1,16 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel\Drush;
+namespace Drupal\Tests\tripal_chado\Kernel\Drush;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use Drupal\tripal_biodb\Exception\ParameterException;
 use Drupal\tripal_chado\Commands\ChadoManageCommands;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Services\ChadoMviewsManager;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Tests the drush command to populate materialized views.
@@ -81,10 +83,18 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
           return NULL;
       });
 
-    // An instance of the chado drush command class.
-    $this->drush_command = new ChadoManageCommands();
-    $this->drush_command->setLogger($mock_logger);
+    // Create a mock io to access io output.
+    $mock_io = $this->createMock(OutputInterface::class);
+    $mock_io->method('writeln')
+      ->willReturnCallback(function ($message, $options) {
+          $this->log_output .= $message;
+          return NULL;
+      });
 
+    // An instance of the tripal drush command class.
+    $this->drush_command = $this->container->get('tripal_chado.chadomanagecommands');
+    $this->drush_command->setLogger($mock_logger);
+    $this->drush_command->setOutput($mock_io);
   }
 
   /**
@@ -97,10 +107,26 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Test the drush command to populate materialized views.
+   * Test all of the Tripal Chado drush commands.
    */
-  public function testDrushMviewPopulate() {
+  public function testTripalChadoCommands() {
 
+    // Case: tripal-chado:install-chado alias trp-install-chado.
+    // Test invalid parameters. We don't test correct values here
+    // because the schema would persist in the db after the test!
+    $caught = FALSE;
+    try {
+      $this->drush_command->installChado(['schema-name' => 'blueteapot', 'chado-version' => '0.9']);
+    }
+    catch (ParameterException $e) {
+      $this->log_output .= $e->getMessage();
+      $caught = TRUE;
+    }
+    $this->assertTrue($caught, 'Invalid schema throws a ParameterException exception');
+    $this->assertStringContainsString('That requested version (0.9) is not supported by this installer', $this->getLogOutput(),
+      'Invalid schema causes an error');
+
+    // Case: tripal-chado:populate-mview alias trp-pop-mview.
     // Drush command without required parameter.
     $this->drush_command->populateMview('', []);
     $this->assertStringContainsString('Provide a materialized view name', $this->getLogOutput(),

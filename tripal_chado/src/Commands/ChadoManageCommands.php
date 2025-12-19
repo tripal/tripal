@@ -47,29 +47,36 @@ class ChadoManageCommands extends DrushCommands {
 
   /**
    * Install the Chado schema.
-   *
-   * @command tripal-chado:install-chado
-   * @aliases trp-install-chado
-   * @options schema-name
-   *   The name of the schema to install chado in.
-   * @options chado-version
-   *   The version of chado to install. Currently only 1.3 is supported.
-   * @usage drush trp-install-chado --schema-name='teapot' --version=1.3
-   *   Installs chado 1.3 in a schema named "teapot".
    */
-  public function installChado($options = ['schema-name' => 'chado', 'chado-version' => 1.3]) {
+  #[CLI\Command(name: 'tripal-chado:install-chado', aliases: ['trp-install-chado'])]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the schema to install chado in.')]
+  #[CLI\Option(name: 'chado-version', description: 'The version of chado to install. Currently only 1.3 is supported.')]
+  #[CLI\Usage(
+    name: "drush trp-install-chado --schema-name='teapot' --version=1.3",
+    description: 'Installs chado 1.3 in a schema named "teapot".',
+  )]
+  public function installChado(
+    $options = [
+      'schema-name' => 'chado',
+      'chado-version' => '1.3'
+    ],
+  ) {
+    $schema_name = $options['schema-name'] ?? 'chado';
+    $chado_version = $options['chado-version'] ?? 1.3;
 
-    $this->output()->writeln('Installing chado version ' . $options['chado-version'] . ' in a schema named "' . $options['schema-name'] . '"');
+    $this->logger->notice($this->t('Installing chado version @ver in a schema named "@schema"',
+      ['@ver' => $chado_version, '@schema' => $schema_name]));
 
     $this->installer->setParameters([
-      'output_schemas' => [$options['schema-name']],
-      'version' => $options['chado-version'],
+      'output_schemas' => [$schema_name],
+      'version' => $chado_version,
     ]);
     if ($this->installer->performTask()) {
-      $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully installed.'));
+      $this->logger->notice($this->t('Chado was successfully installed.'));
     }
     else {
-      throw new \Exception('Unable to install chado ' . $options['chado-version'] . ' in ' . $options['schema-name']);
+      $this->logger->error($this->t('Unable to install chado version @ver in a schema named "@schema"',
+        ['@ver' => $chado_version, '@schema' => $schema_name]));
     }
   }
 

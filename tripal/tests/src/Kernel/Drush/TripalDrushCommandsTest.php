@@ -119,7 +119,7 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
   }
 
   /**
-   * Test the drush command to populate materialized views.
+   * Test all of the Tripal drush commands.
    */
   public function testTripalCommands() {
 
