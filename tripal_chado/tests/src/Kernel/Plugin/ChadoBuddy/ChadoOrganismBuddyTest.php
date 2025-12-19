@@ -71,29 +71,6 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     $organism_id = $values['get']['organism.organism_id'];
     $this->assertTrue(is_numeric($organism_id), 'We did not retrieve an integer organism_id for the new organism "Tripal: Tripalus databasica"');
 
-    // TEST: Insert an organism record with an infraspecific rank and name.
-    $infraspecific_organism_values = [
-      'organism.genus' => 'Genus01',
-      'organism.species' => 'species01',
-      'cvterm.name' => 'varietas',
-      'organism.infraspecific_name' => 'varietum',
-      'organism.common_name' => 'Genus01 species01 variety',
-    ];
-    $test_records = [];
-    $test_records['set'] = $instance->insertOrganism($infraspecific_organism_values, ['create_cvterm' => TRUE]);
-    $test_records['get'] = $instance->getOrganism($infraspecific_organism_values);
-    $this->assertCount(1, $test_records['get'], 'Did not retrieve exactly one organism record after inserting an organism with infraspecific rank and name.');
-    $values = $this->multiAssert(
-      'insertOrganism with infraspecific rank',
-      $test_records,
-      'organism',
-      'organism.organism_id',
-      'Organism "Genus01 species01 var. varietum"',
-      28
-    );
-
-    // Test: Insert an organism with a cvterm.cvterm_id.
-
     // TEST: Updating a non-existent Organism should return FALSE.
     $chado_buddy_records = $instance->updateOrganism(
       [
@@ -198,6 +175,115 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     );
     $infraspecific_rank_organism_name = $instance->getOrganismScientificName($infraspecific_organism_values);
     $this->assertEquals('Tripalus databasica subsp. chadoii', $infraspecific_rank_organism_name, 'We did not retrieve the correct organism scientific name for an organism we inserted with infraspecific rank: Tripalus databasica subsp. chadoii');
+  }
+
+  /**
+   * Data Provider: Provide scenarios to test the insertOrganism() method.
+   *
+   * @return array
+   *   An array of test scenarios, each containing:
+   *   - values: An array of organism values to insert.
+   *   - options: An array of options to pass to insertOrganism().
+   *   - num_expected_records: The expected number of organism records to be
+   *     created.
+   */
+  public static function provideInsertOrganismScenarios() {
+    $scenarios = [];
+
+    // #0: Insert an organism with only genus and species.
+    $scenarios[] = [
+      [
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+      ],
+      [],
+      1,
+    ];
+
+    // #1: Insert an organism with infraspecific rank and name.
+    $scenarios[] = [
+      [
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+        'cvterm.name' => 'subspecies',
+        'organism.infraspecific_name' => 'chadoii',
+      ],
+      [],
+      1,
+    ];
+
+    // #2: Insert an organism with infraspecific rank, and create cvterm.
+    $scenarios[] = [
+      [
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+        'cvterm.name' => 'brandnewcvtermname',
+        'cvterm.definition' => 'brandnewcvtermdefinition',
+        'cv.name' => 'local',
+        'db.name' => 'local',
+        'dbxref.accession' => 'brandnewdbxrefaccession',
+        'organism.infraspecific_name' => 'varietum',
+      ],
+      ['create_cvterm' => TRUE],
+      1,
+    ];
+
+    // #3: Insert an organism with a known cvterm.cvterm_id.
+    $scenarios[] = [
+      [
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+        // cvterm_id for 'subspecies'.
+        'cvterm.cvterm_id' => 2899,
+        'infraspecific_name' => 'chadoii',
+      ],
+      [],
+      1,
+    ];
+
+    return $scenarios;
+  }
+
+  /**
+   * Test method for insertOrganism().
+   *
+   * @param array $values
+   *   An array of organism values to insert.
+   * @param array $options
+   *   An array of options to pass to insertOrganism().
+   * @param int $num_expected_records
+   *   The expected number of organism records to be created.
+   *
+   * @dataProvider provideInsertOrganismScenarios
+   */
+  #[DataProvider('provideInsertOrganismScenarios')]
+  public function testInsertOrganismScenarios(array $values, array $options, int $num_expected_records) {
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $instance = $type->createInstance('chado_organism_buddy', []);
+
+    // Insert the organism record.
+    $test_records['set'] = $instance->insertOrganism($values, $options);
+
+    // Now try retrieving the organism records we just inserted.
+    $test_records['get'] = $instance->getOrganism($values);
+
+    // Verify we retrieved the expected number of records.
+    $this->assertCount(
+      $num_expected_records,
+      $test_records['get'],
+      "Did not retrieve the expected number of organism records after inserting.",
+    );
+    // Verify the inserted and retrieved records match.
+    $results = $this->multiAssert(
+      'insertOrganism',
+      $test_records,
+      'organism',
+      'organism.organism_id',
+      'Organism inserted via insertOrganism() method',
+      28
+    );
+    $organism_id = $results['get']['organism.organism_id'];
+    $this->assertTrue(is_numeric($organism_id), 'We did not retrieve an integer organism_id for the new organism inserted via insertOrganism() method');
   }
 
   /**
