@@ -47,6 +47,12 @@ class ChadoManageCommands extends DrushCommands {
 
   /**
    * Install the Chado schema.
+   *
+   * @param array $options
+   *   Options passed on the drush command line.
+   *
+   * @return void
+   *   No return value.
    */
   #[CLI\Command(name: 'tripal-chado:install-chado', aliases: ['trp-install-chado'])]
   #[CLI\Option(name: 'schema-name', description: 'The name of the schema to install chado in.')]
@@ -56,16 +62,16 @@ class ChadoManageCommands extends DrushCommands {
     description: 'Installs chado 1.3 in a schema named "teapot".',
   )]
   public function installChado(
-    $options = [
+    array $options = [
       'schema-name' => 'chado',
-      'chado-version' => '1.3'
+      'chado-version' => '1.3',
     ],
-  ) {
-    $schema_name = $options['schema-name'] ?? 'chado';
+  ): void {
+    $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
     $chado_version = $options['chado-version'] ?? 1.3;
 
-    $this->logger->notice($this->t('Installing chado version @ver in a schema named "@schema"',
-      ['@ver' => $chado_version, '@schema' => $schema_name]));
+    $this->logger->notice($this->t('Installing chado version @ver in a schema named "@schema_name"',
+      ['@ver' => $chado_version, '@schema_name' => $schema_name]));
 
     $this->installer->setParameters([
       'output_schemas' => [$schema_name],
@@ -75,32 +81,47 @@ class ChadoManageCommands extends DrushCommands {
       $this->logger->notice($this->t('Chado was successfully installed.'));
     }
     else {
-      $this->logger->error($this->t('Unable to install chado version @ver in a schema named "@schema"',
-        ['@ver' => $chado_version, '@schema' => $schema_name]));
+      $this->logger->error($this->t('Unable to install chado version @ver in a schema named "@schema_name"',
+        ['@ver' => $chado_version, '@schema_name' => $schema_name]));
     }
   }
 
   /**
    * Apply migrations to an existing Chado schema.
    *
-   * @command tripal-chado:migrate-chado
-   * @aliases trp-migrate-chado
-   * @options schema-name
-   *   The name of the schema to apply chado migrations to.
-   * @usage drush trp-migrate-chado --schema-name='teapot'
-   *   Applies all pending migrations to a schema named "teapot".
+   * @param array $options
+   *   Options passed on the drush command line.
+   *
+   * @return void
+   *   No return value.
    */
-  public function migrateChado($options = ['schema-name' => 'chado']) {
+  #[CLI\Command(name: 'tripal-chado:migrate-chado', aliases: ['trp-migrate-chado'])]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the schema to apply chado migrations to.')]
+  #[CLI\Option(name: 'list', description: 'List migrations, but do not apply them.')]
+  #[CLI\Usage(
+    name: "drush trp-migrate-chado --schema-name='teapot'",
+    description: 'Applies all pending migrations to a schema named "teapot".',
+  )]
+  public function migrateChado(
+    array $options = [
+      'schema-name' => 'chado',
+      'list' => 0,
+    ],
+  ): void {
+    $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
+    $option_list = $options['list'] ?? 0;
 
     // Confirm the schema exists.
-    $schema_exists = $this->tripaldbx->schemaExists($options['schema-name']);
+    $schema_exists = $this->tripaldbx->schemaExists($schema_name);
     if (!$schema_exists) {
-      throw new \Exception("The schema '" . $options['schema-name'] . "' does not exist and therefore cannot be migrated.");
+      $this->logger->error($this->t("The schema '@schema_name' does not exist and therefore cannot be migrated.",
+        ['@schema_name' => $schema_name]));
+      return;
     }
 
     // First setup our task.
     $this->migrator->setParameters([
-      'input_schemas' => [$options['schema-name']],
+      'input_schemas' => [$schema_name],
     ]);
 
     // Look up the install ID.
@@ -128,10 +149,13 @@ class ChadoManageCommands extends DrushCommands {
       }
     }
 
-    $this->output()->writeln("\nThe following table summarizes the migrations for the '" . $options['schema-name'] . "' schema.");
+    $this->output()->writeln("\nThe following table summarizes the migrations for the '" . $schema_name . "' schema.");
     $this->io()->table($header, $rows);
     $this->output()->writeln('');
 
+    if ($option_list) {
+      return;
+    }
     if ($pending_migrations) {
       $response = $this->io()->confirm(
         "Would you like to apply $pending_migrations pending migrations?",
@@ -140,15 +164,16 @@ class ChadoManageCommands extends DrushCommands {
       if ($response) {
         $success = $this->migrator->performTask();
         if ($success) {
-          $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully migrated to the most recent version.'));
+          $this->logger->notice($this->t('Chado was successfully migrated to the most recent version.'));
         }
         else {
-          throw new \Exception("Unable to migrate chado in schema '" . $options['schema-name'] . "'");
+          $this->logger->error($this->t("Unable to migrate chado in schema '@schema_name'",
+            ['@schema_name' => $schema_name]));
         }
       }
     }
     else {
-      $this->output()->writeln(dt('<info>[Success]</info> Chado is already up to date. There are no migrations pending.'));
+      $this->logger->notice($this->t('Chado is already up to date. There are no migrations pending.'));
     }
     $this->output()->writeln('');
   }
@@ -156,128 +181,253 @@ class ChadoManageCommands extends DrushCommands {
   /**
    * Drops the Chado schema.
    *
-   * @command tripal-chado:drop-chado
-   * @aliases trp-drop-chado
-   * @options schema-name
-   *   The name of the schema to drop.
-   * @usage drush trp-drop-chado --schema-name='teapot'
-   *   Removes the chado schema named "teapot".
+   * @param array $options
+   *   Options passed on the drush command line.
+   *
+   * @return void
+   *   No return value.
    */
-  public function dropChado($options = ['schema-name' => 'chado']) {
+  #[CLI\Command(name: 'tripal-chado:drop-chado', aliases: ['trp-drop-chado'])]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the schema to drop.')]
+  #[CLI\Usage(
+    name: "drush trp-drop-chado --schema-name='teapot'",
+    description: 'Removes the chado schema named "teapot".',
+  )]
+  public function dropChado(
+    array $options = [
+      'schema-name' => 'chado',
+    ],
+  ): void {
+    $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
 
     $this->remover->setParameters([
-      'output_schemas' => [$options['schema-name']],
+      'output_schemas' => [schema_name],
     ]);
     if ($this->remover->performTask()) {
-      $this->output()->writeln('<info>[Success]</info> Chado was successfully dropped.');
+      $this->logger->notice($this->t("Chado schema '@schema_name' was successfully dropped.",
+        ['@schema_name' => $schema_name]));
     }
     else {
-      throw new \Exception('Unable to drop chado in ' . $options['schema-name']);
+      $this->logger->error($this->t("Unable to drop chado schema '@schema_name'.",
+        ['@schema_name' => $schema_name]));
     }
-
   }
 
   /**
-   * Prepare the Tripal Chado system.
+   * Prepare the Tripal Chado schema.
    *
-   * @command tripal-chado:prepare
-   * @aliases trp-prep-chado
-   * @options schema-name
-   *   The name of the chado schema to prepare. Only a single chado schema
-   *   should be prepared with Tripal and this will become the default
-   *   chado schema.
-   * @usage drush trp-prep-chado --schema-name="chado"
-   *   Prepare the Tripal Chado system and set the schema named "chado" as the
-   *   default Chado instance to use with Tripal.
+   * @param array $options
+   *   Options passed on the drush command line.
+   *
+   * @return void
+   *   No return value.
    */
-  public function prepareChado($options = ['schema-name' => 'chado']) {
+  #[CLI\Command(name: 'tripal-chado:prepare', aliases: ['trp-prep-chado'])]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the chado schema to prepare. Only a single chado schema should be prepared with Tripal and this will become the default chado schema.')]
+  #[CLI\Usage(
+    name: 'drush trp-prep-chado --schema-name="chado"',
+    description: 'Prepare the Tripal Chado system and set the schema named "chado" as the default Chado instance to use with Tripal.',
+  )]
+  public function prepareChado(
+    array $options = [
+      'schema-name' => 'chado',
+    ],
+  ): void {
+    $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
 
-    $this->output()->writeln('Preparing Drupal ("public") + Chado ("' . $options['schema-name'] . '")...');
+    $this->logger->notice($this->t('Preparing Drupal ("public") + Chado ("@schema_name").',
+      ['@schema_name' => $schema_name]));
 
     $this->preparer->setParameters([
-      'output_schemas' => [$options['schema-name']],
+      'output_schemas' => [$schema_name],
     ]);
     if ($this->preparer->performTask()) {
-      $this->output()->writeln('<info>[Success]</info> Preparation complete.');
+      $this->logger->notice($this->t('Preparation complete.'));
     }
     else {
-      throw new \Exception('Unable to prepare Drupal + Chado in ' . $options['schema-name']);
+      $this->logger->error($this->t("Unable to prepare Drupal + Chado schema '@schema_name'.",
+        ['@schema_name' => $schema_name]));
+    }
+  }
+
+  /**
+   * Add a Chado schema to Tripal.
+   *
+   * This command does not set this schema as the default, as
+   * there can be more than one Chado schema added to Tripal.
+   * See the command tripal-chado:set_default for this functionality.
+   *
+   * @param array $options
+   *   Options passed on the drush command line.
+   *
+   * @return void
+   *   No return value.
+   */
+  #[CLI\Command(name: 'tripal-chado:add_to_tripal', aliases: ['trp-add-chado'])]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the chado schema to add to Tripal.')]
+  #[CLI\Usage(
+    name: 'drush trp-add-chado --schema-name="chado"',
+    description: 'Adds the specified Chado schema to Tripal.',
+  )]
+  public function addToTripal(
+    array $options = [
+      'schema-name' => 'chado',
+    ],
+  ): void {
+    $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
+
+    $this->logger->notice($this->t('Adding the Chado schema "@schema_name" to Tripal.',
+      ['@schema_name' => $schema_name]));
+
+    $this->integrator->setParameters(
+      [
+        'input_schemas' => [$schema_name],
+      ]
+    );
+
+    if ($this->integrator->performTask()) {
+      $this->logger->notice($this->t('Successfully added the Chado schema "@schema_name" to Tripal.',
+        ['@schema_name' => $schema_name]));
+    }
+    else {
+      $this->logger->notice($this->t('Failed to add the Chado schema "@schema_name" to Tripal.',
+        ['@schema_name' => $schema_name]));
+    }
+  }
+
+  /**
+   * Sets a specified Chado schema to be the default in Tripal.
+   *
+   * Only one schema may be set to default at a time.
+   *
+   * @param array $options
+   *   Options passed on the drush command line.
+   *
+   * @return void
+   *   No return value.
+   */
+  #[CLI\Command(name: 'tripal-chado:set_default_schema', aliases: ['trp-set-default'])]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the chado schema to be set to default in Tripal.')]
+  #[CLI\Usage(
+    name: 'drush trp-set-default --schema-name="chado"',
+    description: 'Sets the Chado schema "chado" to be default in Tripal.',
+  )]
+  public function setDefault(
+    array $options = [
+      'schema-name' => NULL,
+    ],
+  ): void {
+    $schema_name = $options['schema-name'] ?? NULL;
+    if (!$schema_name) {
+      $this->logger->error($this->t('The "schema-name" parameter is required.'));
+      return;
+    }
+
+    $this->logger->notice($this->t('Setting the schema "@schema_name" to be default in Tripal.',
+      ['@schema_name' => $schema_name]));
+
+    // Ensure that the provided schema exists.
+    $success = FALSE;
+    if ($this->tripaldbx->schemaExists($schema_name)) {
+      $config = $this->config_factory->getEditable('tripal_chado.settings');
+      $success = $config->set('default_schema', $schema_name)->save();
+    }
+    if ($success) {
+      $this->logger->notice($this->t('Successfully set the schema "@schema_name" to be default.',
+        ['@schema_name' => $schema_name]));
+    }
+    else {
+      $this->logger->error($this->t('Unable to set the default schema to "@schema_name" - that schema does not exist.',
+        ['@schema_name' => $schema_name]));
     }
   }
 
   /**
    * Set-up the Tripal Chado test environment.
    *
-   * @command tripal-chado:setup-tests
-   * @aliases trp-prep-tests
-   * @usage drush trp-prep-tests
-   *   Sets up the standard Tripal Chado test environment.
+   * @return void
+   *   No return value.
    */
-  public function setupTests() {
-
-    $this->output()->writeln('There is no longer any need to prepare the chado test environment.');
+  #[CLI\Command(name: 'tripal-chado:setup-tests', aliases: ['trp-prep-tests'])]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the chado schema to prepare. Only a single chado schema should be prepared with Tripal and this will become the default chado schema.')]
+  #[CLI\Usage(
+    name: 'drush trp-prep-tests',
+    description: 'A legacy command to set up the standard Tripal Chado test environment. This command is no longer needed and does not do anything.',
+  )]
+  public function setupTests(): void {
+    $this->logger->error($this->t('There is no longer any need to prepare the chado test environment.'));
   }
 
   /**
    * Publish Chado Records as Tripal Content.
    *
    * @param string $bundle
-   *   The id of the TripalContentType you would like to publish content for.
+   *   The id of the TripalContentType you would like to unpublish content for.
    * @param array $options
-   *   Publish options. Defaults are
-   *   'schema-name' => 'chado'
-   *   'datastore' => 'chado_storage'
-   *   'migration-file' => ''
-   *   'lenient-migration' => FALSE
-   *   'batch-size' => '1000'.
+   *   Options passed on the drush command line.
    *
-   * @command tripal-chado:publish
-   * @aliases trp-chado-publish
-   * @options schema-name
-   *   The name of the chado schema to use.
-   * @usage drush trp-chado-publish organism
-   *   Submits a standard chado publish job for the organism content type which
-   *   publishes records in the default chado schema organism table.
-   * @usage drush trp-chado-publish organism --schema-name=prod
-   *   Submits a chado publish job for the organism content type which
-   *   publishes records in the prod.organism table.
+   * @return void
+   *   No return value.
    */
+  #[CLI\Command(name: 'tripal-chado:publish', aliases: ['trp-chado-publish'])]
+  #[CLI\Argument(
+    name: 'bundle',
+    description: 'The id of the TripalContentType you would like to publish content for.',
+  )]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the chado schema to use.')]
+  #[CLI\Option(name: 'datastore', description: 'Storage used, defaults to chado_storage.')]
+  #[CLI\Option(name: 'migration-file', description: 'Name of a file used to migrate entity ID numbers from a Tripal 3 site.')]
+  #[CLI\Option(name: 'lenient-migration', description: 'Use if some content was not published on the Tripal 3 site.')]
+  #[CLI\Option(name: 'batch-size', description: 'Publish in batches of this size to reduce memory usage.')]
+  #[CLI\Usage(
+    name: 'drush trp-chado-publish organism',
+    description: 'Submits a standard chado publish job for the organism content type which publishes records in the default chado schema organism table.',
+  )]
+  #[CLI\Usage(
+    name: 'drush trp-chado-publish organism --schema-name=teacup',
+    description: 'Submits a chado publish job for the organism content type which publishes records in the teacup.organism table.',
+  )]
+  #[CLI\Usage(
+    name: 'drush trp-chado-publish organism --migration-file=tripal3_entity_mapping.tsv --lenient-migration --batch-size=500',
+    description: 'Submits a chado publish job to migrate organism content from a migrated tripal 3 site where not every record had been published. Memory is limited so reduce the batch sise.',
+  )]
   public function publish(
     string $bundle,
     array $options = [
-      'schema-name' => '',
+      'schema-name' => NULL,
       'datastore' => 'chado_storage',
       'batch-size' => '1000',
       'migration-file' => '',
       'lenient-migration' => FALSE,
       'republish' => FALSE,
     ],
-  ) {
+  ): void {
+    $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
+    $datastore = $options['datastore'] ?? 'chado_storage';
+    $batch_size = $options['batch-size'] ?? '1000';
+    $migration_file = $options['migration-file'] ?? '';
+    $lenient_migration = $options['lenient-migration'] ?? FALSE;
+    $republish = $options['republish'] ?? FALSE;
 
-    if ($options['migration-file'] and !file_exists($options['migration-file'])) {
-      $this->output()->writeln('The specified file "' . $options['migration-file'] . '" does not exist');
+    if ($migration_file and !file_exists($migration_file)) {
+      $this->logger->error($this->t('The specified migration file "@migration_file" does not exist.',
+        ['@migration_file' => $migration_file]));
       return;
     }
-    if ($options['migration-file'] and $options['republish']) {
-      $this->output()->writeln('The options --republish and --migration-file cannot be combined');
+    if ($migration_file and $options['republish']) {
+      $this->logger->error($this->t('The options --republish and --migration-file cannot be combined'));
       return;
     }
-    // If schema not supplied then grab default chado schema.
-    if (!$options['schema-name']) {
-      $default_chado_schema = $this->chado_connection->getSchemaName();
-      $options['schema-name'] = $default_chado_schema;
-    }
-    $values = [
-      'schema_name' => $options['schema-name'],
-      'batch_size' => $options['batch-size'],
-      'republish' => $options['republish'],
-      'migration_file' => $options['migration-file'],
-      'lenient_migration' => $options['lenient-migration'],
+    $job_values = [
+      'schema_name' => $schema_name,
+      'batch_size' => $batch_size,
+      'republish' => $republish,
+      'migration_file' => $migration_file,
+      'lenient_migration' => $lenient_migration,
     ];
 
-    $datastore = $options['datastore'];
     TripalBackendPublishManager::runTripalJob(
-       $bundle, $datastore, $values);
+      $bundle, $datastore, $job_values);
   }
 
   /**
@@ -288,36 +438,40 @@ class ChadoManageCommands extends DrushCommands {
    * @param string $bundle
    *   The id of the TripalContentType you would like to unpublish content for.
    * @param array $options
-   *   Publish options, defaults are provided in the function declaration.
+   *   Options passed on the drush command line.
    *
-   * @command tripal-chado:unpublish
-   * @aliases trp-chado-unpublish
-   * @options schema-name
-   *   The name of the chado schema to use.
-   * @options all
-   *   Unpublish all records of the specified content type. Without this
-   *   option, only orphaned records are unpublished.
-   *
-   * @usage drush trp-chado-unpublish contact
-   *   Submits a standard chado publish job to unpublish only orphaned records
-   *   in the contact content type.
-   * @usage drush trp-chado-unpublish organism --all --schema-name=prod
-   *   Submits a chado publish job for the organism content type which
-   *   unpublishes ALL records based on the prod.organism table.
+   * @return void
+   *   No return value.
    */
+  #[CLI\Command(name: 'tripal-chado:unpublish', aliases: ['trp-chado-unpublish'])]
+  #[CLI\Argument(
+    name: 'bundle',
+    description: 'The id of the TripalContentType you would like to unpublish content for.',
+  )]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the chado schema to use.')]
+  #[CLI\Option(name: 'all', description: 'Unpublish all records of the specified content type. Without this option, only orphaned records are unpublished.')]
+  #[CLI\Usage(
+    name: 'drush trp-chado-unpublish contact',
+    description: 'Submits a standard chado publish job to unpublish only orphaned records in the contact content type.',
+  )]
+  #[CLI\Usage(
+    name: 'drush trp-chado-unpublish organism --all --schema-name=teacup',
+    description: 'Submits a chado publish job for the organism content type which unpublishes ALL records based on the teacup.organism table.',
+  )]
   public function unpublish(
     string $bundle,
     array $options = [
-      'schema-name' => '',
+      'schema-name' => NULL,
       'datastore' => 'chado_storage',
       'all' => FALSE,
     ],
-  ) {
+  ): void {
+    $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
 
     // If schema not supplied then grab default chado schema.
-    if (!$options['schema-name']) {
+    if (!$schema_name) {
       $default_chado_schema = $this->chado_connection->getSchemaName();
-      $options['schema-name'] = $default_chado_schema;
+      $schema_name = $default_chado_schema;
     }
     $values = [
       'orphaned' => !$options['all'],
@@ -327,66 +481,6 @@ class ChadoManageCommands extends DrushCommands {
     $datastore = $options['datastore'];
     TripalBackendPublishManager::runTripalJob(
       $bundle, $datastore, $values);
-  }
-
-  /**
-   * Add a Chado schema to Tripal.
-   *
-   * This command does not set this schema as the default, as
-   * there can be more than one Chado schema added to Tripal.
-   * See the command tripal-chado:set_default for this functionality.
-   *
-   * @command tripal-chado:add_to_tripal
-   * @aliases trp-add-chado
-   * @options schema-name
-   *   The name of the chado schema to add to Tripal.
-   * @usage drush trp-add-chado --schema-name="chado"
-   *   Adds the specified Chado to Tripal.
-   */
-  public function addToTripal($options = ['schema-name' => 'chado']) {
-
-    $this->output()->writeln('Adding the schema "' . $options['schema-name'] . '" to Tripal...');
-
-    $this->integrator->setParameters(
-      [
-        'input_schemas' => [$options['schema-name']],
-      ]
-    );
-
-    if ($this->integrator->performTask()) {
-      $this->output()->writeln('Successfully added the schema "' . $options['schema-name'] . '" to Tripal.');
-    }
-  }
-
-  /**
-   * Sets a specified Chado schema to be the default in Tripal.
-   *
-   * Only one schema may be set to default at a time.
-   *
-   * @command tripal-chado:set_default_schema
-   * @aliases trp-set-default
-   * @options schema-name
-   *   The name of the chado schema to be set to default in Tripal.
-   * @usage drush trp-set-default --schema-name="chado"
-   *   Sets the specified Chado to be default in Tripal.
-   */
-  public function setDefault($options = ['schema-name' => 'chado']) {
-
-    $this->output()->writeln('Setting the schema "' . $options['schema-name'] . '" to be default in Tripal...');
-
-    // Ensure that the provided schema exists.
-    if ($this->tripaldbx->schemaExists($options['schema-name'])) {
-      $config = $this->config_factory->getEditable('tripal_chado.settings');
-      $success = $config->set('default_schema', $options['schema-name'])->save();
-
-      if ($success) {
-        $this->output()->writeln('Successfully set the schema "' . $options['schema-name'] . '" to be default.');
-      }
-    }
-    else {
-      throw new \Exception("Unable to set the default schema to '"
-          . $options['schema-name'] . "' - that schema does not exist.");
-    }
   }
 
   /**
@@ -432,14 +526,11 @@ class ChadoManageCommands extends DrushCommands {
   ): void {
 
     // Get options or set default if not specified.
-    $schema_name = $options['schema-name'] ?? NULL;
+    $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
     $option_all = $options['all'] ?? FALSE;
     $option_list = $options['list'] ?? FALSE;
     $option_time = $options['time'] ?? FALSE;
 
-    if (!$schema_name) {
-      $schema_name = $this->config_factory->get('tripal_chado.settings')->get('default_schema');
-    }
     $schema_exists = $this->tripaldbx->schemaExists($schema_name);
     if (!$schema_exists) {
       $this->logger->error($this->t('The schema "@schema_name" does not exist.',
