@@ -81,13 +81,3 @@ services:
     class: 'Drupal\tripal\Hook\TripalViewsHooks'
   tripal.theme_hooks:
     class: 'Drupal\tripal\Hook\TripalThemeHooks'
-  # Drush commands duplicated here to allow phpunit to load them.
-  tripal.command:
-    class: 'Drupal\tripal\Commands\TripalCommands'
-    arguments:
-      - '@account_switcher'
-      - '@tripal.tripalentitytype_collection'
-      - '@tripal.tripalfield_collection'
-      - '@tripal.sync_tripal_field_storage'
-    tags:
-      - { name: 'drush.command' }

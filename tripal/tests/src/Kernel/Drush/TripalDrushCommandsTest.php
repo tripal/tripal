@@ -2,9 +2,13 @@
 
 namespace Drupal\Tests\tripal\Kernel\Drush;
 
+use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\tripal\Commands\TripalCommands;
+use Drupal\tripal\Services\SyncTripalFieldStorage;
+use Drupal\tripal\Services\TripalEntityTypeCollection;
+use Drupal\tripal\Services\TripalFieldCollection;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Psr\Log\LoggerInterface;
@@ -85,18 +89,23 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
           return NULL;
       });
 
-    // Create a mock io to access io output.
-    $mock_io = $this->createMock(OutputInterface::class);
-    $mock_io->method('writeln')
+    // Create a mock output to access output.
+    $mock_output = $this->createMock(OutputInterface::class);
+    $mock_output->method('writeln')
       ->willReturnCallback(function ($message, $options) {
           $this->log_output .= $message;
           return NULL;
       });
 
     // An instance of the tripal drush command class.
-    $this->drush_command = $this->container->get('tripal.command');
+    $this->drush_command = new TripalCommands(
+      $this->container->get('account_switcher'),
+      $this->container->get('tripal.tripalentitytype_collection'),
+      $this->container->get('tripal.tripalfield_collection'),
+      $this->container->get('tripal.sync_tripal_field_storage'),
+    );
     $this->drush_command->setLogger($mock_logger);
-    $this->drush_command->setOutput($mock_io);
+    $this->drush_command->setOutput($mock_output);
 
     // Create a tripal job.
     $details = [
@@ -163,7 +172,7 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
       'Need a user name to run a job');
 
     $this->drush_command->rerunJob(['username' => 'fakeuser']);
-    $this->assertStringContainsString('The --username argument does not specify a valid use', $this->getLogOutput(),
+    $this->assertStringContainsString('The --username argument does not specify a valid user', $this->getLogOutput(),
       'Need a valid user name to run a job');
 
     $this->drush_command->rerunJob(['username' => $this->username]);

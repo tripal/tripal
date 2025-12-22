@@ -4,6 +4,7 @@ services:
     arguments:
       - '@config.factory'
       - '@date.formatter'
+      - '@tripal.backend_publish'
       - '@tripal.dbx'
       - '@tripal_chado.apply_migrations'
       - '@tripal_chado.database'
