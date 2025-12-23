@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
@@ -27,6 +28,11 @@ use Drupal\tripal\Services\TripalFieldCollection;
 )]
 class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = 'chado_additional_type_type_default';
 
   /**
@@ -71,6 +77,40 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    // Get the Chado table and column this field maps to.
+    $settings = $field_definition->getSettings();
+    $storage_settings = $settings['storage_plugin_settings'];
+    $base_table = $storage_settings['base_table'];
+    $type_table = $storage_settings['type_table'] ?? '';
+
+    // Choose a random cvterm.
+    $term_id = mt_rand(1, 500);
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_instance = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $cvterm_record = $cvterm_instance->getCvterm(['cvterm.cvterm_id' => $term_id], []);
+    $cvterm_record = array_pop($cvterm_record);
+
+    $value['record_id'] = 0;
+    if ($type_table != $base_table) {
+      $value['prop_id'] = 0;
+      $value['link_id'] = 0;
+      $value['value'] = '';
+    }
+
+    $value['type_id'] = $term_id;
+    $value['term_name'] = $cvterm_record->getValue('cvterm.name');
+    $value['id_space'] = $cvterm_record->getValue('db.name');
+    $value['accession'] = $cvterm_record->getValue('dbxref.accession');
+
+    return [$value];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
@@ -79,10 +119,10 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $base_table = $storage_settings['base_table'];
     $type_table = $storage_settings['type_table'] ?? '';
     $type_column = $storage_settings['type_column'] ?? '';
-    // Type table and column can also be stored as the select element
+    // Type table and column can also be stored as the select element.
     $type_fkey = $storage_settings['type_fkey'] ?? '';
     if ($type_fkey) {
-      list($type_table, $type_column) = explode(self::$table_column_delimiter, $type_fkey);
+      [$type_table, $type_column] = explode(self::$table_column_delimiter, $type_fkey);
     }
 
     // If we don't have a base table then we're not ready to specify the
@@ -123,7 +163,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     if ($type_table != $base_table) {
       $type_table_def = self::getChadoTableDef($type_table, $schema);
       $type_pkey_col = $type_table_def['primary key'];
-      $type_fkey_col = array_keys($type_table_def['foreign keys'][$base_table]['columns'])[0];
+      $type_fkey_col = self::getChadoForeignKeyColumn($type_table, $base_table, $schema);
       $link_term = self::getColumnTermId($type_table, $type_fkey_col, self::$record_id_term);
       $value_term = self::getColumnTermId($type_table, 'value', 'NCIT:C25712');
 
@@ -131,17 +171,17 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', self::$record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
-        'path' => $type_table  . '.' . $type_pkey_col,
+        'path' => $type_table . '.' . $type_pkey_col,
       ]);
       // (e.g., analysisprop.feature_id)
-      $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link_id', $link_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link_id', $link_term, [
         'action' => 'store_link',
         'path' => $type_table . '.' . $type_fkey_col,
       ]);
       // (e.g., analysisprop.value)
-      $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
+      $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
-        'path' => $type_table . '.' . 'value',
+        'path' => $type_table . '.value',
       ]);
     }
 
@@ -150,7 +190,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
       'action' => 'store',
       'path' => $type_table . '.' . $type_column,
-      'empty_value' => 0
+      'empty_value' => 0,
     ]);
 
     // This field needs the term name, idspace and accession for proper
@@ -158,23 +198,24 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'term_name', $name_term, 128, [
       'action' => 'read_value',
       'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;name',
-      'as' => 'term_name'
+      'as' => 'term_name',
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'id_space', $idspace_term, 128, [
       'action' => 'read_value',
       'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
-      'as' => 'idSpace'
+      'as' => 'idSpace',
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'accession', $accession_term, 128, [
       'action' => 'read_value',
-      'path' => $type_table. '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;accession',
-      'as' => 'accession'
+      'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;accession',
+      'as' => 'accession',
     ]);
     return $properties;
   }
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\TripalFieldItemBase::tripalValuesTemplate()
    */
   public function tripalValuesTemplate($field_definition, $default_value = NULL) {
@@ -215,7 +256,6 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     return $prop_values;
   }
 
-
   /**
    * {@inheritdoc}
    */
@@ -232,16 +272,17 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $type_column = $storage_settings['type_column'] ?? '';
     $type_fkey = $storage_settings['type_fkey'] ?? '';
 
-    // In the form, table and column will be selected together as a single unit
+    // In the form, table and column will be selected together as a single unit.
     $type_select = $type_fkey;
     if ($type_table and $type_column) {
       $type_select = $type_table . self::$table_column_delimiter . $type_column;
     }
 
-    // Change the ajax callback on the base table select (from the parent form) so that
-    // when it is selected, the type table select can be populated with candidate tables.
+    // Change the ajax callback on the base table select (from the parent form)
+    // so that when it is selected, the type table select can be populated with
+    // candidate tables.
     $elements['storage_plugin_settings']['base_table']['#ajax'] = [
-      'callback' =>  [$this, 'storageSettingsFormTypeFKeyAjaxCallback'],
+      'callback' => [$this, 'storageSettingsFormTypeFKeyAjaxCallback'],
       'event' => 'change',
       'progress' => [
         'type' => 'throbber',
@@ -252,10 +293,8 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // Element to select combined table and column for the additional type.
     $elements['storage_plugin_settings']['type_fkey'] = [
       '#type' => 'select',
-      '#title' => t('Type Table and Column'),
-      '#description' => t('Select the table and column that specifies the type for this field. ' .
-        'This can be either from the base table, or from a different table with a foreign ' .
-        'key to the base table.'),
+      '#title' => $this->t('Type Table and Column'),
+      '#description' => $this->t('Select the table and column that specifies the type for this field. This can be either from the base table, or from a different table with a foreign key to the base table.'),
       '#options' => $this->getTypeFkeys($base_table),
       '#default_value' => $type_select,
       '#required' => TRUE,
@@ -269,7 +308,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
   }
 
   /**
-   * Form element validation handler for type table and column
+   * Form element validation handler for type table and column.
    *
    * @param array $form
    *   The form where the settings form is being included in.
@@ -291,23 +330,26 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
           'An invalid table and column was selected');
     }
     else {
-      // Store the separated table and column in their respective settings variables
+      // Store the separated table and column in their respective settings
+      // variables.
       $form_state->setValue(['settings', 'storage_plugin_settings', 'type_table'], $parts[0]);
       $form_state->setValue(['settings', 'storage_plugin_settings', 'type_column'], $parts[1]);
     }
   }
 
   /**
-   * Saves the location of the bundle term in the entity for easy access by publish.
+   * Save the chado table.column of the bundle term in the entity.
+   *
+   * Note: This third-party setting is used for publish.
    *
    * @param string $bundle
-   *   The bundle identifier, e.g. "analysis" or "project"
+   *   The bundle identifier, e.g. "analysis" or "project".
    * @param string $type_table
-   *   The table where the term is stored, usually the base table or else a property table.
+   *   The table where the term is stored, usually the base table or prop table.
    * @param string $type_column
-   *   The name of the column where the term is stored. Usually this is "type_id".
+   *   The name of the column where the term is stored. Default: "type_id".
    */
-  public static function setEntityBundleType(string $bundle, string $type_table, string $type_column) {
+  public static function setEntityBundleType(string $bundle, string $type_table, string $type_column = 'type_id') {
     /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
     $entity_type_manager = \Drupal::entityTypeManager();
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
@@ -330,17 +372,15 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $fixed_value = $this->getSetting('fixed_value');
     $elements['field_term_fs']['fixed_value'] = [
       '#type' => 'checkbox',
-      '#title' => t('This term defines the bundle'),
-      '#description' => t('Check this box to indicate that the term for this field is'
-        . ' used to define the term for the bundle. For example, the "gene (SO:0000704)"'
-        . ' term defines the "Gene" bundle based on the "feature" table.'),
-      '#default_value' => $fixed_value?1:0,
+      '#title' => $this->t('This term defines the bundle'),
+      '#description' => $this->t('Check this box to indicate that the term for this field is used to define the term for the bundle. For example, the "gene (SO:0000704)" term defines the "Gene" bundle based on the "feature" table.'),
+      '#default_value' => $fixed_value ? 1 : 0,
       '#element_validate' => [[static::class, 'fixedValueFieldValidate']],
     ];
     return $elements;
   }
 
- /**
+  /**
    * {@inheritdoc}
    */
   public static function fixedValueFieldValidate(array $form, FormStateInterface $form_state) {
@@ -357,17 +397,16 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       // The fixed value from the form checkbox is just a boolean,
       // convert it to the term when saving.
       $fixed_value = $settings['termIdSpace'] . ':' . $settings['termAccession'];
-      $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($bundle);
+      $bundle_entity = TripalEntityType::load($bundle);
       $bundle_term = $bundle_entity->getTermIdSpace() . ':' . $bundle_entity->getTermAccession();
       if ($fixed_value != $bundle_term) {
         $form_state->setErrorByName('settings][field_term_fs][vocabulary_term',
-            t('The "Controlled Vocabulary Term" must be the same term as the'
-            . ' bundle term (@bundle_term) when "This term defines the bundle" is set',
+            $this->t('The "Controlled Vocabulary Term" must be the same term as the bundle term (@bundle_term) when "This term defines the bundle" is set',
             ['@bundle_term' => $bundle_term]));
       }
       else {
         $form_state->setValue(['settings', 'fixed_value'], $fixed_value);
-        // Also store the fixed value storage location in the entity
+        // Also store the fixed value storage location in the entity.
         self::setEntityBundleType($bundle, $type_table, $type_column);
       }
     }
@@ -379,12 +418,12 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
   }
 
   /**
-   * Return a list of candidate type tables. This is done
-   * by returning tables that have a foreign key to our
-   * $base_table, and have a column with a foreign key
-   * to cvterm. These tables+columns are returned in an
-   * alphabetized list ready to use in a form select,
-   * with the base table, if present, included at the top.
+   * Return a list of candidate type tables.
+   *
+   * This is done by returning tables that have a foreign key to our
+   * $base_table, and have a column with a foreign key to cvterm. These
+   * tables+columns are returned in an alphabetized list ready to use in a
+   * form select, with the base table, if present, included at the top.
    *
    * @param string $base_table
    *   The Chado base table being used for this field.
@@ -404,19 +443,20 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
       // Get a list of tables with foreign keys to selected $base_table.
       $base_schema_def = self::getChadoTableDef($base_table, $schema);
-      $fkey_list = $base_schema_def['referring_tables']??[];
+      $fkey_list = $base_schema_def['referring_tables'] ?? [];
       asort($fkey_list);
 
       // Include the base table at the top of the sorted list
       // since it is the most likely table to select.
       array_unshift($fkey_list, $base_table);
 
-      // For each of these tables, if there is a column with a foreign key to the
-      // cvterm table, return table+column, formatted for use in the form select.
+      // For each of these tables, if there is a column with a foreign key
+      // to the cvterm table, return table+column, formatted for use in the
+      // form select.
       foreach ($fkey_list as $type_table) {
-        $type_schema_def = self::getChadoTableDef($type_table, $schema);
-        if (isset($type_schema_def['foreign keys']['cvterm']['columns'])) {
-          foreach ($type_schema_def['foreign keys']['cvterm']['columns'] as $column_name => $table) {
+        $fk_def = self::getChadoForeignKeyDef($type_table, 'cvterm', $schema);
+        if ($fk_def) {
+          foreach ($fk_def['columns'] as $column_name) {
             $fkey = $type_table . self::$table_column_delimiter . $column_name;
             $type_fkeys[$fkey] = $fkey;
           }
@@ -436,8 +476,10 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
   }
 
   /**
-   * Ajax callback to update the type table+column select. This is needed
-   * because the select can't be populated until we know the base table.
+   * Ajax callback to update the type table+column select.
+   *
+   * This is needed because the select can't be populated until we know
+   * the base table.
    *
    * @param array $form
    *   The form array.
@@ -452,6 +494,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -470,12 +513,14 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       $compatible = TRUE;
     }
 
-    $prop_def = self::getChadoTableDef($base_table . 'prop', $schema);
-    // If the property table exists, and has a foreign key to the base table,
-    // then this content type is compatible.
-    if ($prop_def) {
-      if (array_key_exists($base_table, $prop_def['foreign keys'])) {
-        $compatible = TRUE;
+    if ($schema->tableExists($base_table . 'prop')) {
+      $prop_def = self::getChadoTableDef($base_table . 'prop', $schema);
+      // If the property table exists, and has a foreign key to the base table,
+      // then this content type is compatible.
+      if ($prop_def) {
+        if (array_key_exists($base_table, $prop_def['foreign keys'])) {
+          $compatible = TRUE;
+        }
       }
     }
 
@@ -484,6 +529,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances, array $options = []): array {
@@ -545,18 +591,18 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       }
     }
 
-    // Create a field entry in the list
+    // Create a field entry in the list.
     $termIdSpace = $bundle->getTermIdSpace();
     $termAccession = $bundle->getTermAccession();
     $fixed_value = $termIdSpace . ':' . $termAccession;
-    // This discovered field is unchecked by default, issue #2033
+    // This discovered field is unchecked by default, issue #2033.
     $field_list[] = [
       'name' => self::generateFieldName($bundle, 'type', 0),
       'content_type' => $bundle->getID(),
       'label' => 'Type',
       'type' => self::$id,
       'description' => 'This field specifies the controlled vocabulary term'
-          . ' for this content type as "' . $fixed_value . '"',
+      . ' for this content type as "' . $fixed_value . '"',
       'cardinality' => 1,
       'required' => TRUE,
       'checked' => FALSE,
@@ -584,13 +630,13 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
         'form' => [
           'default' => [
             'region' => 'content',
-            'weight' => 10
+            'weight' => 10,
           ],
         ],
       ],
     ];
 
-    // The parent class adds collection plugin IDs
+    // The parent class adds collection plugin IDs.
     $field_list = self::discoverPostprocess($field_list);
     return $field_list;
   }
