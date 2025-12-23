@@ -5,7 +5,6 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalImporter;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal\Services\TripalLogger;
-use Symfony\Component\Yaml\Yaml;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
@@ -123,9 +122,8 @@ class OboImporterTest extends ChadoTestKernelBase {
     $this->drupal_connection = $this->container->get('database');
 
     // First retrieve info from the YAML file for each test.
-    $yaml_data = Yaml::parse(file_get_contents($this->yaml_info_file));
-    $this->system_under_test = $yaml_data['system-under-test'];
-    $this->scenarios = $yaml_data['scenarios'];
+    // First retrieve info from the YAML file for this particular test.
+    [$this->system_under_test, $this->scenarios] = $this->getTestInfoFromYaml($this->yaml_info_file);
 
     // Create the test Chado installation we will be using.
     $this->system_under_test['chado_version'] ??= '1.3';
@@ -186,28 +184,6 @@ class OboImporterTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Retrieves the current scenario based on the data provider.
-   *
-   * NOTE: Also ensures the type_ids match what is currently in the database.
-   *
-   * @param int $current_scenario_key
-   *   The key of the scenario in the YAML.
-   * @param string $current_scenario_label
-   *   The label of the scenario in the YAML.
-   *
-   * @return array
-   *   The scenario to be tested as defined in the YAML.
-   */
-  public function retrieveCurrentScenario(int $current_scenario_key, string $current_scenario_label) {
-
-    // Retrieve the correct scenario.
-    $current_scenario = $this->scenarios[$current_scenario_key];
-    $this->assertEquals($current_scenario_label, $current_scenario['label'], 'We may not have retrieved the expected scenario');
-
-    return $current_scenario;
-  }
-
-  /**
    * Sets up the two materialized views needed for the importer.
    *
    * The mviews are populated when the importer postRun() is called.
@@ -264,7 +240,7 @@ class OboImporterTest extends ChadoTestKernelBase {
   #[DataProvider('provideScenarios')]
   public function testOboImporter(int $current_scenario_key, string $current_scenario_label) {
 
-    $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
+    $current_scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
 
     $this->mock_messages = [];
 

@@ -172,6 +172,11 @@ class TripalChadoHooks {
       'label' => 'The column in the linking table which is a foreign key pointing to the base table (e.g. for feature_synonym this would be feature_id).',
       'nullable' => TRUE,
     ];
+    $fste_mapping['linking_method'] = [
+      'type' => 'string',
+      'label' => 'The path through which to link the base table to the fields linked table. For example to link "feature" to "contact", the linking method would be "feature_contact → contact_id".',
+      'nullable' => TRUE,
+    ];
     // Specific to relationship tables.
     $fste_mapping['subject_column'] = [
       'type' => 'string',
@@ -231,6 +236,11 @@ class TripalChadoHooks {
     $ttfc_mapping['linker_fkey_column'] = [
       'type' => 'string',
       'label' => 'The column in the linking table which is a foreign key pointing to the base table (e.g. for feature_synonym this would be feature_id).',
+      'nullable' => TRUE,
+    ];
+    $ttfc_mapping['linking_method'] = [
+      'type' => 'string',
+      'label' => 'The path through which to link the base table to the fields linked table. For example to link "feature" to "contact", the linking method would be "feature_contact → contact_id".',
       'nullable' => TRUE,
     ];
     // Specific to relationship tables.
