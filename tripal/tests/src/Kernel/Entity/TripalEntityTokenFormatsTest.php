@@ -139,8 +139,7 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
    */
   #[DataProvider('provideScenarios')]
   public function testTripalEntitySaveContent(int $current_scenario_key, string $current_scenario_label) {
-    $current_scenario = $this->scenarios[$current_scenario_key];
-    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+    $current_scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
 
     // 0.a Make any changes needed to the bundle.
     if (array_key_exists('alter_bundle', $current_scenario)) {
