@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Functional\Drush;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use Drupal\tripal_chado\Database\ChadoConnection;
 use Drush\TestTraits\DrushTestTrait;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
@@ -18,11 +19,27 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('drush-command')]
 #[RunTestsInSeparateProcesses]
 class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
+
+  /**
+   * The default theme to use for this test.
+   *
+   * @var string
+   */
   protected $defaultTheme = 'stark';
 
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
   protected static $modules = ['system', 'tripal', 'tripal_chado'];
 
-  protected $connection;
+  /**
+   * The database connection to the test chado.
+   *
+   * @var Drupal\tripal_chado\Database\ChadoConnection
+   */
+  protected ChadoConnection $chado_connection;
 
   use DrushTestTrait;
 
@@ -36,7 +53,7 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
     // Create a new test schema for us to use.
-    $this->connection = $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
+    $this->chado_connection = $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
   }
 
   /**
@@ -56,7 +73,7 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
     // Now add in some inconsistencies ;-p
     // CASE: alter the vocabulary description.
     // ----------------------------------------.
-    $this->connection->update('1:cv')
+    $this->chado_connection->update('1:cv')
       ->fields(['definition' => 'CHANGED CV DESCRIPTION'])
       ->condition('cv.name', 'germplasm_ontology')
       ->execute();

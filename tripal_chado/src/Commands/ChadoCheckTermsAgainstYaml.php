@@ -2,10 +2,12 @@
 
 namespace Drupal\tripal_chado\Commands;
 
-use Drush\Commands\DrushCommands;
+use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Symfony\Component\Console\Helper\Table;
+use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Drush\Commands\DrushCommands;
+use Symfony\Component\Console\Helper\Table;
 
 /**
  * Implements a Drush command to check migrated cv/db/cvterm/dbxref records.
@@ -28,13 +30,6 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   protected string $chado_schema;
 
   /**
-   * A TripalDBX connection to the chado database.
-   *
-   * @var Drupal\tripal_chado\Database\ChadoConnection
-   */
-  protected ChadoConnection $chado;
-
-  /**
    * Terminal escape codes used to display a string in red.
    *
    * @var string
@@ -47,6 +42,20 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * @var string
    */
   protected string $yellow_format = "\033[1;33;40m\033[1m %s \033[0m";
+
+  /**
+   * ChadoCheckTermsAgainstYaml Drush command class constructor.
+   *
+   * This is used to inject the services used by this command.
+   */
+  public function __construct(
+    protected ConfigFactory $config_factory,
+    protected TripalDbx $tripaldbx,
+    protected ChadoConnection $chado_connection,
+  ) {
+    // Parent currently doesn't do anything here.
+    parent::__construct();
+  }
 
   /**
    * Drush command to check a given chado install for inconsistencies.
@@ -84,7 +93,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       throw new \Exception('The --chado_schema argument is required.');
     }
 
-    if (!\Drupal::service('tripal.dbx')->schemaExists($options['chado_schema'])) {
+    if (!$this->tripaldbx->schemaExists($options['chado_schema'])) {
       throw new \Exception('The specified chado schema "' . $options['chado_schema'] . '" does not exist.');
     }
     $this->chado_schema = $options['chado_schema'];
@@ -126,18 +135,15 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    */
   protected function chadoCheckTermsFindProblems(&$problems, &$solutions, &$summary_rows, $options) {
 
-    $this->chado = \Drupal::service('tripal_chado.database');
-    $this->chado->setSchemaName($options['chado_schema']);
+    $this->chado_connection->setSchemaName($options['chado_schema']);
 
     $this->output()->writeln('');
     $this->output()->writeln('Using the Chado Content Terms YAML specification to determine what Tripal expects.');
     $this->output()->writeln('');
 
-    $config_factory = \Drupal::service('config.factory');
-
     $id = 'chado_content_terms';
     $config_key = 'tripal.tripal_content_terms.' . $id;
-    $config = $config_factory->get($config_key);
+    $config = $this->config_factory->get($config_key);
     if (!$config) {
       $this->io()->error('Unable to access the configuration for tripal content terms!');
       return FALSE;
@@ -286,7 +292,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       'nd_experiment_types',
       'nd_geolocation_property',
     ];
-    $query = $this->chado->select('1:cv', 'CV')
+    $query = $this->chado_connection->select('1:cv', 'CV')
       ->fields('CV', ['cv_id', 'name']);
     $results = $query->execute();
     while ($result = $results->fetchObject()) {
@@ -450,7 +456,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   protected function chadoCheckTermsCheckVocab(array $vocab_info, array &$problems, array &$solutions) {
 
     // Check if the cv record for this vocabulary exists.
-    $query = $this->chado->select('1:cv', 'cv')
+    $query = $this->chado_connection->select('1:cv', 'cv')
       ->fields('cv', ['cv_id', 'definition'])
       ->condition('cv.name', $vocab_info['name']);
     $existing_cv = $query->execute()->fetchObject();
@@ -503,7 +509,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     foreach ($vocab_info['idSpaces'] as $idspace_info) {
 
       // Check if the db record for this id space exists.
-      $query = $this->chado->select('1:db', 'db')
+      $query = $this->chado_connection->select('1:db', 'db')
         ->fields('db', ['db_id', 'description', 'urlprefix', 'url'])
         ->condition('db.name', $idspace_info['name']);
       $existing_db = $query->execute()->fetchObject();
@@ -595,7 +601,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     // First check that cvterm.name, cvterm.cv, dbxref.accession
     // and dbxref.db all match that which is expected.
-    $query = $this->chado->select('1:cvterm', 'cvt')
+    $query = $this->chado_connection->select('1:cvterm', 'cvt')
       ->fields('cvt', ['cvterm_id', 'name', 'definition'])
       ->condition('cvt.name', $term_info['name']);
     $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
@@ -617,7 +623,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     // If not, then select the cvterm...
     // ... assuming the cvterm.name and cvterm.cv match.
     $cv_matches = TRUE;
-    $query = $this->chado->select('1:cvterm', 'cvt')
+    $query = $this->chado_connection->select('1:cvterm', 'cvt')
       ->fields('cvt', ['cvterm_id', 'name', 'definition', 'dbxref_id'])
       ->condition('cvt.name', $term_info['name']);
     $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
@@ -631,7 +637,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     // ... only looking for the matching cvterm.name.
     if (!$cvterms) {
-      $query = $this->chado->select('1:cvterm', 'cvt')
+      $query = $this->chado_connection->select('1:cvterm', 'cvt')
         ->fields('cvt', ['cvterm_id', 'name', 'definition', 'dbxref_id'])
         ->condition('cvt.name', $term_info['name']);
       $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
@@ -647,7 +653,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     // Also, independently select the dbxref...
     // ... assuming the dbxref.accession and dbxref.db match.
     $db_matches = TRUE;
-    $query = $this->chado->select('1:dbxref', 'dbx')
+    $query = $this->chado_connection->select('1:dbxref', 'dbx')
       ->fields('dbx', ['dbxref_id', 'accession'])
       ->condition('dbx.accession', $term_info['accession']);
     $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
@@ -657,7 +663,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     // ... only looking for the matching dbxref.accession.
     if (!$dbxrefs) {
-      $query = $this->chado->select('1:dbxref', 'dbx')
+      $query = $this->chado_connection->select('1:dbxref', 'dbx')
         ->fields('dbx', ['dbxref_id', 'accession'])
         ->condition('dbx.accession', $term_info['accession']);
       $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
@@ -759,7 +765,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // Now we want to determine if there are any other cvterms connected to
       // the single perfect dbxref we found. If there are then that is a concern
       // but if not then it turns out this dbxref is without error.
-      $query = $this->chado->select('1:dbxref', 'dbx')
+      $query = $this->chado_connection->select('1:dbxref', 'dbx')
         ->condition('dbx.accession', $term_info['accession']);
       $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
       $query->condition('db.name', $term_info['idspace']);
@@ -978,7 +984,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   protected function updateChadoTermRecords(string $table_name, string $pkey, array $records) {
 
     foreach ($records as $id => $values) {
-      $query = $this->chado->update('1:' . $table_name)
+      $query = $this->chado_connection->update('1:' . $table_name)
         ->fields($values)
         ->condition($pkey, $id);
       $query->execute();
@@ -999,7 +1005,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    */
   protected function migrateObsoleteVocabularies(array $cv_ids) {
 
-    $query = $this->chado->select('1:cv', 'cv');
+    $query = $this->chado_connection->select('1:cv', 'cv');
     $query->condition('name', 'local', '=');
     $query->fields('cv', ['cv_id']);
     $local_cv = $query->execute()->fetchField();
@@ -1010,7 +1016,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     $n_removed = 0;
     foreach ($cv_ids as $cv_id => $cv_name) {
-      $query = $this->chado->update('1:cvterm');
+      $query = $this->chado_connection->update('1:cvterm');
       $query->fields(['cv_id' => $local_cv]);
       $query->condition('cv_id', $cv_id, '=');
       $count = $query->execute();
@@ -1018,7 +1024,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         $this->output()->writeln($this->t('Transferred @count records from CV "@from" to the "local" CV',
             ['@count' => $count, '@from' => $cv_name]));
       }
-      $query = $this->chado->delete('1:cv');
+      $query = $this->chado_connection->delete('1:cv');
       $query->condition('cv_id', $cv_id, '=');
       $query->execute();
       $n_removed++;

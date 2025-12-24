@@ -17,5 +17,9 @@ services:
       - { name: 'drush.command' }
   tripal_chado.chadochecktermsagainstyaml:
     class: '\Drupal\tripal_chado\Commands\ChadoCheckTermsAgainstYaml'
+    arguments:
+      - '@config.factory'
+      - '@tripal.dbx'
+      - '@tripal_chado.database'
     tags:
       - { name: 'drush.command' }
