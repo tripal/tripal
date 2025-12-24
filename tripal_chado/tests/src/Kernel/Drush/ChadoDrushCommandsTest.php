@@ -5,7 +5,6 @@ namespace Drupal\Tests\tripal_chado\Kernel\Drush;
 use Drupal\pgsql\Driver\Database\pgsql\Connection;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
-use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
 use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\tripal_biodb\Exception\ParameterException;
 use Drupal\tripal_chado\Commands\ChadoManageCommands;
@@ -37,7 +36,17 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
    *
    * @var array
    */
-  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'file', 'tripal', 'tripal_chado', 'views'];
+  protected static $modules = [
+    'system',
+    'user',
+    'path',
+    'path_alias',
+    'field',
+    'file',
+    'tripal',
+    'tripal_chado',
+    'views',
+  ];
 
   /**
    * The database connection to the drupal public schema.
@@ -100,7 +109,7 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
     $this->installEntitySchema('user');
 
     // Create and log-in a user.
-    $user = $this->setUpCurrentUser();
+    $this->setUpCurrentUser();
 
     // Store the test schema name for easy access.
     $this->test_schema = $this->chado_connection->getSchemaName();
@@ -154,16 +163,18 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
       ->willReturn(1);
     $mock_migrator->expects($this->once())
       ->method('checkMigrationStatus')
-      ->willReturn(['1.3.3.013' => (object) [
-        'version' => '1.3.3.013',
-        'description' => 'Harmonizes linker tables involving contacts and projects by adding a type_id and rank column.',
-        'filename' => 'V1.3.3.013__add_type_id_to_contact_and_project_linkers.sql',
-        'schema_name' => $this->test_schema,
-        'install_id' => NULL,
-        'applied_on' => NULL,
-        'success' => NULL,
-        'status' => 'Pending',
-      ]]);
+      ->willReturn([
+        '1.3.3.013' => (object) [
+          'version' => '1.3.3.013',
+          'description' => 'Harmonizes linker tables involving contacts and projects by adding a type_id and rank column.',
+          'filename' => 'V1.3.3.013__add_type_id_to_contact_and_project_linkers.sql',
+          'schema_name' => $this->test_schema,
+          'install_id' => NULL,
+          'applied_on' => NULL,
+          'success' => NULL,
+          'status' => 'Pending',
+        ],
+      ]);
     $mock_migrator->expects($this->once())
       ->method('performTask')
       ->willReturnOnConsecutiveCalls(FALSE, TRUE);
@@ -226,7 +237,6 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
 
     // Case: tripal-chado:install-chado alias trp-install-chado (mocked).
     // Note that a real install also sets the installed schema as default.
-
     $this->drush_command->installChado(['schema-name' => 'blueteapot', 'chado-version' => '1.3']);
     $this->assertStringContainsString('Chado was successfully installed', $this->getLogOutput(),
       'Chado installs with valid parameters');
@@ -240,7 +250,7 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
     $this->assertStringContainsString('Successfully set the schema "' . $this->test_schema . '" to be default', $this->getLogOutput(),
       'Can set default schema with valid schema-name');
 
-    // Case: tripal-chado:add_to_tripal alias trp-add-chado
+    // Case: tripal-chado:add_to_tripal alias trp-add-chado.
     $this->drush_command->addToTripal(['schema-name' => $this->test_schema]);
     $this->assertStringContainsString('Successfully added the Chado schema "' . $this->test_schema . '" to Tripal', $this->getLogOutput(),
       'Can add schema to tripal with valid schema-name');
@@ -274,26 +284,31 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
     $this->assertStringContainsString('Unable to drop chado schema "redteapot"', $this->getLogOutput(),
       'Dropping a non-existent schema will fail');
     $this->drush_command->dropChado(['schema-name' => $this->test_schema]);
-    $this->assertStringContainsString('Chado schema "' .$this->test_schema  . '" was successfully dropped', $this->getLogOutput(),
+    $this->assertStringContainsString('Chado schema "' . $this->test_schema . '" was successfully dropped', $this->getLogOutput(),
       'Can drop a chado schema using its schema-name');
 
     // Case: tripal-chado:publish alias trp-chado-publish (mocked).
     // We only test the validations provided by the drush command.
-    $this->drush_command->publish('study', ['schema-name' => $this->test_schema, 'migration-file' => 'xxx']);
+    $this->drush_command->publish('study',
+      ['schema-name' => $this->test_schema, 'migration-file' => 'xxx']);
     $this->assertStringContainsString('The specified migration file "xxx" does not exist', $this->getLogOutput(),
       'Publish with invalid migration file should fail');
-    $this->drush_command->publish('study', ['schema-name' => $this->test_schema, 'migration-file' => __FILE__, 'republish' => 1]);
+    $this->drush_command->publish('study',
+      ['schema-name' => $this->test_schema, 'migration-file' => __FILE__, 'republish' => 1]);
     $this->assertStringContainsString('The options --republish and --migration-file cannot be combined', $this->getLogOutput(),
       'Publish with valid migration file but also republish flag should fail');
-    $this->drush_command->publish('study', ['schema-name' => $this->test_schema, 'migration-file' => __FILE__]);
+    $this->drush_command->publish('study',
+      ['schema-name' => $this->test_schema, 'migration-file' => __FILE__]);
     $this->assertStringContainsString('mock_publish_instance', $this->getLogOutput(),
       'Publish with valid migration file should succeed');
 
     // Case: tripal-chado:unpublish alias trp-chado-unpublish (mocked).
-    $this->drush_command->unpublish('study', ['schema-name' => $this->test_schema]);
+    $this->drush_command->unpublish('study',
+      ['schema-name' => $this->test_schema]);
     $this->assertStringContainsString('mock_publish_instance', $this->getLogOutput(),
       'Unpublish with valid bundle should succeed');
-    $this->drush_command->unpublish('', ['all' => 1]);
+    $this->drush_command->unpublish('',
+      ['all' => 1]);
     $this->assertStringContainsString('mock_publish_instance', $this->getLogOutput(),
       'Unpublish all without bundle should succeed');
 
@@ -458,4 +473,3 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
   }
 
 }
-

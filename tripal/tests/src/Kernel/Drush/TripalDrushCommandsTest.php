@@ -2,13 +2,9 @@
 
 namespace Drupal\Tests\tripal\Kernel\Drush;
 
-use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\tripal\Commands\TripalCommands;
-use Drupal\tripal\Services\SyncTripalFieldStorage;
-use Drupal\tripal\Services\TripalEntityTypeCollection;
-use Drupal\tripal\Services\TripalFieldCollection;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Psr\Log\LoggerInterface;
