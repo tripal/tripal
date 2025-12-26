@@ -1,14 +1,15 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional\Drush;
+namespace Drupal\Tests\tripal_chado\Kernel\Drush;
 
-#@@@use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\Commands\ChadoCheckTermsAgainstYaml;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Symfony\Component\Console\Output\OutputInterface;
+
+use \Drupal\tripal_chado\Entity\ChadoTermMapping;
 
 /**
  * Tests the Drush Command tripal-chado:trp-check-terms.
@@ -20,14 +21,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[Group('bio-cv')]
 #[Group('drush-command')]
 #[RunTestsInSeparateProcesses]
-class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
-
-  /**
-   * The default theme to use for this test.
-   *
-   * @var string
-   */
-#@@@  protected $defaultTheme = 'stark';
+class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
 
   /**
    * Modules to enable.
@@ -64,7 +58,10 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
     parent::setUp();
 
     // Create a new test schema for us to use.
-    $this->chado_connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
+    $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+
+    // Install needed configurations.
+    ChadoTermMapping::refreshMapping('config/install/tripal.tripal_content_terms.chado_content_terms');
 
     // Create a mock output to access output.
     $mock_output = $this->createMock(OutputInterface::class);
