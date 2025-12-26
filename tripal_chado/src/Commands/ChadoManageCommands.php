@@ -50,7 +50,6 @@ class ChadoManageCommands extends DrushCommands {
     protected ChadoPreparer $preparer,
     protected ChadoRemover $remover,
   ) {
-    $this->ssio = new SymfonyStyle($this->input(), $this->output());
     // Parent currently doesn't do anything here.
     parent::__construct();
   }
@@ -122,6 +121,10 @@ class ChadoManageCommands extends DrushCommands {
     $option_list = $options['list'] ?? 0;
     $option_yes = $options['yes'] ?? 0;
 
+    // We can't iniitialze this in __construct because the input and
+    // output are not yet initialized there.
+    $this->ssio = new SymfonyStyle($this->input(), $this->output());
+
     // Confirm the schema exists.
     $schema_exists = $this->tripaldbx->schemaExists($schema_name);
     if (!$schema_exists) {
@@ -161,14 +164,14 @@ class ChadoManageCommands extends DrushCommands {
     }
 
     $this->output()->writeln("\nThe following table summarizes the migrations for the '" . $schema_name . "' schema.");
-    $ssio->table($header, $rows);
+    $this->ssio->table($header, $rows);
     $this->output()->writeln('');
 
     if ($option_list) {
       return;
     }
     if ($pending_migrations) {
-      $response = ($option_yes || $ssio->confirm(
+      $response = ($option_yes || $this->ssio->confirm(
         "Would you like to apply $pending_migrations pending migrations?",
         TRUE
       ));

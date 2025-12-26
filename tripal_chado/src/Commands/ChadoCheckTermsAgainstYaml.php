@@ -6,6 +6,7 @@ use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -61,7 +62,6 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     protected TripalDbx $tripaldbx,
     protected ChadoConnection $chado_connection,
   ) {
-    $this->ssio = new SymfonyStyle($this->input(), $this->output());
     // Parent currently doesn't do anything here.
     parent::__construct();
   }
@@ -73,22 +73,16 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *
    * @param array $options
    *   Command line options given to the drush command.
-   *
-   * @command tripal-chado:trp-check-terms
-   * @aliases trp-check-terms
-   * @option chado_schema
-   *   The name of the chado schema to check.
-   * @option auto-expand
-   *   Indicates that you always want to show specifics of any errors or
-   *   warnings.
-   * @option auto-fix
-   *   Indicates that you always want us to attempt to fix any issues without
-   *   the need for us to prompt.
-   * @option no-fix
-   *   Indicates that you do not want us to offer to fix anything.
-   * @usage drush trp-check-terms --chado_schema=chado_prod
-   *   Checks the terms stored in chado_prod.cvterm for consistency.
    */
+  #[CLI\Command(name: 'tripal-chado:trp-check-terms', aliases: ['trp-check-terms'])]
+  #[CLI\Option(name: 'chado_schema', description: 'The name of the chado schema to check.')]
+  #[CLI\Option(name: 'auto-expand', description: 'Indicates that you always want to show specifics of any errors or warnings')]
+  #[CLI\Option(name: 'auto-fix', description: 'Indicates that you always want us to attempt to fix any issues without the need for us to prompt.')]
+  #[CLI\Option(name: 'no-fix', description: 'Indicates that you do not want us to offer to fix anything.')]
+  #[CLI\Usage(
+    name: 'drush trp-check-terms --chado_schema=chado_prod',
+    description: 'Checks the terms stored in chado_prod.cvterm for consistency.',
+  )]
   public function chadoCheckTermsAreAsExpected(
     $options = [
       'chado_schema' => NULL,
@@ -98,12 +92,19 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     ],
   ) {
 
+    // We can't iniitialze this in __construct because the input and
+    // output are not yet initialized there.
+    $this->ssio = new SymfonyStyle($this->input(), $this->output());
+
     if (!$options['chado_schema']) {
-      throw new \Exception('The --chado_schema argument is required.');
+      $this->ssio->error($this->t('The --chado_schema argument is required.'));
+      return;
     }
 
     if (!$this->tripaldbx->schemaExists($options['chado_schema'])) {
-      throw new \Exception('The specified chado schema "' . $options['chado_schema'] . '" does not exist.');
+      $this->ssio->error($this->t('The specified chado schema "@schema" does not exist.',
+        ['@schema' => $options['chado_schema']]));
+      return;
     }
     $this->chado_schema = $options['chado_schema'];
 
@@ -880,14 +881,14 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     // Report missed cases.
     if ($summary_cvterm == ' ? ') {
-      $this->ssio->error($this->t('We missed a case with the cvterm for @label. These are the cvterms we have to work with: ',
+      $this->ssio->error($this->t('We missed a case with the cvterm for @label. These are the cvterms we have to work with:',
         ['@label' => $term_info['label']])
-        . print_r($cvterms, TRUE));
+        . ' ' . print_r($cvterms, TRUE));
     }
     if ($summary_dbxref == ' ? ') {
-      $this->ssio->error($this->t('We missed a case with the dbxref for @label. These are the dbxrefs we have to work with: ',
+      $this->ssio->error($this->t('We missed a case with the dbxref for @label. These are the dbxrefs we have to work with:',
         ['@label' => $term_info['label']])
-        . print_r($dbxrefs, TRUE));
+        . ' ' . print_r($dbxrefs, TRUE));
     }
 
     // Finally we can check the cvterm definition if we have found one!
