@@ -70,7 +70,7 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
   protected ChadoMviewsManager $mview_manager;
 
   /**
-   * An object of the chado drush commands class.
+   * An object of a drush commands class.
    *
    * @var Drupal\tripal_chado\Commands\ChadoManageCommands
    */
@@ -99,7 +99,7 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
     // Initialize services.
     $this->drupal_connection = \Drupal::database();
     $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
-    $this->mview_manager = \Drupal::service('tripal_chado.materialized_views');
+    $this->mview_manager = $this->container->get('tripal_chado.materialized_views');
 
     // Install needed schemas.
     $this->installSchema('tripal', ['tripal_id_space_collection', 'tripal_vocabulary_collection', 'tripal_import']);
@@ -198,17 +198,17 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
     $mock_publish->method('createInstance')
       ->willReturn($mock_publish_instance);
 
-    // An instance of the tripal_chado drush command class.
+    // An instance of the ChadoManageCommands drush command class.
     $this->drush_command = new ChadoManageCommands(
       $this->container->get('config.factory'),
       $this->container->get('date.formatter'),
       $mock_publish,
       $this->container->get('tripal.dbx'),
       $mock_migrator,
-      $this->container->get('tripal_chado.database'),
+      $this->chado_connection,
       $mock_installer,
       $this->container->get('tripal_chado.integrator'),
-      $this->container->get('tripal_chado.materialized_views'),
+      $this->mview_manager,
       $mock_preparer,
       $mock_remover,
     );

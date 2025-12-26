@@ -91,6 +91,10 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       'no-fix' => FALSE,
     ],
   ) {
+    $options['chado_schema'] ??= NULL;
+    $options['auto-expand'] ??= FALSE;
+    $options['auto-fix'] ??= FALSE;
+    $options['no-fix'] ??= FALSE;
 
     // We can't iniitialze this in __construct because the input and
     // output are not yet initialized there.
@@ -166,7 +170,6 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $this->ssio->error($this->t('Tripal content terms configuration did not have an array of vocabularies!'));
       return FALSE;
     }
-
     foreach ($vocabs as $vocab_info) {
 
       // Reset for the new vocab.
@@ -1327,8 +1330,11 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $this->t('YOURS'),
     ]);
     // Set the yours/expected columns to wrap at 50 characters each.
-    $table->setColumnMaxWidth(3, 50);
-    $table->setColumnMaxWidth(4, 50);
+    // (Not available when running a phpunit test.)
+    if (property_exists($table, 'setColumnMaxWidth')) {
+      $table->setColumnMaxWidth(3, 50);
+      $table->setColumnMaxWidth(4, 50);
+    }
 
     $rows = [];
     foreach ($problems as $specific_issues) {

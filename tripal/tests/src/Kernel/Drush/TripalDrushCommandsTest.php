@@ -29,7 +29,7 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
   protected static $modules = ['system', 'user', 'file', 'tripal', 'tripal_chado'];
 
   /**
-   * An object of the chado drush commands class.
+   * An object of a drush commands class.
    *
    * @var Drupal\tripal\Commands\TripalCommands
    */
@@ -93,7 +93,7 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
           return NULL;
       });
 
-    // An instance of the tripal drush command class.
+    // An instance of the TripalCommands drush command class.
     $this->drush_command = new TripalCommands(
       $this->container->get('account_switcher'),
       $this->container->get('tripal.tripalentitytype_collection'),
