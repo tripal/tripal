@@ -26,6 +26,13 @@ class ChadoManageCommands extends DrushCommands {
   use StringTranslationTrait;
 
   /**
+   * We use SymfonyStyle instead of $this->io() to allow phpunit testing.
+   *
+   * @var Symfony\Component\Console\Style\SymfonyStyle
+   */
+  protected SymfonyStyle $ssio;
+
+  /**
    * TripalCommands Drush command class constructor.
    *
    * This is used to inject the services used by the various commands.
@@ -43,6 +50,7 @@ class ChadoManageCommands extends DrushCommands {
     protected ChadoPreparer $preparer,
     protected ChadoRemover $remover,
   ) {
+    $this->ssio = new SymfonyStyle($this->input(), $this->output());
     // Parent currently doesn't do anything here.
     parent::__construct();
   }
@@ -153,16 +161,14 @@ class ChadoManageCommands extends DrushCommands {
     }
 
     $this->output()->writeln("\nThe following table summarizes the migrations for the '" . $schema_name . "' schema.");
-    // We don't use $this->io() because it is not easily available to phpunit.
-    $io = new SymfonyStyle($this->input(), $this->output());
-    $io->table($header, $rows);
+    $ssio->table($header, $rows);
     $this->output()->writeln('');
 
     if ($option_list) {
       return;
     }
     if ($pending_migrations) {
-      $response = ($option_yes || $io->confirm(
+      $response = ($option_yes || $ssio->confirm(
         "Would you like to apply $pending_migrations pending migrations?",
         TRUE
       ));
@@ -362,7 +368,7 @@ class ChadoManageCommands extends DrushCommands {
     description: 'A legacy command to set up the standard Tripal Chado test environment. This command is no longer needed and does not do anything.',
   )]
   public function setupTests(): void {
-    $this->logger->error($this->t('There is no longer any need to prepare the chado test environment.'));
+    $this->logger->notice($this->t('There is no longer any need to prepare the chado test environment.'));
   }
 
   /**

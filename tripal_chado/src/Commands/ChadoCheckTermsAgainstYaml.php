@@ -61,7 +61,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     protected TripalDbx $tripaldbx,
     protected ChadoConnection $chado_connection,
   ) {
-    $this->$ssio = new SymfonyStyle($this->input(), $this->output());
+    $this->ssio = new SymfonyStyle($this->input(), $this->output());
     // Parent currently doesn't do anything here.
     parent::__construct();
   }
@@ -1514,7 +1514,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     );
     if ($fix) {
       $this->updateChadoTermRecords('cvterm', 'cvterm_id', $solutions);
-      $this->ssio->success($this=->t('Terms have been updated to match our expectations.'));
+      $this->ssio->success($this->t('Terms have been updated to match our expectations.'));
     }
   }
 
