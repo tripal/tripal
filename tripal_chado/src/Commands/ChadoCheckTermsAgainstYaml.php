@@ -1411,8 +1411,11 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $this->t('YOURS'),
     ]);
     // Set the yours/expected columns to wrap at 50 characters each.
-    $table->setColumnMaxWidth(3, 50);
-    $table->setColumnMaxWidth(4, 50);
+    // (Not available when running a phpunit test.)
+    if (property_exists($table, 'setColumnMaxWidth')) {
+      $table->setColumnMaxWidth(3, 50);
+      $table->setColumnMaxWidth(4, 50);
+    }
 
     $rows = [];
     foreach ($problems as $specific_issues) {
