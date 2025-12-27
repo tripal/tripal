@@ -94,6 +94,10 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
    */
   public function testCheckTermsDrushCommand() {
 
+    $buddy_manager = \Drupal::service('tripal_chado.chado_buddy');
+    $dbxref_buddy = $buddy_manager->createInstance('chado_dbxref_buddy', []);
+    $cvterm_buddy = $buddy_manager->createInstance('chado_cvterm_buddy', []);
+
     // CASE: Check for drush command required parameters.
     $this->drush_command->chadoCheckTermsAreAsExpected([]);
     $this->assertStringContainsString('The --chado_schema argument is required', $this->getLogOutput(),
@@ -108,15 +112,15 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
     $this->drush_command->chadoCheckTermsAreAsExpected(['chado_schema' => $this->testSchemaName]);
     $command_output = $this->getLogOutput();
     $this->assertStringContainsString('[OK] There are no errors', $command_output,
-      "Ensure that the trp-check-terms command does not find any errors in the prepared test chado instance.");
+      'Ensure that the trp-check-terms command does not find any errors in the prepared test chado instance.');
     $this->assertStringContainsString('[OK] There are no warnings', $command_output,
-      "Ensure that the trp-check-terms command does not find any warnings in the prepared test chado instance.");
+      'Ensure that the trp-check-terms command does not find any warnings in the prepared test chado instance.');
 
     // Now add in some CV inconsistencies ;-p
-    // CASE: alter the vocabulary description.
+    // CASE: alter the vocabulary record.
     // ----------------------------------------.
     $this->chado_connection->update('1:cv')
-      ->fields(['definition' => 'CHANGED CV DESCRIPTION'])
+      ->fields(['definition' => 'CHANGED CV DEFINITION'])
       ->condition('cv.name', 'germplasm_ontology')
       ->execute();
     $this->drush_command->chadoCheckTermsAreAsExpected([
@@ -125,20 +129,19 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
         'auto-fix' => TRUE,
       ]);
     $command_output = $this->getLogOutput();
-    // There should still not be any errors.
+    // This should trigger an error.
     $this->assertStringContainsString('[OK] There are no errors', $command_output,
-      "Ensure that the trp-check-terms command does not find any errors in the prepared test chado instance.");
-    // But now we expect some warnings...
+      'Ensure that the trp-check-terms command does not find any errors in the prepared test chado instance.');
     $this->assertStringNotContainsString('[OK] There are no warnings', $command_output,
-      "Ensure that the trp-check-terms command does not find any warnings in the prepared test chado instance.");
+      'Ensure that the trp-check-terms command does not find any warnings in the prepared test chado instance.');
     $this->assertStringContainsString('We have detected 1 vocabularies in your chado instance that differ from those defined in the YAML in small ways', $command_output,
-      "We expect the germplasm ontology to show a change in the cv description.");
-    $this->assertStringContainsString('CHANGED CV DESCRIPTION', $command_output,
-      "We expect the germplasm ontology to show a change in the cv description.");
+      'We expect the germplasm ontology to show a change in the cv description.');
+    $this->assertStringContainsString('CHANGED CV DEFINITION', $command_output,
+      'We expect the germplasm ontology to show a change in the cv description.');
     $this->assertStringContainsString('[OK] Vocabularies have been updated to match our expectations.', $command_output,
-      "We indicated to auto-fix cv issues so we expect to see a confirmation that it was done.");
+      'We indicated to auto-fix cv issues so we expect to see a confirmation that it was done.');
 
-    // CASE: alter the database description.
+    // CASE: alter the database record.
     // ----------------------------------------.
     $this->chado_connection->update('1:db')
       ->fields([
@@ -156,28 +159,152 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
     $command_output = $this->getLogOutput();
     // There should still not be any errors.
     $this->assertStringContainsString('[OK] There are no errors', $command_output,
-      "Ensure that the trp-check-terms command does not find any errors in the prepared test chado instance.");
+      'Ensure that the trp-check-terms command does not find any errors in the prepared test chado instance.');
     // But now we expect some warnings...
     $this->assertStringNotContainsString('[OK] There are no warnings', $command_output,
-      "Ensure that the trp-check-terms command does not find any warnings in the prepared test chado instance.");
+      'Ensure that the trp-check-terms command does not find any warnings in the prepared test chado instance.');
     $this->assertStringContainsString('We have detected 1 ID Spaces in your chado instance that differ from those defined in the YAML in small ways', $command_output,
-      "We expect the PMID database to show a changes.");
+      'We expect the PMID database to show a change.');
     $this->assertStringContainsString('CHANGED DB DESCRIPTION', $command_output,
-      "We expect PMID db to show a change in the description.");
+      'We expect PMID db to show a change in the description.');
     $this->assertStringContainsString('CHANGED URL PREFIX', $command_output,
-      "We expect PMID db to show a change in the urlprefix.");
+      'We expect PMID db to show a change in the urlprefix.');
     $this->assertStringContainsString('CHANGED URL', $command_output,
-      "We expect PMID db to show a change in the url.");
+      'We expect PMID db to show a change in the url.');
     $this->assertStringContainsString('[OK] ID Spaces have been updated to match our expectations.', $command_output,
-      "We indicated to auto-fix db issues so we expect to see a confirmation that it was done.");
+      'We indicated to auto-fix db issues so we expect to see a confirmation that it was done.');
+
+    // CASE: alter the cvterm record's CV.
+    // This cannot be auto-fixed.
+    $cvterm = $cvterm_buddy->getCvterm(['cvterm.name' => 'Identifier']);
+    $cv_id = $cvterm[0]->getValue('cvterm.cv_id');
+    $this->chado_connection->update('1:cvterm')
+      ->fields([
+        'cv_id' => 1,
+      ])
+      ->condition('cvterm.name', 'Identifier')
+      ->execute();
+    $this->drush_command->chadoCheckTermsAreAsExpected([
+        'chado_schema' => $this->testSchemaName,
+        'auto-expand' => TRUE,
+        'auto-fix' => TRUE,
+      ]);
+    $command_output = $this->getLogOutput();
+    // This case will trigger an error but no warnings.
+    $this->assertStringNotContainsString('[OK] There are no errors', $command_output,
+      'Expect an error with a cvterm pointing to the wrong CV.');
+    $this->assertStringContainsString('[OK] There are no warnings', $command_output,
+      'Ensure that the trp-check-terms command does not find any warnings in the prepared test chado instance.');
+    $this->assertStringContainsString('We have detected 1 Term(s) with a key deviation from what is expected', $command_output,
+      'We expect the "Identifier" cvterm to show a change.');
+    // Repair the damage.
+    $this->chado_connection->update('1:cvterm')
+      ->fields([
+        'cv_id' => $cv_id,
+      ])
+      ->condition('cvterm.name', 'Identifier')
+      ->execute();
+
+    // CASE: Test for YAML duplication.
+    // We define the same term twice.
+    $config_factory = \Drupal::service('config.factory');
+    $config_key = 'tripal.tripal_content_terms.chado_content_terms';
+    $config = $config_factory->getEditable($config_key);
+    $okay_vocabs = $config->get('vocabularies');
+    // Duplicate the first term in the first vocabulary.
+    $bad_vocabs = $okay_vocabs;
+    $term = $bad_vocabs[0]['terms'][0];
+    $bad_vocabs[0]['terms'][] = $term;
+    $config->set('vocabularies', $bad_vocabs)->save();
+    $this->drush_command->chadoCheckTermsAreAsExpected([
+        'chado_schema' => $this->testSchemaName,
+        'auto-expand' => TRUE,
+        'auto-fix' => TRUE,
+      ]);
+    $command_output = $this->getLogOutput();
+    $this->assertStringContainsString('YAML Issues: Duplicated term definitions in the site YAML', $command_output,
+      'YAML duplication should be reported');
+    $this->assertStringContainsString('was defined more than once', $command_output,
+      'YAML duplication should be reported');
+
+    // CASE: Term has nonexistent DB in YAML.
+    // Set the first term in the first vocabulary to have invalid DB.
+    // ------------------------------- ---- ------- -------- --------
+    //  YAML Term                       CV   DB      CVTERM   DBXREF
+    // ------------------------------- ---- ------- -------- --------
+    //  accession (XXXCO_010:0000044)   5    X(red)  3         3(red).
+    $bad_vocabs = $okay_vocabs;
+    $bad_vocabs[0]['terms'][0]['id'] = 'XXX' . $bad_vocabs[0]['terms'][0]['id'];
+    $config->set('vocabularies', $bad_vocabs)->save();
+    $this->drush_command->chadoCheckTermsAreAsExpected([
+        'chado_schema' => $this->testSchemaName,
+        'auto-expand' => TRUE,
+        'auto-fix' => TRUE,
+      ]);
+    $command_output = $this->getLogOutput();
+    $this->assertStringContainsString('We have detected 1 ID Space(s) missing from your YAML file', $command_output,
+      'Nonexistent DB in term should be reported');
+    $config->set('vocabularies', $okay_vocabs)->save();
+
+    // CASE: Missing ID Space definitions, vocabulary with no defined DBs.
+    $bad_vocabs = $okay_vocabs;
+    unset($bad_vocabs[0]['idSpaces']);
+    $config->set('vocabularies', $bad_vocabs)->save();
+    $this->drush_command->chadoCheckTermsAreAsExpected([
+        'chado_schema' => $this->testSchemaName,
+        'auto-expand' => TRUE,
+        'auto-fix' => TRUE,
+      ]);
+    $command_output = $this->getLogOutput();
+    $this->assertStringContainsString('There were no ID Spaces at all defined for this vocabulary', $command_output,
+      'Nonexistent DB definition should be reported');
+    $config->set('vocabularies', $okay_vocabs)->save();
+
+    // CASE: CV term connected to wrong dbxref.
+    // Change the dbxref on an existing term. Not auto-fixable.
+    $dbxref = $dbxref_buddy->insertDbxref(['db.name' => 'local', 'dbxref.accession' => 'TREE3']);
+    $new_dbxref_id = $dbxref->getValue('dbxref.dbxref_id');
+    $term = $cvterm_buddy->getCvterm(['cvterm.name' => 'array design']);
+    $cvterm_id = $term[0]->getValue('cvterm.cvterm_id');
+    $old_dbxref_id = $term[0]->getValue('cvterm.dbxref_id');
+    $this->chado_connection->update('1:cvterm')
+      ->fields([
+        'dbxref_id' => $new_dbxref_id,
+      ])
+      ->condition('cvterm_id', $cvterm_id, '=')
+      ->execute();
+    $term[0]->setValue('dbxref.dbxref_id', $new_dbxref_id, ['cvterm.cvterm_id' => $term[0]->getValue('cvterm.cvterm_id')]);
+    $this->drush_command->chadoCheckTermsAreAsExpected([
+      'chado_schema' => $this->testSchemaName,
+      'auto-expand' => TRUE,
+      'auto-fix' => TRUE,
+    ]);
+    $command_output = $this->getLogOutput();
+    $this->assertStringContainsString('Broken Connection between cvterm + dbxref', $command_output,
+      'Should detect when cvterm has wrong dbxref');
+    $this->assertStringContainsString('We have detected 1 Term(s) with a key deviation from what is expected', $command_output,
+      'Should detect when cvterm has wrong dbxref');
+    // Repair the damage.
+    $this->chado_connection->update('1:cvterm')
+      ->fields([
+        'dbxref_id' => $old_dbxref_id,
+      ])
+      ->condition('cvterm_id', $cvterm_id, '=')
+      ->execute();
 
     // CASE: Test for obsolete CVs removed in PR #1727.
-    $this->chado_connection->insert('1:cv')
-      ->fields([
-        'name' => 'organism_property',
-        'definition' => 'A local vocabulary that contains locally defined properties for organisms',
-      ])
-      ->execute();
+    $cv_values = [
+      'cv.name' => 'organism_property',
+      'cv.definition' => 'A local vocabulary that contains locally defined properties for organisms',
+    ];
+    $term_values = $cv_values + [
+      'db.name' => 'local',
+      'dbxref.accession' => '0000000X',
+      'cvterm.name' => 'plant_mood',
+      'cvterm.definition' => 'how happy the plant is',
+    ];
+    $cvterm_buddy->insertCv($cv_values, []);
+    $cvterm_buddy->insertCvterm($term_values, []);
     $this->drush_command->chadoCheckTermsAreAsExpected([
       'chado_schema' => $this->testSchemaName,
       'auto-expand' => TRUE,
@@ -188,6 +315,7 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
       'Obsolete vocabulary should be detected');
     $this->assertStringNotContainsString('Removed 1 obsolete controlled vocabularies', $command_output,
       'Obsolete vocabulary should not be corrected with auto-fix false');
+
     $this->drush_command->chadoCheckTermsAreAsExpected([
       'chado_schema' => $this->testSchemaName,
       'auto-expand' => TRUE,
@@ -198,8 +326,8 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
       'Obsolete vocabulary should be detected');
     $this->assertStringContainsString('Removed 1 obsolete controlled vocabularies', $command_output,
       'Obsolete vocabulary should be corrected with auto-fix true');
-
-
+    $check = $cvterm_buddy->getCv(['cv.name' => 'organism_property']);
+    $this->assertEmpty($check, 'organism_property CV should be deleted if we specify auto-fix');
   }
 
 }

@@ -223,13 +223,14 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         }
         $defined_terms[$summary_term] = 1;
 
-        // Check the term id space was defined in the id spaces block
-        // Note: if a id space was defined but not found in the database
+        // Check if the term id space was defined in the id spaces block.
+        // Note: if an id space was defined but not found in the database
         // it will still be in the $defined_idspaces array but the value
-        // will be NULL.
+        // will be NULL. If the id space is wrong in the terms section,
+        // then it may be absent from defined_ispaces and from idspace_info.
         if (!array_key_exists($term_db, $defined_ispaces)) {
 
-          $summary_dbs[$idspace_info['name']] = sprintf($this->red_format, ' X ');
+          $summary_dbs[$idspace_info['name'] ?? $term_db] = sprintf($this->red_format, ' X ');
 
           // ERROR:
           // The YAML-defined term includes an ID Space that was not defined
@@ -520,7 +521,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     $summary_dbs = [];
     $defined_ispaces = [];
-    foreach ($vocab_info['idSpaces'] as $idspace_info) {
+    foreach (($vocab_info['idSpaces'] ?? []) as $idspace_info) {
 
       // Check if the db record for this id space exists.
       $query = $this->chado_connection->select('1:db', 'db')
@@ -1029,7 +1030,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $query->fields('cv', ['cv_id']);
     $local_cv = $query->execute()->fetchField();
     if (!$local_cv) {
-      $this->output()->writeln($this->t('Could not perform update, "local" CV is not present'));
+      $this->ssio->error($this->t('Could not perform update, "local" CV is not present'));
       return;
     }
 
@@ -1041,7 +1042,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $count = $query->execute();
       if ($count) {
         $this->output()->writeln($this->t('Transferred @count records from CV "@from" to the "local" CV',
-            ['@count' => $count, '@from' => $cv_name]));
+          ['@count' => $count, '@from' => $cv_name]));
       }
       $query = $this->chado_connection->delete('1:cv');
       $query->condition('cv_id', $cv_id, '=');
@@ -1049,7 +1050,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $n_removed++;
     }
     $this->output()->writeln($this->t('Removed @count obsolete controlled vocabularies',
-        ['@count' => $n_removed]));
+      ['@count' => $n_removed]));
   }
 
   /**
@@ -1080,8 +1081,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     $this->ssio->section($this->t('YAML Issues: Duplicated term definitions in the site YAML.'));
     $num_detected = count($problems);
-    $this->output()->writeln($this->t('We have detected @num_detected duplicated term definition(s) present in your YAML file. You will want to contact the developers to let them know the following output:'),
-      ['@num_detected' => $num_detected]);
+    $this->output()->writeln($this->t('We have detected @num_detected duplicated term definition(s) present in your YAML file. You will want to contact the developers to let them know the following output:',
+      ['@num_detected' => $num_detected]));
     $list = [];
     foreach ($problems as $prob_deets) {
       $list[] = sprintf(
@@ -1265,8 +1266,11 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $this->t('YOURS'),
     ]);
     // Set the yours/expected columns to wrap at 50 characters each.
-    $table->setColumnMaxWidth(4, 50);
-    $table->setColumnMaxWidth(5, 50);
+    // (Not available when running a phpunit test.)
+    if (property_exists($table, 'setColumnMaxWidth')) {
+      $table->setColumnMaxWidth(4, 50);
+      $table->setColumnMaxWidth(5, 50);
+    }
 
     $rows = [];
     foreach ($problems as $terms_with_issues) {
@@ -1495,8 +1499,11 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $this->t('YOURS'),
     ]);
     // Set the yours/expected columns to wrap at 50 characters each.
-    $table->setColumnMaxWidth(4, 50);
-    $table->setColumnMaxWidth(5, 50);
+    // (Not available when running a phpunit test.)
+    if (property_exists($table, 'setColumnMaxWidth')) {
+      $table->setColumnMaxWidth(4, 50);
+      $table->setColumnMaxWidth(5, 50);
+    }
 
     $rows = [];
     foreach ($problems as $specific_issues) {
