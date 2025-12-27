@@ -76,12 +76,12 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
       ->getMock();
     $mock_logger->method('notice')
       ->willReturnCallback(function ($message, $options) {
-          $this->log_output .= $message;
+          $this->log_output .= $message . "\n";
           return NULL;
       });
     $mock_logger->method('error')
       ->willReturnCallback(function ($message, $options) {
-          $this->log_output .= $message;
+          $this->log_output .= $message . "\n";
           return NULL;
       });
 
@@ -89,7 +89,7 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
     $mock_output = $this->createMock(OutputInterface::class);
     $mock_output->method('writeln')
       ->willReturnCallback(function ($message, $options) {
-          $this->log_output .= $message;
+          $this->log_output .= $message . "\n";
           return NULL;
       });
 
