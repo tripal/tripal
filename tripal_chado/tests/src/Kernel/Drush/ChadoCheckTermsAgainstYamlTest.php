@@ -8,6 +8,7 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputInterface;
 
 use \Drupal\tripal_chado\Entity\ChadoTermMapping;
 
@@ -70,6 +71,7 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
           $this->log_output .= $message . "\n";
           return NULL;
       });
+    $mock_input = $this->createMock(InputInterface::class);
 
     // An instance of the ChadoCheckTermsAgainstYaml drush command class.
     $this->drush_command = new ChadoCheckTermsAgainstYaml(
@@ -78,6 +80,7 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
       $this->chado_connection,
     );
     $this->drush_command->setOutput($mock_output);
+    $this->drush_command->setInput($mock_input);
   }
 
   /**
