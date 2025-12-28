@@ -130,7 +130,7 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
 
     // Case: tripal:version
     // This is the simplest drush commmand, just outputs version.
-    $expected_version = tripal_version();
+    $expected_version = tripal_version() . "\n";
     $this->drush_command->tripalVersion();
     $this->assertEquals($expected_version, $this->getLogOutput(),
       'Should retrieve the current tripal version');
