@@ -197,7 +197,7 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
       'Ensure that the trp-check-terms command does not find any warnings in the prepared test chado instance.');
     $this->assertStringContainsString('We have detected 1 Term(s) with a key deviation from what is expected', $command_output,
       'We expect the "Identifier" cvterm to show a change.');
-    // Repair the damage.
+    // Repair the damage to the test DB.
     $this->chado_connection->update('1:cvterm')
       ->fields([
         'cv_id' => $cv_id,
@@ -260,13 +260,42 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
       'Nonexistent DB definition should be reported');
     $config->set('vocabularies', $okay_vocabs)->save();
 
+    // CASE: Only CV term definition differs.
+    $this->chado_connection->update('1:cvterm')
+      ->fields([
+        'definition' => 'CHANGED CVTERM DEFINITION',
+      ])
+      ->condition('cvterm.name', 'Identifier')
+      ->execute();
+    $this->drush_command->chadoCheckTermsAreAsExpected([
+        'chado_schema' => $this->testSchemaName,
+        'auto-expand' => TRUE,
+        'auto-fix' => TRUE,
+      ]);
+    $command_output = $this->getLogOutput();
+    $this->assertStringContainsString('We have detected 1 Terms in your chado instance that differ from those defined in the YAML in small ways', $command_output,
+      'Expect a warning if term definition differs');
+    $this->assertStringContainsString('CHANGED CVTERM DEFINITION', $command_output,
+      'Expect a warning if term definition differs');
+    // Verify that it was fixed.
+    $this->drush_command->chadoCheckTermsAreAsExpected([
+        'chado_schema' => $this->testSchemaName,
+        'auto-expand' => TRUE,
+        'auto-fix' => TRUE,
+      ]);
+    $command_output = $this->getLogOutput();
+    $this->assertStringContainsString('[OK] There are no errors associated with this chado instance', $command_output,
+      'Expect no errors after auto-fix');
+    $this->assertStringContainsString('[OK] There are no warnings associated with this chado instance', $command_output,
+      'Expect no warnings after auto-fix');
+
     // CASE: CV term connected to wrong dbxref.
     // Change the dbxref on an existing term. Not auto-fixable.
     $dbxref = $dbxref_buddy->insertDbxref(['db.name' => 'local', 'dbxref.accession' => 'TREE3']);
     $new_dbxref_id = $dbxref->getValue('dbxref.dbxref_id');
     $term = $cvterm_buddy->getCvterm(['cvterm.name' => 'array design']);
     $cvterm_id = $term[0]->getValue('cvterm.cvterm_id');
-    $old_dbxref_id = $term[0]->getValue('cvterm.dbxref_id');
+    $old_dbxref_id = $term[0]->getValue('dbxref.dbxref_id');
     $this->chado_connection->update('1:cvterm')
       ->fields([
         'dbxref_id' => $new_dbxref_id,
@@ -284,12 +313,66 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
       'Should detect when cvterm has wrong dbxref');
     $this->assertStringContainsString('We have detected 1 Term(s) with a key deviation from what is expected', $command_output,
       'Should detect when cvterm has wrong dbxref');
-    // Repair the damage.
+    // Repair the damage to the test DB.
     $this->chado_connection->update('1:cvterm')
       ->fields([
         'dbxref_id' => $old_dbxref_id,
       ])
       ->condition('cvterm_id', $cvterm_id, '=')
+      ->execute();
+
+    // CASE: Term linked to dbxref with wrong DB. DB should be 'operation'.
+    $term = $cvterm_buddy->getCvterm(['cvterm.name' => 'genome assembly']);
+    $dbxref_id = $term[0]->getValue('dbxref.dbxref_id');
+    $db_id = $term[0]->getValue('db.db_id');
+    $accession = $term[0]->getValue('dbxref.accession');
+    $this->chado_connection->update('1:dbxref')
+      ->fields([
+        'db_id' => $db_id + 1,
+      ])
+      ->condition('dbxref_id', $dbxref_id, '=')
+      ->execute();
+    $this->drush_command->chadoCheckTermsAreAsExpected([
+      'chado_schema' => $this->testSchemaName,
+      'auto-expand' => TRUE,
+      'auto-fix' => TRUE,
+    ]);
+    $command_output = $this->getLogOutput();
+    $this->assertStringContainsString('We have detected 1 Term(s) with a key deviation from what is expected', $command_output,
+      'Should detect when cvterm has dbxref pointing to wrong db');
+    $this->assertStringContainsString('Wrong db but dbxref connected to right cvterm', $command_output,
+      'Should detect when cvterm has dbxref pointing to wrong db');
+    // Repair the damage to the test DB.
+    $this->chado_connection->update('1:dbxref')
+      ->fields([
+        'db_id' => $db_id,
+      ])
+      ->condition('dbxref_id', $dbxref_id, '=')
+      ->execute();
+
+    // CASE: Dbxref accession is not correct.
+    $this->chado_connection->update('1:dbxref')
+      ->fields([
+        'accession' => 'WRONG_ACCESSION',
+      ])
+      ->condition('dbxref_id', $dbxref_id, '=')
+      ->execute();
+    $this->drush_command->chadoCheckTermsAreAsExpected([
+      'chado_schema' => $this->testSchemaName,
+      'auto-expand' => TRUE,
+      'auto-fix' => TRUE,
+    ]);
+    $command_output = $this->getLogOutput();
+    $this->assertStringContainsString('We have detected 1 Term(s) with a key deviation from what is expected', $command_output,
+      'Should detect when cvterm has dbxref pointing to wrong db');
+    $this->assertStringContainsString('Wrong or Missing dbxref', $command_output,
+      'Should detect when cvterm has dbxref pointing to wrong db');
+    // Repair the damage to the test DB.
+    $this->chado_connection->update('1:dbxref')
+      ->fields([
+        'accession' => $accession,
+      ])
+      ->condition('dbxref_id', $dbxref_id, '=')
       ->execute();
 
     // CASE: Test for obsolete CVs removed in PR #1727.
@@ -315,7 +398,7 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
       'Obsolete vocabulary should be detected');
     $this->assertStringNotContainsString('Removed 1 obsolete controlled vocabularies', $command_output,
       'Obsolete vocabulary should not be corrected with auto-fix false');
-
+    // Try again but this time fix it.
     $this->drush_command->chadoCheckTermsAreAsExpected([
       'chado_schema' => $this->testSchemaName,
       'auto-expand' => TRUE,
