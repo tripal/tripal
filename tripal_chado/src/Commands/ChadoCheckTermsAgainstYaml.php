@@ -632,7 +632,21 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $summary_cvterm = $terms[0]->cvterm_id;
       $summary_dbxref = $terms[0]->dbxref_id;
 
-      // This term is great so no need to continue looking.
+      // This term is found, only need to check definition.
+      if (array_key_exists('description', $term_info) && $terms[0]->definition !== $term_info['description']) {
+        // WARNING:
+        // The term definition does not match what we expected.
+        // @see chadoCheckTermsReportProblemEccentricCvTerm()
+        $problems['warning']['cvterm'][$terms[0]->cvterm_id][] = [
+          'column' => 'cvterm.definition',
+          'property' => 'term.description',
+          'YOURS' => $terms[0]->definition,
+          'EXPECTED' => $term_info['description'],
+          'term-name' => $term_info['name'],
+          'term-id' => $term_info['id'],
+        ];
+        $solutions['warning']['cvterm'][$terms[0]->cvterm_id]['definition'] = $term_info['description'];
+      }
       return [$summary_cvterm, $summary_dbxref];
     }
 
