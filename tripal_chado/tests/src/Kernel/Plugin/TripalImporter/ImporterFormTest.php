@@ -3,6 +3,8 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalImporter;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the functionality of various importer forms.
@@ -10,6 +12,10 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  * @group TripalImporter
  * @group ChadoImporter
  */
+#[group('form')]
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
+#[RunTestsInSeparateProcesses]
 class ImporterFormTest extends ChadoTestKernelBase {
 
   protected $defaultTheme = 'stark';
@@ -22,25 +28,30 @@ class ImporterFormTest extends ChadoTestKernelBase {
    * This specifies which importer forms to test, and special settings to confirm.
    */
   protected $forms_to_test = [
-    ['plugin_id' => 'chado_fasta_loader',
-     'importer_label' => 'Chado FASTA File Loader',
-     'requires_analysis' => TRUE,
+    [
+      'plugin_id' => 'chado_fasta_loader',
+      'importer_label' => 'Chado FASTA File Loader',
+      'requires_analysis' => TRUE,
     ],
-    ['plugin_id' => 'chado_gff3_loader',
-     'importer_label' => 'Chado GFF3 File Loader',
-     'requires_analysis' => TRUE,
+    [
+      'plugin_id' => 'chado_gff3_loader',
+      'importer_label' => 'Chado GFF3 File Loader',
+      'requires_analysis' => TRUE,
     ],
-    ['plugin_id' => 'chado_obo_loader',
-     'importer_label' => 'OBO Vocabulary Loader',
-     'requires_instructions' => TRUE,
+    [
+      'plugin_id' => 'chado_obo_loader',
+      'importer_label' => 'OBO Vocabulary Loader',
+      'requires_instructions' => TRUE,
     ],
-    ['plugin_id' => 'chado_taxonomy_loader',
-     'importer_label' => 'NCBI Taxonomy Loader',
-     'requires_instructions' => TRUE,
+    [
+      'plugin_id' => 'chado_taxonomy_loader',
+      'importer_label' => 'NCBI Taxonomy Loader',
+      'requires_instructions' => TRUE,
     ],
-    ['plugin_id' => 'chado_tree_generator',
-     'importer_label' => 'Taxonomy Tree Generator',
-     'requires_instructions' => TRUE,
+    [
+      'plugin_id' => 'chado_tree_generator',
+      'importer_label' => 'Taxonomy Tree Generator',
+      'requires_instructions' => TRUE,
     ],
   ];
 
@@ -53,7 +64,7 @@ class ImporterFormTest extends ChadoTestKernelBase {
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
-    // Open connection to Chado
+    // Open connection to Chado.
     $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
     // Ensure we install the schema/modules we need.
@@ -89,12 +100,12 @@ class ImporterFormTest extends ChadoTestKernelBase {
         "The \"$plugin_id\" form should have a title set.");
       $this->assertEquals($importer_label, $form['#title'],
         "The \"$plugin_id\" form title should match the label annotated for our plugin.");
-      // the plugin_id stored in a value form element.
+      // The plugin_id stored in a value form element.
       $this->assertArrayHasKey('importer_plugin_id', $form,
         "The \"$plugin_id\" form should have an element to save the plugin_id.");
       $this->assertEquals($plugin_id, $form['importer_plugin_id']['#value'],
         "The \"$plugin_id\" form importer_plugin_id[#value] should be set to our plugin_id.");
-      // a submit button.
+      // A submit button.
       $this->assertArrayHasKey('button', $form,
         "The \"$plugin_id\" form should have a submit button since we indicated a specific importer.");
 

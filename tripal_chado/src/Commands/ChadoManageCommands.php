@@ -33,13 +33,7 @@ class ChadoManageCommands extends DrushCommands {
       $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully installed.'));
     }
     else {
-      throw new \Exception(dt(
-        'Unable to install chado {version} in {schema}',
-        [
-          'schema' => $options['schema-name'],
-          'version' => $options['chado-version'],
-        ]
-      ));
+      throw new \Exception('Unable to install chado ' . $options['chado-version'] . ' in ' . $options['schema-name']);
     }
   }
 
@@ -59,12 +53,7 @@ class ChadoManageCommands extends DrushCommands {
     $tripaldbx = \Drupal::service('tripal.dbx');
     $schema_exists = $tripaldbx->schemaExists($options['schema-name']);
     if (!$schema_exists) {
-      throw new \Exception(dt(
-        'The schema \'@schema\' does not exist and therefore cannot be migrated.',
-        [
-          '@schema' => $options['schema-name'],
-        ]
-      ));
+      throw new \Exception("The schema '" . $options['schema-name'] . "' does not exist and therefore cannot be migrated.");
     }
 
     // First setup our task.
@@ -112,10 +101,7 @@ class ChadoManageCommands extends DrushCommands {
         if ($success) {
           $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully migrated to the most recent version.'));
         } else {
-          throw new \Exception(dt(
-            'Unable to migrate chado in schema \'{schema}\'',
-            ['schema' => $options['schema-name']]
-          ));
+          throw new \Exception("Unable to migrate chado in schema '" . $options['schema-name'] . "'");
         }
       }
     }
@@ -145,12 +131,7 @@ class ChadoManageCommands extends DrushCommands {
       $this->output()->writeln('<info>[Success]</info> Chado was successfully dropped.');
     }
     else {
-      throw new \Exception(dt(
-        'Unable to drop chado in {schema}',
-        [
-          'schema' => $options['schema-name'],
-        ]
-      ));
+      throw new \Exception('Unable to drop chado in ' . $options['schema-name']);
     }
 
   }
@@ -179,12 +160,7 @@ class ChadoManageCommands extends DrushCommands {
       $this->output()->writeln('<info>[Success]</info> Preparation complete.');
     }
     else {
-      throw new \Exception(dt(
-        'Unable to prepare Drupal + Chado in @schema',
-        [
-          '@schema' => $options['schema-name'],
-        ]
-      ));
+      throw new \Exception('Unable to prepare Drupal + Chado in ' . $options['schema-name']);
     }
   }
 
@@ -253,12 +229,59 @@ class ChadoManageCommands extends DrushCommands {
       'migration_file' => $options['migration-file'],
       'lenient_migration' => $options['lenient-migration'],
     ];
-    // @todo validate the bundle
-    $bundle = $bundle;
-    $datastore = $options['datastore'];
 
+    $datastore = $options['datastore'];
     \Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager::runTripalJob(
        $bundle, $datastore, $values);
+  }
+
+  /**
+   * Unpublish previously published Tripal Content.
+   *
+   * Chado records are not modified in any way by unpublish.
+   *
+   * @param string $bundle
+   *   The id of the TripalContentType you would like to unpublish content for.
+   * @param array $options
+   *   Publish options, defaults are provided in the function declaration.
+   *
+   * @command tripal-chado:unpublish
+   * @aliases trp-chado-unpublish
+   * @options schema-name
+   *   The name of the chado schema to use.
+   * @options all
+   *   Unpublish all records of the specified content type. Without this
+   *   option, only orphaned records are unpublished.
+   *
+   * @usage drush trp-chado-unpublish contact
+   *   Submits a standard chado publish job to unpublish only orphaned records
+   *   in the contact content type.
+   * @usage drush trp-chado-unpublish organism --all --schema-name=prod
+   *   Submits a chado publish job for the organism content type which
+   *   unpublishes ALL records based on the prod.organism table.
+   */
+  public function unpublish(
+    string $bundle,
+    array $options = [
+      'schema-name' => '',
+      'datastore' => 'chado_storage',
+      'all' => FALSE,
+    ]) {
+
+    // If schema not supplied then grab default chado schema.
+    if (!$options['schema-name']) {
+      $chado = \Drupal::service('tripal_chado.database');
+      $default_chado_schema = $chado->getSchemaName();
+      $options['schema-name'] = $default_chado_schema;
+    }
+    $values = [
+      'orphaned' => !$options['all'],
+      'unpublish' => TRUE,
+    ];
+
+    $datastore = $options['datastore'];
+    \Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager::runTripalJob(
+      $bundle, $datastore, $values);
   }
 
   /**
@@ -290,7 +313,6 @@ class ChadoManageCommands extends DrushCommands {
     }
   }
 
-
   /**
    * Sets a specified Chado schema to be the default in Tripal. Only one
    * schema may be set to default at a time.
@@ -321,12 +343,9 @@ class ChadoManageCommands extends DrushCommands {
       }
     }
     else {
-      throw new \Exception(dt(
-        'Unable to set the default schema to \'@schema\' - that schema does not exist.',
-        [
-          '@schema' => $options['schema-name'],
-        ]
-      ));
+      throw new \Exception("Unable to set the default schema to '"
+          . $options['schema-name'] . "' - that schema does not exist.");
     }
   }
+
 }

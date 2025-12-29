@@ -4,12 +4,12 @@
     "dockerfile": "Dockerfile",
     "args": {
       "drupalversion": "11.x-dev",
-      "phpversion": "8.3",
-      "postgresqlversion": "17",
+      "phpversion": "8.4",
+      "postgresqlversion": "18",
       "chadoschema": "teapot"
     }
   },
-  "initializeCommand": "docker pull tripalproject/tripaldocker-drupal:drupal11.x-dev-php8.3-pgsql17",
+  "initializeCommand": "docker pull tripalproject/tripaldocker-drupal:drupal11.x-dev-php8.4-pgsql18",
   "workspaceMount": "source=${localWorkspaceFolder},target=/var/www/drupal/web/modules/contrib/tripal,type=bind",
   "workspaceFolder": "/var/www/drupal/web/modules/contrib/tripal",
   "customizations": {

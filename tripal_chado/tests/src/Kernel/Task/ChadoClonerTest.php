@@ -3,7 +3,11 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Task;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-
+use Drupal\tripal_chado\Task\ChadoCloner;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for tasks.
@@ -14,14 +18,20 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  * @group Tripal Chado
  * @group Tripal Chado Task
  * @group Tripal Chado Cloner
+ *
+ * @covers ::setParameters
+ * @covers ::performTask
  */
+#[CoversClass(ChadoCloner::class)]
+#[CoversMethod(ChadoCloner::class, 'setParameters')]
+#[CoversMethod(ChadoCloner::class, 'performTask')]
+#[Group('biodb-task')]
+#[group('task-cloner')]
+#[RunTestsInSeparateProcesses]
 class ChadoClonerTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
-   *
-   * @cover ::setParameters
-   * @cover ::performTask
    */
   public function testPerformTaskCloner() {
     // Create a temporary schema.
@@ -47,4 +57,5 @@ class ChadoClonerTest extends ChadoTestKernelBase {
     $this->freeTestSchema($tripaldbx_db2);
     $this->freeTestSchema($tripaldbx_db1);
   }
+
 }

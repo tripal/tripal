@@ -2,8 +2,13 @@
 
 namespace Drupal\Tests\tripal\Kernel\TripalStorage;
 
+use Drupal\tripal\TripalStorage\StoragePropertyValue;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
+use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Tripal Storage Base class.
@@ -11,6 +16,8 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group Tripal
  * @group TripalStorage
  */
+#[Group('tripal-storage')]
+#[RunTestsInSeparateProcesses]
 class PropertyValueClassTest extends TripalTestKernelBase {
 
   /**
@@ -20,6 +27,7 @@ class PropertyValueClassTest extends TripalTestKernelBase {
 
   /**
    * A dummy Tripal Term for use where ever tripal storage needs one.
+   *
    * NOTE: This is a dummy object so any methods called on it will return NULL.
    *
    * @var \Drupal\tripal\TripalVocabTerms\TripalTerm
@@ -28,13 +36,14 @@ class PropertyValueClassTest extends TripalTestKernelBase {
 
   /**
    * A dummy Tripal ID Space for use where ever tripal storage needs one.
+   *
    * NOTE: This is a dummy object so any methods called on it will return NULL.
    *
    * @var \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase
    */
   protected object $mock_idspace;
 
-    /**
+  /**
    * {@inheritdoc}
    */
   protected function setUp() :void {
@@ -48,12 +57,12 @@ class PropertyValueClassTest extends TripalTestKernelBase {
     $container = \Drupal::getContainer();
 
     // We need a term for property types so we will create a generic mocked one
-    // here which will be pulled from the container any time a term is requested.
-    $this->mock_term = $this->createMock(\Drupal\tripal\TripalVocabTerms\TripalTerm::class);
+    // here which will be pulled from the container any time a term is needed.
+    $this->mock_term = $this->createMock(TripalTerm::class);
     // Create a mock ID space to return our mock term when asked.
-    $this->mock_idspace = $this->createMock(\Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface::class);
+    $this->mock_idspace = $this->createMock(TripalIdSpaceInterface::class);
     $this->mock_idspace->method('getTerm')
-      ->willReturnCallback(function($accession) {
+      ->willReturnCallback(function ($accession) {
         if ($accession == 'term') {
           return $this->mock_term;
         }
@@ -61,10 +70,10 @@ class PropertyValueClassTest extends TripalTestKernelBase {
           return NULL;
         }
       });
-    // Create a mock Tripal ID Space service to return our mock idspace when asked.
-    $mock_idspace_service = $this->createMock(\Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager::class);
+    // Create a mock Tripal ID Space service to return our mock idspace.
+    $mock_idspace_service = $this->createMock(TripalIdSpaceManager::class);
     $mock_idspace_service->method('loadCollection')
-      ->willReturnCallback(function($id_space) {
+      ->willReturnCallback(function ($id_space) {
         if ($id_space == 'mock') {
           return $this->mock_idspace;
         }
@@ -75,6 +84,9 @@ class PropertyValueClassTest extends TripalTestKernelBase {
     $container->set('tripal.collection_plugin_manager.idspace', $mock_idspace_service);
   }
 
+  /**
+   * Tests the property value class.
+   */
   public function testPropertyValueClass() {
 
     // Valid Parameters.
@@ -86,7 +98,7 @@ class PropertyValueClassTest extends TripalTestKernelBase {
 
     // Create with default value.
     $instance = '\Drupal\tripal\TripalStorage\StoragePropertyValue';
-    $propertyValue = new \Drupal\tripal\TripalStorage\StoragePropertyValue($entityType, $fieldType, $key, $term_id, $entityId);
+    $propertyValue = new StoragePropertyValue($entityType, $fieldType, $key, $term_id, $entityId);
     $this->assertIsObject($propertyValue, "We were not able to create an object for PropertyValue.");
     $this->assertInstanceOf($instance, $propertyValue,
       "We created an object but it was not the type we expected.");
@@ -101,7 +113,7 @@ class PropertyValueClassTest extends TripalTestKernelBase {
 
     // Create with a set value.
     $instance = '\Drupal\tripal\TripalStorage\StoragePropertyValue';
-    $propertyValue = new \Drupal\tripal\TripalStorage\StoragePropertyValue($entityType, $fieldType, $key, $term_id, $entityId, 333);
+    $propertyValue = new StoragePropertyValue($entityType, $fieldType, $key, $term_id, $entityId, 333);
     $this->assertIsObject($propertyValue, "We were not able to create an object for PropertyValue.");
     $this->assertInstanceOf($instance, $propertyValue,
       "We created an object but it was not the type we expected.");

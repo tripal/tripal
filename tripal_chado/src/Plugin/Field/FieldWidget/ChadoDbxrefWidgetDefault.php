@@ -4,6 +4,8 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 use Drupal\tripal_chado\Controller\ChadoDbxrefAutocompleteController;
 use Drupal\Core\Ajax\AjaxResponse;
@@ -11,16 +13,15 @@ use Drupal\Core\Ajax\ReplaceCommand;
 
 /**
  * Plugin implementation of default Chado dbxref widget.
- *
- * @FieldWidget(
- *   id = "chado_dbxref_widget_default",
- *   label = @Translation("Chado Dbxref Widget"),
- *   description = @Translation("The default dbxref widget."),
- *   field_types = {
- *     "chado_dbxref_type_default"
- *   }
- * )
  */
+#[TripalFieldWidget(
+  id: 'chado_dbxref_widget_default',
+  label: new TranslatableMarkup('Chado Dbxref Widget'),
+  description: new TranslatableMarkup('The default dbxref widget.'),
+  field_types: [
+    'chado_dbxref_type_default',
+  ],
+)]
 class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
 
   /**
@@ -31,7 +32,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
 
     // Get the list of databases
     $databases = [];
-    $query = $chado->select('db', 'd');
+    $query = $chado->select('1:db', 'd');
     $query->fields('d', ['db_id', 'name']);
     $query->orderBy('name');
     $results = $query->execute();

@@ -4,14 +4,19 @@ namespace Drupal\Tests\tripal_chado\Functional\Drush;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drush\TestTraits\DrushTestTrait;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * Tests the Drush Command tripal-chado:trp-check-terms
+ * Tests the Drush Command tripal-chado:trp-check-terms.
  *
  * @group Tripal
  * @group Tripal Chado
  * @group Drush
  */
+#[Group('bio-cv')]
+#[Group('drush-command')]
+#[RunTestsInSeparateProcesses]
 class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
   protected $defaultTheme = 'stark';
 
@@ -42,7 +47,7 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
     // First run the drush command on our test chado schema with no changes.
     // We expect there to be no errors or warnings in our test chado.
     $this->drush('tripal-chado:trp-check-terms', [], ['chado_schema' => $this->testSchemaName]);
-    $command_output = $this->getOutputRaw();
+    $command_output = $this->getOutputRaw() . $this->getErrorOutputRaw();
     $this->assertStringContainsString('[OK] There are no errors', $command_output,
       "Ensure that the trp-check-terms command does not find any errors in the prepared test chado instance.");
     $this->assertStringContainsString('[OK] There are no warnings', $command_output,
@@ -50,7 +55,7 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
 
     // Now add in some inconsistencies ;-p
     // CASE: alter the vocabulary description.
-    // ----------------------------------------
+    // ----------------------------------------.
     $this->connection->update('1:cv')
       ->fields(['definition' => 'CHANGED CV DESCRIPTION'])
       ->condition('cv.name', 'germplasm_ontology')
@@ -61,9 +66,9 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
       'tripal-chado:trp-check-terms', [], [
         'chado_schema' => $this->testSchemaName,
         'auto-expand' => TRUE,
-        'auto-fix' => TRUE
-    ]);
-    $command_output = $this->getOutputRaw();
+        'auto-fix' => TRUE,
+      ]);
+    $command_output = $this->getOutputRaw() . $this->getErrorOutputRaw();
     // There should still not be any errors.
     $this->assertStringContainsString('[OK] There are no errors', $command_output,
       "Ensure that the trp-check-terms command does not find any errors in the prepared test chado instance.");
@@ -71,7 +76,7 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
     $this->assertStringNotContainsString('[OK] There are no warnings', $command_output,
       "Ensure that the trp-check-terms command does not find any warnings in the prepared test chado instance.");
     $expected =
-'+--------------------+----------+---------------+------------------------+------------------------+
+    '+--------------------+----------+---------------+------------------------+------------------------+
 | VOCAB              | PROPERTY | COLUMN        | EXPECTED               | YOURS                  |
 +--------------------+----------+---------------+------------------------+------------------------+
 | germplasm_ontology | label    | cv.definition | GCP germplasm ontology | CHANGED CV DESCRIPTION |
@@ -81,4 +86,5 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
     $this->assertStringContainsString('[OK] Vocabularies have been updated to match our expectations.', $command_output,
       "We indicated to auto-fix cv issues so we expect to see a confirmation that it was done.");
   }
+
 }

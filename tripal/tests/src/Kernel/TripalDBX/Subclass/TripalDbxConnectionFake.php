@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal\Kernel\TripalDBX\Subclass;
 
 use Drupal\tripal\TripalDBX\TripalDbxConnection;
-use Drupal\Tests\tripal\Kernel\TripalDBX\Subclass\TripalDbxSchemaFake;
 
 /**
  * Fake connection class.
@@ -15,7 +14,7 @@ class TripalDbxConnectionFake extends TripalDbxConnection {
    */
   public function findVersion(
     ?string $schema_name = NULL,
-    bool $exact_version = FALSE
+    bool $exact_version = FALSE,
   ) :string {
     return '';
   }

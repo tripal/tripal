@@ -3,40 +3,41 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * Plugin implementation of default Tripal array_design formatter.
- *
- * @FieldFormatter(
- *   id = "chado_array_design_formatter_default",
- *   label = @Translation("Chado array_design formatter"),
- *   description = @Translation("A chado array_design formatter"),
- *   field_types = {
- *     "chado_array_design_type_default"
- *   },
- *   valid_tokens = {
- *     "[name]",
- *     "[description]",
- *     "[version]",
- *     "[manufacturer]",
- *     "[platform]",
- *     "[substrate]",
- *     "[protocol]",
- *     "[db]",
- *     "[accession]",
- *     "[array_dimensions]",
- *     "[element_dimensions]",
- *     "[n_elements]",
- *     "[n_array_columns]",
- *     "[n_array_rows]",
- *     "[n_grid_columns]",
- *     "[n_grid_rows]",
- *     "[n_sub_columns]",
- *     "[n_sub_rows]",
- *   },
- * )
  */
+#[TripalFieldFormatter(
+  id: 'chado_array_design_formatter_default',
+  label: new TranslatableMarkup('Chado array_design formatter'),
+  description: new TranslatableMarkup('A chado array_design formatter'),
+  field_types: [
+    'chado_array_design_type_default',
+  ],
+  valid_tokens: [
+    '[name]',
+    '[description]',
+    '[version]',
+    '[manufacturer]',
+    '[platform]',
+    '[substrate]',
+    '[protocol]',
+    '[db]',
+    '[accession]',
+    '[array_dimensions]',
+    '[element_dimensions]',
+    '[n_elements]',
+    '[n_array_columns]',
+    '[n_array_rows]',
+    '[n_grid_columns]',
+    '[n_grid_rows]',
+    '[n_sub_columns]',
+    '[n_sub_rows]',
+  ],
+)]
 class ChadoArrayDesignFormatterDefault extends ChadoFormatterBase {
 
   /**
@@ -52,7 +53,7 @@ class ChadoArrayDesignFormatterDefault extends ChadoFormatterBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $elements = [];
+    parent::viewElements($items, $langcode);
     $list = [];
     $token_string = $this->getSetting('token_string');
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
@@ -92,23 +93,8 @@ class ChadoArrayDesignFormatterDefault extends ChadoFormatterBase {
       $list[$delta] = $renderable_item;
     }
 
-    // If only one element has been found, don't make into a list.
-    if (count($list) == 1) {
-      $elements = $list;
-    }
-
-    // If more than one value has been found, display all values in an
-    // unordered list.
-// @todo: add a pager
-    elseif (count($list) > 1) {
-      $elements[0] = [
-        '#theme' => 'item_list',
-        '#list_type' => 'ul',
-        '#items' => $list,
-        '#wrapper_attributes' => ['class' => 'container'],
-      ];
-    }
-
+    // Will convert $list to a markup list if there is more than one item.
+    $elements = $this->createListMarkup($list);
     return $elements;
   }
 

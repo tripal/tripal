@@ -4,20 +4,21 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
  * Plugin implementation of default Chado Array Design widget.
- *
- * @FieldWidget(
- *   id = "chado_array_design_widget_default",
- *   label = @Translation("Chado Array Design Widget"),
- *   description = @Translation("The default array design widget."),
- *   field_types = {
- *     "chado_array_design_type_default"
- *   }
- * )
  */
+#[TripalFieldWidget(
+  id: 'chado_array_design_widget_default',
+  label: new TranslatableMarkup('Chado Array Design Widget'),
+  description: new TranslatableMarkup('The default array design widget.'),
+  field_types: [
+    'chado_array_design_type_default',
+  ],
+)]
 class ChadoArrayDesignWidgetDefault extends ChadoWidgetBase {
 
   /**

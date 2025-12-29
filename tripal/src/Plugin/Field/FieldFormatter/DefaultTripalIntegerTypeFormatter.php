@@ -2,22 +2,23 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldFormatter;
 
-use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
+use Drupal\tripal\TripalField\TripalFormatterBase;
 
 /**
  * Plugin implementation of default Tripal integer type formatter.
- *
- * @FieldFormatter(
- *   id = "default_tripal_integer_type_formatter",
- *   label = @Translation("Default Integer Type Formatter"),
- *   description = @Translation("The default integer type formatter."),
- *   field_types = {
- *     "tripal_integer_type"
- *   }
- * )
  */
+#[TripalFieldFormatter(
+  id: 'default_tripal_integer_type_formatter',
+  label: new TranslatableMarkup('Default Integer Type Formatter'),
+  description: new TranslatableMarkup('The default integer type formatter.'),
+  field_types: [
+    'tripal_integer_type',
+  ],
+)]
 class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
 
   /**

@@ -1,11 +1,11 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional\Service;
+namespace Drupal\Tests\tripal_chado\Functional\Services;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
-
-
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalPublish service in the context of the Chado content types.
@@ -13,6 +13,10 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  * @group Tripal
  * @group Tripal Content
  */
+#[Group('tripal-content')]
+#[Group('tripal-publish')]
+#[Group('chado-publish')]
+#[RunTestsInSeparateProcesses]
 class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
   /**
@@ -28,8 +32,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
    * @param array $details
    *   The key/value pairs of entries for the organism. The keys correspond
    *   to the columns of the organism table.
+   *
    * @return int
-   *   The organism_id
+   *   The organism_id.
    */
   public function addChadoOrganism($chado, $details) {
 
@@ -54,8 +59,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
    * @param array $details
    *   The key/value pairs of entries for the project. The keys correspond
    *   to the columns of the project table.
+   *
    * @return int
-   *   The project_id
+   *   The project_id.
    */
   public function addChadoProject($chado, $details) {
     $insert = $chado->insert('1:project');
@@ -74,8 +80,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
    * @param array $details
    *   The key/value pairs of entries for the contact. The keys correspond
    *   to the columns of the contact table.
+   *
    * @return int
-   *   The contact_id
+   *   The contact_id.
    */
   public function addChadoContact($chado, $details) {
     $insert = $chado->insert('1:contact');
@@ -93,16 +100,64 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
    * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $chado
    *   A chado database object.
    * @param array $details
-   *   The key/value pairs of entries for the project_contact. The keys correspond
-   *   to the columns of the project_contact table.
+   *   The key/value pairs of entries for the project_contact. The keys
+   *   correspond to the columns of the project_contact table.
+   *
    * @return int
-   *   The project_contact_id
+   *   The project_contact_id.
    */
   public function addChadoProjectContact($chado, $details) {
     $insert = $chado->insert('1:project_contact');
     $insert->fields([
       'project_id' => $details['project_id'],
       'contact_id' => $details['contact_id'],
+    ]);
+    return $insert->execute();
+  }
+
+  /**
+   * A helper function for adding a stock record to Chado.
+   *
+   * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $chado
+   *   A chado database object.
+   * @param array $details
+   *   The key/value pairs of entries for the stock. The keys correspond
+   *   to the columns of the stock table.
+   *
+   * @return int
+   *   The stock_id.
+   */
+  public function addChadoStock($chado, $details) {
+    $insert = $chado->insert('1:stock');
+    $insert->fields([
+      'dbxref_id' => array_key_exists('dbxref_id', $details) ? $details['dbxref_id'] : NULL,
+      'organism_id' => array_key_exists('organism_id', $details) ? $details['organism_id'] : NULL,
+      'name' => array_key_exists('name', $details) ? $details['name'] : NULL,
+      'uniquename' => $details['uniquename'],
+      'description' => array_key_exists('description', $details) ? $details['description'] : NULL,
+      'type_id' => $details['type_id'],
+      'is_obsolete' => array_key_exists('is_obsolete', $details) ? $details['is_obsolete'] : 0,
+    ]);
+    return $insert->execute();
+  }
+
+  /**
+   * A helper function for adding a project_stock record to Chado.
+   *
+   * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $chado
+   *   A chado database object.
+   * @param array $details
+   *   The key/value pairs of entries for the project_stock. The keys correspond
+   *   to the columns of the project_stock table.
+   *
+   * @return int
+   *   The project_stock_id.
+   */
+  public function addChadoProjectStock($chado, $details) {
+    $insert = $chado->insert('1:project_stock');
+    $insert->fields([
+      'project_id' => $details['project_id'],
+      'stock_id' => $details['stock_id'],
     ]);
     return $insert->execute();
   }
@@ -115,8 +170,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
    * @param array $details
    *   The key/value pairs of entries for the array design. The keys correspond
    *   to the columns of the arraydesign table.
+   *
    * @return int
-   *   The arraydesign_id
+   *   The arraydesign_id.
    */
   public function addChadoArrayDesign($chado, $details) {
     $insert = $chado->insert('1:arraydesign');
@@ -155,7 +211,6 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     return $insert->execute();
   }
 
-
   /**
    * A helper function to test if the elements of a field item are present.
    *
@@ -181,7 +236,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
    */
   public function checkFieldItem($bundle, $field_name, $num_expected, $match, $check) {
 
-    $drupal_columns = ['bundle', 'entity_id', 'revision' ,'delta', 'deleted', 'langcode'];
+    $drupal_columns = ['bundle', 'entity_id', 'revision' , 'delta', 'deleted', 'langcode'];
 
     $public = \Drupal::service('database');
     $select = $public->select('tripal_entity__' . $field_name, 'f');
@@ -199,7 +254,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $records = $result->fetchAll();
 
     $this->assertCount($num_expected, $records,
-        'The number of items expected for field "' . $field_name .'" with bundle "'
+        'The number of items expected for field "' . $field_name . '" with bundle "'
         . $bundle . '" is not correct.');
 
     foreach ($records as $delta => $record) {
@@ -222,7 +277,57 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
   }
 
   /**
-   * A helper function to add fields to the organism content types used in the tests.
+   * A helper function to add a stock field to the project content type.
+   * Here we use a finite cardinality of 15.
+   */
+  public function attachProjectStockField() {
+    /** @var \Drupal\tripal\Services\TripalFieldCollection $fields_service **/
+    $fields_service = \Drupal::service('tripal.tripalfield_collection');
+    $stock_field = [
+      'name' => 'project_stock',
+      'content_type' => 'project',
+      'label' => 'Germplasm',
+      'type' => 'chado_stock_type_default',
+      'description' => "Germplasm related to this project.",
+      'cardinality' => 15,
+      'required' => FALSE,
+      'storage_settings' => [
+        'storage_plugin_id' => 'chado_storage',
+        'storage_plugin_settings' => [
+          'base_table' => 'project',
+          'linker_table' => 'project_stock',
+          'linker_fkey_column' => 'stock_id',
+        ],
+      ],
+      'settings' => [
+        'termIdSpace' => 'NCIT',
+        'termAccession' => 'C70699',
+      ],
+      'display' => [
+        'view' => [
+          'default' => [
+            'region' => 'content',
+            'label' => 'above',
+            'weight' => 15,
+          ],
+        ],
+        'form' => [
+          'default' => [
+            'region' => 'content',
+            'weight' => 15,
+          ],
+        ],
+      ],
+    ];
+    $reason = '';
+    $is_valid = $fields_service->validate($stock_field, $reason);
+    $this->assertTrue($is_valid, $reason);
+    $is_added = $fields_service->addBundleField($stock_field);
+    $this->assertTrue($is_added, 'The stock field could not be added to project.');
+  }
+
+  /**
+   * A helper function to add fields to the organism content types.
    */
   public function attachOrganismPropertyFields() {
 
@@ -239,9 +344,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'required' => FALSE,
       'storage_settings' => [
         'storage_plugin_id' => 'chado_storage',
-        'storage_plugin_settings'=> [
+        'storage_plugin_settings' => [
           'base_table' => 'organism',
-          'prop_table' => 'organismprop'
+          'prop_table' => 'organismprop',
         ],
       ],
       'settings' => [
@@ -253,13 +358,13 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
           'default' => [
             'region' => 'content',
             'label' => 'above',
-            'weight' => 15
+            'weight' => 15,
           ],
         ],
         'form' => [
-          'default'=> [
-            'region'=> 'content',
-            'weight' => 15
+          'default' => [
+            'region' => 'content',
+            'weight' => 15,
           ],
         ],
       ],
@@ -281,9 +386,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'required' => FALSE,
       'storage_settings' => [
         'storage_plugin_id' => 'chado_storage',
-        'storage_plugin_settings'=> [
+        'storage_plugin_settings' => [
           'base_table' => 'organism',
-          'prop_table' => 'organismprop'
+          'prop_table' => 'organismprop',
         ],
       ],
       'settings' => [
@@ -295,13 +400,13 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
           'default' => [
             'region' => 'content',
             'label' => 'above',
-            'weight' => 15
+            'weight' => 15,
           ],
         ],
         'form' => [
-          'default'=> [
-            'region'=> 'content',
-            'weight' => 15
+          'default' => [
+            'region' => 'content',
+            'weight' => 15,
           ],
         ],
       ],
@@ -324,7 +429,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // saved in the entity or not.
     $config_edit = \Drupal::configFactory()->getEditable('tripal.settings');
 
-    // Prepare Chado
+    // Prepare Chado.
     $chado = $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
 
     // Add the CV terms. These normally get added during a prepare and
@@ -361,11 +466,11 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $fields_setup = \Drupal::service('tripal.tripalfield_collection');
     $content_type_setup->install($collection_ids);
     $fields_setup->install($collection_ids);
+    $this->attachProjectStockField();
 
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     // % Run the first test set with caching disabled. %
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
     // Update configuration.
     $config_edit->set('tripal_entity_type.default_cache_backend_field_values', FALSE);
     $config_edit->save();
@@ -389,7 +494,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'abbreviation' => 'O. sativa',
       'type_id' => $subspecies_term_id,
       'infraspecific_name' => 'Japonica',
-      'comment' => 'rice is nice'
+      'comment' => 'rice is nice',
     ]);
     $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage']);
     $this->assertCount(1, $entities,
@@ -427,19 +532,20 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         'The title of a Chado organism is incorrect after publishing: ' . array_values($entities)[0] . '!=' . '<em>Oryza species</em> subspecies <em>Japonica</em>');
 
     //
-    // Test a second entity. Also use a title without all tokens
+    // Test a second entity. Also use a title without all tokens.
     //
     $organism_id2 = $this->addChadoOrganism($chado, [
       'genus' => 'Gorilla',
       'species' => 'gorilla',
       'abbreviation' => 'G. gorilla',
-      'comment' => 'Gorilla'
+      'comment' => 'Gorilla',
     ]);
     $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage']);
     $this->assertCount(1, $entities,
       'The TripalPublish service should have published 1 organism.');
     $entity_id = array_key_first($entities);
-    // Token parser will also remove a token if it is empty, e.g. infraspecific nomenclature absent.
+    // Token parser will also remove a token if it is empty, e.g. infraspecific
+    // nomenclature absent.
     $this->assertEquals('<em>Gorilla gorilla</em>', $entities[$entity_id],
         'The title of Chado organism with missing tokens is incorrect after publishing');
 
@@ -459,7 +565,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         ['record_id' => $organism_id2],
         ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
 
-    // We expect no infraspecies here, so expected count is zero
+    // We expect no infraspecies here, so expected count is zero.
     $this->checkFieldItem('organism', 'organism_infraspecific_name', 0,
         ['record_id' => $organism_id2],
         []);
@@ -506,7 +612,6 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'rank' => 1,
     ]);
 
-
     // Now publish the organism content type again.
     $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage', 'republish' => 1]);
 
@@ -521,28 +626,48 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // 0 in the drupal field table, the default for an integer.
     $this->checkFieldItem('organism', 'field_note', 1,
         ['record_id' => $organism_id, 'prop_id' => 1],
-        ['type_id' => 0, 'linker_id' => $organism_id,
-         'bundle' => 'organism', 'entity_id' => 1]);
+        [
+          'type_id' => 0,
+          'linker_id' => $organism_id,
+          'bundle' => 'organism',
+          'entity_id' => 1,
+        ]);
 
     $this->checkFieldItem('organism', 'field_note', 1,
         ['record_id' => $organism_id, 'prop_id' => 2],
-        ['type_id' => 0, 'linker_id' => $organism_id,
-         'bundle' => 'organism', 'entity_id' => 1]);
+        [
+          'type_id' => 0,
+          'linker_id' => $organism_id,
+          'bundle' => 'organism',
+          'entity_id' => 1,
+        ]);
 
     $this->checkFieldItem('organism', 'field_note', 1,
         ['record_id' => $organism_id, 'prop_id' => 3],
-        ['type_id' => 0, 'linker_id' => $organism_id,
-         'bundle' => 'organism', 'entity_id' => 1]);
+        [
+          'type_id' => 0,
+          'linker_id' => $organism_id,
+          'bundle' => 'organism',
+          'entity_id' => 1,
+        ]);
 
     $this->checkFieldItem('organism', 'field_comment', 1,
         ['record_id' => $organism_id, 'prop_id' => 4],
-        ['type_id' => 0, 'linker_id' => $organism_id,
-         'bundle' => 'organism', 'entity_id' => 1]);
+        [
+          'type_id' => 0,
+          'linker_id' => $organism_id,
+          'bundle' => 'organism',
+          'entity_id' => 1,
+        ]);
 
     $this->checkFieldItem('organism', 'field_comment', 1,
         ['record_id' => $organism_id, 'prop_id' => 5],
-        ['type_id' => 0, 'linker_id' => $organism_id,
-         'bundle' => 'organism', 'entity_id' => 1]);
+        [
+          'type_id' => 0,
+          'linker_id' => $organism_id,
+          'bundle' => 'organism',
+          'entity_id' => 1,
+        ]);
 
     // Check that only the exact number of properties were published.
     $this->checkFieldItem('organism', 'field_note', 3, ['entity_id' => 1], []);
@@ -551,27 +676,26 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     //
     // Test publishing a field that uses a linker table.
     //
-
     // Create and publish the contacts and the project.
     $contact_db = $idsmanager->loadCollection('TCONTACT', "chado_id_space");
     $person_term_id = $contact_db->getTerm('0000003')->getInternalId();
     $contact_id1 = $this->addChadoContact($chado, [
       'name' => 'John Doe',
-       'type_id' => $person_term_id,
-      'description' => 'Bioinformaticist extrodinaire'
+      'type_id' => $person_term_id,
+      'description' => 'Bioinformaticist extraordinaire',
     ]);
     $contact_id2 = $this->addChadoContact($chado, [
       'name' => 'Lady Gaga',
       'type_id' => $person_term_id,
-      'description' => 'Pop star'
+      'description' => 'Pop star',
     ]);
     $project_id1 = $this->addChadoProject($chado, [
       'name' => 'Bad Project',
-      'description' => 'Want your bad project'
+      'description' => 'Want your bad project',
     ]);
     $project_id2 = $this->addChadoProject($chado, [
       'name' => 'Project Face',
-      'description' => 'I wanna project like they do in Texas, please'
+      'description' => 'I wanna project like they do in Texas, please',
     ]);
     $project_contact_id1 = $this->addChadoProjectContact($chado, [
       'project_id' => $project_id1,
@@ -615,7 +739,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->checkFieldItem('project', 'project_contact', 2, ['entity_id' => 6], []);
     $this->checkFieldItem('project', 'project_contact', 1, ['entity_id' => 7], []);
 
-    // Test publishing of integer fields
+    // Test publishing of integer fields.
     $array_design_id1 = $this->addChadoArrayDesign($chado, [
       'name' => 'AD1',
       'num_of_elements' => 1,
@@ -626,7 +750,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->checkFieldItem('array_design', 'array_design_num_of_elements', 1,
         ['record_id' => $array_design_id1],
         ['bundle' => 'array_design', 'entity_id' => 8, 'value' => 0]);
-    // We do not expect a NULL integer item to be published
+    // We do not expect a NULL integer item to be published.
     $this->checkFieldItem('array_design', 'array_design_num_array_columns', 0,
         ['record_id' => $array_design_id1],
         []);
@@ -634,12 +758,11 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     // %     Run tests set with caching enabled.       %
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    // Update configuration
+    // Update configuration.
     $config_edit->set('tripal_entity_type.default_cache_backend_field_values', TRUE);
     $config_edit->save();
     //
-    // Test publishing a single record: Organism 3
+    // Test publishing a single record: Organism 3.
     //
     $taxrank_db = $idsmanager->loadCollection('TAXRANK', "chado_id_space");
     $subspecies_term_id = $taxrank_db->getTerm('0000023')->getInternalId();
@@ -650,7 +773,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'abbreviation' => 'O. sativa',
       'type_id' => $subspecies_term_id,
       'infraspecific_name' => 'Japonica',
-      'comment' => 'rice is nice, too'
+      'comment' => 'rice is nice, too',
     ]);
     $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage']);
     $this->assertCount(1, $entities,
@@ -685,7 +808,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
     // Test that the title via token replacement is working.
     $this->assertTrue($entities[$entity_id] == '<em>Oryza sativa</em> subspecies <em>Japonica</em>',
-        'The title of a Chado organism is incorrect after publishing: ' . array_values($entities)[0] . '!=' . '<em>Oryza sativa</em> subspecies <em>Japonica</em>');
+        'The title of a Chado organism is incorrect after publishing: ' . array_values($entities)[0] . '!=<em>Oryza sativa</em> subspecies <em>Japonica</em>');
 
     // Because we added properties for the first organism we should get its
     // entity in those returned, but not the gorilla organism.
@@ -733,7 +856,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     ]);
 
     // Now publish the organism content type again.
-    $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage', 'republish' => true]);
+    $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage', 'republish' => TRUE]);
     $entity_id = array_key_first($entities);
     // Because we added properties for the first organism we should get its
     // entity in those returned, but not the gorilla organism.
@@ -743,51 +866,73 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     'There should only be one published entity for a single organism with new properties.');
 
     // Check that the property values got published. The type_id should be
-    // be the $note_type_id in the drupal field table, not the default for an integer.
+    // be the $note_type_id in the drupal field table, not the default for an
+    // integer.
     $this->checkFieldItem('organism', 'field_note', 1,
       ['record_id' => $organism_id3, 'prop_id' => 6],
-      ['type_id' => $note_type_id, 'linker_id' => $organism_id3,
-      'bundle' => 'organism', 'entity_id' => $entity_id]);
+      [
+        'type_id' => $note_type_id,
+        'linker_id' => $organism_id3,
+        'bundle' => 'organism',
+        'entity_id' => $entity_id,
+      ]);
 
     $this->checkFieldItem('organism', 'field_note', 1,
       ['record_id' => $organism_id3, 'prop_id' => 7],
-      ['type_id' => $note_type_id, 'linker_id' => $organism_id3,
-      'bundle' => 'organism', 'entity_id' => $entity_id]);
+      [
+        'type_id' => $note_type_id,
+        'linker_id' => $organism_id3,
+        'bundle' => 'organism',
+        'entity_id' => $entity_id,
+      ]);
 
     $this->checkFieldItem('organism', 'field_note', 1,
     ['record_id' => $organism_id3, 'prop_id' => 8],
-    ['type_id' => $note_type_id, 'linker_id' => $organism_id3,
-     'bundle' => 'organism', 'entity_id' => $entity_id]);
+    [
+      'type_id' => $note_type_id,
+      'linker_id' => $organism_id3,
+      'bundle' => 'organism',
+      'entity_id' => $entity_id,
+    ]);
 
     $this->checkFieldItem('organism', 'field_comment', 1,
     ['record_id' => $organism_id3, 'prop_id' => 9],
-    ['type_id' => $comment_type_id, 'linker_id' => $organism_id3,
-     'bundle' => 'organism', 'entity_id' => $entity_id]);
+    [
+      'type_id' => $comment_type_id,
+      'linker_id' => $organism_id3,
+      'bundle' => 'organism',
+      'entity_id' => $entity_id,
+    ]);
 
     $this->checkFieldItem('organism', 'field_comment', 1,
     ['record_id' => $organism_id3, 'prop_id' => 10],
-    ['type_id' => $comment_type_id, 'linker_id' => $organism_id3,
-     'bundle' => 'organism', 'entity_id' => $entity_id]);
+    [
+      'type_id' => $comment_type_id,
+      'linker_id' => $organism_id3,
+      'bundle' => 'organism',
+      'entity_id' => $entity_id,
+    ]);
 
     // Check that only the exact number of properties were published.
     $this->checkFieldItem('organism', 'field_note', 3, ['entity_id' => 1], []);
     $this->checkFieldItem('organism', 'field_comment', 2, ['entity_id' => 1], []);
 
     //
-    // Test a single entity: Organism 4. Also use a title without all tokens
+    // Test a single entity: Organism 4. Also use a title without all tokens.
     //
     $organism_id4 = $this->addChadoOrganism($chado, [
       'genus' => 'Lepeophtheirus',
       'species' => 'salmonis',
       'common_name' => 'salmon louse',
       'abbreviation' => 'L. salmonis',
-      'comment' => 'The salmon louse is a major ectoparasite of salmonids.'
+      'comment' => 'The salmon louse is a major ectoparasite of salmonids.',
     ]);
     $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage']);
     $this->assertCount(1, $entities,
       'The TripalPublish service should have published 1 organism.');
     $entity_id = array_key_first($entities);
-    // Token parser will also remove a token if it is empty, e.g. infraspecific nomenclature absent.
+    // Token parser will also remove a token if it is empty, e.g. infraspecific
+    // nomenclature absent.
     $this->assertEquals('<em>Lepeophtheirus salmonis</em>', $entities[$entity_id],
         'The title of Chado organism with missing tokens is incorrect after publishing');
 
@@ -809,9 +954,13 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
     $this->checkFieldItem('organism', 'organism_comment', 1,
         ['record_id' => $organism_id4],
-        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => 'The salmon louse is a major ectoparasite of salmonids.']);
+        [
+          'bundle' => 'organism',
+          'entity_id' => $entity_id,
+          'value' => 'The salmon louse is a major ectoparasite of salmonids.',
+        ]);
 
-    // We expect no infraspecies here, so expected count is zero
+    // We expect no infraspecies here, so expected count is zero.
     $this->checkFieldItem('organism', 'organism_infraspecific_name', 0,
         ['record_id' => $organism_id4],
         []);
@@ -820,7 +969,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         ['record_id' => $organism_id4],
         []);
 
-    // Test publishing of integer fields
+    // Test publishing of integer fields.
     $array_design_id2 = $this->addChadoArrayDesign($chado, [
       'name' => 'AD2',
       'num_of_elements' => 12,
@@ -832,10 +981,70 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->checkFieldItem('array_design', 'array_design_num_of_elements', 1,
       ['record_id' => $array_design_id2],
       ['bundle' => 'array_design', 'entity_id' => $entity_id, 'value' => 12]);
-    // We do not expect a NULL integer item to be published
+    // We do not expect a NULL integer item to be published.
     $this->checkFieldItem('array_design', 'array_design_num_array_columns', 0,
       ['record_id' => $array_design_id2],
       []);
+
+    // Test the max delta limit
+    // Generate a large number of contact and stock records in chado,
+    // and link every one to the first project.
+    $new_contacts = [];
+    $new_stocks = [];
+    for ($i = 1; $i <= 120; $i++) {
+      $contact_id = $this->addChadoContact($chado, [
+        'name' => 'Additional Contact ' . $i,
+        'description' => 'Numerous contact ' . $i,
+      ]);
+      $new_contacts[$i] = $contact_id;
+      $stock_id = $this->addChadoStock($chado, [
+        'name' => 'Additional Stock ' . $i,
+        'uniquename' => 'stock_' . $i,
+        'type_id' => 1,
+        'description' => 'Numerous stock ' . $i,
+      ]);
+      $new_stocks[$i] = $stock_id;
+      $project_contact_id = $this->addChadoProjectContact($chado, [
+        'project_id' => $project_id1,
+        'contact_id' => $contact_id,
+      ]);
+      $project_stock_id = $this->addChadoProjectStock($chado, [
+        'project_id' => $project_id1,
+        'stock_id' => $stock_id,
+      ]);
+    }
+
+    // Note that the project_stock field has been added with cardinality 15.
+    // Publish with inhibit set. No new contacts should
+    // be published because the default global limit is exceeded.
+    \Drupal::configFactory()
+      ->getEditable('tripal.settings')
+      ->set('tripal_entity_type.publish_global_max_delta_inhibit', 1)
+      ->save();
+    $entities = $chado_publish->publish(['bundle' => 'project', 'datastore' => 'chado_storage', 'republish' => TRUE]);
+    // We should have published no contacts (2 were pre-existing).
+    $this->checkFieldItem('project', 'project_contact', 2, ['entity_id' => 6], []);
+    // We should have published no stocks.
+    $this->checkFieldItem('project', 'project_stock', 0, ['entity_id' => 6], []);
+
+    // Reset the inhibit setting, and publish using the default max delta
+    // (i.e. 100). This tests where the global value has never been set.
+    $config_edit->set('tripal_entity_type.publish_global_max_delta_inhibit', 0)->save();
+    $entities = $chado_publish->publish(['bundle' => 'project', 'datastore' => 'chado_storage', 'republish' => TRUE]);
+    // We should have published max delta + 1 contacts (2 were pre-existing)
+    $this->checkFieldItem('project', 'project_contact', 101, ['entity_id' => 6], []);
+    // We should have published cardinality + 1 stocks since cardinality
+    // overrides max_delta.
+    $this->checkFieldItem('project', 'project_stock', 16, ['entity_id' => 6], []);
+
+    // Test setting a global max delta limit (increase default by 5)
+    $config_edit->set('tripal_entity_type.publish_global_max_delta', 105)->save();
+    $entities = $chado_publish->publish(['bundle' => 'project', 'datastore' => 'chado_storage', 'republish' => TRUE]);
+    // We should have published max delta + 1 contacts (5 new,
+    // 101 were pre-existing).
+    $this->checkFieldItem('project', 'project_contact', 106, ['entity_id' => 6], []);
+    // We should not have published any more stocks.
+    $this->checkFieldItem('project', 'project_stock', 16, ['entity_id' => 6], []);
   }
 
 }

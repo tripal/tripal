@@ -4,21 +4,22 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
-use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
+use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;
 
 /**
  * Plugin implementation of default Chado organism widget.
- *
- * @FieldWidget(
- *   id = "chado_organism_widget_default",
- *   label = @Translation("Chado Organism Widget"),
- *   description = @Translation("The default organism widget."),
- *   field_types = {
- *     "chado_organism_type_default"
- *   }
- * )
  */
+#[TripalFieldWidget(
+  id: 'chado_organism_widget_default',
+  label: new TranslatableMarkup('Chado Organism Widget'),
+  description: new TranslatableMarkup('The default organism widget.'),
+  field_types: [
+    'chado_organism_type_default',
+  ],
+)]
 class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
 
   /**
@@ -53,7 +54,7 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $link,
     ];
-    // pass the foreign key name through the form for massageFormValues()
+    // pass the foreign key name through the form for massageFormValues().
     $elements['linker_fkey_column'] = [
       '#type' => 'value',
       '#default_value' => $linker_fkey_column,
@@ -67,7 +68,15 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
     // Insert the select element, either a select or an autocomplete depending
     // on the number of options.
     $options = [];
-    $select_element = $this->organismSelectElement($organism_id, $options);
+
+     // Set some defaults to keep each of the fields simpler.
+    $options['select_limit'] = $this->getSelectLimit($options['select_limit'] ?? NULL);
+    $options['match_operator'] ??= $this->getSetting('match_operator') ?? 'CONTAINS';
+    $options['match_limit'] ??= $this->getSetting('match_limit') ?? 10;
+    $options['size'] ??= $this->getSetting('size');
+    $options['placeholder'] ??= $this->getSetting('placeholder');
+
+    $select_element = ChadoOrganismFormElementController::getFormElement($elements, $organism_id, $options);
     $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
@@ -87,99 +96,6 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
     $this->saveInitialValues($delta, $field_name, $linker_id, $form_state);
 
     return $elements;
-  }
-
-  /**
-   * Select form element generator. For a small number of values
-   * this creates a select, for many values this creates an autocomplete.
-   *
-   * @param int|null $default_id
-   *   The pkey_id value of the default, if one exists
-   * @param array $options
-   *   'match_operator' - Either "CONTAINS" or "STARTS_WITH"
-   *   'match_limit' -Number of records that the autoselect will present
-   *   'size' - Size of the autocomplete form field
-   *   'placeholder' - Placeholder before autocomplete is filled
-   *   'select_limit' - The maximum number of records for a select. If more,
-   *       then use autocomplete. Use zero if autocomplete always wanted.
-   *       If NULL or empty string, then the global setting will be used.
-   *
-   * @return array
-   *   The appropriate form element
-   */
-  protected function organismSelectElement(?int $default_id, array $options): array {
-
-    // Set some defaults to keep each of the fields simpler
-    $options['select_limit'] = $this->getSelectLimit($options['select_limit'] ?? NULL);
-    $options['match_operator'] ??= $this->getSetting('match_operator') ?? 'CONTAINS';
-    $options['match_limit'] ??= $this->getSetting('match_limit') ?? 10;
-    $options['size'] ??= $this->getSetting('size');
-    $options['placeholder'] ??= $this->getSetting('placeholder');
-
-    $element = [];
-
-    // Construct a query
-    // A single wildcard indicates that all records are to be returned
-    $string = '%';
-    // Add one to select limit so we know if it is exceeded
-    $count_options = $options;
-    $count_options['match_limit'] = $options['select_limit'] + 1;
-    $query = ChadoOrganismAutocompleteController::getQuery($string, $count_options);
-
-    // Get a count of the number of possible values, unless forcing always autocomplete
-    $count = 1;
-    if ($options['select_limit'] > 0) {
-      $count = $query->countQuery()->execute()->fetchField();
-    }
-
-    // For a large number of options, or if limit is zero, use an autocomplete
-    if ($count > $options['select_limit']) {
-      // Look up the default value if one was specified
-      $default_value = '';
-      if ($default_id) {
-        // We can reuse the existing query since only one change is needed
-        $query->condition('organism_id', $default_id, '=');
-        $result = $query->execute()->fetchObject();
-        if ($result) {
-          // Strip HTML tags if present, e.g. in Pub title
-          $default_value = strip_tags($result->organism ?? '');
-          // Append the chado pkey id value
-          $default_value .= ' (' . $default_id . ')';
-        }
-      }
-      $element = [
-        '#type' => 'textfield',
-        '#default_value' => $default_value,
-        '#autocomplete_route_name' => 'tripal_chado.organism_autocomplete',
-        '#autocomplete_route_parameters' => ['match_limit' => $options['match_limit']],
-        '#size' => $options['size'],
-        '#placeholder' => $options['placeholder'],
-      ];
-      unset($options['size']);
-      unset($options['placeholder']);
-      $element['#autocomplete_route_parameters'] = $options;
-    }
-
-    // For a small number of options, use a select
-    else {
-      $select_query = ChadoOrganismAutocompleteController::getQuery($string, $options);
-      $results = $select_query->execute();
-      $select_options = [];
-      while ($record = $results->fetchObject()) {
-        // Strip HTML tags if present, but this is not likely for organism
-        $organism = strip_tags($record->abbreviation ?: $record->organism ?? '');
-        $select_options[$record->pkey] = $organism;
-      }
-      natcasesort($select_options);
-      $element = [
-        '#type' => 'select',
-        '#options' => $select_options,
-        '#default_value' => $default_id,
-        '#empty_option' => $this->t('- Select -'),
-      ];
-    }
-    $element['#element_validate'] = [[static::class, 'validateAutocomplete']];
-    return $element;
   }
 
   /**

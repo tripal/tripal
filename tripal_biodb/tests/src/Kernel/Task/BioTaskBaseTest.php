@@ -6,6 +6,10 @@ use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal_biodb\Task\BioTaskBase;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Prophecy\Prophecy\ObjectProphecy;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for tasks.
@@ -15,7 +19,23 @@ use Prophecy\Prophecy\ObjectProphecy;
  * @group Tripal
  * @group Tripal BioDb
  * @group Tripal BioDb Task
+ *
+ * @covers ::__construct
+ * @covers ::initId
+ * @covers ::getId
+ * @covers ::getLogger
+ * @covers ::setParameters
+ * @covers ::prepareSchemas
  */
+#[CoversClass(BioTaskBase::class)]
+#[CoversMethod(BioTaskBase::class, '__construct')]
+#[CoversMethod(BioTaskBase::class, 'initId')]
+#[CoversMethod(BioTaskBase::class, 'getId')]
+#[CoversMethod(BioTaskBase::class, 'getLogger')]
+#[CoversMethod(BioTaskBase::class, 'setParameters')]
+#[CoversMethod(BioTaskBase::class, 'prepareSchemas')]
+#[Group('biodb-task')]
+#[RunTestsInSeparateProcesses]
 class BioTaskBaseTest extends TripalTestKernelBase {
 
   /**
@@ -67,8 +87,8 @@ class BioTaskBaseTest extends TripalTestKernelBase {
     // Create a mock for the abstract class, but specify not to run the
     // constructor + mention this is an abstract class.
     $tmock = $this->getMockBuilder(BioTaskBase::class)
-      ->onlyMethods(['getTripalDbxClass'])
-      ->getMockForAbstractClass();
+      ->onlyMethods(['getTripalDbxClass', 'validateParameters', 'getProgress'])
+      ->getMock();
     // Ensure when getTripalDbxClass() is asked for the connection class,
     // it returns our fake class.
     $tmock
@@ -82,11 +102,6 @@ class BioTaskBaseTest extends TripalTestKernelBase {
 
   /**
    * Tests constructor: check constructor calls.
-   *
-   * @cover ::__construct
-   * @cover ::initId
-   * @cover ::getId
-   * @cover ::getLogger
    */
   public function testBioTaskBaseConstructor() {
 
@@ -133,9 +148,6 @@ class BioTaskBaseTest extends TripalTestKernelBase {
 
   /**
    * Tests setting + preparing input/output schema.
-   *
-   * @cover ::setParameters
-   * @cover ::prepareSchemas
    */
   public function testBioTaskBaseParameters() {
 

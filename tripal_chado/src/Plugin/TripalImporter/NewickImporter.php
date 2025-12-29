@@ -2,26 +2,38 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
 /**
- * Taxonomy Importer implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "chado_newick_tree_loader",
- *    label = @Translation("Newick Tree Loader"),
- *    description = @Translation("Import Newick Tree into Chado"),
- *    file_types = {"tree","txt","newick"},
- *    upload_description = @Translation("Please provide the Newick formatted tree file (one tree per file only)."),
- *    upload_title = @Translation("Newick Tree File"),
- *    use_analysis = True,
- *    require_analysis = True,
- *    button_text = @Translation("Import Newick Tree file"),
- *    file_upload = True,
- *    file_remote = False,
- *    file_required = False,
- *  )
+ * Newick Tree Importer implementation of the TripalImporterBase.
  */
+#[TripalImporter(
+  id: 'chado_newick_tree_loader',
+  label: new TranslatableMarkup('Newick Tree Loader'),
+  description: new TranslatableMarkup('Import Newick Tree into Chado'),
+  file_types: [
+    'tree',
+    'txt',
+    'newick',
+  ],
+  upload_description: new TranslatableMarkup('Please provide the Newick formatted tree file (one tree per file only).'),
+  upload_title: new TranslatableMarkup('Newick Tree File'),
+  use_analysis: true,
+  require_analysis: true,
+  button_text: new TranslatableMarkup('Import Newick Tree file'),
+  file_upload: true,
+  file_local: true,
+  file_remote: true,
+  file_required: true,
+  publish: [
+    'bundle' => [
+      'phylotree',
+      'speciestree',
+    ],
+  ],
+)]
 class NewickImporter extends ChadoImporterBase {
 
   /**
@@ -54,6 +66,16 @@ class NewickImporter extends ChadoImporterBase {
     $name_re = '';
     $match = '';
     // $load_later = FALSE;  // Default is to combine tree import with current job
+
+    // Confirm we have the sequence ontology before we go any further.
+    $query = $this->connection->select('1:cv', 'cv');
+    $query->condition('cv.name', 'sequence', '=');
+    $query->addField('cv', 'cv_id', 'cv_id');
+    $cv_id = $query->execute()->fetchField();
+    if (!$cv_id) {
+      \Drupal::messenger()->addError(t("The Sequence Ontology does not appear to be imported. Please import the Sequence Ontology before adding a tree."));
+      return [];
+    }
 
     // get the sequence ontology CV ID
     $cv_results = $chado->select('1:cv', 'cv')
@@ -91,13 +113,6 @@ class NewickImporter extends ChadoImporterBase {
       '#description' => t('Enter the name used to refer to this phylogenetic tree.'),
       '#maxlength' => 255,
     ];
-
-    $so_cv = chado_get_cv(['name' => 'sequence']);
-    $cv_id = $so_cv->cv_id;
-    if (!$so_cv) {
-      \Drupal::messenger()->addError(t("The Sequence Ontology does not appear to be imported.
-         Please import the Sequence Ontology before adding a tree."));
-    }
 
     $form['leaf_type'] = [
       '#title' => t('Tree Type'),
@@ -260,13 +275,6 @@ class NewickImporter extends ChadoImporterBase {
     $errors = [];
     $warnings = [];
     chado_insert_phylotree($options, $errors, $warnings, $chado->getSchemaName());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postRun() {
-
   }
 
   /**

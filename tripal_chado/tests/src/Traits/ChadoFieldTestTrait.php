@@ -191,7 +191,8 @@ trait ChadoFieldTestTrait {
     // -- we need the chado term mapping for our properties.
     $this->installEntitySchema('chado_term_mapping');
     // -- we need access to the core term mappings.
-    tripal_chado_rebuild_chado_term_mappings();
+    $rebuild_service = \Drupal::service('tripal_chado.rebuild_service');
+    $rebuild_service->rebuildChadoTermMappings();
 
     // If information about the environment to be setup was provided, then we
     // will set it up for them :-).
@@ -220,6 +221,7 @@ trait ChadoFieldTestTrait {
     // 1. Create the bundle.
     $bundle = $this->createTripalContentType($system_under_test['bundle']);
     $bundle->setThirdPartySetting('tripal', 'chado_base_table', $system_under_test['bundle']['settings']['chado_base_table']);
+    $bundle->save();
     $bundle_name = $bundle->id();
 
     // 2. Create the fields.

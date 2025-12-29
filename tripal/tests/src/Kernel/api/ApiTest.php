@@ -1,16 +1,24 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel\Api\TripalApi;
+namespace Drupal\Tests\tripal\Kernel\api;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for procedural API functions.
  *
  * @group Tripal
  * @group Tripal Api
+ *
+ * @covers ::tripal_version
  */
-class apiTest extends TripalTestKernelBase {
+#[Group('legacy-api')]
+#[CoversFunction('tripal_version')]
+#[RunTestsInSeparateProcesses]
+class ApiTest extends TripalTestKernelBase {
 
   /**
    * {@inheritdoc}
@@ -20,23 +28,14 @@ class apiTest extends TripalTestKernelBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
-    parent::setUp();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public static function tearDownAfterClass() :void {
   }
 
   /**
    * Tests the API function tripal_version().
-   *
-   * @cover ::tripal_version
    */
   public function testTripalVersion() {
-    // Get the version of the Tripal module as stored in tripal.info.yml
+    // Get the version of the Tripal module as stored in tripal.info.yml.
     $moduleObj = \Drupal::service('module_handler')->getModule(self::$modules[0]);
     $info = \Drupal::service('info_parser')->parse($moduleObj->getPathname());
     $check_version = $info['version'] ?? NULL;

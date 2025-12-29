@@ -2,24 +2,30 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
-use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of the 'integer' field type.
- *
- * @FieldType(
- *   id = "tripal_integer_type",
- *   category = "tripal",
- *   label = @Translation("Tripal Integer Field Type"),
- *   description = @Translation("An integer field."),
- *   default_widget = "default_tripal_integer_type_widget",
- *   default_formatter = "default_tripal_integer_type_formatter"
- * )
  */
+#[TripalFieldType(
+  id: 'tripal_integer_type',
+  category: 'tripal',
+  label: new TranslatableMarkup('Tripal Integer Field Type'),
+  description: new TranslatableMarkup('An integer field.'),
+  default_widget: 'default_tripal_integer_type_widget',
+  default_formatter: 'default_tripal_integer_type_formatter',
+)]
 class TripalIntegerTypeItem extends TripalFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "tripal_integer_type";
 
   /**
@@ -44,11 +50,12 @@ class TripalIntegerTypeItem extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    $values = [];
+    $value = [];
 
-    $values['value'] = mt_rand(1, 100000);
+    $value['record_id'] = 0;
+    $value['value'] = mt_rand(1, 100000);
 
-    return $values;
+    return [$value];
   }
 
   /**
@@ -70,4 +77,5 @@ class TripalIntegerTypeItem extends TripalFieldItemBase {
       new IntStoragePropertyType($entity_type_id, self::$id, "value", $term),
     ];
   }
+
 }

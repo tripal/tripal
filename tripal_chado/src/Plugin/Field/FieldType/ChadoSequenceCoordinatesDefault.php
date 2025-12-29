@@ -2,6 +2,9 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
@@ -9,32 +12,45 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- * Plugin implementation of Default Tripal field for sequence data.
- *
- * @FieldType(
- *   id = "chado_sequence_coordinates_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Sequence Coordinates"),
- *   description = @Translation("Locations on reference sequences where the feature is located"),
- *   default_widget = "chado_sequence_coordinates_widget_default",
- *   default_formatter = "chado_sequence_coordinates_formatter_default",
- *   cardinality = 1,
- * )
+ * Plugin implementation of Default Tripal field for sequence coordinates.
  */
+#[TripalFieldType(
+  id: 'chado_sequence_coordinates_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Sequence Coordinates'),
+  description: new TranslatableMarkup('Locations on reference sequences where the feature is located'),
+  default_widget: 'chado_sequence_coordinates_widget_default',
+  default_formatter: 'chado_sequence_coordinates_formatter_default',
+  cardinality: 1,
+)]
 class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "chado_sequence_coordinates_default";
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
     return 'sequence_coordinates';
   }
 
   /**
-  * {@inheritdoc}
-  */
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
+    return 'sequence_coordinates';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function defaultFieldSettings() {
     $settings = parent::defaultFieldSettings();
     $settings['termIdSpace'] = 'data';
@@ -49,6 +65,30 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     $settings = parent::defaultStorageSettings();
     $settings['storage_plugin_settings']['base_table'] = 'feature';
     return $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    $value['record_id'] = 0;
+    $value['featureloc_id'] = 0;
+    $value['fkey'] = 0;
+    $value['srcfeature_id'] = 0;
+    $value['uniquename'] = '';
+    $value['fmin'] = 3;
+    $value['is_fmin_partial'] = FALSE;
+    $value['fmax'] = 9;
+    $value['is_fmax_partial'] = FALSE;
+    $value['strand'] = 1;
+    $value['phase'] = 2;
+    $value['residue_info'] = '';
+    $value['locgroup'] = 0;
+    $value['rank'] = 0;
+
+    return [$value];
   }
 
   /**
@@ -69,7 +109,6 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     }
 
     // Get the property terms by using the Chado table columns they map to.
-
     $ft_uniqname_term = self::getColumnTermId('feature', 'name', 'schema:name');
 
     $feature_id_term = self::getColumnTermId('featureloc', 'feature_id', 'SO:0000110');
@@ -84,7 +123,8 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     $locgroup_term = self::getColumnTermId('featureloc', 'locgroup', 'local:locgroup');
     $rank_term = self::getColumnTermId('featureloc', 'rank', 'OBCS:0000117');
 
-    // Get property terms using Chado table columns they map to. Return the properties for this field.
+    // Get property terms using Chado table columns they map to.
+    // Return the properties for this field.
     $properties = [];
 
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
@@ -165,6 +205,7 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -173,7 +214,7 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     // Get the base table for the content type.
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
 
-    // This is a "specialty" field for a single content type
+    // This is a "specialty" field for a single content type.
     if ($base_table == 'feature') {
       $compatible = TRUE;
     }

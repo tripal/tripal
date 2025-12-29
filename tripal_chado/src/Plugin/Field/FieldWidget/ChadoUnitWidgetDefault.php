@@ -4,20 +4,21 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
- * Plugin implementation of default Chado Data Source widget.
- *
- * @FieldWidget(
- *   id = "chado_unit_widget_default",
- *   label = @Translation("Chado Unit Widget Default"),
- *   description = @Translation("The default unit widget which allows curators to enter unit on the Gene Map content edit page."),
- *   field_types = {
- *     "chado_unit_type_default"
- *   }
- * )
+ * Plugin implementation of default Chado Unit widget.
  */
+#[TripalFieldWidget(
+  id: 'chado_unit_widget_default',
+  label: new TranslatableMarkup('Chado Unit Widget Default'),
+  description: new TranslatableMarkup('The default unit widget which allows curators to enter unit on the Gene Map content edit page.'),
+  field_types: [
+    'chado_unit_type_default',
+  ],
+)]
 class ChadoUnitWidgetDefault extends ChadoWidgetBase {
 
   /**
@@ -46,12 +47,12 @@ class ChadoUnitWidgetDefault extends ChadoWidgetBase {
 
     $chado = \Drupal::service('tripal_chado.database');
 
-    $query = $chado->select( 'cvterm', 'cvt' );
-    $query->leftJoin ('cv', 'cv', 'cvt.cv_id = cv.cv_id ');
-    $query->leftJoin ('dbxref', 'dbx', 'cvt.dbxref_id = dbx.dbxref_id');
-    $query->leftJoin ('db', 'db', 'db.db_id = db.db_id');
-    $query->addField( 'cvt', 'name', 'cvt_name');
-    $query->addField( 'cvt', 'cvterm_id', 'unittype_id');
+    $query = $chado->select('1:cvterm', 'cvt');
+    $query->leftJoin ('1:cv', 'cv', 'cvt.cv_id = cv.cv_id ');
+    $query->leftJoin ('1:dbxref', 'dbx', 'cvt.dbxref_id = dbx.dbxref_id');
+    $query->leftJoin ('1:db', 'db', 'db.db_id = db.db_id');
+    $query->addField('cvt', 'name', 'cvt_name');
+    $query->addField('cvt', 'cvterm_id', 'unittype_id');
 
     // Use a condition groups to build a section of where clause as follows:
     // ((db.name = :term1db AND dbx.accession = :term1acc) OR (db.name = :term2db AND dbx.accession = :term2acc))

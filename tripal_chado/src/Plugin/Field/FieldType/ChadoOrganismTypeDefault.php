@@ -2,6 +2,9 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
@@ -10,27 +13,57 @@ use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal organism field type.
- *
- * @FieldType(
- *   id = "chado_organism_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Organism"),
- *   description = @Translation("A chado organism reference"),
- *   default_widget = "chado_organism_widget_default",
- *   default_formatter = "chado_organism_formatter_default",
- * )
  */
+#[TripalFieldType(
+  id: 'chado_organism_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Organism'),
+  description: new TranslatableMarkup('A chado organism reference'),
+  default_widget: 'chado_organism_widget_default',
+  default_formatter: 'chado_organism_formatter_default',
+)]
 class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = 'chado_organism_type_default';
+
+  /**
+   * The chado table which is the object of the relationship.
+   *
+   * Note: this should be in all fields linking a base table to another
+   * main chado table (i.e. object table).
+   *
+   * @var string
+   */
   protected static $object_table = 'organism';
+
+  /**
+   * The foreign key that links the linking table to the object table.
+   *
+   * Note: this should be in all fields linking a base table to another
+   * main chado table (i.e. object table).
+   *
+   * @var string
+   */
   protected static $object_id = 'organism_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'
+    // The property that indicates if this field is empty.
+    return self::$object_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'organism_scientific_name';
   }
 
@@ -51,10 +84,49 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'Organism'
+    // CV Term is 'Organism'.
     $field_settings['termIdSpace'] = 'OBI';
     $field_settings['termAccession'] = '0100026';
     return $field_settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    // Get the Chado table and column this field maps to.
+    $settings = $field_definition->getSettings();
+    $storage_settings = $settings['storage_plugin_settings'];
+    $base_table = $storage_settings['base_table'];
+    $linker_table = array_key_exists('linker_table', $storage_settings) ? $storage_settings['linker_table'] : $base_table;
+
+    $value['record_id'] = 0;
+    $value['entity_id'] = 0;
+    $value[self::$object_id] = 0;
+    if ($base_table !== $linker_table) {
+      $value['linker_id'] = 0;
+      $value['link'] = 0;
+      $value[self::$object_id] = 0;
+      $value['linker_pub_id'] = 0;
+
+      // Do we want to conditionally include type_id and rank?
+      $value['linker_type_id'] = mt_rand(1, 500);
+      $value['linker_rank'] = 0;
+    }
+
+    // Object table properties.
+    $value['organism_genus'] = '';
+    $value['organism_species'] = '';
+    $value['organism_infraspecific_type'] = '';
+    $value['organism_infraspecific_name'] = '';
+    $value['organism_scientific_name'] = '';
+    $value['organism_abbreviation'] = '';
+    $value['organism_common_name'] = '';
+    $value['organism_comment'] = '';
+
+    return [$value];
   }
 
   /**
@@ -73,17 +145,17 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     }
 
     // Get the various tables and columns needed for this field.
-    // We will get the property terms by using the Chado table columns they map to.
+    // We will get the terms by using the Chado table columns they map to.
     $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
-    // Base table
-    $base_schema_def = $chado->schema()->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    // Base table.
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
-    // Object table
+    // Object table.
     $object_table = self::$object_table;
-    $object_schema_def = $chado->schema()->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_schema_def = self::getChadoTableDef($object_table, $schema);
     $object_pkey_col = $object_schema_def['primary key'];
     $genus_term = self::getColumnTermId($object_table, 'genus', 'TAXRANK:0000005');
     $genus_len = $object_schema_def['fields']['genus']['size'];
@@ -97,12 +169,12 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     $common_name_len = $object_schema_def['fields']['common_name']['size'];
     $comment_term = self::getColumnTermId($object_table, 'comment', 'schema:description');
 
-    // Cvterm table, to retrieve the name for the organism type
-    $cvterm_schema_def = $chado->schema()->getTableDef('cvterm', ['format' => 'Drupal']);
+    // Cvterm table, to retrieve the name for the organism type.
+    $cvterm_schema_def = self::getChadoTableDef('cvterm', $schema);
     $infraspecific_type_term = self::getColumnTermId('organism', 'type_id', 'local:infraspecific_type');
     $infraspecific_type_len = $cvterm_schema_def['fields']['name']['size'];
 
-    // Scientific name is built from several fields combined with space characters
+    // Scientific name is built from several fields combined with spaces.
     $scientific_name_term = 'NCBITaxon:scientific_name';
     $scientific_name_len = $genus_len + $species_len + $infraspecific_type_len + $infraspecific_name_len + 3;
 
@@ -111,16 +183,17 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = $chado->schema()->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
       $linker_pkey_col = $linker_schema_def['primary key'];
-      // the following should be the same as $base_pkey_col @todo make sure it is
-      $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
+      // The following should be the same as $base_pkey_col.
+      // @todo make sure it is.
+      $linker_left_col = self::getChadoForeignKeyColumn($linker_table, $base_table, $schema);
       $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
       $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
 
-      // Some but not all linker tables contain rank, type_id, and maybe other columns.
-      // These are conditionally added only if they exist in the linker
-      // table, and if a term is defined for them.
+      // Some but not all linker tables contain rank, type_id, and maybe
+      // other columns. These are conditionally added only if they exist in
+      // the linker table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
           $term = self::getColumnTermId($linker_table, $column, 'NCIT:C25712');
@@ -154,7 +227,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
       'fkey' => $linker_fkey_column,
     ]);
 
-    // Base table links directly
+    // Base table links directly.
     if ($base_table == $linker_table) {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
         'action' => 'store',
@@ -164,7 +237,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
         'empty_value' => 0,
       ]);
     }
-    // An intermediate linker table is used
+    // An intermediate linker table is used.
     else {
       // Define the linker table that links the base table to the object table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', self::$record_id_term, [
@@ -189,9 +262,10 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
         'empty_value' => 0,
       ]);
 
-      // Other columns in the linker table. Set in the widget, but currently not implemented in the formatter.
-      // Typically these are type_id and rank, but are not present in all linker tables,
-      // so they are added only if present in the linker table.
+      // Other columns in the linker table.
+      // Set in the widget, but currently not implemented in the formatter.
+      // Typically these are type_id and rank, but are not present in all
+      // linker tables, so they are added only if present in the linker table.
       foreach ($extra_linker_columns as $column => $term) {
         $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
           'action' => 'store',
@@ -202,7 +276,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
       }
     }
 
-    // The object table, the destination table of the linker table
+    // The object table, the destination table of the linker table.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_genus', $genus_term, $genus_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -215,7 +289,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_species', $species_term, $species_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col. ';species',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';species',
       'chado_table' => $object_table,
       'chado_column' => 'species',
       'as' => 'organism_species',
@@ -225,7 +299,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
+      . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
       'as' => 'organism_infraspecific_type',
     ]);
 
@@ -236,7 +310,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
       'as' => 'organism_infraspecific_name',
     ]);
 
-    $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_scientific_name', $scientific_name_term, $scientific_name_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_scientific_name', $scientific_name_term, $scientific_name_len, [
       'action' => 'replace',
       'template' => '[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]',
     ]);
@@ -267,6 +341,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -283,12 +358,18 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
-      array $field_instances, array $options = []): array {
+  public static function discover(
+    TripalEntityType $bundle,
+    string $field_id,
+    array $field_types,
+    array $field_instances,
+    array $options = [],
+  ): array {
 
-    // Specific settings for this field
+    // Specific settings for this field.
     $options += [
       'id' => self::$id,
       'table' => self::$object_table,
@@ -298,7 +379,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
       'description' => 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.',
     ];
 
-    // Call the parent discover() with this field's specific options
+    // Call the parent discover() with this field's specific options.
     $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
 
     return $field_list;

@@ -1,51 +1,57 @@
 <?php
+
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
+use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;
 
 /**
- * GFF3 Importer implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "chado_fasta_loader",
- *    label = @Translation("Chado FASTA File Loader"),
- *    description = @Translation("Import a FASTA file into Chado"),
- *    file_types = {"fasta","txt","fa","aa","pep","nuc","faa","fna"},
- *    upload_description = @Translation("Please provide a plain text file following the <a target='_blank' href='https://en.wikipedia.org/wiki/FASTA_format'>FASTA format specification</a>."),
- *    upload_title = @Translation("FASTA File"),
- *    use_analysis = True,
- *    require_analysis = True,
- *    button_text = @Translation("Import FASTA file"),
- *    file_upload = True,
- *    file_remote = True,
- *    file_local = True,
- *    file_required = True,
- *  )
+ * FASTA Importer implementation of the TripalImporterBase.
  */
+#[TripalImporter(
+  id: 'chado_fasta_loader',
+  label: new TranslatableMarkup('Chado FASTA File Loader'),
+  description: new TranslatableMarkup('Import a FASTA file into Chado'),
+  file_types: [
+    'fasta',
+    'txt',
+    'fa',
+    'aa',
+    'pep',
+    'nuc',
+    'faa',
+    'fna',
+  ],
+  upload_description: new TranslatableMarkup('Please provide a plain text file following the <a target="_blank" href="https://en.wikipedia.org/wiki/FASTA_format">FASTA format specification</a>.'),
+  upload_title: new TranslatableMarkup('FASTA File'),
+  use_analysis: true,
+  require_analysis: true,
+  button_text: new TranslatableMarkup('Import FASTA file'),
+  file_upload: true,
+  file_remote: true,
+  file_local: true,
+  file_required: true,
+)]
 class FASTAImporter extends ChadoImporterBase {
 
   /**
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-    $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
-    // get the list of organisms
-    $organisms = chado_get_organism_select_options();
-
-    $form['organism_id'] = [
-      '#title' => t('Organism'),
-      '#type' => 'select',
-      '#description' => t("Choose the organism to which these sequences are associated"),
-      '#required' => TRUE,
-      '#options' => $organisms,
-    ];
+    // Get the orgaism select element or auto-complete element.
+    $form['organism_id'] = ChadoOrganismFormElementController::getFormElement([], 0, []);
+    $form['organism_id']['#title'] = t('Organism');
+    $form['organism_id']['#description'] = t("Choose the organism to which these sequences are associated");
+    $form['organism_id']['#required'] = TRUE;
 
     // get the sequence ontology CV ID
-    $cv_results = $chado->select('1:cv', 'cv')
+    $cv_results = $this->connection->select('1:cv', 'cv')
       ->fields('cv')
       ->condition('name', 'sequence')
       ->execute();
@@ -163,7 +169,7 @@ class FASTAImporter extends ChadoImporterBase {
 
     // get the list of databases
     $sql = "SELECT * FROM {1:db} ORDER BY name";
-    $db_rset = $chado->query($sql);
+    $db_rset = $this->connection->query($sql);
     $dbs = [];
     $dbs[''] = '';
     while ($db = $db_rset->fetchObject()) {
@@ -234,11 +240,10 @@ class FASTAImporter extends ChadoImporterBase {
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
-    $chado = \Drupal::service('tripal_chado.database');
-
     $form_state_values = $form_state->getValues();
 
-    $organism_id = $form_state_values['organism_id'];
+    $organism_id = ChadoOrganismFormElementController::getPkeyId($form_state_values['organism_id']);
+
     $file_upload = $form_state_values['file_upload'];
     $file_upload_existing = $form_state_values['file_upload_existing'] ?? null;
     $file_local = $form_state_values['file_local'] ?? null;
@@ -336,7 +341,8 @@ class FASTAImporter extends ChadoImporterBase {
     $arguments = $this->arguments['run_args'];
     $file_path = $this->arguments['files'][0]['file_path'];
 
-    $organism_id = $arguments['organism_id'];
+    $organism_id = ChadoOrganismFormElementController::getPkeyId($arguments['organism_id']);
+
     $type = $arguments['seqtype'];
     $method = $arguments['method'];
     $match_type = $arguments['match_type'];
@@ -430,7 +436,7 @@ class FASTAImporter extends ChadoImporterBase {
         LEFT JOIN {1:cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
       WHERE CVT.cvterm_id = :cvterm_id
     ";
-    $cvterm = $chado->query($cvtermsql, [
+    $cvterm = $this->connection->query($cvtermsql, [
       ':cvterm_id' => $cvterm_id,
     ])->fetchObject();
     if (!$cvterm) {
@@ -449,7 +455,7 @@ class FASTAImporter extends ChadoImporterBase {
            ['@parent_type' => $parent_type]
         );
       }
-      $parentcvterm = $chado->query($cvtermsql, [
+      $parentcvterm = $this->connection->query($cvtermsql, [
         ':cvterm_id' => $parentcvterm_id,
       ])->fetchObject();
       if (!isset($parentcvterm)) {
@@ -470,7 +476,7 @@ class FASTAImporter extends ChadoImporterBase {
         LEFT JOIN {1:cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
       WHERE CV.name = :cvname and CVT.name = :name
       ";
-      $relcvterm = $chado->query($cvtermsql, [
+      $relcvterm = $this->connection->query($cvtermsql, [
         ':cvname' => 'sequence',
         ':name' => $rel_type,
       ])->fetchObject();
@@ -484,8 +490,8 @@ class FASTAImporter extends ChadoImporterBase {
 
     // We need to get the table schema to make sure we don't overrun the
     // size of fields with what our regular expressions retrieve
-    $feature_tbl = chado_get_schema('feature', $chado->getSchemaName());
-    $dbxref_tbl = chado_get_schema('dbxref', $chado->getSchemaName());
+    $feature_tbl = chado_get_schema('feature', $this->connection->getSchemaName());
+    $dbxref_tbl = chado_get_schema('dbxref', $this->connection->getSchemaName());
 
     $this->logger->notice("Step 1: Finding sequences...");
     $filesize = filesize($file_path);
@@ -663,7 +669,7 @@ class FASTAImporter extends ChadoImporterBase {
     $chado = $this->getChadoConnection();
     // Check to see if this feature already exists if the match_type is 'Name'.
     if (strcmp($match_type, 'Name') == 0) {
-      $results_query = $chado->select('1:feature', 'feature')
+      $results_query = $this->connection->select('1:feature', 'feature')
         ->fields('feature')
         ->condition('organism_id', $organism_id)
         ->condition('name', $name)
@@ -683,7 +689,7 @@ class FASTAImporter extends ChadoImporterBase {
 
     // Check if this feature already exists if the match_type is 'Unique Name'.
     if (strcmp($match_type, 'Unique name') == 0) {
-      $results_query = $chado->select('1:feature', 'feature')
+      $results_query = $this->connection->select('1:feature', 'feature')
         ->fields('feature')
         ->condition('organism_id', $organism_id)
         ->condition('uniquename', $uname)
@@ -727,7 +733,7 @@ class FASTAImporter extends ChadoImporterBase {
         'uniquename' => $uname,
         'type_id' => $cvterm->cvterm_id,
       ];
-      $success = $chado->insert('1:feature')->fields($values)->execute();
+      $success = $this->connection->insert('1:feature')->fields($values)->execute();
       if (!$success) {
         $this->logger->error("Failed to insert feature '@name (@uname)'",
           ['@name' => $name, '@uname' => $uname]
@@ -736,7 +742,7 @@ class FASTAImporter extends ChadoImporterBase {
       }
 
       // now get the feature we just inserted
-      $results_query = $chado->select('1:feature', 'feature')
+      $results_query = $this->connection->select('1:feature', 'feature')
         ->fields('feature')
         ->condition('organism_id', $organism_id)
         ->condition('uniquename', $uname)
@@ -780,7 +786,7 @@ class FASTAImporter extends ChadoImporterBase {
           // First check to make sure that by changing the unique name of this
           // feature that we won't conflict with another existing feature of
           // the same name
-          $results_query = $chado->select('1:feature', 'feature')
+          $results_query = $this->connection->select('1:feature', 'feature')
             ->fields('feature')
             ->condition('organism_id', $organism_id)
             ->condition('uniquename', $uname)
@@ -795,16 +801,14 @@ class FASTAImporter extends ChadoImporterBase {
             return 0;
           }
 
-          // the changes to the uniquename don't conflict so proceed with the update
-          $values = ['uniquename' => $uname];
-          $match = [
-            'name' => $name,
-            'organism_id' => $organism_id,
-            'type_id' => $cvterm->cvterm_id,
-          ];
-
-          // perform the update
-          $success = chado_update_record('feature', $match, $values);
+          // The changes to the uniquename don't conflict so proceed
+          // with the update.
+          $query = $this->connection->update('1:feature');
+          $query->condition('name', $name, '=');
+          $query->condition('organism_id', $organism_id, '=');
+          $query->condition('type_id', $cvterm->cvterm_id, '=');
+          $query->fields(['uniquename' => $uname]);
+          $success = $query->execute();
           if (!$success) {
             $this->logger->error("Failed to update feature '@name' ('@uname')",
               ['@name' => $name, '@uname' => $uname]
@@ -820,13 +824,12 @@ class FASTAImporter extends ChadoImporterBase {
         // we want to update the name.
         $values = [];
         if ($name) {
-          $values = ['name' => $name];
-          $match = [
-            'uniquename' => $uname,
-            'organism_id' => $organism_id,
-            'type_id' => $cvterm->cvterm_id,
-          ];
-          $success = chado_update_record('feature', $match, $values);
+          $query = $this->connection->update('1:feature');
+          $query->condition('uniquename', $uname, '=');
+          $query->condition('organism_id', $organism_id, '=');
+          $query->condition('type_id', $cvterm->cvterm_id, '=');
+          $query->fields(['name' => $name]);
+          $success = $query->execute();
           if (!$success) {
             $this->logger->error("Failed to update feature '@name' ('@uname')",
               ['@name' => $name, '@uname' => $uname]
@@ -843,7 +846,7 @@ class FASTAImporter extends ChadoImporterBase {
     // add in the analysis link
     if ($analysis_id) {
       // if the association doesn't already exist then add one
-      $results_query = $chado->select('1:analysisfeature', 'analysisfeature')
+      $results_query = $this->connection->select('1:analysisfeature', 'analysisfeature')
         ->fields('analysisfeature')
         ->condition('analysis_id', $analysis_id)
         ->condition('feature_id', $feature->feature_id);
@@ -854,7 +857,7 @@ class FASTAImporter extends ChadoImporterBase {
           'analysis_id' => $analysis_id,
           'feature_id' => $feature->feature_id,
         ];
-        $success = $chado->insert('1:analysisfeature')->fields($values)->execute();
+        $success = $this->connection->insert('1:analysisfeature')->fields($values)->execute();
         if (!$success) {
           $this->logger->error("Failed to associate analysis and feature '@name' ('@name')",
             ['@name' => $name, '@uname' => $uname]
@@ -866,7 +869,7 @@ class FASTAImporter extends ChadoImporterBase {
 
     // now add the database cross reference
     if ($db_id) {
-      $results_query = $chado->select('1:dbxref', 'dbxref')
+      $results_query = $this->connection->select('1:dbxref', 'dbxref')
         ->fields('dbxref')
         ->condition('db_id', $db_id)
         ->condition('accession', $accession);
@@ -878,7 +881,7 @@ class FASTAImporter extends ChadoImporterBase {
           'db_id' => $db_id,
           'accession' => $accession,
         ];
-        $success = $chado->insert('1:dbxref')->fields($values)->execute();
+        $success = $this->connection->insert('1:dbxref')->fields($values)->execute();
         if (!$results) {
           $this->logger->error("Failed to add database accession '@accession'",
             ['@accession' => $accession]
@@ -886,7 +889,7 @@ class FASTAImporter extends ChadoImporterBase {
           return 0;
         }
 
-        $results_query = $chado->select('1:dbxref', 'dbxref')
+        $results_query = $this->connection->select('1:dbxref', 'dbxref')
           ->fields('dbxref')
           ->condition('db_id', $db_id)
           ->condition('accession', $accession);
@@ -906,7 +909,7 @@ class FASTAImporter extends ChadoImporterBase {
         $dbxref = $results[0];
       }
 
-      $results_query = $chado->select('1:feature_dbxref', 'feature_dbxref')
+      $results_query = $this->connection->select('1:feature_dbxref', 'feature_dbxref')
         ->fields('feature_dbxref')
         ->condition('feature_id', $feature->feature_id)
         ->condition('dbxref_id', $dbxref->dbxref_id);
@@ -917,7 +920,7 @@ class FASTAImporter extends ChadoImporterBase {
           'feature_id' => $feature->feature_id,
           'dbxref_id' => $dbxref->dbxref_id,
         ];
-        $success = $chado->insert('1:feature_dbxref')->fields($values)->execute();
+        $success = $this->connection->insert('1:feature_dbxref')->fields($values)->execute();
         if (!$success) {
           $this->logger->error("Failed to associate database accession '@accession' with feature",
             ['@accession' => $accession]
@@ -929,7 +932,7 @@ class FASTAImporter extends ChadoImporterBase {
 
     // Now add in the relationship if one exists.
     if ($rel_type) {
-      $results_query = $chado->select('1:feature', 'feature')
+      $results_query = $this->connection->select('1:feature', 'feature')
         ->fields('feature')
         ->condition('organism_id', $organism_id)
         ->condition('uniquename', $parent)
@@ -945,7 +948,7 @@ class FASTAImporter extends ChadoImporterBase {
       $parent_feature = $results->fetchObject();
 
       // Check to see if the relationship already exists. If not, then add it.
-      $results_query = $chado->select('1:feature_relationship', 'feature_relationship')
+      $results_query = $this->connection->select('1:feature_relationship', 'feature_relationship')
         ->fields('feature_relationship')
         ->condition('subject_id', $feature->feature_id)
         ->condition('object_id', $parent_feature->feature_id)
@@ -958,7 +961,7 @@ class FASTAImporter extends ChadoImporterBase {
           'object_id' => $parent_feature->feature_id,
           'type_id' => $relcvterm->cvterm_id,
         ];
-        $success = $chado->insert('1:feature_relationship')->fields($values)->execute();
+        $success = $this->connection->insert('1:feature_relationship')->fields($values)->execute();
         if (!$success) {
           $this->logger->error("Failed to associate database accession '@accession' with feature",
             ['@accession' => $accession]
@@ -994,7 +997,7 @@ class FASTAImporter extends ChadoImporterBase {
 
     // First, make sure we don't have a null in the residues
     $sql = "UPDATE {feature} SET residues = '' WHERE feature_id = :feature_id";
-    $chado->query($sql, [':feature_id' => $feature_id]);
+    $this->connection->query($sql, [':feature_id' => $feature_id]);
 
     // Read in the lines until we reach the end of the sequence. Once we
     // get a specific bytes read then append the sequence to the one in the
@@ -1014,7 +1017,7 @@ class FASTAImporter extends ChadoImporterBase {
           SET residues = residues || :chunk
           WHERE feature_id = :feature_id
         ";
-        $success = $chado->query($sql, [
+        $success = $this->connection->query($sql, [
           ':feature_id' => $feature_id,
           ':chunk' => $chunk,
         ]);
@@ -1039,7 +1042,7 @@ class FASTAImporter extends ChadoImporterBase {
           SET residues = residues || :chunk
           WHERE feature_id = :feature_id
         ";
-      $success = $chado->query($sql, [
+      $success = $this->connection->query($sql, [
         ':feature_id' => $feature_id,
         ':chunk' => $chunk,
       ]);
@@ -1054,14 +1057,7 @@ class FASTAImporter extends ChadoImporterBase {
 
     // Now update the seqlen and md5checksum fields
     $sql = "UPDATE {feature} SET seqlen = char_length(residues),  md5checksum = md5(residues) WHERE feature_id = :feature_id";
-    $chado->query($sql, [':feature_id' => $feature_id]);
-
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postRun() {
+    $this->connection->query($sql, [':feature_id' => $feature_id]);
 
   }
 

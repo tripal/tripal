@@ -4,8 +4,12 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
+ * Tests ChadoStorage.
+ *
  * Tests that ChadoStorage can handle property fields as we expect.
  * The array of fields/properties used for these tests are designed
  * to match those in the ChadoAnalysisDefault field with values filled
@@ -22,29 +26,49 @@ use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
  * to ensure we meet the unique constraints on the phylotree and quantification
  * tables respectively.
  *
- *  Specific test cases:
- *   - [PHYLOTREE] Create Values in Chado using ChadoStorage when they don't yet exist.
- *   - [PHYLOTREE] Load values in Chado using ChadoStorage after we just inserted them.
- *   - [PHYLOTREE] Update values in Chado using ChadoStorage after we just inserted them.
- *   - [QUANTIFICATION] Create Values in Chado using ChadoStorage when they don't yet exist.
- *   - [QUANTIFICATION] Load values in Chado using ChadoStorage after we just inserted them.
- *   - [QUANTIFICATION] Update values in Chado using ChadoStorage after we just inserted them.
+ * Specific test cases:
+ * - [PHYLOTREE] Create Values in Chado when they don't yet exist.
+ * - [PHYLOTREE] Load values in Chado after we just inserted them.
+ * - [PHYLOTREE] Update values in Chado after we just inserted them.
+ * - [QUANTIFICATION] Create Values in Chado when they don't yet exist.
+ * - [QUANTIFICATION] Load values in Chado after we just inserted them.
+ * - [QUANTIFICATION] Update values in Chado after we just inserted them.
  *
  * @group Tripal
  * @group Tripal Chado
  * @group ChadoStorage
  * @group ChadoStorage Fields
  */
+#[Group('tripal-field')]
+#[Group('chado-field')]
+#[Group('tripal-storage')]
+#[Group('chado-storage')]
+#[RunTestsInSeparateProcesses]
 class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test
-  // with fields specific to that test.
+  /**
+   * Fields specific to a test.
+   *
+   * Note: We will populate this variable at the start of each test.
+   *
+   * @var array
+   */
   protected $fields = [];
 
+  /**
+   * The file describing the testing environment.
+   *
+   * @var string
+   */
   protected $yaml_file = __DIR__ . "/ChadoAnalysisDefault-FieldDefinitions.yml";
 
+  /**
+   * Analyses added in the testing environment.
+   *
+   * @var array
+   */
   protected array $analysis_id;
 
   /**
@@ -81,14 +105,14 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Testing ChadoStorage with the ChadoAnalysisDefault field on a phylotree content type.
+   * Testing ChadoStorage: ChadoAnalysisDefault on a phylotree content type.
    *
    * Test Cases:
    *   - Create Values in Chado using ChadoStorage when they don't yet exist.
    *   - Load values in Chado using ChadoStorage after we just inserted them.
    *   - Update values in Chado using ChadoStorage after we just inserted them.
    */
-  public function testPhylotreeBaseTableFieldCRUD() {
+  public function testPhylotreeBaseTableFieldCrud() {
 
     // Phylotree requires a dbxref_id however it has no impact on our field.
     // As such, let's just grab the one associated with the taxrank genus cvterm
@@ -100,7 +124,7 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
     $dbxref_id = $query->execute()->fetchField();
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
-    // ---------------------------------------------------------
+    // ---------------------------------------------------------.
     $insert_values = [
       'testAnalysisFieldPhylotree' => [
         [
@@ -113,7 +137,7 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
       'testotherphylotreefield' => [
         [
           'dbxref_id' => $dbxref_id,
-        ]
+        ],
       ],
     ];
     $this->chadoStorageTestInsertValues($insert_values);
@@ -122,10 +146,9 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
     // for chado storage are being formed as we expect. This is very
     // useful for debugging.
     // @debug $this->debugChadoStorageTestTraitArrays();
-
     // Check that the phylotree record was created as expected.
     $query = $this->chado_connection->select('1:phylotree', 'p')
-        ->fields('p', ['phylotree_id', 'dbxref_id', 'analysis_id']);
+      ->fields('p', ['phylotree_id', 'dbxref_id', 'analysis_id']);
     $query->join('1:analysis', 'a', 'a.analysis_id = p.analysis_id');
     $query->addField('a', 'name', 'analysis_name');
     $phylotree_records = $query->execute()->fetchAll();
@@ -142,7 +165,8 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // First we want to reset all the chado storage arrays to ensure we are
     // doing a clean test. The values will purposefully remain in Chado but the
-    // Property Types, Property Values and Data Values will be built from scratch.
+    // Property Types, Property Values and Data Values will be built from
+    // scratch.
     $this->cleanChadoStorageValues();
 
     // For loading only the store id/pkey/link items should be populated.
@@ -155,14 +179,13 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
       'testotherphylotreefield' => [
         [
           'other_record_id' => $phylotree_id,
-        ]
+        ],
       ],
     ];
     $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
 
     // @debug Uncomment the following line if the asserts below fail.
     // @debug $this->debugChadoStorageTestTraitArrays();
-
     // Now test that the values have been loaded.
     // We want to test only our field
     // and retrieved values will be keyed by field name + delta.
@@ -187,27 +210,27 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // When updating we need all the store id/pkey/link records
     // and all values of the other properties.
-    // array_merge alone seems not to be sufficient
-
+    // array_merge alone seems not to be sufficient.
     $update_values = [
       'testAnalysisFieldPhylotree' => [
         [
           'record_id' => $phylotree_id,
-          'analysis_id' => $this->analysis_id[1], // This is the change!
+    // This is the change!
+          'analysis_id' => $this->analysis_id[1],
         ],
       ],
       'testotherphylotreefield' => [
         [
           'other_record_id' => $phylotree_id,
           'dbxref_id' => $dbxref_id,
-        ]
+        ],
       ],
     ];
     $this->chadoStorageTestUpdateValues($update_values);
 
     // Now we check chado to see if these values were changed...
     $query = $this->chado_connection->select('1:phylotree', 'p')
-        ->fields('p', ['phylotree_id', 'dbxref_id', 'analysis_id']);
+      ->fields('p', ['phylotree_id', 'dbxref_id', 'analysis_id']);
     $query->join('1:analysis', 'a', 'a.analysis_id = p.analysis_id');
     $query->addField('a', 'name', 'analysis_name');
     $phylotree_records = $query->execute()->fetchAll();
@@ -224,22 +247,21 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Testing ChadoStorage with the ChadoAnalysisDefault field on a quantification content type.
+   * Testing ChadoStorage: ChadoAnalysisDefault on quantification content type.
    *
    * Test Cases:
    *   - Create Values in Chado using ChadoStorage when they don't yet exist.
    *   - Load values in Chado using ChadoStorage after we just inserted them.
    *   - Update values in Chado using ChadoStorage after we just inserted them.
    */
-  public function testQuantificationBaseTableFieldCRUD() {
+  public function testQuantificationBaseTableFieldCrud() {
 
-
-    // Quantification requires a acquisition_id however it has no impact on our field.
-    // As such, we will just create one with dummy details to meet the constraint...
-    // However, these are a network of tables...
+    // Quantification requires a acquisition_id however it has no impact on our
+    // field. As such, we will just create one with dummy details to meet the
+    // constraint... However, these are a network of tables...
     // acquisition requires assay; assay requires an arraydesign + contact;
     // arraydesign requires a cvterm + contact.
-    // -- cvterm
+    // -- cvterm.
     $genus_cvtermID = $this->getCvtermID('TAXRANK', '0000005');
     // -- contact
     $query = $this->chado_connection->insert('1:contact');
@@ -259,19 +281,19 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
     $query = $this->chado_connection->insert('1:assay');
     $query->fields([
       'arraydesign_id' => $arraydesign_id,
-      'operator_id' => $contact_id
+      'operator_id' => $contact_id,
     ]);
     $assay_id = $query->execute();
     // -- Finally acquisition.
     $query = $this->chado_connection->insert('1:acquisition');
     $query->fields([
       'assay_id' => $assay_id,
-      'name' => 'Fake Acquisition'
+      'name' => 'Fake Acquisition',
     ]);
     $acquisition_id = $query->execute();
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
-    // ---------------------------------------------------------
+    // ---------------------------------------------------------.
     $insert_values = [
       'testAnalysisFieldQuantification' => [
         [
@@ -284,7 +306,7 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
       'testotherquantificationfield' => [
         [
           'acquisition_id' => $acquisition_id,
-        ]
+        ],
       ],
     ];
     $this->chadoStorageTestInsertValues($insert_values);
@@ -293,10 +315,9 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
     // for chado storage are being formed as we expect. This is very
     // useful for debugging.
     // @debug $this->debugChadoStorageTestTraitArrays();
-
     // Check that the quantification record was created as expected.
     $query = $this->chado_connection->select('1:quantification', 'q')
-        ->fields('q', ['quantification_id', 'acquisition_id', 'analysis_id']);
+      ->fields('q', ['quantification_id', 'acquisition_id', 'analysis_id']);
     $query->join('1:analysis', 'a', 'a.analysis_id = q.analysis_id');
     $query->addField('a', 'name', 'analysis_name');
     $records = $query->execute()->fetchAll();
@@ -313,7 +334,8 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // First we want to reset all the chado storage arrays to ensure we are
     // doing a clean test. The values will purposefully remain in Chado but the
-    // Property Types, Property Values and Data Values will be built from scratch.
+    // Property Types, Property Values and Data Values will be built from
+    // scratch.
     $this->cleanChadoStorageValues();
 
     // For loading only the store id/pkey/link items should be populated.
@@ -326,14 +348,13 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
       'testotherquantificationfield' => [
         [
           'other_record_id' => $quantification_id,
-        ]
+        ],
       ],
     ];
     $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
 
     // @debug Uncomment the following line if the asserts below fail.
     // @debug $this->debugChadoStorageTestTraitArrays();
-
     // Now test that the values have been loaded.
     // We want to test only our field
     // and retrieved values will be keyed by field name + delta.
@@ -354,32 +375,31 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
       "The analysis name did not match the one we retrieved from chado after insert."
     );
 
-
     // Test Case: Update values in Chado using ChadoStorage.
     // ---------------------------------------------------------
     // When updating we need all the store id/pkey/link records
     // and all values of the other properties.
-    // array_merge alone seems not to be sufficient
-
+    // array_merge alone seems not to be sufficient.
     $update_values = [
       'testAnalysisFieldQuantification' => [
         [
           'record_id' => $quantification_id,
-          'analysis_id' => $this->analysis_id[1], // This is the change!
+    // This is the change!
+          'analysis_id' => $this->analysis_id[1],
         ],
       ],
       'testotherquantificationfield' => [
         [
           'other_record_id' => $quantification_id,
           'acquisition_id' => $acquisition_id,
-        ]
+        ],
       ],
     ];
     $this->chadoStorageTestUpdateValues($update_values);
 
     // Now we check chado to see if these values were changed...
     $query = $this->chado_connection->select('1:quantification', 'q')
-        ->fields('q', ['quantification_id', 'acquisition_id', 'analysis_id']);
+      ->fields('q', ['quantification_id', 'acquisition_id', 'analysis_id']);
     $query->join('1:analysis', 'a', 'a.analysis_id = q.analysis_id');
     $query->addField('a', 'name', 'analysis_name');
     $records = $query->execute()->fetchAll();
@@ -394,4 +414,5 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
     $this->assertEquals('Tripal 4 Automated Testing', $dbrecord->analysis_name,
       "An extra more readable check that the analysis is the one we expect.");
   }
+
 }

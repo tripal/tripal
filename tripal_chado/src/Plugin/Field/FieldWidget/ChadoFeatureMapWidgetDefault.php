@@ -4,20 +4,21 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
  * Plugin implementation of default Chado featuremap widget.
- *
- * @FieldWidget(
- *   id = "chado_featuremap_widget_default",
- *   label = @Translation("Chado FeatureMap Widget"),
- *   description = @Translation("The default featuremap widget."),
- *   field_types = {
- *     "chado_featuremap_type_default"
- *   }
- * )
  */
+#[TripalFieldWidget(
+  id: 'chado_featuremap_widget_default',
+  label: new TranslatableMarkup('Chado FeatureMap Widget'),
+  description: new TranslatableMarkup('The default featuremap widget.'),
+  field_types: [
+    'chado_featuremap_type_default',
+  ],
+)]
 class ChadoFeatureMapWidgetDefault extends ChadoWidgetBase {
 
   /**

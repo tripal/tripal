@@ -1,9 +1,12 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Functional\Services;
 
+use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
 use Drupal\tripal_chado\Services\ChadoCustomTableManager;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the functions in the ChadoCustomTableManager services class.
@@ -11,13 +14,13 @@ use Drupal\tripal_chado\Services\ChadoCustomTableManager;
  * @group Tripal
  * @group Tripal Chado
  */
+#[Group('service-chado-custom-table')]
+#[RunTestsInSeparateProcesses]
 class ChadoCustomTableManagerTest extends ChadoTestBrowserBase {
 
-/**
- *  Tests that we can create, list, and get custom table objects
- *
- * @group chado
- */
+  /**
+   * Tests that we can create, list, and get custom table objects.
+   */
   public function testCustomTableManager() {
     // Create and then get the existing test chado schema name.
     $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
@@ -30,7 +33,7 @@ class ChadoCustomTableManagerTest extends ChadoTestBrowserBase {
     // Test that the manager was created successfully.
     $this->assertInstanceOf(ChadoCustomTableManager::class, $ct_service, 'The Chado Custom Table Manager could not be created.');
 
-    // Test creating a table. The create() function returns a ChadoCustomTable object
+    // Test creating a table. The create() function returns a ChadoCustomTable object.
     $custom_table = $ct_service->create('test_custom_table', $default_chado_schema);
 
     $this->assertInstanceOf(ChadoCustomTable::class, $custom_table, 'The test_custom_table could not be created');
@@ -55,7 +58,7 @@ class ChadoCustomTableManagerTest extends ChadoTestBrowserBase {
     ];
     $tables = $ct_service->getTables($default_chado_schema);
     $this->assertEquals($tables, $expected_tables, 'Could not get a list of tables from the ' . $default_chado_schema . ' schema.');
-    // Add another table
+    // Add another table.
     $custom_table = $ct_service->create('test_custom_table2', $default_chado_schema);
     $expected_tables = [
       '1' => 'test_custom_table',
@@ -65,4 +68,5 @@ class ChadoCustomTableManagerTest extends ChadoTestBrowserBase {
     $this->assertEquals($tables, $expected_tables, 'Could not get a list of tables from the ' . $default_chado_schema . ' schema.');
 
   }
+
 }

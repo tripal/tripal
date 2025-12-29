@@ -2,6 +2,9 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
@@ -10,27 +13,57 @@ use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal analysis field type.
- *
- * @FieldType(
- *   id = "chado_analysis_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Analysis"),
- *   description = @Translation("Application of analytical methods to existing data of a specific type"),
- *   default_widget = "chado_analysis_widget_default",
- *   default_formatter = "chado_analysis_formatter_default",
- * )
  */
+#[TripalFieldType(
+  id: 'chado_analysis_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Analysis'),
+  description: new TranslatableMarkup('Application of analytical methods to existing data of a specific type'),
+  default_widget: 'chado_analysis_widget_default',
+  default_formatter: 'chado_analysis_formatter_default',
+)]
 class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = 'chado_analysis_type_default';
+
+  /**
+   * The chado table which is the object of the relationship.
+   *
+   * Note: this should be in all fields linking a base table to another
+   * main chado table (i.e. object table).
+   *
+   * @var string
+   */
   protected static $object_table = 'analysis';
+
+  /**
+   * The foreign key that links the linking table to the object table.
+   *
+   * Note: this should be in all fields linking a base table to another
+   * main chado table (i.e. object table).
+   *
+   * @var string
+   */
   protected static $object_id = 'analysis_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'
+    // The property that indicates if this field is empty.
+    return self::$object_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'analysis_name';
   }
 
@@ -54,8 +87,50 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     // No default CV Term for this field
     // Analysis is operation:2945
     // Genome Assembly is operation:0525
-    // Genome Annotation is operation:0362
+    // Genome Annotation is operation:0362.
     return $field_settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    // Get the Chado table and column this field maps to.
+    $settings = $field_definition->getSettings();
+    $storage_settings = $settings['storage_plugin_settings'];
+    $base_table = $storage_settings['base_table'];
+    $linker_table = array_key_exists('linker_table', $storage_settings) ? $storage_settings['linker_table'] : $base_table;
+
+    $value['record_id'] = 0;
+    $value['entity_id'] = 0;
+    if ($base_table == $linker_table) {
+      $value[self::$object_id] = 0;
+    }
+    else {
+      $value['linker_id'] = 0;
+      $value['link'] = 0;
+      $value[self::$object_id] = 0;
+      $value['linker_rawscore'] = 0;
+      $value['linker_normscore'] = 0;
+      $value['linker_significance'] = 0;
+      $value['linker_identity'] = 0;
+      $value['linker_type_id'] = mt_rand(1, 500);
+      $value['linker_rank'] = 0;
+    }
+
+    // Object table properties.
+    $value['analysis_name'] = '';
+    $value['analysis_description'] = '';
+    $value['analysis_program'] = '';
+    $value['analysis_programversion'] = '';
+    $value['analysis_algorithm'] = '';
+    $value['analysis_sourcename'] = '';
+    $value['analysis_sourceversion'] = '';
+    $value['analysis_sourceuri'] = '';
+
+    return [$value];
   }
 
   /**
@@ -74,24 +149,24 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     }
 
     // Get the various tables and columns needed for this field.
-    // We will get the property terms by using the Chado table columns they map to.
+    // We will get the terms by using the Chado table columns they map to.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
-    // Base table
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    // Base table.
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
-    // Object table
+    // Object table.
     $object_table = self::$object_table;
-    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_schema_def = self::getChadoTableDef($object_table, $schema);
     $object_pkey_col = $object_schema_def['primary key'];
 
-    // Columns specific to the object table
+    // Columns specific to the object table.
     $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
     $name_len = $object_schema_def['fields']['name']['size'];
-    $description_term = self::getColumnTermId($object_table, 'description', 'schema:description'); // text
+    // Text.
+    $description_term = self::getColumnTermId($object_table, 'description', 'schema:description');
     $program_term = self::getColumnTermId($object_table, 'program', 'SWO:0000001');
     $program_len = $object_schema_def['fields']['program']['size'];
     $programversion_term = self::getColumnTermId($object_table, 'programversion', 'IAO:0000129');
@@ -102,24 +177,25 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $sourcename_len = $object_schema_def['fields']['sourcename']['size'];
     $sourceversion_term = self::getColumnTermId($object_table, 'sourceversion', 'IAO:0000129');
     $sourceversion_len = $object_schema_def['fields']['sourceversion']['size'];
-    $sourceuri_term = self::getColumnTermId($object_table, 'sourceuri', 'data:1047'); // text
+    // Text.
+    $sourceuri_term = self::getColumnTermId($object_table, 'sourceuri', 'data:1047');
     // @todo timeexecuted not yet implemented
-
     // Linker table, when used, requires specifying the linker table and column.
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
       $linker_pkey_col = $linker_schema_def['primary key'];
-      // the following should be the same as $base_pkey_col @todo make sure it is
-      $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
+      // The following should be the same as $base_pkey_col.
+      // @todo make sure it is.
+      $linker_left_col = self::getChadoForeignKeyColumn($linker_table, $base_table, $schema);
       $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
       $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
 
-      // Some but not all linker tables contain rank, type_id, and maybe other columns.
-      // These are conditionally added only if they exist in the linker
-      // table, and if a term is defined for them.
+      // Some but not all linker tables contain rank, type_id, and maybe
+      // other columns. These are conditionally added only if they exist in
+      // the linker table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
           $term = self::getColumnTermId($linker_table, $column, 'NCIT:C25712');
@@ -153,7 +229,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       'fkey' => $linker_fkey_column,
     ]);
 
-    // Base table links directly
+    // Base table links directly.
     if ($base_table == $linker_table) {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
@@ -163,7 +239,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
         'empty_value' => 0,
       ]);
     }
-    // An intermediate linker table is used
+    // An intermediate linker table is used.
     else {
       // Define the linker table that links the base table to the object table.
       // (e.g., project_analysis.project_analysis_id)
@@ -206,7 +282,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     }
 
     // The object table, the destination table of the linker table
-    // The analysis name
+    // The analysis name.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_name', $name_term, $name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -214,7 +290,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       'as' => 'analysis_name',
     ]);
 
-    // The analysis description
+    // The analysis description.
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'analysis_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -222,7 +298,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       'as' => 'analysis_description',
     ]);
 
-    // The analysis program - not null
+    // The analysis program - not null.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_program', $program_term, $program_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -230,7 +306,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       'as' => 'analysis_program',
     ]);
 
-    // The analysis program version - not null
+    // The analysis program version - not null.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_programversion', $programversion_term, $programversion_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -238,7 +314,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       'as' => 'analysis_programversion',
     ]);
 
-    // The analysis algorithm
+    // The analysis algorithm.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_algorithm', $algorithm_term, $algorithm_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -246,15 +322,15 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       'as' => 'analysis_algorithm',
     ]);
 
-    // The analysis sourcename
+    // The analysis sourcename.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_sourcename', $sourcename_term, $sourcename_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col .';sourcename',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';sourcename',
       'as' => 'analysis_sourcename',
     ]);
 
-    // The analysis sourceversion
+    // The analysis sourceversion.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_sourceversion', $sourceversion_term, $sourceversion_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -262,7 +338,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       'as' => 'analysis_sourceversion',
     ]);
 
-    // The analysis sourceuri
+    // The analysis sourceuri.
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'analysis_sourceuri', $sourceuri_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -271,12 +347,12 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     ]);
 
     // @todo timeexecuted not yet implemented - not null, default CURRENT_TIMESTAMP
-
     return $properties;
   }
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -293,12 +369,18 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
-      array $field_instances, array $options = []): array {
+  public static function discover(
+    TripalEntityType $bundle,
+    string $field_id,
+    array $field_types,
+    array $field_instances,
+    array $options = [],
+  ): array {
 
-    // Specific settings for this field
+    // Specific settings for this field.
     $options += [
       'id' => self::$id,
       'table' => self::$object_table,
@@ -309,7 +391,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       'custom_linker' => 'analysisfeature',
     ];
 
-    // Call the parent discover() with this field's specific options
+    // Call the parent discover() with this field's specific options.
     $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
 
     return $field_list;

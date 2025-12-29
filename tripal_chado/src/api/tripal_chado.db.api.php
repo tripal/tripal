@@ -159,12 +159,9 @@ function chado_get_db_select_options($schema_name = NULL) {
     $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
   }
 
-  $dbs = chado_query(
-    "SELECT db_id, name FROM {db} ORDER BY name",
-    [], // Arguments.
-    [], // Options.
-    $schema_name
-  );
+  $chado_connection = \Drupal::service('tripal_chado.database');
+  $chado_connection->setSchemaName($schema_name);
+  $dbs = $chado_connection->query("SELECT db_id, name FROM {1:db} ORDER BY name");
 
   $options = [];
   $options[] = 'Select a Database';
@@ -661,12 +658,12 @@ function chado_autocomplete_dbxref($db_id, $string = '') {
   }
   $sql = "
     SELECT dbxref_id, accession
-    FROM {dbxref}
+    FROM {1:dbxref}
     WHERE db_id = :db_id and lower(accession) like lower(:accession)
     ORDER by accession
     LIMIT 25 OFFSET 0
   ";
-  $results = chado_query($sql, [
+  $results = \Drupal::service('tripal_chado.database')->query($sql, [
     ':db_id' => $db_id,
     ':accession' => $string . '%',
   ]);

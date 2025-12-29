@@ -2,10 +2,16 @@
 
 namespace Drupal\Tests\tripal\Functional\Entity;
 
+use Drupal\Tests\tripal\Functional\Entity\Subclass\TripalEntityAccessControlHandlerFake;
+use Drupal\tripal\Entity\TripalEntity;
+use Drupal\tripal\Entity\TripalEntityType;
+use Drupal\tripal\Access\TripalAccessOwnContentCheck;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Access\AccessResultAllowed;
 use Drupal\Core\Access\AccessResultNeutral;
 use Drupal\Core\Access\AccessResultForbidden;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests Access Checks associated with Tripal Entities.
@@ -14,21 +20,23 @@ use Drupal\Core\Access\AccessResultForbidden;
  * @group Tripal Content
  * @group Tripal Permissions
  */
+#[Group('tripal-content')]
+#[Group('access-entity')]
+#[RunTestsInSeparateProcesses]
 class EntityAccessTest extends BrowserTestBase {
-    protected $defaultTheme = 'stark';
+  protected $defaultTheme = 'stark';
 
-    protected static $modules = ['user', 'path', 'tripal'];
+  protected static $modules = ['user', 'path', 'tripal'];
 
   /**
-   * Test TripalAccessOwnContentCheck
+   * Test TripalAccessOwnContentCheck.
    */
   public function testTripalAccessOwnContentCheck() {
 
     $account_other = $this->drupalCreateUser([]);
     $owner = $account_owner = $this->drupalCreateUser([]);
 
-
-    $access_check_obj = new \Drupal\tripal\Access\TripalAccessOwnContentCheck();
+    $access_check_obj = new TripalAccessOwnContentCheck();
 
     $result = $access_check_obj->access($owner, $account_other);
     $this->assertInstanceOf(AccessResultForbidden::class, $result, "A user other then the owner should not be allowed access.");
@@ -38,7 +46,7 @@ class EntityAccessTest extends BrowserTestBase {
   }
 
   /**
-   * Test TripalEntityAccessControlHandler
+   * Test TripalEntityAccessControlHandler.
    */
   public function testTripalEntityAccessControlHandler() {
 
@@ -60,7 +68,7 @@ class EntityAccessTest extends BrowserTestBase {
     $values['termAccession'] = '1g2h3j4k5';
     $values['help_text'] = 'This is just random text to meet the requirement of this field.';
     $values['category'] = 'Testing';
-    $content_type_obj = \Drupal\tripal\Entity\TripalEntityType::create($values);
+    $content_type_obj = TripalEntityType::create($values);
     $this->assertIsObject($content_type_obj, "Unable to create a test content type.");
     $content_type_obj->save();
     $content_type = $content_type_obj->id();
@@ -68,14 +76,14 @@ class EntityAccessTest extends BrowserTestBase {
     $values = [];
     $values['title'] = 'Mini Fredicity ' . uniqid();
     $values['type'] = $content_type;
-    $entity = \Drupal\tripal\Entity\TripalEntity::create($values);
+    $entity = TripalEntity::create($values);
     $this->assertIsObject($content_type_obj, "Unable to create a test entity.");
     $entity->save();
     $entity_id = $entity->id();
 
     // Get the access check object.
     $entity_type_interface = \Drupal::entityTypeManager()->getDefinition('tripal_entity');
-    $access_check_obj = new \Drupal\Tests\tripal\Functional\Entity\Subclass\TripalEntityAccessControlHandlerFake($entity_type_interface);
+    $access_check_obj = new TripalEntityAccessControlHandlerFake($entity_type_interface);
 
     $result = $access_check_obj->returnProtectedCheckAccess($entity, 'view', $user_unprivileged);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unprivileged user should NOT be allowed to VIEW the entity.");
@@ -121,4 +129,5 @@ class EntityAccessTest extends BrowserTestBase {
     $result = $access_check_obj->returnProtectedCheckCreateAccess($user_add);
     $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with add permission should be allowed to CREATE the entity.");
   }
+
 }

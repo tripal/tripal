@@ -1,19 +1,35 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel\TripalField;
+namespace Drupal\Tests\tripal\Kernel\TripalField\FieldType;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalFieldItemBase class indirectly.
  *
  * @group TripalField
  */
+#[Group('tripal-field')]
+#[RunTestsInSeparateProcesses]
 class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
+
+  /**
+   * The theme to use when testing.
+   *
+   * @var string
+   */
   protected $defaultTheme = 'stark';
 
+  /**
+   * The modules to install when testing.
+   *
+   * @var array
+   */
   protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'datetime', 'tripal'];
 
   use TripalEntityFieldTestTrait;
@@ -27,10 +43,13 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
     $this->setupEntityFieldTestEnvironment();
   }
 
+  /**
+   * Provides fields to test.
+   */
   public static function provideFieldsToTest() {
-    $senarios =  [];
+    $senarios = [];
 
-    // BOOLEAN
+    // BOOLEAN.
     $senarios[] = [
       'field_type' => [
         'id' => 'tripal_boolean_type',
@@ -47,7 +66,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
       'expectations' => [],
     ];
 
-    // INTEGER
+    // INTEGER.
     $senarios[] = [
       'field_type' => [
         'id' => 'tripal_integer_type',
@@ -64,7 +83,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
       'expectations' => [],
     ];
 
-    // STRING
+    // STRING.
     $senarios[] = [
       'field_type' => [
         'id' => 'tripal_string_type',
@@ -81,9 +100,9 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
       'expectations' => [],
     ];
 
-    // TEXT
+    // TEXT.
     $senarios[] = [
-      'field_type' =>[
+      'field_type' => [
         'id' => 'tripal_text_type',
         'class' => 'Drupal\tripal\Plugin\Field\FieldType\TripalTextTypeItem',
       ],
@@ -106,6 +125,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
    *
    * @dataProvider provideFieldsToTest
    */
+  #[DataProvider('provideFieldsToTest')]
   public function testCreateEntityWithField($field_type, $field_widget, $field_formatter, $expectations) {
 
     // Setup the field to be tested based on the data provider values.
@@ -124,7 +144,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
     // -- use the sample value generating to get a value for this field.
     $field_value = $field_type['class']::generateSampleValue($fieldConfig);
     $this->assertIsArray($field_value,
-      "The ".$field_type['class']."::generateSampleValue() method for this field type did not return a valid value.");
+      "The " . $field_type['class'] . "::generateSampleValue() method for this field type did not return a valid value.");
     // -- create the entity with that value set
     $entity = TripalEntity::create([
       'title' => $this->randomString(),
@@ -133,9 +153,10 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
     ]);
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $field_type['id'] . " field.");
     // -- confirm the values in the created entity match those we set.
-    foreach ($field_value as $property_key => $expected_property_value) {
-      $this->assertEquals($expected_property_value, $entity->{$field_name}->{$property_key},
+    foreach ($field_value[0] as $property_key => $expected_property_value) {
+      $this->assertEquals($expected_property_value, $entity->{$field_name}[0]->{$property_key},
         "The value of the property $property_key was not what we expected for this field.");
     }
   }
+
 }

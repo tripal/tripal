@@ -1,36 +1,68 @@
 <?php
+
 namespace Drupal\tripal_chado\Commands;
 
 use Drush\Commands\DrushCommands;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\Console\Helper\Table;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
- * Drush command specific to checking the cv/db/cvterm/dbxref records in a
+ * Implements a Drush command to check migrated cv/db/cvterm/dbxref records.
+ *
+ * This command is specific to checking the cv/db/cvterm/dbxref records in a
  * specific chado schema against the expected terms in the Tripal Content Terms
  * YAML.
  *
- * DO NOT ADD ADDITION DRUSH COMMANDS TO THIS CLASS.
+ * DO NOT ADD ADDITIONAL DRUSH COMMANDS TO THIS CLASS.
  */
 class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
-  protected $chado_schema;
+  use StringTranslationTrait;
 
+  /**
+   * The name of the chado schema to be checked.
+   *
+   * @var string
+   */
+  protected string $chado_schema;
+
+  /**
+   * A TripalDBX connection to the chado database.
+   *
+   * @var Drupal\tripal_chado\Database\ChadoConnection
+   */
   protected ChadoConnection $chado;
 
+  /**
+   * Terminal escape codes used to display a string in red.
+   *
+   * @var string
+   */
   protected string $red_format = "\033[31;40m\033[1m %s \033[0m";
+
+  /**
+   * Terminal escape codes used to display a string in yellow.
+   *
+   * @var string
+   */
   protected string $yellow_format = "\033[1;33;40m\033[1m %s \033[0m";
 
   /**
-   * Checks a given chado install for any inconsistencies between its cvterms
-   * and what Tripal expects.
+   * Drush command to check a given chado install for inconsistencies.
+   *
+   * Comparison is made between its cvterms and what Tripal expects.
+   *
+   * @param array $options
+   *   Command line options given to the drush command.
    *
    * @command tripal-chado:trp-check-terms
    * @aliases trp-check-terms
    * @option chado_schema
    *   The name of the chado schema to check.
    * @option auto-expand
-   *   Indicates that you always want to show specifics of any errors or warnings.
+   *   Indicates that you always want to show specifics of any errors or
+   *   warnings.
    * @option auto-fix
    *   Indicates that you always want us to attempt to fix any issues without
    *   the need for us to prompt.
@@ -39,15 +71,21 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * @usage drush trp-check-terms --chado_schema=chado_prod
    *   Checks the terms stored in chado_prod.cvterm for consistency.
    */
-  public function chadoCheckTermsAreAsExpected($options = ['chado_schema' => NULL, 'auto-expand' => FALSE, 'auto-fix' => FALSE, 'no-fix' => FALSE]) {
+  public function chadoCheckTermsAreAsExpected(
+    $options = [
+      'chado_schema' => NULL,
+      'auto-expand' => FALSE,
+      'auto-fix' => FALSE,
+      'no-fix' => FALSE,
+    ],
+  ) {
 
     if (!$options['chado_schema']) {
-      throw new \Exception(dt('The --chado_schema argument is required.'));
+      throw new \Exception('The --chado_schema argument is required.');
     }
 
     if (!\Drupal::service('tripal.dbx')->schemaExists($options['chado_schema'])) {
-      throw new \Exception(dt('The specified chado schema "@schema" does not exist.',
-        ['@schema' => $options['chado_schema']]));
+      throw new \Exception('The specified chado schema "' . $options['chado_schema'] . '" does not exist.');
     }
     $this->chado_schema = $options['chado_schema'];
 
@@ -66,27 +104,27 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     // The headers are: YAML Term, CD, DB, CVTERM, DBXREF
     // Each row will be a term and each cell will either be an existing id
     // or use the ` - ` string to indicate that it isn't found.
-    // @see chadoCheckTerms_printSummaryTable() to see how it will be printed.
+    // @see chadoCheckTermsPrintSummaryTable() to see how it will be printed.
     $summary_rows = [];
 
-    $this->chadoCheckTerms_findProblems($problems, $solutions, $summary_rows, $options);
-    $this->chadoCheckTerms_findCVProblems($problems, $solutions, $summary_rows, $options);
-    $this->chadoCheckTerms_reportProblems($problems, $solutions, $summary_rows, $options);
+    $this->chadoCheckTermsFindProblems($problems, $solutions, $summary_rows, $options);
+    $this->chadoCheckTermsFindCvProblems($problems, $solutions, $summary_rows, $options);
+    $this->chadoCheckTermsReportProblems($problems, $solutions, $summary_rows, $options);
   }
 
   /**
    * Checks all YAML specifications and compares to current chado state.
    *
    * @param array $problems
-   *   Array containing details for either errors or warnings
+   *   Array containing details for either errors or warnings.
    * @param array $solutions
-   *   Array containing possible solutions for either errors or warnings
+   *   Array containing possible solutions for either errors or warnings.
    * @param array $summary_rows
-   *   Infomation for the output table
+   *   Infomation for the output table.
    * @param array $options
-   *   Options from drush command line
-   **/
-  protected function chadoCheckTerms_findProblems(&$problems, &$solutions, &$summary_rows, $options) {
+   *   Options from drush command line.
+   */
+  protected function chadoCheckTermsFindProblems(&$problems, &$solutions, &$summary_rows, $options) {
 
     $this->chado = \Drupal::service('tripal_chado.database');
     $this->chado->setSchemaName($options['chado_schema']);
@@ -122,13 +160,15 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $summary_dbxref = NULL;
       $defined_terms = [];
 
-      [$summary_cv, $existing_cv] = $this->chadoCheckTerms_checkVocab(
+      $cvs = $this->chadoCheckTermsCheckVocab(
         $vocab_info,
         $problems,
         $solutions
       );
+      // We don't use the existing_cv return value here.
+      $summary_cv = $cvs[0];
 
-      [$summary_dbs, $defined_ispaces] = $this->chadoCheckTerms_checkIdSpaces(
+      [$summary_dbs, $defined_ispaces] = $this->chadoCheckTermsCheckIdSpaces(
         $vocab_info,
         $problems,
         $solutions
@@ -147,16 +187,17 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         $term_info['accession'] = $term_accession;
         $term_info['cv_name'] = $vocab_info['name'];
 
-        // Check for duplication in the YAML definition itself
+        // Check for duplication in the YAML definition itself.
         if (array_key_exists($summary_term, $defined_terms)) {
           // ERROR:
           // The YAML-defined term was defined more than once.
-          // @see chadoCheckTerms_reportProblem_yamlDuplication().
+          // @see chadoCheckTermsReportProblemYamlDuplication().
           $problems['error']['yamlDuplication'][] = [
             'name' => $term_info['name'],
             'id' => $term_info['id'],
           ];
-          // No solution for this one... instead the developer of the module needs to fix their YAML ;-p
+          // No solution for this one... instead the developer of the
+          // module needs to fix their YAML ;-p.
           $solutions['error']['yamlDuplication'] = [];
 
         }
@@ -171,25 +212,28 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
           $summary_dbs[$idspace_info['name']] = sprintf($this->red_format, ' X ');
 
           // ERROR:
-          // The YAML-defined term includes an ID Space that was not defined in the ID Spaces section for this vocabulary.
-          // @see chadoCheckTerms_reportProblem_missingDbYaml().
+          // The YAML-defined term includes an ID Space that was not defined
+          // in the ID Spaces section for this vocabulary.
+          // @see chadoCheckTermsReportProblemMissingDbYaml().
           $problems['error']['missingDbYaml'][$term_db][] = [
             'missing-db-name' => $term_db,
             'defined-dbs' => $defined_ispaces,
             'term' => $summary_term,
             'vocab' => $vocab_info['name'],
           ];
-          // No solution for this one... instead the developer of the module needs to fix their YAML ;-p
+          // No solution for this one... instead the developer of the
+          // module needs to fix their YAML ;-p.
           $solutions['error']['missingDbYaml'] = [];
         }
 
-        [$summary_cvterm, $summary_dbxref] = $this->chadoCheckTerms_checkTerm(
+        [$summary_cvterm, $summary_dbxref] = $this->chadoCheckTermsCheckTerm(
           $term_info,
           $problems,
           $solutions
         );
 
-        // Now add the details of what we found for this term to the summary table.
+        // Now add the details of what we found for this term to the
+        // summary table.
         $summary_rows[] = [
           'term' => $summary_term,
           'cv' => $summary_cv,
@@ -205,20 +249,42 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * Checks for obsolete vocabularies in the database.
    *
    * @param array $problems
-   *   Array containing details for either errors or warnings
+   *   Array containing details for either errors or warnings.
    * @param array $solutions
-   *   Array containing possible solutions for either errors or warnings
+   *   Array containing possible solutions for either errors or warnings.
    * @param array $summary_rows
-   *   Infomation for the output table
+   *   Infomation for the output table.
    * @param array $options
-   *   Options from drush command line
-   **/
-  protected function chadoCheckTerms_findCVProblems(&$problems, &$solutions, &$summary_rows, $options) {
+   *   Options from drush command line.
+   */
+  protected function chadoCheckTermsFindCvProblems(&$problems, &$solutions, &$summary_rows, $options) {
+    // These were removed in PR #1727.
     $obsolete_cvs = [
-      'organism_property', 'analysis_property', 'tripal_phylogeny',
-      'featuremap_units', 'featurepos_property', 'featuremap_property',
-      'study_property', 'nd_experiment_types', 'nd_geolocation_property',
-      'tripal_analysis', 'library_property', 'library_type', 'project_property',
+      'organism_property',
+      'analysis_property',
+      'tripal_phylogeny',
+      'feature_relationship',
+      'feature_property',
+      'contact_property',
+      'contact_type',
+      'contact_relationship',
+      'featuremap_units',
+      'featurepos_property',
+      'featuremap_property',
+      'library_property',
+      'library_type',
+      'project_property',
+      'study_property',
+      'project_relationship',
+      'pub_type',
+      'pub_property',
+      'pub_relationship',
+      'stock_relationship',
+      'stock_property',
+      'stock_type',
+      'tripal_analysis',
+      'nd_experiment_types',
+      'nd_geolocation_property',
     ];
     $query = $this->chado->select('1:cv', 'CV')
       ->fields('CV', ['cv_id', 'name']);
@@ -236,21 +302,21 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   }
 
   /**
-   * Reports to user the status of chado as determined by chadoCheckTerms_findProblems.
+   * Reports the status of chado as determined by chadoCheckTermsFindProblems.
    *
    * @param array $problems
-   *   Array containing details for either errors or warnings
+   *   Array containing details for either errors or warnings.
    * @param array $solutions
-   *   Array containing possible solutions for either errors or warnings
+   *   Array containing possible solutions for either errors or warnings.
    * @param array $summary_rows
-   *   Infomation for the output table
+   *   Infomation for the output table.
    * @param array $options
-   *   Options from drush command line
-   **/
-  protected function chadoCheckTerms_reportProblems($problems, $solutions, $summary_rows, $options) {
+   *   Options from drush command line.
+   */
+  protected function chadoCheckTermsReportProblems($problems, $solutions, $summary_rows, $options) {
 
     // Tell the user the summary state of things.
-    $this->chadoCheckTerms_printSummaryTable($summary_rows);
+    $this->chadoCheckTermsPrintSummaryTable($summary_rows);
 
     // Now we can start reporting more detail if they want.
     // First ERRORS:
@@ -272,38 +338,38 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     );
     if ($show_errors) {
 
-      // yamlDuplication
+      // yamlDuplication:
       if (array_key_exists('yamlDuplication', $problems['error'])) {
-        $this->chadoCheckTerms_reportProblem_yamlDuplication(
+        $this->chadoCheckTermsReportProblemYamlDuplication(
           $problems['error']['yamlDuplication'],
           $solutions['error']['yamlDuplication'],
           $options
         );
       }
 
-      // missingDbYaml
+      // missingDbYaml:
       if (array_key_exists('missingDbYaml', $problems['error'])) {
-        $this->chadoCheckTerms_reportProblem_missingDbYaml(
+        $this->chadoCheckTermsReportProblemMissingDbYaml(
           $problems['error']['missingDbYaml'],
           $solutions['error']['missingDbYaml'],
           $options
         );
       }
 
-      // cv
+      // cv:
       if (array_key_exists('obsolete_cv', $problems['error'])) {
         $solutions['error']['obsolete_cv'] = (array_key_exists('obsolete_cv', $solutions['error'])) ? $solutions['error']['obsolete_cv'] : [];
-        $this->chadoCheckTerms_reportProblem_obsoleteCv(
+        $this->chadoCheckTermsReportProblemObsoleteCv(
           $problems['error']['obsolete_cv'],
           $solutions['error']['obsolete_cv'],
           $options
         );
       }
 
-      // term
+      // term:
       if (array_key_exists('term', $problems['error'])) {
         $solutions['error']['term'] = (array_key_exists('term', $solutions['error'])) ? $solutions['error']['term'] : [];
-        $this->chadoCheckTerms_reportProblem_terms(
+        $this->chadoCheckTermsReportProblemTerms(
           $problems['error']['term'],
           $solutions['error']['term'],
           $options
@@ -333,7 +399,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
       // Small differences between the expected and found chado.cv record.
       if (array_key_exists('cv', $problems['warning'])) {
-        $this->chadoCheckTerms_reportProblem_eccentricCv(
+        $this->chadoCheckTermsReportProblemEccentricCv(
           $problems['warning']['cv'],
           $solutions['warning']['cv'],
           $options
@@ -344,7 +410,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
       // Small differences between the expected and found chado.db record.
       if (array_key_exists('db', $problems['warning'])) {
-        $this->chadoCheckTerms_reportProblem_eccentricDb(
+        $this->chadoCheckTermsReportProblemEccentricDb(
           $problems['warning']['db'],
           $solutions['warning']['db'],
           $options
@@ -355,7 +421,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
       // Small differences between the expected and found chado.cvterm record.
       if (array_key_exists('cvterm', $problems['warning'])) {
-        $this->chadoCheckTerms_reportProblem_eccentricCVTerm(
+        $this->chadoCheckTermsReportProblemEccentricCvTerm(
           $problems['warning']['cvterm'],
           $solutions['warning']['cvterm'],
           $options
@@ -367,16 +433,21 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   }
 
   /**
-   * Checks that the vocabulary metadata in the YAML matches this chado instance.
+   * Checks that vocabulary metadata in the YAML matches this chado instance.
    *
    * @param array $vocab_info
+   *   A vocabulary to be checked.
    * @param array $problems
+   *   Array containing details for either errors or warnings.
    * @param array $solutions
+   *   Array containing possible solutions for either errors or warnings.
+   *
    * @return array
-   *   - summary_cv: the value to print in the summary table
-   *   - existing_cv: the cv object selected from the database or NULL if there wasn't one.
+   *   - summary_cv: the value to print in the summary table.
+   *   - existing_cv: the cv object selected from the database or
+   *     NULL if there wasn't one.
    */
-  protected function chadoCheckTerms_checkVocab(array $vocab_info, array &$problems, array &$solutions) {
+  protected function chadoCheckTermsCheckVocab(array $vocab_info, array &$problems, array &$solutions) {
 
     // Check if the cv record for this vocabulary exists.
     $query = $this->chado->select('1:cv', 'cv')
@@ -391,7 +462,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         $summary_cv = sprintf($this->yellow_format, $existing_cv->cv_id);
 
         // WARNING:
-        // @see chadoCheckTerms_reportProblem_eccentricCv().
+        // @see chadoCheckTermsReportProblemEccentricCv().
         $problems['warning']['cv'][$existing_cv->cv_id][] = [
           'column' => 'cv.definition',
           'property' => 'label',
@@ -401,7 +472,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         ];
         $solutions['warning']['cv'][$existing_cv->cv_id]['definition'] = $vocab_info['label'];
       }
-    } else {
+    }
+    else {
       $summary_cv = ' - ';
     }
 
@@ -412,15 +484,19 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * Checks that the id space metadata in the YAML matches this chado instance.
    *
    * @param array $vocab_info
+   *   A vocabulary to be checked.
    * @param array $problems
+   *   Array containing details for either errors or warnings.
    * @param array $solutions
+   *   Array containing possible solutions for either errors or warnings.
+   *
    * @return array
    *   - summary_dbs: an array where the key is the id space name and the value
    *       summarizes its status.
    *   - defined_idspaces: an array where the key is the id space name and the
    *       value is the db_id found or NULL if not.
    */
-  protected function chadoCheckTerms_checkIdSpaces(array $vocab_info, array &$problems, array &$solutions) {
+  protected function chadoCheckTermsCheckIdSpaces(array $vocab_info, array &$problems, array &$solutions) {
 
     $summary_dbs = [];
     $defined_ispaces = [];
@@ -435,13 +511,14 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         $summary_dbs[$idspace_info['name']] = $existing_db->db_id;
         $defined_ispaces[$idspace_info['name']] = $existing_db->db_id;
 
-        // Now check the db description, url prefix and url match what we expect and warn if not.
+        // Now check that the db description, url prefix and url match
+        // what we expect and warn if not.
         if ($existing_db->description != $idspace_info['description']) {
 
           $summary_dbs[$idspace_info['name']] = sprintf($this->yellow_format, $existing_db->db_id);
 
           // WARNING:
-          // @see chadoCheckTerms_reportProblem_eccentricDb().
+          // @see chadoCheckTermsReportProblemEccentricDb().
           $problems['warning']['db'][$existing_db->db_id][] = [
             'idspace-name' => $idspace_info['name'],
             'column' => 'db.description',
@@ -456,7 +533,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
           $summary_dbs[$idspace_info['name']] = sprintf($this->yellow_format, $existing_db->db_id);
 
           // WARNING:
-          // @see chadoCheckTerms_reportProblem_eccentricDb().
+          // @see chadoCheckTermsReportProblemEccentricDb().
           $problems['warning']['db'][$existing_db->db_id][] = [
             'idspace-name' => $idspace_info['name'],
             'column' => 'db.urlprefix',
@@ -471,7 +548,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
           $summary_dbs[$idspace_info['name']] = sprintf($this->yellow_format, $existing_db->db_id);
 
           // WARNING:
-          // @see chadoCheckTerms_reportProblem_eccentricDb().
+          // @see chadoCheckTermsReportProblemEccentricDb().
           $problems['warning']['db'][$existing_db->db_id][] = [
             'message' => $vocab_info['url'] . ': The db.url for this vocabulary in your chado instance does not match what is in the YAML.',
             'idspace-name' => $idspace_info['name'],
@@ -482,7 +559,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
           ];
           $solutions['warning']['db'][$existing_db->db_id]['url'] = $vocab_info['url'];
         }
-      } else {
+      }
+      else {
         $summary_dbs[$idspace_info['name']] = ' - ';
         $defined_ispaces[$idspace_info['name']] = NULL;
       }
@@ -495,19 +573,23 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * Checks that the term metadata in the YAML matches this chado instance.
    *
    * @param array $term_info
+   *   A term to be checked.
    * @param array $problems
+   *   Array containing details for either errors or warnings.
    * @param array $solutions
+   *   Array containing possible solutions for either errors or warnings.
+   *
    * @return array
-   *   - summary_cvterm: the value to print in the summary table
-   *   - summary_dbxref: the value to print in the summary table
+   *   - summary_cvterm: the value to print in the summary table.
+   *   - summary_dbxref: the value to print in the summary table.
    */
-  protected function chadoCheckTerms_checkTerm(array $term_info, array &$problems, array &$solutions) {
+  protected function chadoCheckTermsCheckTerm(array $term_info, array &$problems, array &$solutions) {
     $summary_cvterm = ' ? ';
     $unique_cvterm = NULL;
     $summary_dbxref = ' ? ';
 
     // Do an extra trim on the yaml values just to make sure.
-    foreach($term_info as $key => $value) {
+    foreach ($term_info as $key => $value) {
       $term_info[$key] = trim($value);
     }
 
@@ -533,7 +615,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     }
 
     // If not, then select the cvterm...
-    // ... assuming the cvterm.name and cvterm.cv match
+    // ... assuming the cvterm.name and cvterm.cv match.
     $cv_matches = TRUE;
     $query = $this->chado->select('1:cvterm', 'cvt')
       ->fields('cvt', ['cvterm_id', 'name', 'definition', 'dbxref_id'])
@@ -563,7 +645,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     }
 
     // Also, independently select the dbxref...
-    // ... assuming the dbxref.accession and dbxref.db match
+    // ... assuming the dbxref.accession and dbxref.db match.
     $db_matches = TRUE;
     $query = $this->chado->select('1:dbxref', 'dbx')
       ->fields('dbx', ['dbxref_id', 'accession'])
@@ -597,7 +679,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     }
 
     // CASE: There is only 1 cvterm with matching cv but no dbxref
-    //       In this case the cvterm must be connected to the wrong dbxref.
+    // In this case the cvterm must be connected to the wrong dbxref.
     if (count($cvterms) == 1 && $cv_matches && !$dbxrefs) {
       $summary_dbxref = ' - ';
       $summary_cvterm = sprintf($this->red_format, $first_cvterm->cvterm_id);
@@ -605,8 +687,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
       // ERROR:
       // Cvterm must be connected to the wrong dbxref.
-      // @see chadoCheckTerms_reportProblem_terms()
-      $problems['error']['term'][ $term_info['id'] ][] = [
+      // @see chadoCheckTermsReportProblemTerms()
+      $problems['error']['term'][$term_info['id']][] = [
         'term-name' => $term_info['name'],
         'term-id' => $term_info['id'],
         'category' => 'wrong_dbxref',
@@ -618,7 +700,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // @todo suggest a fix.
     }
 
-    // CASE: There is only 1 dbxref with matching db but no cvterm
+    // CASE: There is only 1 dbxref with matching db but no cvterm.
     if (count($dbxrefs) == 1 && $db_matches && !$cvterms) {
       $summary_cvterm = ' - ';
       $summary_dbxref = $first_dbxref->dbxref_id;
@@ -632,8 +714,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
       // ERROR:
       // Broken connection between cvterm + dbxref!
-      // @see chadoCheckTerms_reportProblem_terms()
-      $problems['error']['term'][ $term_info['id'] ][] = [
+      // @see chadoCheckTermsReportProblemTerms()
+      $problems['error']['term'][$term_info['id']][] = [
         'term-name' => $term_info['name'],
         'term-id' => $term_info['id'],
         'category' => 'wrong_dbxref',
@@ -645,11 +727,11 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // @todo suggest fix.
     }
 
-    // At this point we have one match and the other is either missing or not unique.
-    // Single dbxref match but missing or non-unique cvterm.
-
+    // At this point we have one match and the other is either missing or not
+    // unique. Single dbxref match but missing or non-unique cvterm.
+    //
     // CASE: cvterm.name, dbxref.accession, dbxref.db match + are connected.
-    //       only cvterm.cv is not matching and may need to be updated.
+    // only cvterm.cv is not matching and may need to be updated.
     if ($db_matches && $summary_cvterm == ' ? ' && array_key_exists($first_dbxref->dbxref_id, $cvterms)) {
       $summary_cvterm = sprintf($this->red_format, $cvterms[$first_dbxref->dbxref_id]->cvterm_id);
       $summary_dbxref = $first_dbxref->dbxref_id;
@@ -658,7 +740,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // ERROR:
       // cv doesn't match but the cvterm is connected to the right dbxref
       // so we are pretty sure this connection is valid.
-      // @see chadoCheckTerms_reportProblem_terms()
+      // @see chadoCheckTermsReportProblemTerms()
       $problems['error']['term'][$term_info['id']][] = [
         'term-name' => $term_info['name'],
         'term-id' => $term_info['id'],
@@ -687,14 +769,14 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $connected_cvterms = $query->execute()->fetchCol();
 
       // CASE: dbxref.accession, dbxref.db match but they are connected to
-      //       a different cvterm.
+      // a different cvterm.
       if ($connected_cvterms) {
 
         $summary_dbxref = sprintf($this->red_format, $first_dbxref->dbxref_id);
 
         // ERROR:
         // Dbxref is connected to other cvterms and not its correct one!
-        // @see chadoCheckTerms_reportProblem_terms()
+        // @see chadoCheckTermsReportProblemTerms()
         $problems['error']['term'][$term_info['id']][] = [
           'term-name' => $term_info['name'],
           'term-id' => $term_info['id'],
@@ -707,13 +789,14 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         // @todo suggest a fix.
       }
       else {
-        // CASE: dbxref.accession, dbxref.db match but there is no matching cvterm.
+        // CASE: dbxref.accession, dbxref.db match but there is no
+        // matching cvterm.
         $summary_dbxref = $first_dbxref->dbxref_id;
       }
     }
 
     // CASE: cvterm.name, cvterm.cv, and dbxref.accession match + are connected.
-    //       only dbxref.db is not matching and may need to be updated.
+    // only dbxref.db is not matching and may need to be updated.
     if ($cv_matches && $summary_dbxref == ' ? ' && array_key_exists($first_cvterm->dbxref_id, $dbxrefs)) {
 
       $summary_cvterm = $first_cvterm->cvterm_id;
@@ -723,7 +806,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // ERROR:
       // db doesn't match but the dbxref is connected to a good cvterm.
       // so this connection might be valid...
-      // @see chadoCheckTerms_reportProblem_terms()
+      // @see chadoCheckTermsReportProblemTerms()
       $problems['error']['term'][$term_info['id']][] = [
         'term-name' => $term_info['name'],
         'term-id' => $term_info['id'],
@@ -736,7 +819,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // @todo suggest fix.
     }
     // CASE: cvterm.name and cvterm.cv match but they are connected to
-    //       a different dbxref.
+    // a different dbxref.
     elseif ($cv_matches && $summary_dbxref == ' ? ') {
       $summary_cvterm = sprintf($this->red_format, $first_cvterm->cvterm_id);
       $summary_dbxref = ' - ';
@@ -744,7 +827,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
       // ERROR:
       // cvterm is attached to the wrong dbxref!
-      // @see chadoCheckTerms_reportProblem_terms()
+      // @see chadoCheckTermsReportProblemTerms()
       $problems['error']['term'][$term_info['id']][] = [
         'term-name' => $term_info['name'],
         'term-id' => $term_info['id'],
@@ -768,7 +851,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     }
     // If we never did find any meaningful connections with the multiple
     // dbxrefs we found then they were false positives.
-    if ($summary_dbxref == ' ? ' AND count($dbxrefs) >= 1) {
+    if ($summary_dbxref == ' ? ' && count($dbxrefs) >= 1) {
       $summary_dbxref = ' - ';
     }
     // At this point we feel we have checked all the possibilities with the
@@ -792,7 +875,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
         // WARNING:
         // The term definition does not match what we expected.
-        // @see chadoCheckTerms_reportProblem_eccentricCVTerm()
+        // @see chadoCheckTermsReportProblemEccentricCvTerm()
         $problems['warning']['cvterm'][$unique_cvterm->cvterm_id][] = [
           'column' => 'cvterm.definition',
           'property' => 'term.description',
@@ -812,10 +895,12 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * Prints a beautiful summary table showing the status of all terms.
    *
    * @param array $summary_rows
+   *   The array of table rows to be printed.
+   *
    * @return void
    *   No need to return as we are printing directly.
    */
-  protected function chadoCheckTerms_printSummaryTable(array $summary_rows) {
+  protected function chadoCheckTermsPrintSummaryTable(array $summary_rows) {
 
     $summary_headers = [
       'term' => 'YAML Term',
@@ -840,21 +925,23 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * Asks the user if the options specified by option key is not TRUE.
    *
    * @param string $ask_message
-   *  A message to show to the user if we need to ask them whether we should continue.
+   *   A message to show to the user if we need to ask them whether we
+   *   should continue.
    * @param array $options
-   *  The options provided to the drush command.
+   *   The options provided to the drush command.
    * @param string $option_key
-   *  The key of the option to check.
-   *  Should be either 'auto-expand' or 'auto-fix'.
-   * @param boolean $worth_continuing
-   *  Indicates if there is any point asking the user or checking options. For
-   *  example, when the point is to decide whether to show more detail, if there
-   *  are no details recorded then there is no point continueing ;-p
-   * @param boolean $default
-   *  The default option when asking the user to confirm. It should be true
-   *  for non-destructive processes and false otherwise.
-   * @return boolean
-   *  Yes or no in response to the question posed by the message.
+   *   The key of the option to check.
+   *   Should be either 'auto-expand' or 'auto-fix'.
+   * @param bool $worth_continuing
+   *   Indicates if there is any point asking the user or checking options. For
+   *   example, when the point is to decide whether to show more detail, if
+   *   there are no details recorded then there is no point continuing ;-p.
+   * @param bool $default
+   *   The default option when asking the user to confirm. It should be true
+   *   for non-destructive processes and false otherwise.
+   *
+   * @return bool
+   *   Yes or no in response to the question posed by the message.
    */
   private function askOrRespectOptions(string $ask_message, array $options, string $option_key, bool $worth_continuing, bool $default) {
 
@@ -876,15 +963,17 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * Updates records in chado based on an array of records.
    *
    * @param string $table_name
-   *  The name of the chado table to be updated.
+   *   The name of the chado table to be updated.
    * @param string $pkey
-   *  The name of the primary key of the table to be updated.
+   *   The name of the primary key of the table to be updated.
    * @param array $records
-   *  An array of the following format:
-   *   - [primary key of the table]: an array of columns to update where each
-   *     is of the form:
-   *      - [column]: [value to update it to]
+   *   An array of the following format:
+   *    - [primary key of the table]: an array of columns to update where each
+   *      is of the form:
+   *       - [column]: [value to update it to].
+   *
    * @return void
+   *   No return value.
    */
   protected function updateChadoTermRecords(string $table_name, string $pkey, array $records) {
 
@@ -897,13 +986,16 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   }
 
   /**
-   * Migrates terms in obsolete vocabularies to "local" vocabulary,
-   * and then removes the obsolete vocabularies.
+   * Migrates terms in obsolete vocabularies to "local" vocabulary.
+   *
+   * After migration the obsolete vocabularies are removed.
    *
    * @param array $cv_ids
    *   An associative array of the obsolete vocabularies,
    *   key is pkey_id, value is vocabulary name.
+   *
    * @return void
+   *   No return value.
    */
   protected function migrateObsoleteVocabularies(array $cv_ids) {
 
@@ -912,11 +1004,10 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $query->fields('cv', ['cv_id']);
     $local_cv = $query->execute()->fetchField();
     if (!$local_cv) {
-      $this->output()->writeln(t('Could not perform update, "local" CV is not present'));
+      $this->output()->writeln($this->t('Could not perform update, "local" CV is not present'));
       return;
     }
 
-    $n_transferred = 0;
     $n_removed = 0;
     foreach ($cv_ids as $cv_id => $cv_name) {
       $query = $this->chado->update('1:cvterm');
@@ -924,41 +1015,43 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $query->condition('cv_id', $cv_id, '=');
       $count = $query->execute();
       if ($count) {
-        $this->output()->writeln(t('Transferred @count records from CV "@from" to the "local" CV',
+        $this->output()->writeln($this->t('Transferred @count records from CV "@from" to the "local" CV',
             ['@count' => $count, '@from' => $cv_name]));
-        $n_transferred += $count;
       }
       $query = $this->chado->delete('1:cv');
       $query->condition('cv_id', $cv_id, '=');
       $query->execute();
       $n_removed++;
     }
-    $this->output()->writeln(t('Removed @count obsolete controlled vocabularies',
+    $this->output()->writeln($this->t('Removed @count obsolete controlled vocabularies',
         ['@count' => $n_removed]));
   }
 
   /**
-   * Reports errors and potential solutions for the "yamlDuplication" error type.
+   * Reports errors and potential solutions for the "yamlDuplication" error.
    *
    * Trigger Example: the term local:lineage is defined twice in
-   *   tripal.tripal_content_terms.chado_content_terms.yml
+   *   tripal.tripal_content_terms.chado_content_terms.yml.
    *
    * @param array $problems
-   *  An array describing instances with this type of error with the following format:
-   *    - [YAML ID Space name]: an array of reports where a term had the ID Space
-   *      indicated by the key despite that ID Space not being defined in the YAML.
-   *      Each report has the following structure:
-   *        - name:
-   *        - id:
+   *   An array describing instances with this type of error with the
+   *   following format:
+   *     - [YAML ID Space name]: an array of reports where a term had the ID
+   *       Space indicated by the key despite that ID Space not being defined
+   *       in the YAML. Each report has the following structure:
+   *         - name:
+   *         - id:.
    * @param array $solutions
-   *  There are currently no easy suggested solutions for this but the parameter
-   *  is here in case we decide to be more helpful later ;-p
+   *   There are currently no easy suggested solutions for this but the
+   *   parameter is here in case we decide to be more helpful later ;-p.
+   * @param array $options
+   *   Options from drush command line.
    *
    * @return void
    *   This function interacts through command-line input/output directly and
    *   as such, does not need to return anything to the parent Drush command.
    */
-  protected function chadoCheckTerms_reportProblem_yamlDuplication($problems, $solutions, $options) {
+  protected function chadoCheckTermsReportProblemYamlDuplication($problems, $solutions, $options) {
 
     $this->io()->section('YAML Issues: Duplicated term definitions in the site YAML.');
     $num_detected = count($problems);
@@ -984,29 +1077,32 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *   2. does not have any id spaces defined.
    *
    * @param array $problems
-   *  An array describing instances with this type of error with the following format:
-   *    - [YAML ID Space name]: an array of reports where a term had the ID Space
-   *      indicated by the key despite that ID Space not being defined in the YAML.
-   *      Each report has the following structure:
-   *        - missing-db-name:
-   *        - defined-dbs:
-   *        - term:
-   *        - vocab:
+   *   An array describing instances with this type of error with the
+   *   following format:
+   *     - [YAML ID Space name]: an array of reports where a term had the
+   *       ID Space indicated by the key despite that ID Space not being defined
+   *       in the YAML. Each report has the following structure:
+   *         - missing-db-name:
+   *         - defined-dbs:
+   *         - term:
+   *         - vocab:.
    * @param array $solutions
-   *  There are currently no easy suggested solutions for this but the parameter
-   *  is here in case we decide to be more helpful later ;-p
+   *   There are currently no easy suggested solutions for this but the
+   *   parameter is here in case we decide to be more helpful later ;-p.
+   * @param array $options
+   *   Options from drush command line.
    *
    * @return void
    *   This function interacts through command-line input/output directly and
    *   as such, does not need to return anything to the parent Drush command.
    */
-  protected function chadoCheckTerms_reportProblem_missingDbYaml($problems, $solutions, $options) {
+  protected function chadoCheckTermsReportProblemMissingDbYaml($problems, $solutions, $options) {
 
     $this->io()->section('YAML Issues: Missing ID Space definitions.');
     $num_detected = count($problems);
     $this->output()->writeln("We have detected $num_detected ID Space(s) missing from your YAML file. You will want to contact the developers to let them know the following output:");
     $list = [];
-    foreach ($problems as $idspace => $terms_with_issues) {
+    foreach ($problems as $terms_with_issues) {
       foreach ($terms_with_issues as $prob_deets) {
         if (count($prob_deets['defined-dbs']) > 0) {
           $list[] = sprintf(
@@ -1037,23 +1133,26 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * Reports errors and potential solutions for the "obsolete_cv" error type.
    *
    * Trigger Examples:
-   *   Imagine a term defined with a vocabulary of 'organism_property'
+   *   Imagine a term defined with a vocabulary of 'organism_property'.
    *
    * @param array $problems
-   *   An array describing instances with this type of error with the following format:
+   *   An array describing instances with this type of error with the
+   *   following format:
    *     - [YAML Term ID]: an array of reports where each report has the
    *       following structure:
    *         - vocab-name:
    *         - vocab-id:
-   *         - message: will always contain 'Obsolete controlled vocabulary'
+   *         - message: will always contain 'Obsolete controlled vocabulary'.
    * @param array $solutions
-   *   Just a placeholder, will always contain 'Move to local CV'
+   *   Just a placeholder, will always contain 'Move to local CV'.
+   * @param array $options
+   *   Options from drush command line.
    *
    * @return void
    *   This function interacts through command-line input/output directly and
    *   as such, does not need to return anything to the parent Drush command.
    */
-  protected function chadoCheckTerms_reportProblem_obsoleteCv($problems, $solutions, $options) {
+  protected function chadoCheckTermsReportProblemObsoleteCv($problems, $solutions, $options) {
 
     $this->io()->section('Obsolete Controlled Vocabulary Issues.');
     $num_detected = count($problems);
@@ -1064,7 +1163,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     $rows = [];
     $vocab_id_list = [];
-    foreach ($problems as $id => $cv_with_issues) {
+    foreach ($problems as $cv_with_issues) {
       foreach ($cv_with_issues as $prob_deets) {
         $rows[] = [
           $prob_deets['vocab-name'] . ' (' . $prob_deets['vocab-id'] . ')',
@@ -1095,28 +1194,32 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * Reports errors and potential solutions for the "term" error type.
    *
    * Trigger Examples:
-   *   Imagine a term defined with a name of 'Location' and an id of 'NCIT:C25341'
+   *   Imagine a term defined with a name of 'Location' and an id of
+   *   'NCIT:C25341'
    *
    * @param array $problems
-   *  An array describing instances with this type of error with the following format:
-   *    - [YAML Term ID]: an array of reports where each report has the
-   *      following structure:
-   *        - term-name:
-   *        - term-id:
-   *        - category:
-   *        - message:
-   *        - error-column
-   *        - YOURS
-   *        - EXPECTED
+   *   An array describing instances with this type of error with the
+   *   following format:
+   *     - [YAML Term ID]: an array of reports where each report has the
+   *       following structure:
+   *         - term-name:
+   *         - term-id:
+   *         - category:
+   *         - message:
+   *         - error-column.
+   *         - YOURS.
+   *         - EXPECTED.
    * @param array $solutions
-   *  There are currently no easy suggested solutions for this but the parameter
-   *  is here in case we decide to be more helpful later ;-p
+   *   There are currently no easy suggested solutions for this but the
+   *   parameter is here in case we decide to be more helpful later ;-p.
+   * @param array $options
+   *   Options from drush command line.
    *
    * @return void
    *   This function interacts through command-line input/output directly and
    *   as such, does not need to return anything to the parent Drush command.
    */
-  protected function chadoCheckTerms_reportProblem_terms($problems, $solutions, $options) {
+  protected function chadoCheckTermsReportProblemTerms($problems, $solutions, $options) {
 
     $this->io()->section('Term (cvterm/dbxref) Issues.');
     $num_detected = count($problems);
@@ -1129,7 +1232,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $table->setColumnMaxWidth(5, 50);
 
     $rows = [];
-    foreach ($problems as $id => $terms_with_issues) {
+    foreach ($problems as $terms_with_issues) {
       foreach ($terms_with_issues as $prob_deets) {
         $rows[] = [
           $prob_deets['term-name'] . ' (' . $prob_deets['term-id'] . ')',
@@ -1148,43 +1251,46 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * Reports warnings and potential solutions for the "cv" warning type.
    *
    * Trigger Example: Imagine there is a vocabulary defined whose
-   *   1. definition in the YAML is different from in your chado instance
+   *   1. definition in the YAML is different from in your chado instance.
    *
    * @param array $problems
-   *  An array describing instances with this type of warning with the following format:
-   *    - [Existing cv_id]: an array of reports describing how this cv differs
-   *      in your chado instance from what is defined in the YAML.
-   *      Each report has the following structure:
-   *        - vocab-name: the name of the vocabulary in the YAML which must
-   *          match the cv in your chado instance.
-   *        - column: the chado column showing a difference
-   *        - property: the yaml property being compared
-   *        - YOURS: the value in your chado instance
-   *        - THEIRS: the value in the YAML
+   *   An array describing instances with this type of warning with the
+   *   following format:
+   *     - [Existing cv_id]: an array of reports describing how this cv
+   *       differs in your chado instance from what is defined in the YAML.
+   *       Each report has the following structure:
+   *         - vocab-name: the name of the vocabulary in the YAML which must
+   *           match the cv in your chado instance.
+   *         - column: the chado column showing a difference.
+   *         - property: the yaml property being compared.
+   *         - YOURS: the value in your chado instance.
+   *         - THEIRS: the value in the YAML.
    * @param array $solutions
-   *  An array describing possible solutions with the following format:
-   *    - [Existing cv_id]: an array of columns in the cv table to update.
-   *      Each entry has the following structure:
-   *        - [column name]: [value in YAML]
+   *   An array describing possible solutions with the following format:
+   *     - [Existing cv_id]: an array of columns in the cv table to update.
+   *       Each entry has the following structure:
+   *         - [column name]: [value in YAML].
+   * @param array $options
+   *   Options from drush command line.
    *
    * @return void
    *   This function interacts through command-line input/output directly and
    *   as such, does not need to return anything to the parent Drush command.
    */
-  protected function chadoCheckTerms_reportProblem_eccentricCv($problems, $solutions, $options) {
+  protected function chadoCheckTermsReportProblemEccentricCv($problems, $solutions, $options) {
 
     $this->io()->section('Small differences in vocabulary definitions.');
     $num_detected = count($problems);
     $this->output()->writeln("We have detected $num_detected vocabularies in your chado instance that differ from those defined in the YAML in small ways. More specifically:");
 
     $table = new Table($this->output());
-    $table->setHeaders(['VOCAB','PROPERTY', 'COLUMN', 'EXPECTED', 'YOURS']);
+    $table->setHeaders(['VOCAB', 'PROPERTY', 'COLUMN', 'EXPECTED', 'YOURS']);
     // Set the yours/expected columns to wrap at 50 characters each.
     $table->setColumnMaxWidth(3, 50);
     $table->setColumnMaxWidth(4, 50);
 
     $rows = [];
-    foreach ($problems as $cv_id => $specific_issues) {
+    foreach ($problems as $specific_issues) {
       foreach ($specific_issues as $prob_deets) {
         $rows[] = [
           $prob_deets['vocab-name'],
@@ -1216,30 +1322,33 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * Reports warnings and potential solutions for the "db" warning type.
    *
    * Trigger Example: Imagine there is a ID Space defined whose
-   *   1. definition in the YAML is different from in your chado instance
+   *   1. definition in the YAML is different from in your chado instance.
    *
    * @param array $problems
-   *  An array describing instances with this type of warning with the following format:
-   *    - [Existing db_id]: an array of reports describing how this db differs
-   *      in your chado instance from what is defined in the YAML.
-   *      Each report has the following structure:
-   *        - idspace-name: the name of the id space in the YAML which must
-   *          match the cv in your chado instance.
-   *        - column: the chado column showing a difference
-   *        - property: the yaml property being compared
-   *        - YOURS: the value in your chado instance
-   *        - THEIRS: the value in the YAML
+   *   An array describing instances with this type of warning with the
+   *   following format:
+   *     - [Existing db_id]: an array of reports describing how this db
+   *       differs in your chado instance from what is defined in the YAML.
+   *       Each report has the following structure:
+   *         - idspace-name: the name of the id space in the YAML which must
+   *           match the cv in your chado instance.
+   *         - column: the chado column showing a difference.
+   *         - property: the yaml property being compared.
+   *         - YOURS: the value in your chado instance.
+   *         - THEIRS: the value in the YAML.
    * @param array $solutions
-   *  An array describing possible solutions with the following format:
-   *    - [Existing db_id]: an array of columns in the db table to update.
-   *      Each entry has the following structure:
-   *        - [column name]: [value in YAML]
+   *   An array describing possible solutions with the following format:
+   *     - [Existing db_id]: an array of columns in the db table to update.
+   *       Each entry has the following structure:
+   *         - [column name]: [value in YAML].
+   * @param array $options
+   *   Options from drush command line.
    *
    * @return void
    *   This function interacts through command-line input/output directly and
    *   as such, does not need to return anything to the parent Drush command.
    */
-  protected function chadoCheckTerms_reportProblem_eccentricDb($problems, $solutions, $options) {
+  protected function chadoCheckTermsReportProblemEccentricDb($problems, $solutions, $options) {
 
     $this->io()->section('Small differences in ID Space entries.');
     $num_detected = count($problems);
@@ -1252,7 +1361,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $table->setColumnMaxWidth(4, 50);
 
     $rows = [];
-    foreach ($problems as $db_id => $specific_issues) {
+    foreach ($problems as $specific_issues) {
       foreach ($specific_issues as $prob_deets) {
         $rows[] = [
           $prob_deets['idspace-name'],
@@ -1284,32 +1393,35 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * Reports warnings and potential solutions for the "cvterm" warning type.
    *
    * Trigger Example: Imagine there is a cvterm defined whose
-   *   1. definition in the YAML is different from in your chado instance
+   *   1. definition in the YAML is different from in your chado instance.
    *
    * @param array $problems
-   *  An array describing instances with this type of warning with the following format:
-   *    - [Existing cvterm_id]: an array of reports describing how this cvterm differs
-   *      in your chado instance from what is defined in the YAML.
-   *      Each report has the following structure:
-   *        - term-name: the name of the term in the YAML which must
-   *          match the cvterm in your chado instance.
-   *        - term-id: the full id of the term in the YAML which must
-   *          match the connected dbxref in your database.
-   *        - column: the chado column showing a difference
-   *        - property: the yaml property being compared
-   *        - YOURS: the value in your chado instance
-   *        - THEIRS: the value in the YAML
+   *   An array describing instances with this type of warning with the
+   *   following format:
+   *     - [Existing cvterm_id]: an array of reports describing how this cvterm
+   *       differs in your chado instance from what is defined in the YAML.
+   *       Each report has the following structure:
+   *         - term-name: the name of the term in the YAML which must
+   *           match the cvterm in your chado instance.
+   *         - term-id: the full id of the term in the YAML which must
+   *           match the connected dbxref in your database.
+   *         - column: the chado column showing a difference.
+   *         - property: the yaml property being compared.
+   *         - YOURS: the value in your chado instance.
+   *         - THEIRS: the value in the YAML.
    * @param array $solutions
-   *  An array describing possible solutions with the following format:
-   *    - [Existing cvterm_id]: an array of columns in the cvterm table to update.
-   *      Each entry has the following structure:
-   *        - [column name]: [value in YAML]
+   *   An array describing possible solutions with the following format:
+   *     - [Existing cvterm_id]: an array of columns in the cvterm table
+   *       to update. Each entry has the following structure:
+   *         - [column name]: [value in YAML].
+   * @param array $options
+   *   Options from drush command line.
    *
    * @return void
    *   This function interacts through command-line input/output directly and
    *   as such, does not need to return anything to the parent Drush command.
    */
-  protected function chadoCheckTerms_reportProblem_eccentricCVTerm($problems, $solutions, $options) {
+  protected function chadoCheckTermsReportProblemEccentricCvTerm($problems, $solutions, $options) {
 
     $this->io()->section('Small differences in Term entries.');
     $num_detected = count($problems);
@@ -1322,7 +1434,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $table->setColumnMaxWidth(5, 50);
 
     $rows = [];
-    foreach ($problems as $cvterm_id => $specific_issues) {
+    foreach ($problems as $specific_issues) {
       foreach ($specific_issues as $prob_deets) {
         $rows[] = [
           $prob_deets['term-name'],
@@ -1350,4 +1462,5 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $this->io()->success('Terms have been updated to match our expectations.');
     }
   }
+
 }

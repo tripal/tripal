@@ -5,6 +5,9 @@ namespace Drupal\Tests\tripal_layout\Kernel\Entity;
 use Drupal\Core\Form\FormState;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalLayoutDefaultView and TripalLayoutDefaultForm entities.
@@ -12,6 +15,11 @@ use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
  * @group TripalLayoutDisplay
  * @group TripalLayoutDisplayEntity
  */
+#[Group('form')]
+#[Group('layout')]
+#[Group('render')]
+#[Group('service-collection')]
+#[RunTestsInSeparateProcesses]
 class TripalLayoutEntityFormTest extends TripalTestKernelBase {
 
   use TripalLayoutTestTrait;
@@ -77,6 +85,7 @@ class TripalLayoutEntityFormTest extends TripalTestKernelBase {
    * @return void
    *   No return value.
    */
+  #[DataProvider('provideConfigEntities')]
   public function testDeleteForm(string $form_class, string $config_entity_type, string $yaml_file, array $expectations) {
 
     // Create layout entity to be used in testing.

@@ -2,8 +2,14 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Task;
 
+use Drupal\tripal_biodb\Exception\ParameterException;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-
+use Drupal\tripal_chado\Task\ChadoInstaller;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for installer task.
@@ -14,14 +20,22 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  * @group Tripal Chado
  * @group Tripal Chado Task
  * @group Tripal Chado Installer
+ *
+ * @covers ::setParameters
+ * @covers ::performTask
  */
+#[CoversClass(ChadoInstaller::class)]
+#[CoversMethod(ChadoInstaller::class, 'setParameters')]
+#[CoversMethod(ChadoInstaller::class, 'performTask')]
+#[Group('biodb-task')]
+#[Group('chado-schema')]
+#[group('task-installer')]
+#[Group('service-installer')]
+#[RunTestsInSeparateProcesses]
 class ChadoInstallerTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
-   *
-   * @cover ::setParameters
-   * @cover ::performTask
    */
   public function testPerformTaskInstaller() {
     // Get a temporary schema name.
@@ -37,7 +51,7 @@ class ChadoInstallerTest extends ChadoTestKernelBase {
     $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Schema created.');
     $this->assertTrue($tripaldbx_db->schema()->tableExists('stock'), 'Table created.');
     $this->assertTrue($tripaldbx_db->schema()->fieldExists('stock', 'uniquename'), 'Field created.');
-    // @todo: test more... (types, functions, views, indexes, frange schema)
+    // @todo test more... (types, functions, views, indexes, frange schema)
     $this->freeTestSchema($tripaldbx_db);
 
     // Test that the status can be retrieved.
@@ -55,25 +69,25 @@ class ChadoInstallerTest extends ChadoTestKernelBase {
     $test_set[] = [
       'test_name' => 'Version not a string',
       'paramset' => [
-        'output_schemas' => [ 'chado' . uniqid() ],
+        'output_schemas' => ['chado' . uniqid()],
         'version' => ['fred' => 'sarah'],
       ],
-      'expected_message' => 'version must be a string; whereas, you passed an array or object'
+      'expected_message' => 'version must be a string; whereas, you passed an array or object',
     ];
 
     $test_set[] = [
       'test_name' => 'Version not valid',
       'paramset' => [
-        'output_schemas' => [ 'chado' . uniqid() ],
+        'output_schemas' => ['chado' . uniqid()],
         'version' => 5.9,
       ],
-      'expected_message' => 'version .*is not supported by this installer'
+      'expected_message' => 'version .*is not supported by this installer',
     ];
 
     $test_set[] = [
       'test_name' => 'Schema already exists.',
       'paramset' => [
-        'output_schemas' => [ 'testchadoschemaexists' ],
+        'output_schemas' => ['testchadoschemaexists'],
         'version' => 1.3,
       ],
       'expected_message' => 'Target schema ".*" already exists.',
@@ -82,8 +96,8 @@ class ChadoInstallerTest extends ChadoTestKernelBase {
     $test_set[] = [
       'test_name' => 'Input schema not supported.',
       'paramset' => [
-        'input_schemas' => [ 'fred' ],
-        'output_schemas' => [ 'chado' . uniqid() ],
+        'input_schemas' => ['fred'],
+        'output_schemas' => ['chado' . uniqid()],
         'version' => 1.3,
       ],
       'expected_message' => 'Chado installer does not take input schemas',
@@ -92,7 +106,7 @@ class ChadoInstallerTest extends ChadoTestKernelBase {
     $test_set[] = [
       'test_name' => 'Too many output schema.',
       'paramset' => [
-        'output_schemas' => [ 'chado' . uniqid(), 'chado' . uniqid() ],
+        'output_schemas' => ['chado' . uniqid(), 'chado' . uniqid()],
         'version' => 1.3,
       ],
       'expected_message' => 'Invalid number of output schemas',
@@ -105,9 +119,8 @@ class ChadoInstallerTest extends ChadoTestKernelBase {
    * Tests task.
    *
    * @dataProvider provideInvalidParameters
-   *
-   * @cover ::setParameters
    */
+  #[DataProvider('provideInvalidParameters')]
   public function testPerformTaskInstallerParameters($test_name, $paramset, $expected_message) {
 
     $this->tripal_dbx->createSchema('testchadoschemaexists');
@@ -115,7 +128,7 @@ class ChadoInstallerTest extends ChadoTestKernelBase {
     $installer = \Drupal::service('tripal_chado.installer');
     $installer->setParameters($paramset);
 
-    $this->expectException(\Drupal\tripal_biodb\Exception\ParameterException::class, "We expected an exception to be thrown for $test_name.");
+    $this->expectException(ParameterException::class, "We expected an exception to be thrown for $test_name.");
     $this->expectExceptionMessageMatches("/$expected_message/",
       "The message thrown by validateParameters was not the one we expected for $test_name.");
     $installer->validateParameters();
@@ -131,4 +144,5 @@ class ChadoInstallerTest extends ChadoTestKernelBase {
       $this->tripal_dbx->dropSchema($testschema);
     }
   }
+
 }

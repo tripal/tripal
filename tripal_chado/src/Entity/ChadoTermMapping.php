@@ -4,10 +4,47 @@ namespace Drupal\tripal_chado\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Config\FileStorage;
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\Entity\ChadoTermMappingInterface;
+use Drupal\tripal_chado\Form\ChadoTermMappingForm;
+use Drupal\tripal_chado\Form\ChadoTermMappingDeleteForm;
+use Drupal\tripal_chado\ListBuilders\ChadoTermMappingListBuilder;
 
 /**
  * Defines the Chado Term Mapping Configuration entity.
+ */
+#[ConfigEntityType(
+  id: 'chado_term_mapping',
+  label: new TranslatableMarkup('Chado Term Mapping'),
+  handlers: [
+    'list_builder' => ChadoTermMappingListBuilder::class,
+    'form' => [
+      'add' => ChadoTermMappingForm::class,
+      'edit' => ChadoTermMappingForm::class,
+      'delete' => ChadoTermMappingDeleteForm::class,
+    ],
+  ],
+  config_prefix: 'chado_term_mapping',
+  admin_permission: 'administer tripal',
+  bundle_of: 'tripal_entity',
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'label',
+  ],
+  links: [
+    'edit-form' => '/admin/tripal/storage/chado/terms/{chado_term_mapping}',
+    'delete-form' => '/admin/tripal/storage/chado/terms/{chado_term_mapping}/delete',
+  ],
+  config_export: [
+    'id',
+    'label',
+    'description',
+    'tables',
+  ],
+)]
+/**
+ * @todo Remove this annotation when we no longer support Drupal 10.x.
  *
  * @ConfigEntityType(
  *   id = "chado_term_mapping",
@@ -140,6 +177,7 @@ class ChadoTermMapping extends ConfigEntityBase implements ChadoTermMappingInter
     if (!is_array($config)) {
       throw new \Exception("refreshMapping configuration path not found: $config_path");
     }
+
     $mapping = $storage->load($mapping_id);
     if ($mapping) {
       $storage->delete([$mapping]);

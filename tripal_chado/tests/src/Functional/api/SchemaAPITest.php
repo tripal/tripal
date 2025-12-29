@@ -2,7 +2,12 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\api;
 
+use Drupal\tripal_chado\api\ChadoSchema;
+use Drupal\Core\Database\Database;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Testing the tripal_chado/api/tripal_chado.schema.api.php functions.
@@ -12,6 +17,9 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
  * @group Tripal Database
  * @group Tripal API
  */
+#[Group('chado-schema')]
+#[Group('legacy-api')]
+#[RunTestsInSeparateProcesses]
 class SchemaAPITest extends ChadoTestBrowserBase {
 
   protected $defaultTheme = 'stark';
@@ -20,6 +28,7 @@ class SchemaAPITest extends ChadoTestBrowserBase {
 
   /**
    * Modules to enable.
+   *
    * @var array
    */
   protected static $modules = ['tripal', 'tripal_chado'];
@@ -30,21 +39,18 @@ class SchemaAPITest extends ChadoTestBrowserBase {
   protected function setUp(): void {
     parent::setUp();
 
-    // Open connection to Chado
+    // Open connection to Chado.
     $this->connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
   }
 
   /**
    * Tests chado_table_exists() and chado_column_exists().
-   *
-   * @group tripal-chado
-   * @group chado-schema
    */
   public function testChadoTableColumnExists() {
-    $connection = \Drupal\Core\Database\Database::getConnection();
+    $connection = Database::getConnection();
 
     // Initialize ChadoSchema class to test new api.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $this->testSchemaName);
+    $chado_schema = new ChadoSchema(NULL, $this->testSchemaName);
     $this->assertIsObject($chado_schema,
       "We were not able to initialize the ChadoSchema object using " . $this->testSchemaName);
 
@@ -154,17 +160,14 @@ class SchemaAPITest extends ChadoTestBrowserBase {
       "BC: The index we just created should be available.");
 
     // Clean up after ourselves by dropping the table.
-    $connection->query("DROP TABLE ".$this->testSchemaName . '.' . $table_name);
+    $connection->query("DROP TABLE " . $this->testSchemaName . '.' . $table_name);
   }
 
   /**
    * Tests chado_get_schema_name().
-   *
-   * @group tripal-chado
-   * @group chado-schema
    */
   public function testChadoSchemaMetdata() {
-    $connection = \Drupal\Core\Database\Database::getConnection();
+    $connection = Database::getConnection();
 
     // First check the default schema.
     $schema_name = chado_get_schema_name(uniqid());
@@ -190,37 +193,29 @@ class SchemaAPITest extends ChadoTestBrowserBase {
   }
 
   /**
-   * Tests that the class can be initiated with or without a record specified
-   *
-   * @group api
-   * @group chado
-   * @group chado-schema
+   * Tests that the class can be initiated with or without a record specified.
    */
   public function testInitClass() {
 
     // Test with no parameters.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $this->testSchemaName);
+    $chado_schema = new ChadoSchema(NULL, $this->testSchemaName);
     $this->assertNotNull($chado_schema);
 
     // Test with version.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema('1.3', $this->testSchemaName);
+    $chado_schema = new ChadoSchema('1.3', $this->testSchemaName);
     $this->assertNotNull($chado_schema);
   }
 
   /**
    * Tests the ChadoSchema->getVersion() method.
-   *
-   * @group api
-   * @group chado
-   * @group chado-schema
    */
   public function testGetVersion() {
 
     // Generate a fake version.
-    $version = rand(100,199) / 100;
+    $version = rand(100, 199) / 100;
 
     // Check version can be retrieved when we set it.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $this->testSchemaName);
+    $chado_schema = new ChadoSchema($version, $this->testSchemaName);
     $retrieved_version = $chado_schema->getVersion();
     $this->assertEquals(
       $version,
@@ -234,10 +229,6 @@ class SchemaAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests the ChadoSchema->getSchemaName() method.
-   *
-   * @group api
-   * @group chado
-   * @group chado-schema
    */
   public function testGetSchemaName() {
 
@@ -245,7 +236,7 @@ class SchemaAPITest extends ChadoTestBrowserBase {
     $version = 1.3;
 
     // Check the schema name can be retrieved when we set it.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $this->testSchemaName);
+    $chado_schema = new ChadoSchema($version, $this->testSchemaName);
     $retrieved_schema = $chado_schema->getSchemaName();
     $this->assertEquals(
       $this->testSchemaName,
@@ -257,14 +248,10 @@ class SchemaAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests the ChadoSchema->getSchemaDetails() method.
-   *
-   * @group api
-   * @group chado
-   * @group chado-schema
    */
   public function testGetSchemaDetails() {
 
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(1.3, $this->testSchemaName);
+    $chado_schema = new ChadoSchema(1.3, $this->testSchemaName);
     $schema_details = $chado_schema->getSchemaDetails();
     $this->assertIsArray($schema_details,
       "We were unable to pull out the schema details from the YAML file.");
@@ -291,18 +278,14 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * Tests ChadoSchema->getTableNames() method.
    *
    * @dataProvider knownTableProvider
-   *
-   * @group api
-   * @group chado
-   * @group chado-schema
    */
+  #[DataProvider('knownTableProvider')]
   public function testGetTableNames($version, $known_tables) {
 
     // Check: Known tables for a given version are returned.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $this->testSchemaName);
+    $chado_schema = new ChadoSchema($version, $this->testSchemaName);
     $returned_tables = $chado_schema->getTableNames();
-    //print_r($returned_tables);
-
+    // print_r($returned_tables);
     foreach ($known_tables as $table_name) {
       $this->assertContains(
         $table_name,
@@ -315,73 +298,70 @@ class SchemaAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests ChadoSchema->getTableSchema() method.
-   *
-   * @group api
-   * @group chado
-   * @group chado-schema
    */
   public function testGetTableSchema() {
 
     // Check all Chado 1.3 tables.
     $version = 1.3;
     $dataset = ['acquisition', 'acquisition_relationship', 'acquisitionprop',
-    'analysis', 'analysis_cvterm', 'analysis_dbxref', 'analysis_pub',
-    'analysis_relationship', 'analysisfeature', 'analysisfeatureprop',
-    'analysisprop', 'arraydesign', 'arraydesignprop', 'assay',
-    'assay_biomaterial', 'assay_project', 'assayprop', 'biomaterial',
-    'biomaterial_dbxref', 'biomaterial_relationship', 'biomaterial_treatment',
-    'biomaterialprop', 'cell_line', 'cell_line_cvterm', 'cell_line_cvtermprop',
-    'cell_line_dbxref', 'cell_line_feature', 'cell_line_library', 'cell_line_pub',
-    'cell_line_relationship', 'cell_line_synonym', 'cell_lineprop',
-    'cell_lineprop_pub', 'chadoprop', 'channel', 'contact',
-    'contact_relationship', 'contactprop', 'control', 'cv', 'cvprop', 'cvterm',
-    'cvterm_dbxref', 'cvterm_relationship', 'cvtermpath', 'cvtermprop',
-    'cvtermsynonym', 'db', 'dbprop', 'dbxref', 'dbxrefprop', 'eimage',
-    'element', 'element_relationship', 'elementresult',
-    'elementresult_relationship', 'environment', 'environment_cvterm',
-    'expression', 'expression_cvterm', 'expression_cvtermprop',
-    'expression_image', 'expression_pub', 'expressionprop', 'feature',
-    'feature_contact', 'feature_cvterm', 'feature_cvterm_dbxref',
-    'feature_cvterm_pub', 'feature_cvtermprop', 'feature_dbxref',
-    'feature_expression', 'feature_expressionprop', 'feature_genotype',
-    'feature_phenotype', 'feature_pub', 'feature_pubprop', 'feature_relationship',
-    'feature_relationship_pub', 'feature_relationshipprop',
-    'feature_relationshipprop_pub', 'feature_synonym', 'featureloc',
-    'featureloc_pub', 'featuremap', 'featuremap_contact', 'featuremap_dbxref',
-    'featuremap_organism', 'featuremap_pub', 'featuremapprop', 'featurepos',
-    'featureposprop', 'featureprop', 'featureprop_pub', 'featurerange', 'genotype',
-    'genotypeprop', 'library', 'library_contact', 'library_cvterm', 'library_dbxref',
-    'library_expression', 'library_expressionprop', 'library_feature',
-    'library_featureprop', 'library_pub', 'library_relationship',
-    'library_relationship_pub', 'library_synonym', 'libraryprop', 'libraryprop_pub',
-    'magedocumentation', 'mageml', 'nd_experiment',
-    'nd_experiment_analysis', 'nd_experiment_contact', 'nd_experiment_dbxref',
-    'nd_experiment_genotype', 'nd_experiment_phenotype', 'nd_experiment_project',
-    'nd_experiment_protocol', 'nd_experiment_pub', 'nd_experiment_stock',
-    'nd_experiment_stock_dbxref', 'nd_experiment_stockprop', 'nd_experimentprop',
-    'nd_geolocation', 'nd_geolocationprop', 'nd_protocol', 'nd_protocol_reagent',
-    'nd_protocolprop', 'nd_reagent', 'nd_reagent_relationship', 'nd_reagentprop',
-    'organism', 'organism_cvterm', 'organism_cvtermprop', 'organism_dbxref',
-    'organism_pub', 'organism_relationship', 'organismprop', 'organismprop_pub',
-    'phendesc', 'phenotype', 'phenotype_comparison', 'phenotype_comparison_cvterm',
-    'phenotype_cvterm', 'phenotypeprop', 'phenstatement', 'phylonode',
-    'phylonode_dbxref', 'phylonode_organism', 'phylonode_pub', 'phylonode_relationship',
-    'phylonodeprop', 'phylotree', 'phylotree_pub', 'phylotreeprop', 'project',
-    'project_analysis', 'project_contact', 'project_dbxref', 'project_feature',
-    'project_pub', 'project_relationship', 'project_stock', 'projectprop',
-    'protocol', 'protocolparam', 'pub', 'pub_dbxref', 'pub_relationship',
-    'pubauthor', 'pubauthor_contact', 'pubprop', 'quantification',
-    'quantification_relationship', 'quantificationprop', 'stock', 'stock_cvterm',
-    'stock_cvtermprop', 'stock_dbxref', 'stock_dbxrefprop', 'stock_feature',
-    'stock_featuremap', 'stock_genotype', 'stock_library', 'stock_pub',
-    'stock_relationship', 'stock_relationship_cvterm', 'stock_relationship_pub',
-    'stockcollection', 'stockcollection_db', 'stockcollection_stock',
-    'stockcollectionprop', 'stockprop', 'stockprop_pub', 'study', 'study_assay',
-    'studydesign', 'studydesignprop', 'studyfactor', 'studyfactorvalue',
-    'studyprop', 'studyprop_feature', 'synonym', 'tableinfo', 'treatment'];
+      'analysis', 'analysis_cvterm', 'analysis_dbxref', 'analysis_pub',
+      'analysis_relationship', 'analysisfeature', 'analysisfeatureprop',
+      'analysisprop', 'arraydesign', 'arraydesignprop', 'assay',
+      'assay_biomaterial', 'assay_project', 'assayprop', 'biomaterial',
+      'biomaterial_dbxref', 'biomaterial_relationship', 'biomaterial_treatment',
+      'biomaterialprop', 'cell_line', 'cell_line_cvterm', 'cell_line_cvtermprop',
+      'cell_line_dbxref', 'cell_line_feature', 'cell_line_library', 'cell_line_pub',
+      'cell_line_relationship', 'cell_line_synonym', 'cell_lineprop',
+      'cell_lineprop_pub', 'chadoprop', 'channel', 'contact',
+      'contact_relationship', 'contactprop', 'control', 'cv', 'cvprop', 'cvterm',
+      'cvterm_dbxref', 'cvterm_relationship', 'cvtermpath', 'cvtermprop',
+      'cvtermsynonym', 'db', 'dbprop', 'dbxref', 'dbxrefprop', 'eimage',
+      'element', 'element_relationship', 'elementresult',
+      'elementresult_relationship', 'environment', 'environment_cvterm',
+      'expression', 'expression_cvterm', 'expression_cvtermprop',
+      'expression_image', 'expression_pub', 'expressionprop', 'feature',
+      'feature_contact', 'feature_cvterm', 'feature_cvterm_dbxref',
+      'feature_cvterm_pub', 'feature_cvtermprop', 'feature_dbxref',
+      'feature_expression', 'feature_expressionprop', 'feature_genotype',
+      'feature_phenotype', 'feature_pub', 'feature_pubprop', 'feature_relationship',
+      'feature_relationship_pub', 'feature_relationshipprop',
+      'feature_relationshipprop_pub', 'feature_synonym', 'featureloc',
+      'featureloc_pub', 'featuremap', 'featuremap_contact', 'featuremap_dbxref',
+      'featuremap_organism', 'featuremap_pub', 'featuremapprop', 'featurepos',
+      'featureposprop', 'featureprop', 'featureprop_pub', 'featurerange', 'genotype',
+      'genotypeprop', 'library', 'library_contact', 'library_cvterm', 'library_dbxref',
+      'library_expression', 'library_expressionprop', 'library_feature',
+      'library_featureprop', 'library_pub', 'library_relationship',
+      'library_relationship_pub', 'library_synonym', 'libraryprop', 'libraryprop_pub',
+      'magedocumentation', 'mageml', 'nd_experiment',
+      'nd_experiment_analysis', 'nd_experiment_contact', 'nd_experiment_dbxref',
+      'nd_experiment_genotype', 'nd_experiment_phenotype', 'nd_experiment_project',
+      'nd_experiment_protocol', 'nd_experiment_pub', 'nd_experiment_stock',
+      'nd_experiment_stock_dbxref', 'nd_experiment_stockprop', 'nd_experimentprop',
+      'nd_geolocation', 'nd_geolocationprop', 'nd_protocol', 'nd_protocol_reagent',
+      'nd_protocolprop', 'nd_reagent', 'nd_reagent_relationship', 'nd_reagentprop',
+      'organism', 'organism_cvterm', 'organism_cvtermprop', 'organism_dbxref',
+      'organism_pub', 'organism_relationship', 'organismprop', 'organismprop_pub',
+      'phendesc', 'phenotype', 'phenotype_comparison', 'phenotype_comparison_cvterm',
+      'phenotype_cvterm', 'phenotypeprop', 'phenstatement', 'phylonode',
+      'phylonode_dbxref', 'phylonode_organism', 'phylonode_pub', 'phylonode_relationship',
+      'phylonodeprop', 'phylotree', 'phylotree_pub', 'phylotreeprop', 'project',
+      'project_analysis', 'project_contact', 'project_dbxref', 'project_feature',
+      'project_pub', 'project_relationship', 'project_stock', 'projectprop',
+      'protocol', 'protocolparam', 'pub', 'pub_dbxref', 'pub_relationship',
+      'pubauthor', 'pubauthor_contact', 'pubprop', 'quantification',
+      'quantification_relationship', 'quantificationprop', 'stock', 'stock_cvterm',
+      'stock_cvtermprop', 'stock_dbxref', 'stock_dbxrefprop', 'stock_feature',
+      'stock_featuremap', 'stock_genotype', 'stock_library', 'stock_pub',
+      'stock_relationship', 'stock_relationship_cvterm', 'stock_relationship_pub',
+      'stockcollection', 'stockcollection_db', 'stockcollection_stock',
+      'stockcollectionprop', 'stockprop', 'stockprop_pub', 'study', 'study_assay',
+      'studydesign', 'studydesignprop', 'studyfactor', 'studyfactorvalue',
+      'studyprop', 'studyprop_feature', 'synonym', 'tableinfo', 'treatment',
+    ];
 
     // Check: a schema is returned that matches what we expect.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $this->testSchemaName);
+    $chado_schema = new ChadoSchema($version, $this->testSchemaName);
     foreach ($dataset as $table_name) {
       $table_schema = $chado_schema->getTableSchema($table_name);
 
@@ -400,7 +380,6 @@ class SchemaAPITest extends ChadoTestBrowserBase {
 
       // Instead of asserting these keys exist. Lets assert that if they do exist,
       // they match the expected format.
-
       if (isset($table_schema['primary key'])) {
         $this->assertTrue(is_array($table_schema['primary key']),
           t('The primary key of the Tripal Schema definition for ":table" must be an array.',
@@ -421,15 +400,12 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * Tests ChadoSchema->getBaseTables() method.
    *
    * @dataProvider knownBaseTableProvider
-   *
-   * @group api
-   * @group chado
-   * @group chado-schema
    */
+  #[DataProvider('knownBaseTableProvider')]
   public function testGetBaseTables($version, $known_tables) {
 
     // Check: Known base tables for a given version are returned.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $this->testSchemaName);
+    $chado_schema = new ChadoSchema($version, $this->testSchemaName);
     $returned_tables = $chado_schema->getBaseTables();
 
     foreach ($known_tables as $table_name) {
@@ -457,8 +433,7 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * @return array
    */
   public static function knownTableProvider() {
-    // chado version, array of 3 tables specific to version.
-
+    // Chado version, array of 3 tables specific to version.
     return [
       ['1.3', ['analysis_cvterm', 'dbprop', 'organism_pub']],
     ];
@@ -470,8 +445,7 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * @return array
    */
   public static function knownBaseTableProvider() {
-    // chado version, array of 3 tables specific to version.
-
+    // Chado version, array of 3 tables specific to version.
     return [
       [
         '1.3',
@@ -497,4 +471,5 @@ class SchemaAPITest extends ChadoTestBrowserBase {
       ['tripal_gff_temp'],
     ];
   }
+
 }

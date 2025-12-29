@@ -4,6 +4,8 @@ namespace Drupal\Tests\tripal_layout\Kernel\Controller;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests applying Details field groups to both form and view displays.
@@ -11,6 +13,9 @@ use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
  * @group TripalLayoutDisplay
  * @group TripalLayoutDisplayController
  */
+#[Group('layout')]
+#[Group('render')]
+#[RunTestsInSeparateProcesses]
 class TripalLayoutControllerDetailsTest extends TripalTestKernelBase {
 
   use TripalLayoutTestTrait;

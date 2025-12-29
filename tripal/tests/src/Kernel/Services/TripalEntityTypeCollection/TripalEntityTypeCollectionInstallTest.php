@@ -2,8 +2,12 @@
 
 namespace Drupal\Tests\tripal\Kernel\Services\TripalEntityTypeCollection;
 
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Focused on testing the create() and createContentType() methods.
@@ -12,6 +16,9 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group Tripal Content
  * @group TripalEntityTypeCollection
  */
+#[Group('tripal-content')]
+#[group('service-collection')]
+#[RunTestsInSeparateProcesses]
 class TripalEntityTypeCollectionInstallTest extends TripalTestKernelBase {
 
   /**
@@ -20,6 +27,8 @@ class TripalEntityTypeCollectionInstallTest extends TripalTestKernelBase {
   protected static $modules = ['system', 'user', 'path', 'path_alias', 'tripal', 'field'];
 
   /**
+   * Collection Types.
+   *
    * A made-up set of details for some collection types to be used in testing
    * getTypeCollections. These will be written to storage in the setUp().
    */
@@ -76,8 +85,7 @@ class TripalEntityTypeCollectionInstallTest extends TripalTestKernelBase {
     ],
   ];
 
-
-    /**
+  /**
    * {@inheritdoc}
    */
   protected function setUp() :void {
@@ -100,17 +108,16 @@ class TripalEntityTypeCollectionInstallTest extends TripalTestKernelBase {
     $container = \Drupal::getContainer();
 
     // Create a mock ID space to return our mock term when asked.
-
-    // Create a mock Tripal ID Space service to return our mock idspace when asked.
-    $mock_idspace_service = $this->createMock(\Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager::class);
+    // Create a mock Tripal ID Space service to return our mock idspace.
+    $mock_idspace_service = $this->createMock(TripalIdSpaceManager::class);
     $mock_idspace_service->method('loadCollection')
-      ->willReturnCallback(function($id_space) {
+      ->willReturnCallback(function ($id_space) {
 
-        $mock_idspace = $this->createMock(\Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface::class);
+        $mock_idspace = $this->createMock(TripalIdSpaceInterface::class);
         $mock_idspace->method('getTerm')
-          ->willReturnCallback(function($accession) {
+          ->willReturnCallback(function ($accession) {
 
-            $mock_term = $this->createMock(\Drupal\tripal\TripalVocabTerms\TripalTerm::class);
+            $mock_term = $this->createMock(TripalTerm::class);
             $mock_term->method('getName')
               ->willReturn('Generic Fairy');
             $mock_term->method('getIdSpace')
@@ -122,16 +129,16 @@ class TripalEntityTypeCollectionInstallTest extends TripalTestKernelBase {
             $mock_term->method('isValid')
               ->willReturn(TRUE);
             return $mock_term;
-        });
-      return $mock_idspace;
-    });
+          });
+        return $mock_idspace;
+      });
     $container->set('tripal.collection_plugin_manager.idspace', $mock_idspace_service);
   }
 
   /**
    * Tests the TripalEntityTypeCollection::install() method.
    */
-  public function testTripalEntityTypeCollection_install() {
+  public function testTripalEntityTypeCollectionInstall() {
 
     $content_type_service = \Drupal::service('tripal.tripalentitytype_collection');
 
@@ -144,7 +151,7 @@ class TripalEntityTypeCollectionInstallTest extends TripalTestKernelBase {
   /**
    * Tests the TripalEntityTypeCollection::install() method.
    */
-  public function testTripalEntityTypeCollection_installException() {
+  public function testTripalEntityTypeCollectionInstallException() {
 
     $content_type_service = \Drupal::service('tripal.tripalentitytype_collection');
 
@@ -157,6 +164,6 @@ class TripalEntityTypeCollectionInstallTest extends TripalTestKernelBase {
     $content_type_service->install(['random']);
 
     // This is not giving the expected exception.
-
   }
+
 }

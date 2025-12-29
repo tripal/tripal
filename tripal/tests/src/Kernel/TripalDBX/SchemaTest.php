@@ -2,7 +2,17 @@
 
 namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
+use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Config\DatabaseStorage;
+use Drupal\Core\Database\Database;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use Drupal\tripal\TripalDBX\TripalDbxConnection;
+use Drupal\tripal\TripalDBX\TripalDbxSchema;
+use Prophecy\Prophecy\ObjectProphecy;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Tripal DBX schema on a real database.
@@ -14,7 +24,63 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group Tripal
  * @group TripalDBX
  * @group TripalDbxSchema
+ *
+ * @covers ::__construct
+ * @covers ::getPrefixInfo
+ * @covers ::getSchemaName
+ * @covers ::schemaExists
+ * @covers ::createSchema
+ * @covers ::getSchemaSize
+ * @covers ::findTables
+ * @covers ::tableExists
+ * @covers ::fieldExists
+ * @covers ::indexExists
+ * @covers ::constraintExists
+ * @covers ::primaryKeyExists
+ * @covers ::foreignKeyConstraintExists
+ * @covers ::sequenceExists
+ * @covers ::functionExists
+ * @covers ::createTable
+ * @covers ::renameTable
+ * @covers ::changeField
+ * @covers ::addIndex
+ * @covers ::dropTable
+ * @covers ::getTables
+ * @covers ::getTableDef
+ * @covers ::getTableDdl
+ * @covers ::renameSchema
+ * @covers ::cloneSchema
+ * @covers ::dropSchema
  */
+#[CoversClass(TripalDbxSchema::class)]
+#[CoversMethod(TripalDbxSchema::class, '__construct')]
+#[CoversMethod(TripalDbxSchema::class, 'getPrefixInfo')]
+#[CoversMethod(TripalDbxSchema::class, 'getSchemaName')]
+#[CoversMethod(TripalDbxSchema::class, 'schemaExists')]
+#[CoversMethod(TripalDbxSchema::class, 'createSchema')]
+#[CoversMethod(TripalDbxSchema::class, 'getSchemaSize')]
+#[CoversMethod(TripalDbxSchema::class, 'findTables')]
+#[CoversMethod(TripalDbxSchema::class, 'tableExists')]
+#[CoversMethod(TripalDbxSchema::class, 'fieldExists')]
+#[CoversMethod(TripalDbxSchema::class, 'indexExists')]
+#[CoversMethod(TripalDbxSchema::class, 'constraintExists')]
+#[CoversMethod(TripalDbxSchema::class, 'primaryKeyExists')]
+#[CoversMethod(TripalDbxSchema::class, 'foreignKeyConstraintExists')]
+#[CoversMethod(TripalDbxSchema::class, 'sequenceExists')]
+#[CoversMethod(TripalDbxSchema::class, 'functionExists')]
+#[CoversMethod(TripalDbxSchema::class, 'createTable')]
+#[CoversMethod(TripalDbxSchema::class, 'renameTable')]
+#[CoversMethod(TripalDbxSchema::class, 'changeField')]
+#[CoversMethod(TripalDbxSchema::class, 'addIndex')]
+#[CoversMethod(TripalDbxSchema::class, 'dropTable')]
+#[CoversMethod(TripalDbxSchema::class, 'getTables')]
+#[CoversMethod(TripalDbxSchema::class, 'getTableDef')]
+#[CoversMethod(TripalDbxSchema::class, 'getTableDdl')]
+#[CoversMethod(TripalDbxSchema::class, 'renameSchema')]
+#[CoversMethod(TripalDbxSchema::class, 'cloneSchema')]
+#[CoversMethod(TripalDbxSchema::class, 'dropSchema')]
+#[Group('tripal-dbx')]
+#[RunTestsInSeparateProcesses]
 class SchemaTest extends TripalTestKernelBase {
 
   /**
@@ -48,15 +114,35 @@ class SchemaTest extends TripalTestKernelBase {
   protected static $db = NULL;
 
   /**
-   * Test members.
+   * Prophesize config factory object.
    *
-   * "pro*" members are prophesize objects while their "non-pro*" equivqlent are
-   * the revealed objects.
+   * "pro*" members are prophesize objects while their "non-pro*" equivalent
+   * are the revealed objects.
+   *
+   * @var Prophecy\Prophecy\ObjectProphecy
    */
-  protected $proConfigFactory;
-  protected $configFactory;
-  protected $proConfig;
-  protected $config;
+  protected ObjectProphecy $proConfigFactory;
+
+  /**
+   * Revealed config factory object.
+   *
+   * @var Drupal\Core\Config\ConfigFactory
+   */
+  protected ConfigFactory $configFactory;
+
+  /**
+   * Prophesize config object.
+   *
+   * @var Prophecy\Prophecy\ObjectProphecy
+   */
+  protected ObjectProphecy $proConfig;
+
+  /**
+   * Revealed config object.
+   *
+   * @var Drupal\Core\Config\ImmutableConfig
+   */
+  protected ImmutableConfig $config;
 
   /**
    * {@inheritdoc}
@@ -69,12 +155,12 @@ class SchemaTest extends TripalTestKernelBase {
     // Then instantiate a new config factory that will use that database through
     // a new instance of config storage using that database.
     // Get Drupal real database.
-    $drupal_db = \Drupal\Core\Database\Database::getConnection(
+    $drupal_db = Database::getConnection(
       'default',
       'simpletest_original_default'
     );
     // Instanciate a new config storage.
-    $config_storage = new \Drupal\Core\Config\DatabaseStorage(
+    $config_storage = new DatabaseStorage(
       $drupal_db,
       'config'
     );
@@ -83,7 +169,7 @@ class SchemaTest extends TripalTestKernelBase {
     // Get a typed config (note: this will use the test config storage).
     $typed_config = \Drupal::service('config.typed');
     // Instanciate a new config factory.
-    $config_factory = new \Drupal\Core\Config\ConfigFactory(
+    $config_factory = new ConfigFactory(
       $config_storage,
       $event_dispatcher,
       $typed_config
@@ -94,11 +180,10 @@ class SchemaTest extends TripalTestKernelBase {
     $this->assertNotEmpty($reserved_schema_patterns, 'Reserved schema patterns not empty.');
     $test_schema_base_names = $config
       ->get('test_schema_base_names')
-      ?? ['default' => '_test_tdbx', ]
-    ;
+      ?? ['default' => '_test_tdbx'];
 
     // Mock the Config object.
-    $this->proConfig = $this->prophesize(\Drupal\Core\Config\ImmutableConfig::class);
+    $this->proConfig = $this->prophesize(ImmutableConfig::class);
     $this->proConfig->get('reserved_schema_patterns')->willReturn(
       [
         // Added when the module is installed.
@@ -114,7 +199,7 @@ class SchemaTest extends TripalTestKernelBase {
     $this->config = $this->proConfig->reveal();
 
     // Mock the ConfigFactory service.
-    $this->proConfigFactory = $this->prophesize(\Drupal\Core\Config\ConfigFactory::class);
+    $this->proConfigFactory = $this->prophesize(ConfigFactory::class);
     $this->proConfigFactory->get('tripal.settings')->willReturn($this->config);
     $this->configFactory = $this->proConfigFactory->reveal();
 
@@ -137,8 +222,7 @@ class SchemaTest extends TripalTestKernelBase {
             $errors[] =
               'Unable to remove temporary tests schema "'
               . $test_schema
-              . '": ' . $e->getMessage()
-            ;
+              . '": ' . $e->getMessage();
           }
         }
       }
@@ -154,26 +238,25 @@ class SchemaTest extends TripalTestKernelBase {
   /**
    * Builds an initialized TripalDbxSchema mock.
    *
-   * @param $database_or_schema_name
-   *  Either a \Drupal\tripal\TripalDBX\TripalDbxConnection object (or mock) or
-   *  a schema name to use.
-   *
+   * @param mixed $database_or_schema_name
+   *   Either a \Drupal\tripal\TripalDBX\TripalDbxConnection object (or mock) or
+   *   a schema name to use.
    */
-  protected function getTripalDbxSchemaMock($database_or_schema_name) {
+  protected function getTripalDbxSchemaMock(mixed $database_or_schema_name) {
     if (is_string($database_or_schema_name)) {
-      $tdbx = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
+      $tdbx = $this->getMockBuilder(TripalDbxConnection::class)
+        ->onlyMethods(['findVersion', 'getAvailableInstances'])
         ->setConstructorArgs([$database_or_schema_name])
-        ->getMockForAbstractClass()
-      ;
+        ->getMock();
     }
     else {
       $tdbx = $database_or_schema_name;
     }
     // Create a mock for the abstract class.
-    $scmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxSchema::class)
+    $scmock = $this->getMockBuilder(TripalDbxSchema::class)
+      ->onlyMethods(['getSchemaDef'])
       ->setConstructorArgs([$tdbx])
-      ->getMockForAbstractClass()
-    ;
+      ->getMock();
 
     // Return initialized mock.
     return $scmock;
@@ -184,16 +267,13 @@ class SchemaTest extends TripalTestKernelBase {
    */
   protected function allowTestSchemas() {
     $test_schema_base_names = \Drupal::config('tripal.settings')
-      ->get('test_schema_base_names')
-    ;
+      ->get('test_schema_base_names');
     $tripaldbx = \Drupal::service('tripal.dbx');
     $tripaldbx->freeSchemaPattern($test_schema_base_names['default'], TRUE);
   }
 
   /**
    * Tests constructor.
-   *
-   * @cover ::__construct
    */
   public function testTripalDbxSchemaConstructor() {
     $scmock = $this->getTripalDbxSchemaMock('test');
@@ -202,18 +282,17 @@ class SchemaTest extends TripalTestKernelBase {
 
   /**
    * Tests getPrefixInfo.
-   *
-   * @cover ::getPrefixInfo
    */
   public function testTripalDbxSchemaPrefixInfo() {
     $this->allowTestSchemas();
     $test_schema_base_name = \Drupal::config('tripal.settings')
-      ->get('test_schema_base_names')['default']
-    ;
+      ->get('test_schema_base_names')['default'];
     $scmock = $this->getTripalDbxSchemaMock($test_schema_base_name);
 
     // Hack to bypass protected restriction.
-    $getPrefixInfo = function($table = 'default', $add_prefix = TRUE) {return $this->getPrefixInfo($table, $add_prefix);};
+    $getPrefixInfo = function ($table = 'default', $add_prefix = TRUE) {
+      return $this->getPrefixInfo($table, $add_prefix);
+    };
     $prefix_info = $getPrefixInfo->call($scmock, 'something');
     $this->assertEquals(
       [
@@ -228,50 +307,27 @@ class SchemaTest extends TripalTestKernelBase {
 
   /**
    * Test a scenario.
-   *
-   * @cover ::getSchemaName
-   * @cover ::schemaExists
-   * @cover ::createSchema
-   * @cover ::getSchemaSize
-   * @cover ::findTables
-   * @cover ::tableExists
-   * @cover ::fieldExists
-   * @cover ::indexExists
-   * @cover ::constraintExists
-   * @cover ::primaryKeyExists
-   * @cover ::foreignKeyConstraintExists
-   * @cover ::sequenceExists
-   * @cover ::functionExists
-   * @cover ::createTable
-   * @cover ::renameTable
-   * @cover ::changeField
-   * @cover ::addIndex
-   * @cover ::dropTable
-   * @cover ::getTables
-   * @cover ::getTableDef
-   * @cover ::getTableDdl
-   * @cover ::renameSchema
-   * @cover ::cloneSchema
-   * @cover ::dropSchema
    */
   public function testTripalDbxSchemaScenario1() {
     $db = \Drupal::database();
     self::$db = self::$db ?? $db;
     $this->allowTestSchemas();
     $test_schema_base_names = \Drupal::config('tripal.settings')
-      ->get('test_schema_base_names')
-    ;
+      ->get('test_schema_base_names');
     $sch_1 = $test_schema_base_names['default'] . mt_rand(10000000, 99999999);
     $sch_2 = $test_schema_base_names['default'] . mt_rand(10000000, 99999999);
 
     // Get abstract mock.
-    $tdbx = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
+    $tdbx = $this->getMockBuilder(TripalDbxConnection::class)
+      ->onlyMethods(['findVersion', 'getAvailableInstances'])
       ->setConstructorArgs([$sch_1])
-      ->getMockForAbstractClass()
-    ;
+      ->getMock();
     $scmock = $this->getTripalDbxSchemaMock($tdbx);
     $schema_name = $scmock->getSchemaName();
     $this->assertEquals($sch_1, $schema_name, 'Schema name set.');
+    $psql_version = $tdbx->version();
+    // Remove distro info, e.g. "13.22 (Debian 13.22-1.pgdg12+1)" -> "13.22".
+    $psql_version = preg_replace('/[^\d\.].*$/', '', $psql_version);
 
     // Check schema does not exist.
     $exists = $scmock->schemaExists();
@@ -367,6 +423,7 @@ class SchemaTest extends TripalTestKernelBase {
     $exists = $scmock->functionExists('dummy', ['']);
     $this->assertFalse($exists, 'Function "dummy()" does not exist.');
 
+    // phpcs:disable
     /**
      These tests do not work in a mocked setting.
      However, when tested manually with the Chado implementation
@@ -433,6 +490,7 @@ class SchemaTest extends TripalTestKernelBase {
     $exists = $scmock->tableExists('table_1_renamed');
     $this->assertFalse($exists, 'Table "table_1_renamed" does not exist.');
     */
+    // phpcs:enable
 
     // Get tables.
     $tables = $scmock->getTables(['table']);
@@ -521,22 +579,39 @@ class SchemaTest extends TripalTestKernelBase {
         ],
       ],
       'dependencies' => [
-        'othertesttable' => ['foreign_id' => 'id',],
+        'othertesttable' => ['foreign_id' => 'id'],
       ],
       'comment' => "Some long description\non multiple lines.",
       'referenced_by' => [
-        'othertesttable' => ['id' => 'fk',],
+        'othertesttable' => ['id' => 'fk'],
       ],
     ];
+
+    // Postgresql 18 handles constraints a bit differently, so we will expect
+    // a few more items here.
+    if (version_compare($psql_version, '18.0') >= 0) {
+      $expected['constraints']['testtable_fieldbool_not_null'] = 'NOT NULL fieldbool';
+      $expected['constraints']['testtable_fieldtext_not_null'] = 'NOT NULL fieldtext';
+      $expected['constraints']['testtable_id_not_null'] = 'NOT NULL id';
+    }
+
     $this->assertEquals(
       $expected,
       $table_def,
       'Table definition ok.'
     );
 
+    // Again a few more items expected under postgresql 18.
+    $extra_if_18 = '';
+    if (version_compare($psql_version, '18.0') >= 0) {
+      $extra_if_18 = ",
+  CONSTRAINT testtable_fieldbool_not_null NOT NULL fieldbool,
+  CONSTRAINT testtable_fieldtext_not_null NOT NULL fieldtext,
+  CONSTRAINT testtable_id_not_null NOT NULL id";
+    }
+
     // DDL.
-    $expected =
-"CREATE TABLE $test_schema.testtable (
+    $expected = "CREATE TABLE $test_schema.testtable (
   id integer NOT NULL DEFAULT nextval('testtable_id_seq'::regclass),
   foreign_id integer NULL,
   fieldbigint bigint NULL,
@@ -549,7 +624,7 @@ class SchemaTest extends TripalTestKernelBase {
   fieldbytea bytea NULL DEFAULT 'x'::bytea,
   CONSTRAINT testtable_pkey PRIMARY KEY (id),
   CONSTRAINT testtable_c1 UNIQUE (fieldbigint, fieldsmallint),
-  CONSTRAINT testtable_foreign_id_fkey FOREIGN KEY (foreign_id) REFERENCES othertesttable(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED
+  CONSTRAINT testtable_foreign_id_fkey FOREIGN KEY (foreign_id) REFERENCES othertesttable(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED$extra_if_18
 );
 CREATE UNIQUE INDEX testtable_c1 ON $test_schema.testtable USING btree (fieldbigint, fieldsmallint);
 CREATE UNIQUE INDEX testtable_c2 ON $test_schema.testtable USING btree (fieldbigint, fieldsmallint);
@@ -569,27 +644,28 @@ on multiple lines.';
     self::$testSchemas[$sch_2] = TRUE;
 
     // Cloning.
-    /*
-    $scmock_clone = $this->getTripalDbxSchemaMock($sch_1);
-    $exists = $scmock_clone->schemaExists();
-    $this->assertFalse($exists, 'First schema is now free.');
-    $clone_size = $scmock_clone->cloneSchema($sch_2);
-    $this->assertGreaterThan(1000, $clone_size, 'Schema cloned.');
-    $exists = $scmock_clone->schemaExists();
-    $this->assertTrue($exists, 'Clone exists.');
-    self::$testSchemas[$sch_1] = TRUE;
-    */
+    /**
+     * $scmock_clone = $this->getTripalDbxSchemaMock($sch_1);
+     * $exists = $scmock_clone->schemaExists();
+     * $this->assertFalse($exists, 'First schema is now free.');
+     * $clone_size = $scmock_clone->cloneSchema($sch_2);
+     * $this->assertGreaterThan(1000, $clone_size, 'Schema cloned.');
+     * $exists = $scmock_clone->schemaExists();
+     * $this->assertTrue($exists, 'Clone exists.');
+     * self::$testSchemas[$sch_1] = TRUE;
+     */
 
     $scmock->dropSchema();
     $exists = $scmock->schemaExists();
     $this->assertFalse($exists, 'Second schema removed.');
     self::$testSchemas[$sch_2] = FALSE;
 
-    /*
-    $scmock_clone->dropSchema();
-    $exists = $scmock_clone->schemaExists();
-    $this->assertFalse($exists, 'First schema removed.');
-    self::$testSchemas[$sch_1] = FALSE;
-    */
+    /**
+     * $scmock_clone->dropSchema();
+     * $exists = $scmock_clone->schemaExists();
+     * $this->assertFalse($exists, 'First schema removed.');
+     * self::$testSchemas[$sch_1] = FALSE;
+     */
   }
+
 }

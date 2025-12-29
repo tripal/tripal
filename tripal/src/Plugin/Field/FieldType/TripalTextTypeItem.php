@@ -2,24 +2,31 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
+use Drupal\Component\Utility\Random;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
-use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of the 'text' field type.
- *
- * @FieldType(
- *   id = "tripal_text_type",
- *   category = "tripal",
- *   label = @Translation("Tripal Text Field Type"),
- *   description = @Translation("A text field with no length limit."),
- *   default_widget = "default_tripal_text_type_widget",
- *   default_formatter = "default_tripal_text_type_formatter"
- * )
  */
+#[TripalFieldType(
+  id: 'tripal_text_type',
+  category: 'tripal',
+  label: new TranslatableMarkup('Tripal Text Field Type'),
+  description: new TranslatableMarkup('A text field with no length limit.'),
+  default_widget: 'default_tripal_text_type_widget',
+  default_formatter: 'default_tripal_text_type_formatter',
+)]
 class TripalTextTypeItem extends TripalFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "tripal_text_type";
 
   /**
@@ -44,12 +51,13 @@ class TripalTextTypeItem extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    $values = [];
+    $value = [];
 
-    $random = new \Drupal\Component\Utility\Random();
-    $values['value'] = $random->sentences(mt_rand(1, 4500000));
+    $random = new Random();
+    $value['record_id'] = 0;
+    $value['value'] = $random->sentences(9);
 
-    return $values;
+    return [$value];
   }
 
   /**

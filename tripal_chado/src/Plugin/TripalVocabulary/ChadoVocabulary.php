@@ -2,20 +2,21 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalVocabulary;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal\TripalVocabTerms\Attribute\TripalVocabulary;
 use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Chado implementation of the TripalVocabularyBase.
- *
- *  @TripalVocabulary(
- *    id = "chado_vocabulary",
- *    label = @Translation("Vocabulary in Chado"),
- *  )
  */
+#[TripalVocabulary(
+  id: 'chado_vocabulary',
+  label: new TranslatableMarkup('Vocabulary in Chado'),
+)]
 class ChadoVocabulary extends TripalVocabularyBase implements ContainerFactoryPluginInterface {
 
   /**

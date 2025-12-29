@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalIdSpace;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalVocabTerms\Attribute\TripalIdSpace;
 use Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\tripal\Services\TripalLogger;
@@ -10,13 +12,12 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Chado Implementation of TripalIdSpaceBase
- *
- *  @TripalIdSpace(
- *    id = "chado_id_space",
- *    label = @Translation("Vocabulary IDSpace in Chado"),
- *  )
+ * Chado Implementation of TripalIdSpaceBase.
  */
+#[TripalIdSpace(
+  id: 'chado_id_space',
+  label: new TranslatableMarkup('Vocabulary IDSpace in Chado'),
+)]
 class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginInterface {
 
   /**
@@ -36,9 +37,9 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
   /**
    * A record in the chado.db table for this ID Space.
    *
-   * @see Drupal\tripal_chado\Plugin\TripalIdSpace\ChadoIdSpace::loadIdSpace().
-   *
    * @var array|null
+   *
+   * @see Drupal\tripal_chado\Plugin\TripalIdSpace\ChadoIdSpace::loadIdSpace().
    */
   protected array|null $chado_record = NULL;
 
@@ -61,19 +62,24 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    *
    * @var bool
    */
-  protected $is_valid = False;
+  protected $is_valid = FALSE;
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
    *
-   * Since we have implemented the ContainerFactoryPluginInterface this static function
-   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the constructor.
+   * Since we have implemented the ContainerFactoryPluginInterface this static
+   * function will be called behind the scenes when a Plugin Manager uses
+   * createInstance(). Specifically this method is used to determine the
+   * parameters to pass to the constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container.
    * @param array $configuration
+   *   The plugin configuration.
    * @param string $plugin_id
+   *   The plugin id.
    * @param mixed $plugin_definition
+   *   The plugin definition.
    *
    * @return static
    */
@@ -101,20 +107,21 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     $this->db_def = $this->connection->schema()->getTableDef('db', ['source' => 'file']);
   }
 
-
   /**
    * {@inheritdoc}
    */
   public function isValid() {
 
-    // Make sure the name of this ID Space does not exceeed the allowed size in Chado.
+    // Make sure the name of this ID Space does not exceeed the allowed size
+    // in Chado.
     $name = $this->getName();
 
-    if (!empty($name) AND (strlen($name) > $this->db_def['fields']['name']['size'])) {
-      $this->messageLogger->error('ChadoIdSpace: The IdSpace name must not be longer than @size characters. ' +
-          'The value provided was: @value',
-          ['@size' => $this->db_def['fields']['name']['size'],
-           '@value' => $this->getName()]);
+    if (!empty($name) and (strlen($name) > $this->db_def['fields']['name']['size'])) {
+      $this->messageLogger->error('ChadoIdSpace: The IdSpace name must not be longer than @size characters. The value provided was: @value',
+          [
+            '@size' => $this->db_def['fields']['name']['size'],
+            '@value' => $this->getName(),
+          ]);
       $this->is_valid = FALSE;
       return FALSE;
     }
@@ -129,11 +136,10 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
   public function recordExists() {
     $db = $this->loadIdSpace(TRUE);
     if ($db and $db['name'] == $this->getName()) {
-      return True;
+      return TRUE;
     }
-    return False;
+    return FALSE;
   }
-
 
   /**
    * {@inheritdoc}
@@ -155,7 +161,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
   /**
    * {@inheritdoc}
    */
-  public function destroy(){
+  public function destroy() {
     // The destroy function is meant to delete the ID space.
     // But, because CVs and DBs are so critical to almost all
     // data in Chado we don't want to remove the records.
@@ -206,7 +212,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
   /**
    * {@inheritdoc}
    */
-  public function getParent($child){
+  public function getParent($child) {
 
     // Don't get values for an ID space that isn't valid.
     if (!$this->is_valid) {
@@ -218,7 +224,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
   /**
    * {@inheritdoc}
    */
-  public function getChildren($parent = NULL){
+  public function getChildren($parent = NULL) {
 
     // Don't get values for an ID space that isn't valid.
     if (!$this->is_valid) {
@@ -253,13 +259,17 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
         'name' => $child->name,
         'accession' => $child->accession,
         'idSpace' => $child->DBSUB_name,
-        'vocabulary' => $child->CVSUB_name
+        'vocabulary' => $child->CVSUB_name,
+        'id_space_plugin' => 'chado_id_space',
+        'vocabulary_plugin_id' => 'chado_vocabulary',
       ]);
       $type_term = new TripalTerm([
         'name' => $child->CVTTYPE_name,
         'accession' => $child->DBXTYPE_accession,
         'idSpace' => $child->DBTYPE_name,
-        'vocabulary' => $child->CVTYPE_name
+        'vocabulary' => $child->CVTYPE_name,
+        'id_space_plugin' => 'chado_id_space',
+        'vocabulary_plugin_id' => 'chado_vocabulary',
       ]);
       $terms[] = [$child_term, $type_term];
     }
@@ -274,6 +284,10 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     if (!$this->is_valid) {
       return NULL;
     }
+    $cache_id = 'chado_id_space_term_' . $this->getName() . '_' . $accession;
+    if ($cache = \Drupal::cache()->get($cache_id)) {
+      return $cache->data;
+    }
 
     // Get the term record.
     $query = $this->connection->select('1:cvterm', 'CVT');
@@ -286,11 +300,10 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     $query->condition('DBX.accession', $accession, '=');
     $cvterm = $query->execute()->fetchObject();
     // @debug print "CVTERM looked up by ChadoIdSpace->getTerm() in db: ".$this->connection->getSchemaName().". " . print_r($cvterm, TRUE) . "\n";
-
     if (!$cvterm) {
       return NULL;
     }
-    $term =  new TripalTerm([
+    $term = new TripalTerm([
       'name' => $cvterm->name,
       'definition' => $cvterm->definition,
       'accession' => $accession,
@@ -298,8 +311,8 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
       'id_space_plugin_id' => 'chado_id_space',
       'vocabulary' => $cvterm->CV_name ? $cvterm->CV_name : $this->getDefaultVocabulary(),
       'vocabulary_plugin_id' => 'chado_vocabulary',
-      'is_obsolete' => $cvterm->is_obsolete == 1 ? True : False,
-      'is_relationship_type' => $cvterm->is_relationshiptype == 1 ? True : False,
+      'is_obsolete' => $cvterm->is_obsolete == 1 ? TRUE : FALSE,
+      'is_relationship_type' => $cvterm->is_relationshiptype == 1 ? TRUE : FALSE,
     ]);
 
     // Set the internal ID.
@@ -307,10 +320,10 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
 
     // Set the boolean values for the term.
     if ($cvterm->is_obsolete) {
-      $term->isObsolete(True);
+      $term->isObsolete(TRUE);
     }
     if ($cvterm->is_relationshiptype) {
-      $term->isRelationshipType(True);
+      $term->isRelationshipType(TRUE);
     }
 
     // Are there synonyms?
@@ -336,6 +349,8 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
             'accession' => $synonym->accession,
             'idSpace' => $synonym->DB_name,
             'vocabulary' => $synonym->CV_name,
+            'id_space_plugin' => 'chado_id_space',
+            'vocabulary_plugin_id' => 'chado_vocabulary',
           ]);
         }
         $term->addSynonym($synonym->synonym, $type_term);
@@ -377,7 +392,9 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
           'name' => $property->name,
           'accession' => $property->accession,
           'idSpace' => $property->DB_name,
-          'vocabulary' => $property->CV_name
+          'vocabulary' => $property->CV_name,
+          'id_space_plugin' => 'chado_id_space',
+          'vocabulary_plugin_id' => 'chado_vocabulary',
         ]);
         $term->addProperty($prop_term, $property->value);
       }
@@ -409,17 +426,24 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
           'name' => $parent->name,
           'accession' => $parent->accession,
           'idSpace' => $parent->DBOBJ_name,
-          'vocabulary' => $parent->CVOBJ_name
+          'vocabulary' => $parent->CVOBJ_name,
+          'id_space_plugin' => 'chado_id_space',
+          'vocabulary_plugin_id' => 'chado_vocabulary',
         ]);
         $type_term = new TripalTerm([
           'name' => $parent->CVTTYPE_name,
           'accession' => $parent->DBXTYPE_accession,
           'idSpace' => $parent->DBTYPE_name,
-          'vocabulary' => $parent->CVTYPE_name
+          'vocabulary' => $parent->CVTYPE_name,
+          'id_space_plugin' => 'chado_id_space',
+          'vocabulary_plugin_id' => 'chado_vocabulary',
         ]);
         $term->addParent($parent_term, $type_term);
       }
     }
+
+    // Cache the term for an hour.
+    \Drupal::cache()->set($cache_id, $term, \Drupal::time()->getRequestTime() + (3600));
 
     return $term;
   }
@@ -429,7 +453,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    */
   public function getTerms($name, $options = []) {
 
-    // The list of terms to return
+    // The list of terms to return.
     $terms = [];
 
     // Build the query for matching via the `cvterm.name` column.
@@ -441,7 +465,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     $query1->fields('DBX', ['accession']);
     $query1->fields('CV', ['name']);
     $query1->condition('DB.name', $this->getName(), '=');
-    if (array_key_exists('exact', $options) and $options['exact'] === True) {
+    if (array_key_exists('exact', $options) and $options['exact'] === TRUE) {
       $query1->condition('CVT.name', $name, '=');
     }
     else {
@@ -454,7 +478,9 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
         'idSpace' => $this->getName(),
         'vocabulary' => $cvterm->CV_name,
         'definition' => $cvterm->definition,
-        'accession' => $cvterm->accession
+        'accession' => $cvterm->accession,
+        'id_space_plugin' => 'chado_id_space',
+        'vocabulary_plugin_id' => 'chado_vocabulary',
       ]);
       $terms[$cvterm->name][$term->getTermId()] = $term;
     }
@@ -470,7 +496,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     $query2->fields('CV', ['name']);
     $query2->fields('CS', ['synonym']);
     $query2->condition('DB.name', $this->getName(), '=');
-    if (array_key_exists('exact', $options) and $options['exact'] === True) {
+    if (array_key_exists('exact', $options) and $options['exact'] === TRUE) {
       $query2->condition('CS.synonym', $name, '=');
     }
     else {
@@ -483,7 +509,9 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
         'idSpace' => $this->getName(),
         'vocabulary' => $cvterm->CV_name,
         'definition' => $cvterm->definition,
-        'accession' => $cvterm->accession
+        'accession' => $cvterm->accession,
+        'id_space_plugin' => 'chado_id_space',
+        'vocabulary_plugin_id' => 'chado_vocabulary',
       ]);
       $terms[$cvterm->synonym][$term->getTermId()] = $term;
     }
@@ -493,7 +521,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
   /**
    * {@inheritdoc}
    */
-  public function getDefaultVocabulary(){
+  public function getDefaultVocabulary() {
     return $this->getDefaultVocabCache();
   }
 
@@ -502,22 +530,22 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    */
   public function saveTerm($term, $options = []) {
 
-    // Don't save terms that aren't valid
+    // Don't save terms that aren't valid.
     if (!$term->isValid()) {
-      $this->messageLogger->error(t('ChadoIdSpace::saveTerm(). The term, "@term" is not valid and cannot be saved. It must include a name, accession, IdSpace and vocabulary.',
-          ['@term' => $term->getIdSpace() . ':' . $term->getAccession()]));
-      return False;
+      $this->messageLogger->error('ChadoIdSpace::saveTerm(). The term, "@term" is not valid and cannot be saved. It must include a name, accession, IdSpace and vocabulary.',
+          ['@term' => $term->getIdSpace() . ':' . $term->getAccession()]);
+      return FALSE;
     }
 
     // Make sure the idSpace matches.
     if ($this->getName() != $term->getIdSpace()) {
-      $this->messageLogger->error(t('ChadoIdSpace::saveTerm(). The term, "@term", does not have the same ID space as this one.',
-          ['@term' => $term->getIdSpace() . ':' . $term->getAccession()]));
-      return False;
+      $this->messageLogger->error('ChadoIdSpace::saveTerm(). The term, "@term", does not have the same ID space as this one.',
+          ['@term' => $term->getIdSpace() . ':' . $term->getAccession()]);
+      return FALSE;
     }
 
     // Get easy to use boolean variables.
-    $fail_if_exists = False;
+    $fail_if_exists = FALSE;
     if (array_key_exists('failIfExists', $options)) {
       $fail_if_exists = $options['failIfExists'];
     }
@@ -526,15 +554,15 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     $cvterm = $this->getChadoCVTerm($term);
     if (!$cvterm) {
       if (!$this->insertTerm($term, $options)) {
-        return False;
+        return FALSE;
       }
     }
     if ($cvterm and $fail_if_exists) {
-      return False;
+      return FALSE;
     }
     if ($cvterm and !$fail_if_exists) {
       if (!$this->updateTerm($term, $cvterm, $options)) {
-        return False;
+        return FALSE;
       }
     }
 
@@ -542,13 +570,17 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     $cvterm = $this->getChadoCVTerm($term);
     $term->setInternalId($cvterm->cvterm_id);
 
-    return True;
+    // Invalidate the cache for this term.
+    $cache_id = 'chado_id_space_term_' . $term->getIdSpace() . '_' . $term->getAccession();
+    \Drupal::cache()->invalidate($cache_id);
+
+    return TRUE;
   }
 
   /**
    * Retrieve a record from the Chado cv table.
    *
-   * @param TripalTerm $term
+   * @param \Drupal\tripal\TripalVocabTerms\TripalTerm $term
    *   The TripalTerm object to save.
    *
    * @return object
@@ -560,7 +592,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
       ->fields('CV', ['cv_id', 'name', 'definition'])
       ->condition('name', $term->getVocabulary(), '=')
       ->execute();
-    if(!$result) {
+    if (!$result) {
       return NULL;
     }
     return $result->fetchObject();
@@ -569,8 +601,9 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
   /**
    * Retrieve a record from the Chado db table.
    *
-   * @param TripalTerm $term
+   * @param \Drupal\tripal\TripalVocabTerms\TripalTerm $term
    *   The TripalTerm object to save.
+   *
    * @return object
    *   The db record in object form.
    */
@@ -580,7 +613,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
       ->fields('DB', ['db_id', 'name', 'description'])
       ->condition('name', $term->getIdSpace(), '=')
       ->execute();
-    if(!$result) {
+    if (!$result) {
       return NULL;
     }
     return $result->fetchObject();
@@ -589,8 +622,9 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
   /**
    * Retrieve a record from the Chado dbxref table.
    *
-   * @param TripalTerm $term
+   * @param \Drupal\tripal\TripalVocabTerms\TripalTerm $term
    *   The TripalTerm object to save.
+   *
    * @return object
    *   The dbxref record in object form.
    */
@@ -598,7 +632,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
 
     $db = $this->getChadoDB($term);
     $result = $this->connection->select('1:dbxref', 'DBX')
-      ->fields('DBX', ['dbxref_id', 'db_id', 'accession', 'version' ,'description'])
+      ->fields('DBX', ['dbxref_id', 'db_id', 'accession', 'version', 'description'])
       ->condition('db_id', $db->db_id, '=')
       ->condition('accession', $term->getAccession(), '=')
       ->execute();
@@ -616,14 +650,14 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    */
   protected function getChadoDBXrefbyTermID(string $term_id) {
 
-    list($db, $accession) = explode(':', $term_id);
+    [$db, $accession] = explode(':', $term_id);
     $query = $this->connection->select('1:dbxref', 'DBX');
     $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
-    $result = $query->fields('DBX', ['dbxref_id', 'db_id', 'accession', 'version' ,'description'])
+    $result = $query->fields('DBX', ['dbxref_id', 'db_id', 'accession', 'version', 'description'])
       ->condition('DB.name', $db, '=')
       ->condition('DBX.accession', $accession, '=')
       ->execute();
-    if(!$result) {
+    if (!$result) {
       return NULL;
     }
     return $result->fetchObject();
@@ -637,12 +671,12 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    * @param string $term_id
    *   The term ID (e.g. GO:0044708).
    *
-   * @return object|NULL
+   * @return object|null
    *   The dbxref Object.
    */
   protected function insertChadoDBxrefbyTermID(string $term_id) {
 
-    list($db, $accession) = explode(':', $term_id);
+    [$db, $accession] = explode(':', $term_id);
     $result = $this->connection->select('1:db', 'DB')
       ->fields('DB', ['db_id'])
       ->condition('name', $db, '=')
@@ -667,8 +701,9 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    * This function uses the db.name (IdSpace), cv.name (vocabulary)
    * and dbxref.accession values to uniquely identify a term in Chado.
    *
-   * @param TripalTerm $term
+   * @param \Drupal\tripal\TripalVocabTerms\TripalTerm $term
    *   The TripalTerm object to save.
+   *
    * @return object
    *   The cvterm record in object form.
    */
@@ -690,7 +725,6 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     return $result->fetchObject();
   }
 
-
   /**
    * Inserts a new term into Chado.
    *
@@ -698,12 +732,11 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    * prior to calling this function.
    *
    * @param Drupal\tripal\TripalVocabTerms\TripalTerm $term
-   *   The term object to update
-   *
+   *   The term object to update.
    * @param array $options
    *   The options passed to the saveTerm() function.
    *
-   * @return boolean
+   * @return bool
    *   True if the insert was successful, false otherwise.
    */
   protected function insertTerm(TripalTerm $term, $options) {
@@ -724,7 +757,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
             'db_id' => $db->db_id,
             'accession' => $term->getAccession(),
           ])
-        ->execute();
+          ->execute();
         $dbxref = $this->getChadoDBXref($term);
       }
 
@@ -741,38 +774,43 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
         ->execute();
       $cvterm = $this->getChadoCVTerm($term);
       if (!$cvterm) {
-        return False;
+        return FALSE;
       }
 
       // Now save the term attributes.
       if (!$this->saveTermAttributes($term, $cvterm, $options)) {
-        return False;
+        return FALSE;
       }
 
     }
     catch (Exception $e) {
       $this->messageLogger->error('ChadoIdSpace::insertTerm(). could not insert the cvterm record: @message',
           ['@message' => $e->getMessage()]);
-      return False;
+      return FALSE;
     }
-    return True;
+    return TRUE;
   }
 
   /**
+   * Saves term attributes.
    *
-   * @param TripalTerm $term
+   * @param \Drupal\tripal\TripalVocabTerms\TripalTerm $term
+   *   The term whose attributes should be saved.
    * @param object $cvterm
+   *   The cvterm mapping to this term.
    * @param array $options
+   *   Options for how to save these attributes.
+   *
    * @return bool
+   *   TRUE if successful, FALSE otherwise.
    */
   protected function saveTermAttributes(TripalTerm $term, object $cvterm, array $options) : bool {
 
-    $update_parent = False;
+    $update_parent = FALSE;
     if (array_key_exists('updateParent', $options)) {
       $update_parent = $options['updateParent'];
     }
 
-    // Add in synonyms.ount($syns->chado->delete('1:cvtermsynonym')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
     $this->connection->delete('1:cvtermsynonym')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
     foreach ($term->getSynonyms() as $synonym => $type_term) {
       $query = $this->connection->insert('1:cvtermsynonym');
@@ -793,13 +831,13 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
       $query->execute();
     }
 
-    // Add in the properties
+    // Add in the properties.
     $this->connection->delete('1:cvtermprop')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
     foreach ($term->getProperties() as $term_id => $properties) {
-      foreach  ($properties as $rank => $tuple) {
+      foreach ($properties as $rank => $tuple) {
         $type_term = $this->getChadoCVTerm($tuple[0]);
         if (!$type_term) {
-          return False;
+          return FALSE;
         }
         $value = $tuple[1];
         $this->connection->insert('1:cvtermprop')
@@ -807,7 +845,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
             'cvterm_id' => $cvterm->cvterm_id,
             'type_id' => $type_term->cvterm_id,
             'value' => $value,
-            'rank' => $rank
+            'rank' => $rank,
           ])
           ->execute();
       }
@@ -820,7 +858,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
       if (!$alt_dbxref) {
         $alt_dbxref = $this->insertChadoDBxrefbyTermID($term_id);
         if (!$alt_dbxref) {
-          return False;
+          return FALSE;
         }
       }
       $this->connection->insert('1:cvterm_dbxref')
@@ -838,11 +876,11 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
       $rel_term = $tuple[1];
       $parent_term = $this->getChadoCVTerm($parent_term);
       if (!$parent_term) {
-        return False;
+        return FALSE;
       }
       $rel_cvterm = $this->getChadoCVTerm($rel_term);
       if (!$rel_cvterm) {
-        return False;
+        return FALSE;
       }
       $this->connection->insert('1:cvterm_relationship')
         ->fields([
@@ -859,7 +897,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
       }
     }
 
-    return True;
+    return TRUE;
   }
 
   /**
@@ -869,13 +907,13 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    * prior to execution of this function.
    *
    * @param Drupal\tripal\TripalVocabTerms\TripalTerm $term
-   *   The term object to update
+   *   The term object to update.
    * @param object $cvterm
    *   The record object for the term to update from the Chado cvterm table.
    * @param array $options
    *   The options passed to the saveTerm() function.
    *
-   * @return boolean
+   * @return bool
    *   True if the update was successful, false otherwise.
    */
   protected function updateTerm(TripalTerm $term, object &$cvterm, array $options) {
@@ -897,9 +935,9 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     catch (Exception $e) {
       $this->messageLogger->error('ChadoIdSpace: could not update the cvterm record: @message',
           ['@message' => $e->getMessage()]);
-      return False;
+      return FALSE;
     }
-    return True;
+    return TRUE;
   }
 
   /**
@@ -927,20 +965,21 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
 
     // Don't set a value for an ID space that isn't valid.
     if (!$this->is_valid) {
-      return False;
+      return FALSE;
     }
 
     // Make sure the URL prefix is good.
     if (empty($prefix)) {
       $this->messageLogger->error('ChadoIdSpace: No URL prefix for the vocabulary ID Space was provided when setURLPrefix() was called.');
-      return False;
+      return FALSE;
     }
     if (strlen($prefix) > $this->db_def['fields']['urlprefix']['size']) {
-      $this->messageLogger->error('ChadoIdSpace: The URL prefix for the vocabulary ID Space must not be longer than @size characters. ' +
-          'The value provided was: @value',
-          ['@size' => $this->db_def['fields']['urlprefix']['size'],
-            '@value' => $prefix]);
-      return False;
+      $this->messageLogger->error('ChadoIdSpace: The URL prefix for the vocabulary ID Space must not be longer than @size characters. The value provided was: @value',
+          [
+            '@size' => $this->db_def['fields']['urlprefix']['size'],
+            '@value' => $prefix,
+          ]);
+      return FALSE;
     }
 
     // Update the record in the Chado `db` table.
@@ -950,11 +989,10 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     $num_updated = $query->execute();
     if ($num_updated != 1) {
       $this->messageLogger->error('ChadoIdSpace: The URL prefix could not be updated for the vocabulary ID Space.');
-      return False;
+      return FALSE;
     }
-    return True;
+    return TRUE;
   }
-
 
   /**
    * {@inheritdoc}
@@ -975,35 +1013,37 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
 
     // Don't set a value for an ID space that isn't valid.
     if (!$this->is_valid) {
-      return False;
+      return FALSE;
     }
-
 
     // Make sure the description is not too long.
     if (empty($description)) {
       $this->messageLogger->error('ChadoIdSpace: You must provide a description when calling setDescription().',
-          ['@size' => $this->db_def['fields']['description']['size'],
-           '@value' => $description]);
-      return False;
+          [
+            '@size' => $this->db_def['fields']['description']['size'],
+            '@value' => $description,
+          ]);
+      return FALSE;
     }
     if (strlen($description) > $this->db_def['fields']['description']['size']) {
-      $this->messageLogger->error('ChadoIdSpace: The description for the vocabulary ID space must not be longer than @size characters. ' +
-          'The value provided was: @value',
-          ['@size' => $this->db_def['fields']['description']['size'],
-           '@value' => $description]);
-      return False;
+      $this->messageLogger->error('ChadoIdSpace: The description for the vocabulary ID space must not be longer than @size characters. The value provided was: @value',
+          [
+            '@size' => $this->db_def['fields']['description']['size'],
+            '@value' => $description,
+          ]);
+      return FALSE;
     }
 
     // Update the record in the Chado `db` table.
     $query = $this->connection->update('1:db')
-       ->fields(['description' => $description])
-       ->condition('name', $this->getName(), '=');
+      ->fields(['description' => $description])
+      ->condition('name', $this->getName(), '=');
     $num_updated = $query->execute();
     if ($num_updated != 1) {
       $this->messageLogger->error('ChadoIdSpace: The description could not be updated for the vocabulary ID Space.');
-      return False;
+      return FALSE;
     }
-    return True;
+    return TRUE;
 
   }
 
@@ -1054,10 +1094,11 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    */
   public function setDefaultVocabulary($name) {
     $retval = parent::setDefaultVocabulary($name);
-    if ($retval === True) {
+    if ($retval === TRUE) {
       $this->default_vocabulary = $name;
     }
     $this->setDefaultVocabCache($name);
     return $retval;
   }
+
 }
