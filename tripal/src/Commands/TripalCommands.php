@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal\Commands;
 
+use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
 use Drush\Drush;
 
@@ -144,25 +145,21 @@ class TripalCommands extends DrushCommands {
 
   /**
    * Imports a single publication from PubMed by PMID.
-   *
-   * @command tripal:trp-import-pub
-   * @aliases trp-import-pub
-   * @options pmid
-   *   The PubMed ID of the publication to import.
-   * @options schema-name
-   *   The name of the chado schema to use (defaults to 'chado').
-   * @options create-contact
-   *   Set to 1 to create contact records for authors (default: 0).
-   * @options api-key
-   *   Optional NCBI API key for faster requests.
-   * @options username
-   *   The name of the user for whom the import is associated.
-   * @usage drush trp-import-pub --pmid=12345678 --username=[USERNAME]
-   *   Imports a single publication with PMID 12345678.
-   * @usage drush trp-import-pub --pmid=12345678 --create-contact=1 --api-key=[API_KEY] --username=[USERNAME]
-   *   Imports publication with contact creation and API key for faster
-   *   processing.
    */
+  #[CLI\Command(name: 'tripal:trp-import-pub', aliases: ['trp-import-pub'])]
+  #[CLI\Option(name: 'pmid', description: 'The PubMed ID of the publication to import.')]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the chado schema to use (defaults to 'chado'')]
+  #[CLI\Option(name: 'create-contact', description: 'Set to 1 to create contact records for authors (default: 0).')]
+  #[CLI\Option(name: 'api-key', description: 'Optional NCBI API key for faster requests.')]
+  #[CLI\Option(name: 'username', description: 'The name of the user for whom the import is associated.')]
+  #[CLI\Usage(
+    name: 'drush trp-import-pub --pmid=12345678 --username=[USERNAME]',
+    description: 'Imports a single publication with PMID 12345678',
+  )]
+  #[CLI\Usage(
+    name: 'drush trp-import-pub --pmid=12345678 --create-contact=1 --api-key=[API_KEY] --username=[USERNAME]',
+    description: 'Imports publication with contact creation and API key for faster processing.',
+  )]
   public function tripalImportPublication(
     $options = [
       'pmid' => NULL,
