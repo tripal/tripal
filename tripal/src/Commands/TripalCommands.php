@@ -160,10 +160,19 @@ class TripalCommands extends DrushCommands {
    * @usage drush trp-import-pub --pmid=12345678 --username=[USERNAME]
    *   Imports a single publication with PMID 12345678.
    * @usage drush trp-import-pub --pmid=12345678 --create-contact=1 --api-key=[API_KEY] --username=[USERNAME]
-   *   Imports publication with contact creation and API key for faster processing.
+   *   Imports publication with contact creation and API key for faster
+   *   processing.
    */
-  public function tripalImportPublication($options = ['pmid' => NULL, 'schema-name' => 'chado', 'create-contact' => 0, 'api-key' => NULL, 'username' => NULL]) {
-    
+  public function tripalImportPublication(
+    $options = [
+      'pmid' => NULL,
+      'schema-name' => 'chado',
+      'create-contact' => 0,
+      'api-key' => NULL,
+      'username' => NULL,
+    ],
+  ) {
+
     if (!$options['username']) {
       throw new \Exception(dt('The --username argument is required.'));
     }
@@ -171,7 +180,7 @@ class TripalCommands extends DrushCommands {
       throw new \Exception(dt('The --pmid argument is required.'));
     }
 
-    // Validate PMID is numeric
+    // Validate PMID is numeric.
     if (!is_numeric($options['pmid'])) {
       throw new \Exception(dt('The PMID must be a numeric value.'));
     }
@@ -179,13 +188,13 @@ class TripalCommands extends DrushCommands {
     $this->switchUser($options['username']);
 
     try {
-      // Get services
+      // Get services.
       $pub_library_manager = \Drupal::service('tripal.pub_library');
       $chado_schema_name = $options['schema-name'];
 
       $this->output()->writeln("Importing publication with PMID: " . $options['pmid'] . " from PubMed...");
 
-      // Create criteria array to search for specific PMID
+      // Create criteria array to search for specific PMID.
       $criteria = [
         'plugin_id' => 'tripal_pub_library_PMID',
         'remote_db' => 'PMID',
@@ -200,20 +209,20 @@ class TripalCommands extends DrushCommands {
             'scope' => 'id',
             'is_phrase' => 0,
             'operation' => '',
-          ]
-        ]
+          ],
+        ],
       ];
 
-      // Add API key if provided
+      // Add API key if provided.
       if ($options['api-key']) {
         $criteria['ncbi_api_key'] = $options['api-key'];
         $criteria['form_state_user_input']['ncbi_api_key'] = $options['api-key'];
       }
 
-      // Create PubMed plugin instance
+      // Create PubMed plugin instance.
       $plugin = $pub_library_manager->createInstance('tripal_pub_library_PMID', []);
-      
-      // Retrieve publication data
+
+      // Retrieve publication data.
       $this->output()->writeln("Fetching publication data from PubMed...");
       $page_results = $plugin->run($criteria);
 
@@ -229,30 +238,30 @@ class TripalCommands extends DrushCommands {
       $publications = $page_results['pubs'];
       $this->output()->writeln("Found publication: " . ($publications[0]['Title'] ?? 'Unknown Title'));
 
-      // Use the importer manager to create the PubSearchQueryImporter instance
+      // Use the importer manager to create the PubSearchQueryImporter instance.
       $importer_manager = \Drupal::service('tripal.importer');
       $importer = $importer_manager->createInstance('pub_search_query_loader');
-      
-      // Set up the importer arguments with schema name
+
+      // Set up the importer arguments with schema name.
       $importer_args = [
         'run_args' => [
           'criteria' => $criteria,
           'schema_name' => $chado_schema_name,
-        ]
+        ],
       ];
       $importer->setArguments($importer_args);
-      
+
       $this->output()->writeln("Importing publication into Chado database...");
       $importer->run();
-      
+
       $this->output()->writeln("✓ Successfully imported publication with PMID: " . $options['pmid']);
-      
-      // Show citation
+
+      // Show citation.
       if (!empty($publications[0]['Citation'])) {
         $this->output()->writeln("Citation: " . $publications[0]['Citation']);
       }
-
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       throw new \Exception("Failed to import publication: " . $e->getMessage());
     }
   }
