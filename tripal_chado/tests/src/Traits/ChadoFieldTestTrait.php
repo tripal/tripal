@@ -236,6 +236,7 @@ trait ChadoFieldTestTrait {
     // 2. Create the bundle.
     $bundle = $this->createTripalContentType($system_under_test['bundle']);
     $bundle->setThirdPartySetting('tripal', 'chado_base_table', $system_under_test['bundle']['settings']['chado_base_table']);
+    $bundle->save();
     $bundle_name = $bundle->id();
 
     // 3. Create the fields.
