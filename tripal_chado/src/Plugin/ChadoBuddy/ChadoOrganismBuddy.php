@@ -466,7 +466,11 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   Supports all the same keys as getOrganism().
    *   @see ::getOrganism()
    * @param array $options
-   *   No options are yet supported.
+   *   (Optional) Associative array of options with these supported keys:
+   *   - abbreviate_rank: If this organism has a rank, attempt to abbreviate it.
+   *     For full list of valid abbreviations,
+   *     @see ::abbreviateInfraspecificRank()
+   *     Default is TRUE.
    *
    * @return string
    *   The fully formatted scientific name for the retrieved organism.
@@ -498,9 +502,12 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       $cvterm_record = $this->cvterm_buddy->getCvterm(['cvterm.cvterm_id' => $cvterm_id]);
       $rank = $cvterm_record[0]->getValue('cvterm.name');
     }
-    // If we successfully grabbed the name of the rank, find its abbreviation.
+    // If we successfully grabbed the name of the rank, check options if we
+    // should find its abbreviation before adding it to our scientific name.
     if ($rank) {
-      $rank = $this->abbreviateInfraspecificRank($rank);
+      if ($options['abbreviate_rank'] ?? TRUE) {
+        $rank = $this->abbreviateInfraspecificRank($rank);
+      }
       $organism_name .= ' ' . $rank . ' ' . $organism_values['organism.infraspecific_name'];
     }
     // If we're missing a rank but have an infraspecific name, tag that onto the

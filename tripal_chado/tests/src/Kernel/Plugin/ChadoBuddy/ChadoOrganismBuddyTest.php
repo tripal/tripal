@@ -176,6 +176,13 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     $infraspecific_rank_organism_name = $instance->getOrganismScientificName($infraspecific_organism_values);
     $this->assertEquals('Tripalus databasica subsp. chadoii', $infraspecific_rank_organism_name, 'We did not retrieve the correct scientific name for an organism we inserted with infraspecific rank: Tripalus databasica subsp. chadoii');
 
+    // TEST: Grab the same scientific name with unabbreviated rank this time.
+    $unabbreviated_rank_organism_name = $instance->getOrganismScientificName(
+      $infraspecific_organism_values,
+      ['abbreviate_rank' => FALSE]
+    );
+    $this->assertEquals('Tripalus databasica subspecies chadoii', $unabbreviated_rank_organism_name, 'We did not retrieve the correct scientific name for an organism where we specified NOT to abbreviate the rank: Tripalus databasica subspecies chadoii');
+
     // TEST: Update the infraspecific name and rank again but this time create
     // the cvterm.
     $test_records = [];
