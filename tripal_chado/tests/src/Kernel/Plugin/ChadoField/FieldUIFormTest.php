@@ -7,6 +7,7 @@ use Drupal\field_ui\Form\FieldStorageAddForm;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
@@ -81,7 +82,7 @@ class FieldUIFormTest extends ChadoTestKernelBase {
    *
    * @var string
    */
-  protected string $yaml_info_file = __DIR__ . '/FieldStaticMethodTest-TestInfo.yml';
+  protected string $yaml_info_file = __DIR__ . '/FieldUiFormTest-TestInfo.yml';
 
   /**
    * Describes the environment to setup for this test.
@@ -125,9 +126,7 @@ class FieldUIFormTest extends ChadoTestKernelBase {
     $this->setupChadoEntityFieldTestEnvironment();
     $this->installSchema('tripal_chado', ['tripal_custom_tables', 'tripal_mviews']);
 
-    // First create the bundles.
-    // We do it this way rather then letting createFieldInstance() do it for us
-    // so that we can set the chado base table.
+    // Create the bundles that our test fields will be attached to.
     foreach ($this->system_under_test['bundles'] as $chado_table) {
       $this->tripalEntityType[$chado_table] = $this->createTripalContentType([
         'id' => $chado_table,
@@ -136,28 +135,82 @@ class FieldUIFormTest extends ChadoTestKernelBase {
       $this->tripalEntityType[$chado_table]->save();
     }
 
-    // Now create the fields.
-    // createFieldInstance() will save all fields created to the fieldConfig.
-    // property which is keyed by field name. The field names will be
-    // generated and saved in each scenario as will the other values.
-    $options = [
-      'vocab_plugin_id' => 'chado_vocabulary',
-      'idspace_plugin_id' => 'chado_id_space',
+    // Make sure the placeholder term exists.
+    // This is used in step 5a of the test process described in the class
+    // docblock since we do not yet have the chado base table set causing
+    // tripalTypes() to return an empty array.
+    $values = [
+      'id_space_name' => 'SIO',
+      'term' => [
+        'accession' => '000729',
+      ],
     ];
-    foreach (array_keys($this->scenarios) as $scenario_key) {
-      $scenario_bundle_name = $this->scenarios[$scenario_key]['bundle_name'];
-      $this->scenarios[$scenario_key]['bundle'] = $this->tripalEntityType[$scenario_bundle_name];
-      $this->createFieldInstance($scenario_bundle_name, $this->scenarios[$scenario_key], $options);
-    }
+    $this->createTripalTerm(
+      $values,
+      'tripal_default_id_space',
+      'tripal_default_vocabulary'
+    );
 
+  }
+
+  /**
+   * Data Provider: works with the YAML to provide scenarios for testing.
+   *
+   * @return array
+   *   List of scenarios to test where each one matches a key and label in the
+   *   associated YAML scenarios.
+   */
+  public static function provideScenarios() {
+    $scenarios = [];
+
+    $scenarios[] = [0, 'Analysis through linker table'];
+    $scenarios[] = [1, 'Analysis in base table'];
+    $scenarios[] = [2, 'Array Design in base table'];
+    $scenarios[] = [3, 'Assay through linker table'];
+    $scenarios[] = [4, 'Assay in base table'];
+    $scenarios[] = [5, 'Biomaterial through linking table'];
+    $scenarios[] = [6, 'Biomaterial in base table'];
+    $scenarios[] = [7, 'Boolean in base table'];
+    $scenarios[] = [8, 'Contact through linker table'];
+    $scenarios[] = [9, 'Contact in base table'];
+    // $scenarios[] = [10, 'Contact BY TYPE through linker table'];
+    $scenarios[] = [11, 'DBXREF in base table'];
+    $scenarios[] = [12, 'DBXREF through linking table'];
+    $scenarios[] = [13, 'Data Source on only supported base table'];
+    $scenarios[] = [14, 'Feature through linker table'];
+    $scenarios[] = [15, 'Feature linked in base table'];
+    $scenarios[] = [16, 'Feature MAP through linking table'];
+    $scenarios[] = [17, 'Sequence Checksum'];
+    $scenarios[] = [18, 'Sequence Length'];
+    $scenarios[] = [19, 'Integer in base table'];
+    $scenarios[] = [20, 'Organism in Base Table'];
+    $scenarios[] = [21, 'Organism through linking table'];
+    $scenarios[] = [22, 'Project through linker table'];
+    $scenarios[] = [23, 'Properties'];
+    $scenarios[] = [24, 'Protocol in base table'];
+    $scenarios[] = [25, 'Publication in base table'];
+    $scenarios[] = [26, 'Publication through linker table'];
+    $scenarios[] = [27, 'Relationship typical'];
+    $scenarios[] = [28, 'Sequence Coordinates'];
+    $scenarios[] = [29, 'Sequence'];
+    $scenarios[] = [30, 'Stock through linking table'];
+    $scenarios[] = [31, 'String in base table'];
+    $scenarios[] = [32, 'Study through linker table'];
+    $scenarios[] = [33, 'Synonym through linker table'];
+    $scenarios[] = [34, 'Text in base table'];
+    $scenarios[] = [35, 'Type in base table'];
+    $scenarios[] = [36, 'Type through property table'];
+    $scenarios[] = [37, 'Featuremap Unit'];
+
+    return $scenarios;
   }
 
   /**
    * Tests the static methods of the chado field types.
    */
-  public function testForm() {
-
-    $scenario = $this->scenarios[0];
+  #[DataProvider('provideScenarios')]
+  public function testForm(int $current_scenario_key, string $current_scenario_label) {
+    $scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
 
     // Start with the FieldStorageAddForm which collects just enough information
     // to create an unconfigured field instance.
