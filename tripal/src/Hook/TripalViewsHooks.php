@@ -7,6 +7,7 @@ use Drupal\views\ViewEntityInterface;
 use Drupal\views\ViewsConfigUpdater;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\tripal\Access\TripalEntityAccessControlHandler;
 
 /**
  * Hook implementations for the Tripal module.
@@ -37,8 +38,9 @@ class TripalViewsHooks {
   /**
    * Implements hook_views_query_alter().
    *
-   * Alters the Tripal Content Type Listing view to filter content types
-   * based on the current user's permissions.
+   * Adds a where clause to any view showing Tripal Content which
+   * restricts the results to Tripal Content Types that the current
+   * user has permission to view.
    */
   #[Hook('views_query_alter')]
   public function viewsQueryAlter(ViewExecutable $view, QueryPluginBase $query) {
@@ -47,29 +49,26 @@ class TripalViewsHooks {
       return;
     }
 
-    // Load all Tripal entity types.
-    $entity_types = \Drupal::service('entity_type.manager')
-      ->getStorage('tripal_entity_type')
-      ->loadByProperties([]);
-
     // Get the current user account.
     $account = \Drupal::currentUser();
 
+    // Ensure that the Tripal Content Admin permission bypasses
+    // the following permissions.
+    if ($account->hasPermission('administer tripal content')) {
+      return;
+    }
+
+    $permissions = TripalEntityAccessControlHandler::getTripalContentPermissionsList('view');
+
     // Determine which entity types the user has permission to view.
     $allowed_types = [];
-    foreach ($entity_types as $entity_type) {
-      $entity_id = $entity_type->id();
-      $permission = "view all $entity_id content";
+    foreach ($permissions as $permission) {
+      if (preg_match('/^view\s+(?:own|all)\s+(.+)\s+content$/i', $permission, $m)) {
+        $entity_id = $m[1];
+      }
       if ($account->hasPermission($permission)) {
         $allowed_types[] = $entity_id;
       }
-    }
-
-    if (empty($allowed_types)) {
-      // If the user doesn't have permission to view any entity type,
-      // return no rows.
-      $query->addWhereExpression(0, 'null');
-      return;
     }
 
     $query->addWhere('AND', "tripal_entity.type", $allowed_types, 'IN');
