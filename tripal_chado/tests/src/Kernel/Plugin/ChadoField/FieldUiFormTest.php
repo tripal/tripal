@@ -39,7 +39,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('tripal-field')]
 #[Group('chado-field')]
 #[RunTestsInSeparateProcesses]
-class FieldUIFormTest extends ChadoTestKernelBase {
+class FieldUiFormTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;
 
