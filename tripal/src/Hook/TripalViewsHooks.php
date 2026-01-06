@@ -44,8 +44,8 @@ class TripalViewsHooks {
    */
   #[Hook('views_query_alter')]
   public function viewsQueryAlter(ViewExecutable $view, QueryPluginBase $query) {
-    // Only alter the Tripal Content Type Listing view.
-    if ($view->id() !== 'tripal_content_type_listing') {
+    // Only alter the views with base table 'tripal_entity'.
+    if ($view->storage->get('base_table') !== 'tripal_entity') {
       return;
     }
 
