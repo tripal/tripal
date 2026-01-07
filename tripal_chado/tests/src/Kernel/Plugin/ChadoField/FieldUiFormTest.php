@@ -12,29 +12,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests adding and editing field instances on a given content type.
- *
- * More specifically, tests in this class are focused on the user interface
- * form process described here. The administrator,
- * 1. Navigates to the "Manage Fields" page for a given TripalEntityType:
- *    Route: entity.tripal_entity.field_ui_fields
- *    Controller: \Drupal\field_ui\Controller\FieldConfigListController::listing
- * 2. Clicks "Create a new field" which loads a page listing the field
- *    type categories:
- *    Route: field_ui.field_storage_config_add_tripal_entity
- *    Controller: Drupal\field_ui\Controller\FieldStorageAddController::getFieldSelectionLinks
- * 3. Chooses the category "Chado Fields" which triggers AJAX loading the page:
- *    Route: field_ui.field_storage_config_add_sub_tripal_entity
- *    Form: \Drupal\field_ui\Form\FieldStorageAddForm
- * 4. Fills in the label, machine name, and field type (e.g. "Chado Organism")
- *    for the field to be created and clicks "continue".
- * 5. Then the following page is loaded:
- *    Route: field_ui.field_add_tripal_entity
- *    Controller: Drupal\field_ui\Controller\FieldConfigAddController::fieldConfigAddConfigureForm
- * 5a. The controller creates a FieldConfig object based on the details saved
- *    in the "tempStore" by \Drupal\field_ui\Form\FieldStorageAddForm
- *    ::setTempStore() on submission triggered by step 4.
- * 5b. Then it returns the FieldConfig entity form. This page contains the
- *    field settings and field storage settings forms.
  */
 #[Group('tripal-field')]
 #[Group('chado-field')]
@@ -207,37 +184,124 @@ class FieldUiFormTest extends ChadoTestKernelBase {
 
   /**
    * Tests the static methods of the chado field types.
+   *
+   * @dataProvider provideScenarios
    */
   #[DataProvider('provideScenarios')]
   public function testForm(int $current_scenario_key, string $current_scenario_label) {
     $scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
 
-    // Start with the FieldStorageAddForm which collects just enough information
-    // to create an unconfigured field instance.
-    // Step 3 described in the test docblock.
+    $bundle_name = $scenario['field_details']['bundle_name'];
+    $scenario['field_details']['field_label'] ??= ucwords(str_replace('_', ' ', $scenario['field_details']['field_name']));
+    [$form_object, $form, $form_state] = $this->setupFieldConfigAddForm($bundle_name, $scenario['field_details']);
+    $this->assertIsArray($form, "We were unable to setup the form for adding a field to bundle_name.");
+  }
+
+  /**
+   * For testing the form that adds fields to a content type.
+   *
+   * NOTE: this form keeps changing in Drupal core. As such you will see
+   * version specific flows when setting it up.
+   *
+   * @param string $bundle_name
+   *   The name of the bundle this form is to add a field to.
+   * @param array $field_details
+   *   An array providing the details for the field to be created through this
+   *   form. Required keys include:
+   *   - field_name: the name of the new field instance.
+   *   - field_type: the machine name of the field type we are testing.
+   *   - field_label: the label of the new field instance.
+   *
+   * @return array
+   *   The parts of the form; specifically,
+   *   - $form_object: an object that can be used with the form state to
+   *     validate and submit the field add form.
+   *   - array $form: the complete form including any subforms, etc.
+   *   - FormState $form_state: the state of this form including relationships
+   *     to both the form object and form array.
+   */
+  public function setupFieldConfigAddForm(string $bundle_name, array $field_details): array {
+
+    // FieldStorageAddForm is split into FieldStorageAddController
+    // and FieldStorageAddForm.
+    // Change introduced in Drupal 11.2.0.
+    // @see https://www.drupal.org/node/3503549
+    if (TRUE) {
+      return $this->setupFieldConfigAddForm3503549($bundle_name, $field_details);
+    }
+
+    return [];
+  }
+
+  /**
+   * Returns the field add form described in Drupal Issue #3503549.
+   *
+   * Tl;dr FieldStorageAddController collects defaults for FieldStorageAddForm.
+   *
+   * More specifically, this is the process used when a field is being added.
+   * The administrator,
+   * 1. Navigates to the "Manage Fields" page for a given TripalEntityType.
+   * 2. Clicks "Create a new field" which loads a page listing the field
+   *    type categories:
+   *    Route: field_ui.field_storage_config_add_tripal_entity
+   *    Controller: Drupal\field_ui\Controller\FieldStorageAddController::getFieldSelectionLinks
+   * 3. Chooses category "Chado Fields" which triggers AJAX loading the page:
+   *    Route: field_ui.field_storage_config_add_sub_tripal_entity
+   *    Form: \Drupal\field_ui\Form\FieldStorageAddForm
+   * 4. Fills in the label, machine name, and field type (e.g. "Chado Organism")
+   *    for the field to be created and clicks "continue".
+   * 5. Then the following page is loaded:
+   *    Route: field_ui.field_add_tripal_entity
+   *    Controller: Drupal\field_ui\Controller\FieldConfigAddController::fieldConfigAddConfigureForm
+   * 5a. The controller creates a FieldConfig object based on the details saved
+   *    in the "tempStore" by \Drupal\field_ui\Form\FieldStorageAddForm
+   *    ::setTempStore() on submission triggered by step 4.
+   * 5b. Then it returns the FieldConfig entity form. This page contains the
+   *    field settings and field storage settings forms.
+   *
+   * @param string $bundle_name
+   *   The name of the bundle this form is to add a field to.
+   * @param array $field_details
+   *   An array providing the details for the field to be created through this
+   *   form.
+   *   @see self::setupFieldConfigAddForm()
+   *
+   * @return array
+   *   The parts of the form; specifically,
+   *   - FieldStorageAddForm $form_object: an object that can be used with the
+   *     form state to validate and submit the field add form.
+   *   - array $form: the complete form including any subforms, etc.
+   *   - FormState $form_state: the state of this form including relationships
+   *     to both the form object and form array.
+   */
+  private function setupFieldConfigAddForm3503549(string $bundle_name, array $field_details): array {
     $form_builder = \Drupal::formBuilder();
+
+    // Start with the FieldStorageAddController which collects just enough
+    // information to create an unconfigured field instance.
+    // Step 3 described in the docblock.
     $form_state = new FormState();
     $form_state->set('entity_type_id', 'tripal_entity');
-    $form_state->set('bundle', $scenario['bundle_name']);
+    $form_state->set('bundle', $bundle_name);
     // This is where the form object is created and set in the form state.
     $form = $form_builder->buildForm(FieldStorageAddForm::class, $form_state);
     $form_object = $form_state->getFormObject();
-    // Step 4 described in the test docblock.
-    $form_state->setValueForElement($form['field_name'], $scenario['field_name']);
-    $form_state->setValueForElement($form['label'], $scenario['label']);
-    $form_state->set('field_type', $scenario['field_type']);
+    // Step 4 described in the docblock.
+    $form_state->setValueForElement($form['field_name'], $field_details['field_name']);
+    $form_state->setValueForElement($form['label'], $field_details['field_label']);
+    $form_state->set('field_type', $field_details['field_type']);
     // This is where the tempstore is set.
     $form_object->validateForm($form, $form_state);
-    // Step 5a described in the test docblock.
+    // Step 5a described in the docblock.
     $temp_store = $this->container->get('tempstore.private')->get('field_ui');
-    $stored_values = $temp_store->get('tripal_entity:' . $scenario['field_name']);
+    $stored_values = $temp_store->get('tripal_entity:' . $field_details['field_name']);
     $entity_type_manager = $this->container->get('entity_type.manager');
     $field_config = $entity_type_manager
       ->getStorage('field_config')
       ->create(
         ['field_storage' => $stored_values['field_storage']] + $stored_values['field_config_values'],
       );
-    // Step 5b described in the test block.
+    // Step 5b described in the docblock.
     $entity_form_builder = $this->container->get('entity.form_builder');
     $fieldconfig_form = $entity_form_builder->getForm(
       $field_config,
@@ -247,6 +311,7 @@ class FieldUiFormTest extends ChadoTestKernelBase {
     // @debug print_r(array_keys($fieldconfig_form));
     $this->assertArrayHasKey('field_storage', $fieldconfig_form, "We expect the field config form to have a field storage subform.");
 
+    return [$form_object, $fieldconfig_form, $form_state];
   }
 
 }
