@@ -139,6 +139,16 @@ class TripalChadoHooks {
       'label' => 'Field Base Chado Column',
       'nullable' => FALSE,
     ];
+    $fste_mapping['linker_table_and_column'] = [
+      'type' => 'string',
+      'label' => 'Linker table and column',
+      'nullable' => TRUE,
+    ];
+    $fste_mapping['type_fkey'] = [
+      'type' => 'string',
+      'label' => 'Type Foreign Key',
+      'nullable' => TRUE,
+    ];
     // Specific to the schema__additional_type field.
     // Indicates the table where the type_id column is used to differentiate
     // the type.
