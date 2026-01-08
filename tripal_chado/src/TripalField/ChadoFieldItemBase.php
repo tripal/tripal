@@ -658,7 +658,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
           // reference to the object table. If the current table is a
           // linker table, then we also need to check that we also have
           // a foreign key to the base table.
-          if ( ($table_name == $base_table) or ($all_fkeys[$base_table][$base_pkey_col] ?? FALSE)) {
+          if (($table_name == $base_table) or ($all_fkeys[$base_table][$base_pkey_col] ?? FALSE)) {
             $linker_tables[] = [$table_name, $all_fkeys[$object_table][$object_pkey_col]];
           }
         }
