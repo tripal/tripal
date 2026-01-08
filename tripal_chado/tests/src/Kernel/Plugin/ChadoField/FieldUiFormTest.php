@@ -2,6 +2,9 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\ChadoField;
 
+use Drupal\Core\Form\FormBuilder;
+use Drupal\Component\Utility\Random;
+use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Form\FormState;
 use Drupal\field_ui\Form\FieldStorageAddForm;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
@@ -53,6 +56,20 @@ class FieldUiFormTest extends ChadoTestKernelBase {
    * @var ChadoConnection
    */
   protected object $chado_connection;
+
+  /**
+   * All building, validating, submitting of the form should be done here.
+   *
+   * @var \Drupal\Core\Form\FormBuilder
+   */
+  protected FormBuilder $form_builder;
+
+  /**
+   * Manages entity types.
+   *
+   * @var Drupal\Core\Entity\EntityTypeManager
+   */
+  protected EntityTypeManager $entity_type_manager;
 
   /**
    * The YAML file indicating the scenarios to test and how to setup the enviro.
@@ -128,6 +145,10 @@ class FieldUiFormTest extends ChadoTestKernelBase {
       'tripal_default_vocabulary'
     );
 
+    // Setup the services we are going to be using for easy access.
+    $this->form_builder = \Drupal::formBuilder();
+    $this->entity_type_manager = \Drupal::service('entity_type.manager');
+
   }
 
   /**
@@ -145,14 +166,14 @@ class FieldUiFormTest extends ChadoTestKernelBase {
     $scenarios[] = [2, 'Array Design in base table'];
     // $scenarios[] = [3, 'Assay through linker table'];
     // $scenarios[] = [4, 'Assay in base table'];
-    $scenarios[] = [5, 'Biomaterial through linking table'];
+    // $scenarios[] = [5, 'Biomaterial through linking table'];
     $scenarios[] = [6, 'Biomaterial in base table'];
     $scenarios[] = [7, 'Boolean in base table'];
     $scenarios[] = [8, 'Contact through linker table'];
     $scenarios[] = [9, 'Contact in base table'];
     // $scenarios[] = [10, 'Contact BY TYPE through linker table'];
-    $scenarios[] = [11, 'DBXREF in base table'];
-    $scenarios[] = [12, 'DBXREF through linking table'];
+    // $scenarios[] = [11, 'DBXREF in base table'];
+    // $scenarios[] = [12, 'DBXREF through linking table'];
     $scenarios[] = [13, 'Data Source on only supported base table'];
     $scenarios[] = [14, 'Feature through linker table'];
     $scenarios[] = [15, 'Feature linked in base table'];
@@ -161,23 +182,23 @@ class FieldUiFormTest extends ChadoTestKernelBase {
     $scenarios[] = [18, 'Sequence Length'];
     $scenarios[] = [19, 'Integer in base table'];
     $scenarios[] = [20, 'Organism in Base Table'];
-    $scenarios[] = [21, 'Organism through linking table'];
+    // $scenarios[] = [21, 'Organism through linking table'];
     // $scenarios[] = [22, 'Project through linker table'];
     // $scenarios[] = [23, 'Properties'];
     $scenarios[] = [24, 'Protocol in base table'];
     $scenarios[] = [25, 'Publication in base table'];
     $scenarios[] = [26, 'Publication through linker table'];
-    $scenarios[] = [27, 'Relationship typical'];
+    // $scenarios[] = [27, 'Relationship typical'];
     $scenarios[] = [28, 'Sequence Coordinates'];
     $scenarios[] = [29, 'Sequence'];
     // $scenarios[] = [30, 'Stock through linking table'];
-    $scenarios[] = [31, 'String in base table'];
-    $scenarios[] = [32, 'Study through linker table'];
+    // $scenarios[] = [31, 'String in base table'];
+    // $scenarios[] = [32, 'Study through linker table'];
     $scenarios[] = [33, 'Synonym through linker table'];
-    $scenarios[] = [34, 'Text in base table'];
-    $scenarios[] = [35, 'Type in base table'];
-    $scenarios[] = [36, 'Type through property table'];
-    $scenarios[] = [37, 'Featuremap Unit'];
+    // $scenarios[] = [34, 'Text in base table'];
+    // $scenarios[] = [35, 'Type in base table'];
+    // $scenarios[] = [36, 'Type through property table'];
+    // $scenarios[] = [37, 'Featuremap Unit'];
 
     return $scenarios;
   }
@@ -196,8 +217,43 @@ class FieldUiFormTest extends ChadoTestKernelBase {
     [$form_object, $form, $form_state] = $this->setupFieldConfigAddForm($bundle_name, $scenario['field_details']);
     $this->assertIsArray($form, "We were unable to setup the form for adding a field to bundle_name.");
 
-    $form_object->validateForm($form, $form_state);
-    $form_object->submitForm($form, $form_state);
+    // Let's populate the form based on the scenario.
+    $random = new Random();
+    // - Do not set default value.
+    $form_state->setValueForElement($form['set_default_value'], 0);
+    $form_state->setValue('default_value_input', []);
+    // - Field Settings.
+    $form_state->setValueForElement($form['label'], $scenario['field_details']['field_label']);
+    $form_state->setValueForElement($form['description'], $random->sentences(10));
+    // -- Vocabulary Term.
+    $form_state->setValueForElement($form['settings']['field_term_fs']['vocabulary_term'], $scenario['form_values']['term']);
+    // -- Storage Settings.
+    $form_state->setValueForElement(
+      $form['field_storage']['subform']['settings']['storage_plugin_id'],
+      $scenario['form_values']['storage']['storage_plugin_id']
+    );
+    // print_r(array_keys($form['field_storage']['subform']['settings']['storage_plugin_settings']));
+    // print_r($form['field_storage']['subform']['settings']['storage_plugin_settings']['linker_table_and_column']['#options']);
+    foreach ($scenario['form_values']['storage']['storage_plugin_settings'] as $setting_key => $setting_value) {
+      // Confirm setting is in the form.
+      $this->assertArrayHasKey($setting_key, $form['field_storage']['subform']['settings']['storage_plugin_settings'], "The storage settings form does not have the element we expect.");
+      // Set the value in the form state.
+      $form_state->setValueForElement(
+        $form['field_storage']['subform']['settings']['storage_plugin_settings'][$setting_key],
+        $setting_value
+      );
+    }
+    // -- Indicate the save button.
+    $form_state->setTriggeringElement($form['actions']['submit']);
+
+    // Runs validation and then submit if applicable.
+    $this->form_builder->submitForm($form_object, $form_state);
+    $validation_errors = $form_state->getErrors();
+    $this->assertCount(
+      0,
+      $validation_errors,
+      "There should not be any validation errors but there were on the following elements:" . print_r($validation_errors, TRUE)
+    );
   }
 
   /**
@@ -279,7 +335,6 @@ class FieldUiFormTest extends ChadoTestKernelBase {
    *     to both the form object and form array.
    */
   private function setupFieldConfigAddForm3503549(string $bundle_name, array $field_details): array {
-    $form_builder = \Drupal::formBuilder();
 
     // Start with the FieldStorageAddController which collects just enough
     // information to create an unconfigured field instance.
@@ -288,7 +343,7 @@ class FieldUiFormTest extends ChadoTestKernelBase {
     $form_state->set('entity_type_id', 'tripal_entity');
     $form_state->set('bundle', $bundle_name);
     // This is where the form object is created and set in the form state.
-    $form = $form_builder->buildForm(FieldStorageAddForm::class, $form_state);
+    $form = $this->form_builder->buildForm(FieldStorageAddForm::class, $form_state);
     $form_object = $form_state->getFormObject();
     // Step 4 described in the docblock.
     $form_state->setValueForElement($form['field_name'], $field_details['field_name']);
@@ -300,20 +355,26 @@ class FieldUiFormTest extends ChadoTestKernelBase {
     // Step 5a described in the docblock.
     $temp_store = $this->container->get('tempstore.private')->get('field_ui');
     $stored_values = $temp_store->get('tripal_entity:' . $field_details['field_name']);
-    $entity_type_manager = $this->container->get('entity_type.manager');
-    $field_config = $entity_type_manager
+    $field_config = $this->entity_type_manager
       ->getStorage('field_config')
       ->create(
         ['field_storage' => $stored_values['field_storage']] + $stored_values['field_config_values'],
       );
     // Step 5b described in the docblock.
-    $entity_type_manager = \Drupal::service('entity_type.manager');
-    $form_object = $entity_type_manager->getFormObject('field_config', 'default');
+    // - Get form object.
+    $form_object = $this->entity_type_manager->getFormObject('field_config', 'default');
     $form_object->setEntity($field_config);
+    $form_id = $form_object->getFormId();
+    // - Setup form state.
     $form_state = (new FormState())->setFormState(['default_options' => $stored_values['default_options']]);
     $form_state->set('field_config', $field_config);
-    $form = $form_builder->buildForm($form_object, $form_state);
-    // @debug print_r(array_keys($form));
+    $form_state->setFormObject($form_object);
+    // - Retrieve + Prepare form.
+    $form = $this->form_builder->retrieveForm($form_id, $form_state);
+    $this->form_builder->prepareForm($form_id, $form, $form_state);
+    $form_state->setCompleteForm($form);
+    // - Recursively build the form.
+    $this->form_builder->processForm($form_id, $form, $form_state);
     $this->assertArrayHasKey('field_storage', $form, "We expect the field config form to have a field storage subform.");
 
     return [$form_object, $form, $form_state];

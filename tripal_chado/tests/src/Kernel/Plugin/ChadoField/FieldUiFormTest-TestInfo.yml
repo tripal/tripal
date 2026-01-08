@@ -32,26 +32,13 @@ scenarios:
             linker_table: 'analysisfeature'
             linker_fkey_column: 'analysis_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        analysis_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rawscore: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_normscore: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_significance: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_identity: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        analysis_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        analysis_description: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        analysis_program: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        analysis_programversion: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        analysis_algorithm: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        analysis_sourcename: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        analysis_sourceversion: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        analysis_sourceuri: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            linker_table_and_column: 'analysisfeature → analysis_id'
   -
       label: 'Analysis in base table'
       field_details:
@@ -67,18 +54,13 @@ scenarios:
                   base_table: 'phylotree'
                   base_column: 'analysis_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        analysis_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        analysis_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        analysis_description: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        analysis_program: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        analysis_programversion: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        analysis_algorithm: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        analysis_sourcename: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        analysis_sourceversion: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        analysis_sourceuri: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'phylotree'
+            linker_table_and_column: 'phylotree → analysis_id'
   -
       label: 'Array Design in base table'
       field_details:
@@ -94,28 +76,13 @@ scenarios:
               base_table: 'assay'
               base_column: 'arraydesign_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        arraydesign_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        array_design_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        array_design_description: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        array_design_version: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        array_design_array_dimensions: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        array_design_element_dimensions: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        array_design_num_of_elements: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        array_design_num_array_columns: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        array_design_num_array_rows: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        array_design_num_grid_columns: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        array_design_num_grid_rows: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        array_design_num_sub_columns: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        array_design_num_sub_rows: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        array_design_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        array_design_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        array_design_platformtype: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        array_design_substratetype: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        array_design_manufacturer: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        array_design_protocol: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'assay'
+            linker_table_and_column: 'assay → arraydesign_id'
   -
       label: 'Assay through linker table'
       field_details:
@@ -132,24 +99,13 @@ scenarios:
               linker_table: 'assay_biomaterial'
               linker_fkey_column: 'assay_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        assay_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_channel_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        assay_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_description: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_arrayidentifier: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_arraybatchidentifier: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_arraydesign: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_protocol: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_operator: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        assay_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'biomaterial'
+            linker_table_and_column: 'assay_biomaterial → assay_id'
   -
       label: 'Assay in base table'
       field_details:
@@ -166,19 +122,13 @@ scenarios:
               linker_table: 'control'
               linker_fkey_column: 'assay_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        assay_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        assay_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_description: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_arrayidentifier: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_arraybatchidentifier: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_arraydesign: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_protocol: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_operator: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        assay_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        assay_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'control'
+            linker_table_and_column: 'control → assay_id'
   -
       label: 'Biomaterial through linking table'
       field_details:
@@ -195,25 +145,13 @@ scenarios:
             linker_table: 'assay_biomaterial'
             linker_fkey_column: 'biomaterial_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        biomaterial_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        biomaterial_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        biomaterial_description: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        biomaterial_biosourceprovider: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_genus: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_species: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_infraspecific_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_infraspecific_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_abbreviation: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_common_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        biomaterial_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'assay'
+            linker_table_and_column: 'assay_biomaterial → biomaterial_id'
   -
       label: 'Biomaterial in base table'
       field_details:
@@ -230,21 +168,13 @@ scenarios:
             linker_table: 'treatment'
             linker_fkey_column: 'biomaterial_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        biomaterial_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        biomaterial_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        biomaterial_description: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        biomaterial_biosourceprovider: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_genus: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_species: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_infraspecific_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_infraspecific_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_abbreviation: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_common_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        biomaterial_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        biomaterial_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'treatment'
+            linker_table_and_column: 'treatment → biomaterial_id'
   -
       label: 'Boolean in base table'
       field_details:
@@ -260,9 +190,13 @@ scenarios:
               base_table: 'feature'
               base_column: 'is_analysis'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        value: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            base_column: 'is_analysis'
   -
       label: 'Contact through linker table'
       field_details:
@@ -279,17 +213,13 @@ scenarios:
             linker_table: 'feature_contact'
             linker_fkey_column: 'contact_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        contact_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        contact_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        contact_description: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        contact_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            linker_table_and_column: 'feature_contact → contact_id'
   -
       label: 'Contact in base table'
       field_details:
@@ -306,13 +236,13 @@ scenarios:
               linker_table: 'biomaterial'
               linker_fkey_column: 'biosourceprovider_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        biosourceprovider_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        contact_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        contact_description: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        contact_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'biomaterial'
+            linker_table_and_column: 'biomaterial → biosourceprovider_id'
   -
       label: 'Contact BY TYPE through linker table'
       field_details:
@@ -329,17 +259,13 @@ scenarios:
             linker_table: 'feature_contact'
             linker_fkey_column: 'contact_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        contact_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        contact_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        contact_description: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        contact_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            linker_table_and_column: 'feature_contact → contact_id'
   -
       label: 'DBXREF in base table'
       field_details:
@@ -355,18 +281,13 @@ scenarios:
             base_table: 'feature'
             base_column: 'dbxref_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        dbxref_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        dbxref_db_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        dbxref_accession: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        dbxref_version: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        dbxref_description: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        dbxref_db_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        dbxref_db_description: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        dbxref_db_urlprefix: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        dbxref_db_url: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            linker_table_and_column: 'feature → dbxref_id'
   -
       label: 'DBXREF through linking table'
       field_details:
@@ -383,24 +304,13 @@ scenarios:
             linker_table: 'feature_dbxref'
             linker_fkey_column: 'dbxref_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        dbxref_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_is_current: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_pub_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        dbxref_db_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        dbxref_accession: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        dbxref_version: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        dbxref_description: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        dbxref_db_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        dbxref_db_description: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        dbxref_db_urlprefix: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        dbxref_db_url: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            linker_table_and_column: 'feature_dbxref → dbxref_id'
   -
       label: 'Data Source on only supported base table'
       field_details:
@@ -415,11 +325,12 @@ scenarios:
           storage_plugin_settings:
             base_table: 'analysis'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        sourceuri: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        sourcename: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        sourceversion: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'analysis'
   -
       label: 'Feature through linker table'
       field_details:
@@ -436,30 +347,13 @@ scenarios:
             linker_table: 'feature_expression'
             linker_fkey_column: 'feature_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        feature_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_pub_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        feature_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_uniquename: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        feature_seqlen: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        feature_md5checksum: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_is_analysis: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
-        feature_is_obsolete: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
-        feature_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_genus: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_species: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_infraspecific_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_infraspecific_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_abbreviation: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_common_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        feature_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'expression'
+            linker_table_and_column: 'feature_expression → feature_id'
   -
       label: 'Feature linked in base table'
       field_details:
@@ -476,25 +370,13 @@ scenarios:
             linker_table: 'phylonode'
             linker_fkey_column: 'feature_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        feature_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        feature_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_uniquename: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        feature_seqlen: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        feature_md5checksum: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_is_analysis: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
-        feature_is_obsolete: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
-        feature_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_genus: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_species: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_infraspecific_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_infraspecific_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_abbreviation: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_common_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        feature_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        feature_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'phylonode'
+            linker_table_and_column: 'phylonode → feature_id'
   -
       label: 'Feature MAP through linking table'
       field_details:
@@ -511,17 +393,13 @@ scenarios:
             linker_table: 'stock_featuremap'
             linker_fkey_column: 'featuremap_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        featuremap_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        featuremap_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        featuremap_description: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        featuremap_unittype: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'stock'
+            linker_table_and_column: 'stock_featuremap → featuremap_id'
   -
       label: 'Sequence Checksum'
       field_details:
@@ -538,10 +416,12 @@ scenarios:
             base_table: 'feature'
             base_column: 'md5checksum'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        seqlen: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        md5checksum: 'Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
   -
       label: 'Sequence Length'
       field_details:
@@ -558,9 +438,12 @@ scenarios:
             base_table: 'feature'
             base_column: 'seqlen'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        seqlen: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
   -
       label: 'Integer in base table'
       field_details:
@@ -576,9 +459,13 @@ scenarios:
             base_table: 'phylonode'
             base_column: 'left_idx'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        value: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'phylonode'
+            base_column: 'left_idx'
   -
       label: 'Organism in Base Table'
       field_details:
@@ -594,18 +481,13 @@ scenarios:
             base_table: 'feature'
             base_column: 'organism_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        organism_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        organism_genus: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_species: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_infraspecific_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_infraspecific_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_scientific_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_abbreviation: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_common_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_comment: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            linker_table_and_column: 'feature → organism_id'
   -
       label: 'Organism through linking table'
       field_details:
@@ -622,23 +504,13 @@ scenarios:
             linker_table: 'organism_cvterm'
             linker_fkey_column: 'organism_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        organism_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_pub_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        organism_genus: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_species: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_infraspecific_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_infraspecific_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_scientific_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_abbreviation: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_common_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        organism_comment: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'cvterm'
+            linker_table_and_column: 'organism_cvterm → organism_id'
   -
       label: 'Project through linker table'
       field_details:
@@ -655,16 +527,13 @@ scenarios:
             linker_table: 'project_feature'
             linker_fkey_column: 'project_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        project_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        project_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        project_description: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            linker_table_and_column: 'analysisfeature → analysis_id'
   -
       label: 'Properties'
       field_details:
@@ -680,13 +549,13 @@ scenarios:
             base_table: 'feature'
             prop_table: 'featureprop'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        prop_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        value: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            linker_table_and_column: 'analysisfeature → analysis_id'
   -
       label: 'Protocol in base table'
       field_details:
@@ -703,23 +572,13 @@ scenarios:
             linker_table: 'assay'
             linker_fkey_column: 'protocol_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        protocol_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        protocol_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        protocol_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        protocol_pub_title: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        protocol_uri: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        protocol_protocoldescription: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        protocol_hardwaredescription: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        protocol_softwaredescription: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        protocol_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        protocol_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'assay'
+            linker_table_and_column: 'assay → protocol_id'
   -
       label: 'Publication in base table'
       field_details:
@@ -736,23 +595,13 @@ scenarios:
             linker_table: 'study'
             linker_fkey_column: 'pub_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        pub_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        pub_title: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        pub_volumetitle: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        pub_volume: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_series_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_issue: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_pyear: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_pages: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_miniref: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_uniquename: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        pub_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_is_obsolete: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
-        pub_publisher: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_pubplace: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'study'
+            linker_table_and_column: 'study → pub_id'
   -
       label: 'Publication through linker table'
       field_details:
@@ -769,27 +618,13 @@ scenarios:
             linker_table: 'project_pub'
             linker_fkey_column: 'pub_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        pub_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        pub_title: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        pub_volumetitle: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        pub_volume: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_series_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_issue: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_pyear: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_pages: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_miniref: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_uniquename: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        pub_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_is_obsolete: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
-        pub_publisher: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        pub_pubplace: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'project'
+            linker_table_and_column: 'project_pub → pub_id'
   -
       label: 'Relationship typical'
       field_details:
@@ -806,19 +641,13 @@ scenarios:
             base_column: 'name'
             linker_table: 'feature_relationship'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        subject_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        subject_entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        subject_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        object_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        object_entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        object_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        type_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        relationship_value: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        relationship_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            linker_table_and_column: 'analysisfeature → analysis_id'
   -
       label: 'Sequence Coordinates'
       field_details:
@@ -835,21 +664,12 @@ scenarios:
             linker_table: 'featureloc'
             linker_fkey_column: 'feature_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        featureloc_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        fkey: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        srcfeature_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        uniquename: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        fmin: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        is_fmin_partial: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
-        fmax: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        is_fmax_partial: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
-        strand: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        phase: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        residue_info: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        locgroup: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
   -
       label: 'Sequence'
       field_details:
@@ -865,11 +685,12 @@ scenarios:
             base_table: 'feature'
             base_column: 'residues'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        residues: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        seqlen: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        md5checksum: 'Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
   -
       label: 'Stock through linking table'
       field_details:
@@ -886,27 +707,13 @@ scenarios:
             linker_table: 'stock_feature'
             linker_fkey_column: 'stock_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        stock_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        stock_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        stock_uniquename: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        stock_description: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        stock_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        stock_is_obsolete: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
-        stock_genus: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        stock_species: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        stock_infraspecific_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        stock_infraspecific_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        stock_abbreviation: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        stock_common_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        stock_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        stock_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            linker_table_and_column: 'stock_feature → stock_id'
   -
       label: 'String in base table'
       field_details:
@@ -923,9 +730,13 @@ scenarios:
             base_table: 'feature'
             base_column: 'name'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        value: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            base_column: 'name'
   -
       label: 'Study through linker table'
       field_details:
@@ -942,20 +753,13 @@ scenarios:
             linker_table: 'study_assay'
             linker_fkey_column: 'study_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        entity_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        study_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_rank: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        study_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        study_description: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        study_contact_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        study_pub_title: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        study_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        study_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'assay'
+            linker_table_and_column: 'study_assay → study_id'
   -
       label: 'Synonym through linker table'
       field_details:
@@ -972,16 +776,12 @@ scenarios:
             linker_table: 'feature_synonym'
             linker_fkey_column: 'feature_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_pkey_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_base_fkey_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        linker_synonym_fkey_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        is_current: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
-        is_internal: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
-        linker_pub_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        synonym_type: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
   -
       label: 'Text in base table'
       field_details:
@@ -997,9 +797,13 @@ scenarios:
             base_table: 'biomaterial'
             base_column: 'description'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        value: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'biomaterial'
+            base_column: 'description'
   -
       label: 'Type in base table'
       field_details:
@@ -1016,12 +820,13 @@ scenarios:
             type_table: 'organism'
             type_column: 'type_id'
         default_value: 'operation:0525'
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        term_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        id_space: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        accession: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            linker_table_and_column: 'analysisfeature → analysis_id'
   -
       label: 'Type through property table'
       field_details:
@@ -1038,15 +843,13 @@ scenarios:
             type_table: 'analysisprop'
             type_column: 'type_id'
         default_value: 'operation:0525'
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        type_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        prop_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        link_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        value: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
-        term_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        id_space: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        accession: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            linker_table_and_column: 'analysisfeature → analysis_id'
   -
       label: 'Featuremap Unit'
       field_details:
@@ -1063,7 +866,10 @@ scenarios:
               type_table: 'featuremap'
               type_column: 'unittype_id'
         default_value: NULL
-      expected_properties:
-        record_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        unittype_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        cv_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+      form_values:
+        term: 'placeholder (SIO:000729)'
+        storage:
+          storage_plugin_id: 'chado_storage'
+          storage_plugin_settings:
+            base_table: 'feature'
+            linker_table_and_column: 'analysisfeature → analysis_id'
