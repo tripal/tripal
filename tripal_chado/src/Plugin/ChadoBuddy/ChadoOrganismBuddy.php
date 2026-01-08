@@ -198,6 +198,11 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *     necessary fields and want to create the dbxref and cvterm for
    *     organism.type_id when creating this organism, if they do not exist.
    *     NOTE: This is NOT recommended. We suggest you import ontologies first.
+   *   - validate_foreign_keys - set to FALSE (default TRUE) if you specified
+   *     the necessary fields to insert a foreign key into the organism table,
+   *     but do not want this method to peform a lookup to validate the key
+   *     exists. This is ideal for performance if you already did an insert or
+   *     lookup on this key and want to pass the information through.
    *
    * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
@@ -224,12 +229,16 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       throw new ChadoBuddyException("ChadoBuddy insertOrganism error, an organism record already exists that matches the specified values:\n" . print_r($values, TRUE));
     }
 
-    // Check if not provided an organism.type_id for this organism.
+    // @todo Make this a helper method since it's also used in updateOrganism().
+    // Check if we have an organism.type_id, if yes:
+    // Set it as the cvterm.cvterm_id and then validate if necessary
+    // If not: Check if we have a cvterm.cvterm_id instead
     if (!array_key_exists('organism.type_id', $values)) {
       // If provided a cvterm_id, use that as the organism.type_id.
       // @todo This assumes that the user is providing a valid cvterm_id. This
       // is a big time save if the user already performed the lookup, but
       // alternativately we can play it safe and perform a lookup ourselves?
+      // Provide an option such as 'validate_foreign_keys' to control this?
       if (array_key_exists('cvterm.cvterm_id', $values)) {
         $values['organism.type_id'] = $values['cvterm.cvterm_id'];
       }
@@ -243,7 +252,8 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
           if (!isset($this->cvterm_buddy)) {
             $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
           }
-          // @todo Handle if we retrieve multiple possible cvterms?
+          // @todo Handle if we retrieve multiple possible cvterms.
+          // If there's multiple possible cvterms, we should throw an exception.
           $cvterm_record = $this->cvterm_buddy->getCvterm($cvterm_values, $options);
           if ($cvterm_record) {
             $type_id = $cvterm_record[0]->getValue('cvterm.cvterm_id', ['strict' => FALSE]);
@@ -256,8 +266,10 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
             $type_id = $cvterm_record->getValue('cvterm.cvterm_id');
             $values['organism.type_id'] = $type_id;
           }
-          // @todo Should we throw an exception if we could not find or create a
-          // cvterm for organism.type_id but cvterm values were provided?
+          // @todo throw an exception if we could not find or create a
+          // cvterm for organism.type_id but cvterm values were provided.
+          // Note: if the user didn't want to provide a type_id, they wouldn't
+          // have provided cvterm values in the first place.
         }
       }
     }
@@ -312,6 +324,11 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *     necessary fields and want to create the dbxref and cvterm for
    *     organism.type_id when updating this organism, if they do not exist.
    *     NOTE: This is NOT recommended. We suggest you import ontologies first.
+   *   - validate_foreign_keys - set to FALSE (default TRUE) if you specified
+   *     the necessary fields to insert a foreign key into the organism table,
+   *     but do not want this method to peform a lookup to validate the key
+   *     exists. This is ideal for performance if you already did an insert or
+   *     lookup on this key and want to pass the information through.
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
