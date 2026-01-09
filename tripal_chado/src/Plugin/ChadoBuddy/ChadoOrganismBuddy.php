@@ -480,7 +480,8 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    * Retrieves the scientific name for a specific organism.
    *
    * @param array $conditions
-   *   Supports all the same keys as getOrganism().
+   *   An array where the key is a column in chado and the value describes the
+   *   organism you want to select. Supports all the same keys as getOrganism().
    *   @see ::getOrganism()
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
@@ -628,6 +629,100 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     }
 
     return $buddies;
+  }
+
+  /**
+   * A helper method to validate cvterm when inserting an organism with rank.
+   *
+   * @param array $values
+   *   An associative array that describes the values to be inserted/updated in
+   *   the chado.organism table. Supports all the same keys as insertOrganism()
+   *   and updateOrganism().
+   *   @see ::insertOrganism()
+   *   @see ::updateOrganism()
+   * @param array $options
+   *   (Optional) Associative array of options with these supported keys:
+   *   - create_cvterm - set to TRUE (default FALSE) if you specified the
+   *     necessary fields and want to create the dbxref and cvterm for
+   *     organism.type_id when creating/updating this organism, if they do not
+   *     exist. This option is passed internally from insertOrganism() or
+   *     updateOrganism().
+   *   - validate_foreign_keys - set to FALSE (default TRUE) if you specified
+   *     the necessary fields to insert a foreign key into the organism table,
+   *     but do not want this method to peform a lookup to validate the key
+   *     exists. This is ideal for performance if you already did an insert or
+   *     lookup on this key and want to pass the information through. This
+   *     option is passed internally from insertOrganism() or updateOrganism().
+   *
+   * @return array
+   *   If a cvterm was found or created for organism.type_id, then the $values
+   *   parameter will be returned with the organism.type_id key and its value
+   *   added. Otherwise, the $values parameter is returned unchanged.
+   *
+   * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   Throws an exception in the following scenarios:
+   *   - organism.type_id & cvterm.cvterm_id were both provided but don't match.
+   *   - More than one cvterm matched the provided cvterm values.
+   *   - Could not find or create a cvterm for organism.type_id but cvterm
+   *     values were provided.
+   */
+  protected function validateOrganismRankCvterm(array $values, array $options = []) {
+    // Check if we already have an organism.type_id AND a cvterm.cvterm_id, and
+    // ensure they match.
+    if (array_key_exists('organism.type_id', $values)) {
+      if (array_key_exists('cvterm.cvterm_id', $values)) {
+        if ($values['organism.type_id'] != $values['cvterm.cvterm_id']) {
+          throw new ChadoBuddyException("ChadoBuddy validateOrganismRankCvterm error, organism.type_id and cvterm.cvterm_id values were both provided but do not match:\n" . print_r($values, TRUE));
+        }
+      }
+      elseif ($options['validate_foreign_keys'] ?? TRUE) {
+        // If only organism.type_id was provided and we want to validate it,
+        // set cvterm.cvterm_id to match and unset organism.type_id.
+        $values['cvterm.cvterm_id'] = $values['organism.type_id'];
+        unset($values['organism.type_id']);
+      }
+    }
+
+    if ($options['validate_foreign_keys'] ?? TRUE) {
+      // Check for cvterm identifiers and use ChadoCvtermBuddy to try and
+      // validate or retrieve the cvterm_id.
+      $cvterm_values = $this->subsetInput($values, ['db', 'dbxref', 'cv', 'cvterm'], ['strict' => FALSE]);
+      if ($cvterm_values) {
+        // Use the buddy manager to create a Cvterm buddy instance.
+        if (!isset($this->cvterm_buddy)) {
+          $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
+        }
+        $cvterm_records = $this->cvterm_buddy->getCvterm($cvterm_values, $options);
+        // If a cvterm was retrieved, set organism.type_id to the cvterm_id.
+        if ($cvterm_records) {
+          // Ensure that we didn't retrieve multiple possible cvterms.
+          if (count($cvterm_records) > 1) {
+            throw new ChadoBuddyException("ChadoBuddy validateOrganismRankCvterm error, more than one record matched the values specified:\n" . print_r($cvterm_values, TRUE));
+          }
+          $values['organism.type_id'] = $cvterm_records[0]->getValue('cvterm.cvterm_id', ['strict' => FALSE]);
+        }
+        // If a cvterm could not be found, try to create it if the required
+        // fields were included. For safety, this is an opt-in setting.
+        elseif ($options['create_cvterm'] ?? FALSE) {
+          $new_cvterm_record = $this->cvterm_buddy->upsertCvterm($cvterm_values, $options);
+          $values['organism.type_id'] = $new_cvterm_record->getValue('cvterm.cvterm_id');
+        }
+        // If we could not find or create a cvterm for organism.type_id, yet
+        // cvterm values were provided, throw an exception.
+        // Note: if the user didn't want to provide a type_id, they wouldn't
+        // have provided cvterm values in the first place.
+        else {
+          throw new ChadoBuddyException("ChadoBuddy validateOrganismRankCvterm error, could not find or create a cvterm for organism.type_id but cvterm values were provided:\n" . print_r($cvterm_values, TRUE));
+        }
+      }
+    }
+    elseif (array_key_exists('cvterm.cvterm_id', $values)) {
+      // If only cvterm.cvterm_id was provided and we don't want to validate it,
+      // set it as the organism.type_id.
+      $values['organism.type_id'] = $values['cvterm.cvterm_id'];
+    }
+
+    return $values;
   }
 
   /**
