@@ -635,7 +635,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
         // Note: if the user didn't want to provide a type_id, they wouldn't
         // have provided cvterm values in the first place.
         else {
-          throw new ChadoBuddyException("ChadoBuddy validateOrganismRankCvterm error, could not find or create a cvterm for organism.type_id but cvterm values were provided:\n" . print_r($cvterm_values, TRUE));
+          throw new ChadoBuddyException("ChadoBuddy validateOrganismRankCvterm error, could not find or create a cvterm, but cvterm values were provided:\n" . print_r($cvterm_values, TRUE));
         }
       }
     }
