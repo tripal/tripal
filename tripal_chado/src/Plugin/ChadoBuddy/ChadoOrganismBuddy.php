@@ -45,6 +45,13 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
   protected ChadoCvtermBuddy $cvterm_buddy;
 
   /**
+   * Used to store the valid tables for obtaining/inserting an organism record.
+   *
+   * @var array
+   */
+  protected array $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'organism'];
+
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * We are injecting an additional dependency here, the
@@ -131,8 +138,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   If an error is encountered.
    */
   public function getOrganism(array $conditions, array $options = []) {
-    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'organism'];
-    $valid_columns = $this->getTableColumns($valid_tables);
+    $valid_columns = $this->getTableColumns($this->valid_tables);
     $conditions = $this->dereferenceBuddyRecord($conditions);
     if (!($options['skip_validate'] ?? FALSE)) {
       $this->validateInput($conditions, $valid_columns);
@@ -214,9 +220,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   If an error is encountered.
    */
   public function insertOrganism(array $values, array $options = []) {
-
-    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'organism'];
-    $valid_columns = $this->getTableColumns($valid_tables);
+    $valid_columns = $this->getTableColumns($this->valid_tables);
     $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
@@ -296,8 +300,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   If an error is encountered.
    */
   public function updateOrganism(array $values, array $conditions, array $options = []) {
-    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'organism'];
-    $valid_columns = $this->getTableColumns($valid_tables);
+    $valid_columns = $this->getTableColumns($this->valid_tables);
     $values = $this->dereferenceBuddyRecord($values);
     $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($values, $valid_columns);
@@ -375,15 +378,14 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   If an error is encountered.
    */
   public function upsertOrganism(array $values, array $options = []) {
-    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'organism'];
-    $valid_columns = $this->getTableColumns($valid_tables);
+    $valid_columns = $this->getTableColumns($this->valid_tables);
     $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
     // For upsert, the query conditions are a subset consisting of
     // only the columns that are part of a unique constraint:
     // genus + species + type_id + infraspecific_name.
-    $key_columns = $this->getTableColumns($valid_tables, 'unique');
+    $key_columns = $this->getTableColumns($this->valid_tables, 'unique');
     $conditions = $this->makeUpsertConditions($values, $key_columns);
 
     $existing_records = $this->getOrganism($conditions, $options);
