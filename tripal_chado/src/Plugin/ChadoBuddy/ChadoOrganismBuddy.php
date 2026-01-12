@@ -153,8 +153,8 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     // Return the joined fields aliased to the unique names
     // as listed in this function's header.
     foreach ($valid_columns as $key) {
-      $parts = explode('.', $key);
-      $query->addField($parts[0], $parts[1], $this->makeAlias($key));
+      [$table_name, $field_name] = explode('.', $key);
+      $query->addField($table_name, $field_name, $this->makeAlias($key));
     }
     $this->addConditions($query, $conditions, $options);
 
