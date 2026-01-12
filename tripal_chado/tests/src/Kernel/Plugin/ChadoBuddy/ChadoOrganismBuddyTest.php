@@ -399,7 +399,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
           'organism.organism_id' => 1,
         ],
       ],
-      "ChadoBuddy updateOrganism database error ",
+      "ChadoBuddy validateOrganismRankCvterm error, could not find or create a cvterm for organism.type_id but cvterm values were provided:",
     ];
 
     // #4: updateOrganism() with only organism_id of an existing record.
