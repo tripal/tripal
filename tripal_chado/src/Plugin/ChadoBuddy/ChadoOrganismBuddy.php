@@ -685,35 +685,27 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *   A period at the end of the abbreviation is optional.
    *
    * @return string
-   *   The proper unabbreviated form for the rank.
+   *   The proper unabbreviated form for the rank, or the original rank if no
+   *   match was found.
    */
   public function unabbreviateInfraspecificRank(string $rank) {
-    if (preg_match('/^subsp\.?$/i', $rank)) {
-      $rank = 'subspecies';
-    }
-    elseif (preg_match('/^ssp\.?$/i', $rank)) {
-      $rank = 'subspecies';
-    }
-    elseif (preg_match('/^var\.?$/i', $rank)) {
-      $rank = 'varietas';
-    }
-    elseif (preg_match('/^subvar\.?$/i', $rank)) {
-      $rank = 'subvarietas';
-    }
-    elseif (preg_match('/^convar\.?$/i', $rank)) {
-      $rank = 'convariety';
-    }
-    elseif (preg_match('/^cv\.?$/i', $rank)) {
-      $rank = 'cultivar';
-    }
-    elseif (preg_match('/^group$/i', $rank)) {
-      $rank = 'cultivar group';
-    }
-    elseif (preg_match('/^f\.?$/i', $rank)) {
-      $rank = 'forma';
-    }
-    elseif (preg_match('/^subf\.?$/i', $rank)) {
-      $rank = 'subforma';
+    $map = [
+      '/^subsp\.?$/i' => 'subspecies',
+      '/^ssp\.?$/i' => 'subspecies',
+      '/^var\.?$/i' => 'varietas',
+      '/^subvar\.?$/i' => 'subvarietas',
+      '/^convar\.?$/i' => 'convariety',
+      '/^cv\.?$/i' => 'cultivar',
+      '/^group$/i' => 'cultivar group',
+      '/^f\.?$/i' => 'forma',
+      '/^subf\.?$/i' => 'subforma',
+    ];
+
+    foreach ($map as $pattern => $text) {
+      if (preg_match($pattern, $rank)) {
+        $rank = $text;
+        break;
+      }
     }
     // If none of the above matched, rank is returned unchanged.
     return $rank;
