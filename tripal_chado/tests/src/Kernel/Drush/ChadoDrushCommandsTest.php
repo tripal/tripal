@@ -204,6 +204,8 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
       $this->container->get('date.formatter'),
       $mock_publish,
       $this->container->get('tripal.dbx'),
+      $this->container->get('tripal.importer'),
+      $this->container->get('tripal.pub_library'),
       $mock_migrator,
       $this->chado_connection,
       $mock_installer,

@@ -572,12 +572,14 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    * Inserts new publications into the pub table
    *
    * @param array &$publications
-   *   All publications returned by the external database
-   * @return int
-   *   A count of the number of publications inserted
+   *   All publications returned by the external database.
+   *
+   * @return array
+   *   Citations of inserted publications.
    */
-  protected function insertPublications(array &$publications): int {
-    $n_inserted = 0;
+  protected function insertPublications(array &$publications): array {
+    $citations = [];
+    $return_citations = $this->arguments['run_args']['return_citations'] ?? FALSE;
     foreach ($publications as $index => $publication) {
       $accession = $publication['Publication Dbxref'];
       if ($this->pub_index[$accession]['is_new']) {
@@ -604,7 +606,9 @@ class PubSearchQueryImporter extends ChadoImporterBase {
           ]);
           $pub_id = $insert->execute();
           $this->pub_index[$accession]['pub_id'] = $pub_id;
-          $n_inserted++;
+          if ($return_citations) {
+            $citations[] = $uniquename;
+          }
           // Adds the property defining the bundle type
           $this->addBundleTypeProperty('pub_id', $pub_id, 'pubprop', 'TPUB', '0000002', 'publication');
         }
@@ -615,7 +619,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         }
       }
     }
-    return $n_inserted;
+    return $citations;
   }
 
   /**
@@ -1029,6 +1033,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $n_groups = '?';
     $completed = FALSE;
     $prefix = '';
+    $citations = [];
 
     while (!$completed) {
 
@@ -1074,7 +1079,9 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         }
         else {
           $this->logger->notice($prefix . 'Step 3 of 7: Insert new publications');
-          $n_inserted = $this->insertPublications($publications);
+          $batch_citations = $this->insertPublications($publications);
+          $n_inserted = count($batch_citations);
+          $citations = array_merge($citations, $batch_citations);
           $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
 
           $this->logger->notice($prefix . 'Step 4 of 7: Insert database crossreferences');
@@ -1103,7 +1110,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         $prefix = 'Group ' . ($page+1) . ' of ' . $n_groups . ', ';
       }
     }
-    return;
+    return $citations;
   }
 
 }
