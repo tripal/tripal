@@ -1,0 +1,34 @@
+
+# Patterns starting at this point are defined by Tripal.
+# We are ignoring these phpunit deprecation notices under Drupal 11.3+
+# because they are in external modules.
+# These excludes are appended to the excludes defined by Drupal.
+# This is done by tripal/test/tripal-bootstrap.php.
+# @see Tripal PR #2395 where these were added.
+
+# Module: Field Group Module
+# Location: /var/www/drupal/web/core/lib/Drupal/Core/Hook/HookCollectorPass.php:591
+# Deprecation: field_group_module_implements_alter without a #[LegacyModuleImplementsAlter] attribute is deprecated in drupal:11.2.0 and removed in drupal:12.0.0. See https://www.drupal.org/node/3496788
+# Example test that triggers this: testTripalEmptyContentTypes
+%field_group_module_implements_alter without a #\[LegacyModuleImplementsAlter\] attribute%
+
+# Module: Drupal
+# Location: /var/www/drupal/vendor/symfony/error-handler/DebugClassLoader.php:347
+# Deprecation: Method "Twig\Extension\ExtensionInterface::getFunctions()" might add "array" as a native return type declaration in the future. Do the same in implementation "Drupal\devel\Twig\Extension\Debug" now to avoid errors or add an explicit @return annotation to suppress this message.
+# Example test that triggers this: testTripalEmptyContentTypes
+%Method "Twig\\Extension\\ExtensionInterface::getFunctions\(\)" might add "array"%
+
+# Module: Devel
+# Module: Gin
+# Location: modules/contrib/devel/devel.install:28
+# Location: modules/contrib/gin_toolbar/gin_toolbar.module:657
+# Location: modules/contrib/gin_toolbar/gin_toolbar.install:13
+# Deprecation: devel_requirements without a #[LegacyRequirementsHook] attribute is deprecated in drupal:11.3.0 and removed in drupal:13.0.0.
+# Example test that triggers this: EntityAccessTest
+%without a #\[LegacyRequirementsHook\] attribute is deprecated%
+
+# Module: DrushCommands (Drupal 11.1 only)
+# Location: vendor/consolidation/annotated-command/src/State/SavableState.php:11
+# Deprecation: Method "Consolidation\AnnotatedCommand\State\SavableState::currentState()" might add "State" as a native return type declaration in the future. Do the same in implementation "Drush\Commands\DrushCommands" now to avoid errors or add an explicit @return annotation to suppress this message.
+# Example test that triggers this: testDrushMviewPopulate
+%Method "Consolidation\\AnnotatedCommand\\State\\SavableState::currentState\(\)" might add "State"%

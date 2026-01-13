@@ -2,10 +2,14 @@
 
 namespace Drupal\tripal_chado\Commands;
 
-use Drush\Commands\DrushCommands;
+use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Symfony\Component\Console\Helper\Table;
+use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Drush\Attributes as CLI;
+use Drush\Commands\DrushCommands;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Implements a Drush command to check migrated cv/db/cvterm/dbxref records.
@@ -21,18 +25,18 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   use StringTranslationTrait;
 
   /**
+   * We use SymfonyStyle instead of $this->io() to allow phpunit testing.
+   *
+   * @var Symfony\Component\Console\Style\SymfonyStyle
+   */
+  protected SymfonyStyle $ssio;
+
+  /**
    * The name of the chado schema to be checked.
    *
    * @var string
    */
   protected string $chado_schema;
-
-  /**
-   * A TripalDBX connection to the chado database.
-   *
-   * @var Drupal\tripal_chado\Database\ChadoConnection
-   */
-  protected ChadoConnection $chado;
 
   /**
    * Terminal escape codes used to display a string in red.
@@ -49,28 +53,36 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   protected string $yellow_format = "\033[1;33;40m\033[1m %s \033[0m";
 
   /**
+   * ChadoCheckTermsAgainstYaml Drush command class constructor.
+   *
+   * This is used to inject the services used by this command.
+   */
+  public function __construct(
+    protected ConfigFactory $config_factory,
+    protected TripalDbx $tripaldbx,
+    protected ChadoConnection $chado_connection,
+  ) {
+    // Parent currently doesn't do anything here.
+    parent::__construct();
+  }
+
+  /**
    * Drush command to check a given chado install for inconsistencies.
    *
    * Comparison is made between its cvterms and what Tripal expects.
    *
    * @param array $options
    *   Command line options given to the drush command.
-   *
-   * @command tripal-chado:trp-check-terms
-   * @aliases trp-check-terms
-   * @option chado_schema
-   *   The name of the chado schema to check.
-   * @option auto-expand
-   *   Indicates that you always want to show specifics of any errors or
-   *   warnings.
-   * @option auto-fix
-   *   Indicates that you always want us to attempt to fix any issues without
-   *   the need for us to prompt.
-   * @option no-fix
-   *   Indicates that you do not want us to offer to fix anything.
-   * @usage drush trp-check-terms --chado_schema=chado_prod
-   *   Checks the terms stored in chado_prod.cvterm for consistency.
    */
+  #[CLI\Command(name: 'tripal-chado:trp-check-terms', aliases: ['trp-check-terms'])]
+  #[CLI\Option(name: 'chado_schema', description: 'The name of the chado schema to check.')]
+  #[CLI\Option(name: 'auto-expand', description: 'Indicates that you always want to show specifics of any errors or warnings')]
+  #[CLI\Option(name: 'auto-fix', description: 'Indicates that you always want us to attempt to fix any issues without the need for us to prompt.')]
+  #[CLI\Option(name: 'no-fix', description: 'Indicates that you do not want us to offer to fix anything.')]
+  #[CLI\Usage(
+    name: 'drush trp-check-terms --chado_schema=chado_prod',
+    description: 'Checks the terms stored in chado_prod.cvterm for consistency.',
+  )]
   public function chadoCheckTermsAreAsExpected(
     $options = [
       'chado_schema' => NULL,
@@ -79,13 +91,24 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       'no-fix' => FALSE,
     ],
   ) {
+    $options['chado_schema'] ??= NULL;
+    $options['auto-expand'] ??= FALSE;
+    $options['auto-fix'] ??= FALSE;
+    $options['no-fix'] ??= FALSE;
+
+    // We can't iniitialze this in __construct because the input and
+    // output are not yet initialized there.
+    $this->ssio = new SymfonyStyle($this->input(), $this->output());
 
     if (!$options['chado_schema']) {
-      throw new \Exception('The --chado_schema argument is required.');
+      $this->ssio->error($this->t('The --chado_schema argument is required.'));
+      return;
     }
 
-    if (!\Drupal::service('tripal.dbx')->schemaExists($options['chado_schema'])) {
-      throw new \Exception('The specified chado schema "' . $options['chado_schema'] . '" does not exist.');
+    if (!$this->tripaldbx->schemaExists($options['chado_schema'])) {
+      $this->ssio->error($this->t('The specified chado schema "@schema" does not exist.',
+        ['@schema' => $options['chado_schema']]));
+      return;
     }
     $this->chado_schema = $options['chado_schema'];
 
@@ -126,30 +149,27 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    */
   protected function chadoCheckTermsFindProblems(&$problems, &$solutions, &$summary_rows, $options) {
 
-    $this->chado = \Drupal::service('tripal_chado.database');
-    $this->chado->setSchemaName($options['chado_schema']);
+    $this->chado_connection->setSchemaName($options['chado_schema']);
 
     $this->output()->writeln('');
-    $this->output()->writeln('Using the Chado Content Terms YAML specification to determine what Tripal expects.');
+    $this->output()->writeln($this->t('Using the Chado Content Terms YAML specification to determine what Tripal expects.'));
     $this->output()->writeln('');
-
-    $config_factory = \Drupal::service('config.factory');
 
     $id = 'chado_content_terms';
     $config_key = 'tripal.tripal_content_terms.' . $id;
-    $config = $config_factory->get($config_key);
+    $config = $this->config_factory->get($config_key);
     if (!$config) {
-      $this->io()->error('Unable to access the configuration for tripal content terms!');
+      $this->ssio->error($this->t('Unable to access the configuration for tripal content terms!'));
       return FALSE;
     }
 
-    $this->output()->writeln("  Finding term definitions for $id term collection.");
+    $this->output()->writeln('  ' . $this->t('Finding term definitions for @id term collection.',
+      ['@id' => $id]));
     $vocabs = $config->get('vocabularies');
     if (!$vocabs) {
-      $this->io()->error('Tripal content terms configuration did not have an array of vocabularies!');
+      $this->ssio->error($this->t('Tripal content terms configuration did not have an array of vocabularies!'));
       return FALSE;
     }
-
     foreach ($vocabs as $vocab_info) {
 
       // Reset for the new vocab.
@@ -203,13 +223,14 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         }
         $defined_terms[$summary_term] = 1;
 
-        // Check the term id space was defined in the id spaces block
-        // Note: if a id space was defined but not found in the database
+        // Check if the term id space was defined in the id spaces block.
+        // Note: if an id space was defined but not found in the database
         // it will still be in the $defined_idspaces array but the value
-        // will be NULL.
+        // will be NULL. If the id space is wrong in the terms section,
+        // then it may be absent from defined_ispaces and from idspace_info.
         if (!array_key_exists($term_db, $defined_ispaces)) {
 
-          $summary_dbs[$idspace_info['name']] = sprintf($this->red_format, ' X ');
+          $summary_dbs[$idspace_info['name'] ?? $term_db] = sprintf($this->red_format, ' X ');
 
           // ERROR:
           // The YAML-defined term includes an ID Space that was not defined
@@ -286,13 +307,13 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       'nd_experiment_types',
       'nd_geolocation_property',
     ];
-    $query = $this->chado->select('1:cv', 'CV')
+    $query = $this->chado_connection->select('1:cv', 'CV')
       ->fields('CV', ['cv_id', 'name']);
     $results = $query->execute();
     while ($result = $results->fetchObject()) {
       if (in_array($result->name, $obsolete_cvs)) {
         $problems['error']['obsolete_cv'][$result->cv_id][] = [
-          'message' => 'Obsolete controlled vocabulary',
+          'message' => $this->t('Obsolete controlled vocabulary'),
           'vocab-name' => $result->name,
           'vocab-id' => $result->cv_id,
         ];
@@ -320,17 +341,17 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     // Now we can start reporting more detail if they want.
     // First ERRORS:
-    $this->io()->title('Errors');
-    $this->output()->writeln('Differences are categorized as errors if they are likely to cause failures when preparing this chado instance or to cause Tripal to be unable to find the term reliably.');
+    $this->ssio->title($this->t('Errors'));
+    $this->output()->writeln($this->t('Differences are categorized as errors if they are likely to cause failures when preparing this chado instance or to cause Tripal to be unable to find the term reliably.'));
 
     $has_errors = (array_key_exists('error', $problems) && count($problems['error']) > 0);
 
     if (!$has_errors) {
-      $this->io()->success('There are no errors associated with this chado instance!');
+      $this->ssio->success($this->t('There are no errors associated with this chado instance!'));
     }
 
     $show_errors = $this->askOrRespectOptions(
-      'Would you like more details regarding the errors we found?',
+      $this->t('Would you like more details regarding the errors we found?'),
       $options,
       'auto-expand',
       $has_errors,
@@ -380,16 +401,16 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $this->output()->writeln('');
 
     // Then WARNINGS:
-    $this->io()->title('Warnings');
-    $this->output()->writeln('Differences are categorized as warnings if they are in non-critical parts of the terms, vocabularies and references. These can be safely ignored but you may also want to use this opportunity to update your version of these terms.');
+    $this->ssio->title($this->t('Warnings'));
+    $this->output()->writeln($this->t('Differences are categorized as warnings if they are in non-critical parts of the terms, vocabularies and references. These can be safely ignored but you may also want to use this opportunity to update your version of these terms.'));
 
     $has_warnings = (array_key_exists('warning', $problems) && count($problems['warning']) > 0);
     if (!$has_warnings) {
-      $this->io()->success('There are no warnings associated with this chado instance!');
+      $this->ssio->success($this->t('There are no warnings associated with this chado instance!'));
     }
 
     $show_warnings = $this->askOrRespectOptions(
-      'Would you like more details regarding the warnings we found?',
+      $this->t('Would you like more details regarding the warnings we found?'),
       $options,
       'auto-expand',
       $has_warnings,
@@ -450,7 +471,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   protected function chadoCheckTermsCheckVocab(array $vocab_info, array &$problems, array &$solutions) {
 
     // Check if the cv record for this vocabulary exists.
-    $query = $this->chado->select('1:cv', 'cv')
+    $query = $this->chado_connection->select('1:cv', 'cv')
       ->fields('cv', ['cv_id', 'definition'])
       ->condition('cv.name', $vocab_info['name']);
     $existing_cv = $query->execute()->fetchObject();
@@ -500,10 +521,10 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     $summary_dbs = [];
     $defined_ispaces = [];
-    foreach ($vocab_info['idSpaces'] as $idspace_info) {
+    foreach (($vocab_info['idSpaces'] ?? []) as $idspace_info) {
 
       // Check if the db record for this id space exists.
-      $query = $this->chado->select('1:db', 'db')
+      $query = $this->chado_connection->select('1:db', 'db')
         ->fields('db', ['db_id', 'description', 'urlprefix', 'url'])
         ->condition('db.name', $idspace_info['name']);
       $existing_db = $query->execute()->fetchObject();
@@ -528,7 +549,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
           ];
           $solutions['warning']['db'][$existing_db->db_id]['description'] = $idspace_info['description'];
         }
-        if ($existing_db->urlprefix != $idspace_info['urlPrefix']) {
+        if ($existing_db->urlprefix != ($idspace_info['urlPrefix'] ?? '')) {
 
           $summary_dbs[$idspace_info['name']] = sprintf($this->yellow_format, $existing_db->db_id);
 
@@ -550,7 +571,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
           // WARNING:
           // @see chadoCheckTermsReportProblemEccentricDb().
           $problems['warning']['db'][$existing_db->db_id][] = [
-            'message' => $vocab_info['url'] . ': The db.url for this vocabulary in your chado instance does not match what is in the YAML.',
+            'message' => $this->t('@url: The db.url for this vocabulary in your chado instance does not match what is in the YAML.',
+               ['@url' => $vocab_info['url']]),
             'idspace-name' => $idspace_info['name'],
             'column' => 'db.url',
             'property' => 'vocabulary.url',
@@ -595,7 +617,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     // First check that cvterm.name, cvterm.cv, dbxref.accession
     // and dbxref.db all match that which is expected.
-    $query = $this->chado->select('1:cvterm', 'cvt')
+    $query = $this->chado_connection->select('1:cvterm', 'cvt')
       ->fields('cvt', ['cvterm_id', 'name', 'definition'])
       ->condition('cvt.name', $term_info['name']);
     $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
@@ -610,14 +632,28 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $summary_cvterm = $terms[0]->cvterm_id;
       $summary_dbxref = $terms[0]->dbxref_id;
 
-      // This term is great so no need to continue looking.
+      // This term is found, only need to check definition.
+      if (array_key_exists('description', $term_info) && $terms[0]->definition !== $term_info['description']) {
+        // WARNING:
+        // The term definition does not match what we expected.
+        // @see chadoCheckTermsReportProblemEccentricCvTerm()
+        $problems['warning']['cvterm'][$terms[0]->cvterm_id][] = [
+          'column' => 'cvterm.definition',
+          'property' => 'term.description',
+          'YOURS' => $terms[0]->definition,
+          'EXPECTED' => $term_info['description'],
+          'term-name' => $term_info['name'],
+          'term-id' => $term_info['id'],
+        ];
+        $solutions['warning']['cvterm'][$terms[0]->cvterm_id]['definition'] = $term_info['description'];
+      }
       return [$summary_cvterm, $summary_dbxref];
     }
 
     // If not, then select the cvterm...
     // ... assuming the cvterm.name and cvterm.cv match.
     $cv_matches = TRUE;
-    $query = $this->chado->select('1:cvterm', 'cvt')
+    $query = $this->chado_connection->select('1:cvterm', 'cvt')
       ->fields('cvt', ['cvterm_id', 'name', 'definition', 'dbxref_id'])
       ->condition('cvt.name', $term_info['name']);
     $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
@@ -631,7 +667,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     // ... only looking for the matching cvterm.name.
     if (!$cvterms) {
-      $query = $this->chado->select('1:cvterm', 'cvt')
+      $query = $this->chado_connection->select('1:cvterm', 'cvt')
         ->fields('cvt', ['cvterm_id', 'name', 'definition', 'dbxref_id'])
         ->condition('cvt.name', $term_info['name']);
       $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
@@ -647,7 +683,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     // Also, independently select the dbxref...
     // ... assuming the dbxref.accession and dbxref.db match.
     $db_matches = TRUE;
-    $query = $this->chado->select('1:dbxref', 'dbx')
+    $query = $this->chado_connection->select('1:dbxref', 'dbx')
       ->fields('dbx', ['dbxref_id', 'accession'])
       ->condition('dbx.accession', $term_info['accession']);
     $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
@@ -657,7 +693,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     // ... only looking for the matching dbxref.accession.
     if (!$dbxrefs) {
-      $query = $this->chado->select('1:dbxref', 'dbx')
+      $query = $this->chado_connection->select('1:dbxref', 'dbx')
         ->fields('dbx', ['dbxref_id', 'accession'])
         ->condition('dbx.accession', $term_info['accession']);
       $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
@@ -692,7 +728,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         'term-name' => $term_info['name'],
         'term-id' => $term_info['id'],
         'category' => 'wrong_dbxref',
-        'message' => 'Wrong or Missing dbxref',
+        'message' => $this->t('Wrong or Missing dbxref'),
         'error-column' => 'cvterm.dbxref_id',
         'YOURS' => $unique_cvterm->term_idspace . ':' . $unique_cvterm->term_accession,
         'EXPECTED' => $term_info['id'],
@@ -719,7 +755,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         'term-name' => $term_info['name'],
         'term-id' => $term_info['id'],
         'category' => 'wrong_dbxref',
-        'message' => 'Broken Connection between cvterm + dbxref',
+        'message' => $this->t('Broken Connection between cvterm + dbxref'),
         'error-column' => 'cvterm.dbxref_id',
         'YOURS' => $unique_cvterm->term_idspace . ':' . $unique_cvterm->term_accession,
         'EXPECTED' => $term_info['id'],
@@ -745,7 +781,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         'term-name' => $term_info['name'],
         'term-id' => $term_info['id'],
         'category' => 'wrong_cv',
-        'message' => 'Wrong cv (cvterm validated by dbxref)',
+        'message' => $this->t('Wrong cv (cvterm validated by dbxref)'),
         'error-column' => 'cvterm.cv_id',
         'YOURS' => $unique_cvterm->cv_name,
         'EXPECTED' => $term_info['cv_name'],
@@ -759,7 +795,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // Now we want to determine if there are any other cvterms connected to
       // the single perfect dbxref we found. If there are then that is a concern
       // but if not then it turns out this dbxref is without error.
-      $query = $this->chado->select('1:dbxref', 'dbx')
+      $query = $this->chado_connection->select('1:dbxref', 'dbx')
         ->condition('dbx.accession', $term_info['accession']);
       $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
       $query->condition('db.name', $term_info['idspace']);
@@ -781,7 +817,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
           'term-name' => $term_info['name'],
           'term-id' => $term_info['id'],
           'category' => 'wrong_cvterm',
-          'message' => 'Dbxref is connected to the wrong cvterm(s)',
+          'message' => $this->t('Dbxref is connected to the wrong cvterm(s)'),
           'error-column' => 'dbxref>cvterm.dbxref_id',
           'YOURS' => implode(', ', $connected_cvterms),
           'EXPECTED' => $term_info['name'] . ' (' . $term_info['cv_name'] . ')',
@@ -811,7 +847,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         'term-name' => $term_info['name'],
         'term-id' => $term_info['id'],
         'category' => 'wrong_db',
-        'message' => 'Wrong db but dbxref connected to right cvterm',
+        'message' => $this->t('Wrong db but dbxref connected to right cvterm'),
         'error-column' => 'dbxref.db_id',
         'YOURS' => $first_dbxref->db_name,
         'EXPECTED' => $term_info['idspace'],
@@ -832,7 +868,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         'term-name' => $term_info['name'],
         'term-id' => $term_info['id'],
         'category' => 'wrong_dbxref',
-        'message' => 'Dbxref is missing and cvterm is attached to wrong dbxref',
+        'message' => $this->t('Dbxref is missing and cvterm is attached to wrong dbxref'),
         'error-column' => 'cvterm.dbxref_id',
         'YOURS' => $unique_cvterm->term_idspace . ':' . $unique_cvterm->term_accession,
         'EXPECTED' => $term_info['id'],
@@ -863,10 +899,14 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     // Report missed cases.
     if ($summary_cvterm == ' ? ') {
-      $this->io()->error('We missed a case with the cvterm for ' . $term_info['label'] . '. These are the cvterms we have to work with: ' . print_r($cvterms, TRUE));
+      $this->ssio->error($this->t('We missed a case with the cvterm for @label. These are the cvterms we have to work with:',
+        ['@label' => $term_info['label']])
+        . ' ' . print_r($cvterms, TRUE));
     }
     if ($summary_dbxref == ' ? ') {
-      $this->io()->error('We missed a case with the dbxref for ' . $term_info['label'] . '. These are the dbxrefs we have to work with: ' . print_r($dbxrefs, TRUE));
+      $this->ssio->error($this->t('We missed a case with the dbxref for @label. These are the dbxrefs we have to work with:',
+        ['@label' => $term_info['label']])
+        . ' ' . print_r($dbxrefs, TRUE));
     }
 
     // Finally we can check the cvterm definition if we have found one!
@@ -911,12 +951,12 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     ];
 
     $this->output()->writeln('');
-    $this->output()->writeln('The following table summarizes the terms.');
-    $this->io()->table($summary_headers, $summary_rows);
-    $this->output()->writeln('Legend:');
-    $this->output()->writeln(sprintf($this->yellow_format, ' YELLOW ') . ' Indicates there are some mismatches between the existing version and what we expected but it\'s minor.');
-    $this->output()->writeln(sprintf($this->red_format, '  RED   ') . ' Indicates there is a serious mismatch which will cause the prepare to fail on this chado instance.');
-    $this->output()->writeln('    -      Indicates this one is missing but that is not a concern as it will be added when you run prepare.');
+    $this->output()->writeln($this->t('The following table summarizes the terms.'));
+    $this->ssio->table($summary_headers, $summary_rows);
+    $this->output()->writeln($this->t('Legend:'));
+    $this->output()->writeln(sprintf($this->yellow_format, ' YELLOW ') . ' ' . $this->t("Indicates there are some mismatches between the existing version and what we expected but it's minor."));
+    $this->output()->writeln(sprintf($this->red_format, '  RED   ') . ' ' . $this->t('Indicates there is a serious mismatch which will cause the prepare to fail on this chado instance.'));
+    $this->output()->writeln('    -      ' . $this->t('Indicates this one is missing but that is not a concern as it will be added when you run prepare.'));
     $this->output()->writeln('');
 
   }
@@ -953,7 +993,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $response = TRUE;
     }
     else {
-      $response = $this->io()->confirm($ask_message, $default);
+      $response = $this->ssio->confirm($ask_message, $default);
     }
 
     return $response;
@@ -978,7 +1018,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   protected function updateChadoTermRecords(string $table_name, string $pkey, array $records) {
 
     foreach ($records as $id => $values) {
-      $query = $this->chado->update('1:' . $table_name)
+      $query = $this->chado_connection->update('1:' . $table_name)
         ->fields($values)
         ->condition($pkey, $id);
       $query->execute();
@@ -999,32 +1039,32 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    */
   protected function migrateObsoleteVocabularies(array $cv_ids) {
 
-    $query = $this->chado->select('1:cv', 'cv');
+    $query = $this->chado_connection->select('1:cv', 'cv');
     $query->condition('name', 'local', '=');
     $query->fields('cv', ['cv_id']);
     $local_cv = $query->execute()->fetchField();
     if (!$local_cv) {
-      $this->output()->writeln($this->t('Could not perform update, "local" CV is not present'));
+      $this->ssio->error($this->t('Could not perform update, "local" CV is not present'));
       return;
     }
 
     $n_removed = 0;
     foreach ($cv_ids as $cv_id => $cv_name) {
-      $query = $this->chado->update('1:cvterm');
+      $query = $this->chado_connection->update('1:cvterm');
       $query->fields(['cv_id' => $local_cv]);
       $query->condition('cv_id', $cv_id, '=');
       $count = $query->execute();
       if ($count) {
         $this->output()->writeln($this->t('Transferred @count records from CV "@from" to the "local" CV',
-            ['@count' => $count, '@from' => $cv_name]));
+          ['@count' => $count, '@from' => $cv_name]));
       }
-      $query = $this->chado->delete('1:cv');
+      $query = $this->chado_connection->delete('1:cv');
       $query->condition('cv_id', $cv_id, '=');
       $query->execute();
       $n_removed++;
     }
     $this->output()->writeln($this->t('Removed @count obsolete controlled vocabularies',
-        ['@count' => $n_removed]));
+      ['@count' => $n_removed]));
   }
 
   /**
@@ -1053,9 +1093,10 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    */
   protected function chadoCheckTermsReportProblemYamlDuplication($problems, $solutions, $options) {
 
-    $this->io()->section('YAML Issues: Duplicated term definitions in the site YAML.');
+    $this->ssio->section($this->t('YAML Issues: Duplicated term definitions in the site YAML.'));
     $num_detected = count($problems);
-    $this->output()->writeln("We have detected $num_detected duplicated term definition(s) present in your YAML file. You will want to contact the developers to let them know the following output:");
+    $this->output()->writeln($this->t('We have detected @num_detected duplicated term definition(s) present in your YAML file. You will want to contact the developers to let them know the following output:',
+      ['@num_detected' => $num_detected]));
     $list = [];
     foreach ($problems as $prob_deets) {
       $list[] = sprintf(
@@ -1064,7 +1105,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
             $prob_deets['id']
           );
     }
-    $this->io()->listing($list);
+    $this->ssio->listing($list);
   }
 
   /**
@@ -1098,9 +1139,10 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    */
   protected function chadoCheckTermsReportProblemMissingDbYaml($problems, $solutions, $options) {
 
-    $this->io()->section('YAML Issues: Missing ID Space definitions.');
+    $this->ssio->section($this->t('YAML Issues: Missing ID Space definitions.'));
     $num_detected = count($problems);
-    $this->output()->writeln("We have detected $num_detected ID Space(s) missing from your YAML file. You will want to contact the developers to let them know the following output:");
+    $this->output()->writeln($this->t('We have detected @num_detected ID Space(s) missing from your YAML file. You will want to contact the developers to let them know the following output:',
+      ['@num_detected' => $num_detected]));
     $list = [];
     foreach ($problems as $terms_with_issues) {
       foreach ($terms_with_issues as $prob_deets) {
@@ -1126,7 +1168,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         }
       }
     }
-    $this->io()->listing($list);
+    $this->ssio->listing($list);
   }
 
   /**
@@ -1154,12 +1196,16 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    */
   protected function chadoCheckTermsReportProblemObsoleteCv($problems, $solutions, $options) {
 
-    $this->io()->section('Obsolete Controlled Vocabulary Issues.');
+    $this->ssio->section($this->t('Obsolete Controlled Vocabulary Issues.'));
     $num_detected = count($problems);
-    $this->output()->writeln("We have detected $num_detected obsolete vocabularies (CVs). Specifically:");
+    $this->output()->writeln($this->t('We have detected @num_detected obsolete vocabularies (CVs). Specifically:',
+      ['@num_detected' => $num_detected]));
 
     $table = new Table($this->output());
-    $table->setHeaders(['VOCABULARY', 'MESSAGE']);
+    $table->setHeaders([
+      $this->t('VOCABULARY'),
+      $this->t('MESSAGE'),
+    ]);
 
     $rows = [];
     $vocab_id_list = [];
@@ -1177,7 +1223,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     $offer_fix = !$options['no-fix'];
     $fix = $this->askOrRespectOptions(
-      'Would you like us to move terms using these obsolete vocabularies to the "local" vocabulary to match Tripal 4 expectations?',
+      $this->t('Would you like us to move terms using these obsolete vocabularies to the "local" vocabulary to match Tripal 4 expectations?'),
       $options,
       'auto-fix',
       $offer_fix,
@@ -1185,8 +1231,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     );
     if ($fix) {
       $this->migrateObsoleteVocabularies($vocab_id_list);
-      $this->io()->success('Terms from obsolete vocabularies have been migrated to the "local"'
-          . ' vocabulary and the obsolete vocabularies have been removed.');
+      $this->ssio->success($this->t('Terms from obsolete vocabularies have been migrated to the "local" vocabulary and the obsolete vocabularies have been removed.'));
     }
   }
 
@@ -1221,15 +1266,25 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    */
   protected function chadoCheckTermsReportProblemTerms($problems, $solutions, $options) {
 
-    $this->io()->section('Term (cvterm/dbxref) Issues.');
+    $this->ssio->section($this->t('Term (cvterm/dbxref) Issues.'));
     $num_detected = count($problems);
-    $this->output()->writeln("We have detected $num_detected Term(s) with a key deviation from what is expected. Specifically:");
+    $this->output()->writeln($this->t('We have detected @num_detected Term(s) with a key deviation from what is expected. Specifically:',
+      ['@num_detected' => $num_detected]));
 
     $table = new Table($this->output());
-    $table->setHeaders(['TERM', 'MESSAGE', 'COLUMN', 'EXPECTED', 'YOURS']);
+    $table->setHeaders([
+      $this->t('TERM'),
+      $this->t('MESSAGE'),
+      $this->t('COLUMN'),
+      $this->t('EXPECTED'),
+      $this->t('YOURS'),
+    ]);
     // Set the yours/expected columns to wrap at 50 characters each.
-    $table->setColumnMaxWidth(4, 50);
-    $table->setColumnMaxWidth(5, 50);
+    // (Not available when running a phpunit test.)
+    if (property_exists($table, 'setColumnMaxWidth')) {
+      $table->setColumnMaxWidth(4, 50);
+      $table->setColumnMaxWidth(5, 50);
+    }
 
     $rows = [];
     foreach ($problems as $terms_with_issues) {
@@ -1279,15 +1334,25 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    */
   protected function chadoCheckTermsReportProblemEccentricCv($problems, $solutions, $options) {
 
-    $this->io()->section('Small differences in vocabulary definitions.');
+    $this->ssio->section($this->t('Small differences in vocabulary definitions.'));
     $num_detected = count($problems);
-    $this->output()->writeln("We have detected $num_detected vocabularies in your chado instance that differ from those defined in the YAML in small ways. More specifically:");
+    $this->output()->writeln($this->t('We have detected @num_detected vocabularies in your chado instance that differ from those defined in the YAML in small ways. More specifically:',
+      ['@num_detected' => $num_detected]));
 
     $table = new Table($this->output());
-    $table->setHeaders(['VOCAB', 'PROPERTY', 'COLUMN', 'EXPECTED', 'YOURS']);
+    $table->setHeaders([
+      $this->t('VOCAB'),
+      $this->t('PROPERTY'),
+      $this->t('COLUMN'),
+      $this->t('EXPECTED'),
+      $this->t('YOURS'),
+    ]);
     // Set the yours/expected columns to wrap at 50 characters each.
-    $table->setColumnMaxWidth(3, 50);
-    $table->setColumnMaxWidth(4, 50);
+    // (Not available when running a phpunit test.)
+    if (property_exists($table, 'setColumnMaxWidth')) {
+      $table->setColumnMaxWidth(3, 50);
+      $table->setColumnMaxWidth(4, 50);
+    }
 
     $rows = [];
     foreach ($problems as $specific_issues) {
@@ -1306,7 +1371,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     $offer_fix = !$options['no-fix'];
     $fix = $this->askOrRespectOptions(
-      'Would you like us to update the descriptions of your chado cvs to match our expectations?',
+      $this->t('Would you like us to update the descriptions of your chado cvs to match our expectations?'),
       $options,
       'auto-fix',
       $offer_fix,
@@ -1314,7 +1379,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     );
     if ($fix) {
       $this->updateChadoTermRecords('cv', 'cv_id', $solutions);
-      $this->io()->success('Vocabularies have been updated to match our expectations.');
+      $this->ssio->success($this->t('Vocabularies have been updated to match our expectations.'));
     }
   }
 
@@ -1350,15 +1415,25 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    */
   protected function chadoCheckTermsReportProblemEccentricDb($problems, $solutions, $options) {
 
-    $this->io()->section('Small differences in ID Space entries.');
+    $this->ssio->section($this->t('Small differences in ID Space entries.'));
     $num_detected = count($problems);
-    $this->output()->writeln("We have detected $num_detected ID Spaces in your chado instance that differ from those defined in the YAML in small ways. More specifically:");
+    $this->output()->writeln($this->t('We have detected @num_detected ID Spaces in your chado instance that differ from those defined in the YAML in small ways. More specifically:',
+      ['@num_detected' => $num_detected]));
 
     $table = new Table($this->output());
-    $table->setHeaders(['ID SPACE', 'PROPERTY', 'COLUMN', 'EXPECTED', 'YOURS']);
+    $table->setHeaders([
+      $this->t('ID SPACE'),
+      $this->t('PROPERTY'),
+      $this->t('COLUMN'),
+      $this->t('EXPECTED'),
+      $this->t('YOURS'),
+    ]);
     // Set the yours/expected columns to wrap at 50 characters each.
-    $table->setColumnMaxWidth(3, 50);
-    $table->setColumnMaxWidth(4, 50);
+    // (Not available when running a phpunit test.)
+    if (property_exists($table, 'setColumnMaxWidth')) {
+      $table->setColumnMaxWidth(3, 50);
+      $table->setColumnMaxWidth(4, 50);
+    }
 
     $rows = [];
     foreach ($problems as $specific_issues) {
@@ -1377,7 +1452,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     $offer_fix = !$options['no-fix'];
     $fix = $this->askOrRespectOptions(
-      'Would you like us to update the non-critical db columns to match our expectations?',
+      $this->t('Would you like us to update the non-critical db columns to match our expectations?'),
       $options,
       'auto-fix',
       $offer_fix,
@@ -1385,7 +1460,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     );
     if ($fix) {
       $this->updateChadoTermRecords('db', 'db_id', $solutions);
-      $this->io()->success('ID Spaces have been updated to match our expectations.');
+      $this->ssio->success($this->t('ID Spaces have been updated to match our expectations.'));
     }
   }
 
@@ -1423,15 +1498,26 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    */
   protected function chadoCheckTermsReportProblemEccentricCvTerm($problems, $solutions, $options) {
 
-    $this->io()->section('Small differences in Term entries.');
+    $this->ssio->section($this->t('Small differences in Term entries.'));
     $num_detected = count($problems);
-    $this->output()->writeln("We have detected $num_detected Terms in your chado instance that differ from those defined in the YAML in small ways. More specifically:");
+    $this->output()->writeln($this->t('We have detected @num_detected Terms in your chado instance that differ from those defined in the YAML in small ways. More specifically:',
+      ['@num_detected' => $num_detected]));
 
     $table = new Table($this->output());
-    $table->setHeaders(['TERM NAME', 'TERM ACCESSION', 'PROPERTY', 'COLUMN', 'EXPECTED', 'YOURS']);
+    $table->setHeaders([
+      $this->t('TERM NAME'),
+      $this->t('TERM ACCESSION'),
+      $this->t('PROPERTY'),
+      $this->t('COLUMN'),
+      $this->t('EXPECTED'),
+      $this->t('YOURS'),
+    ]);
     // Set the yours/expected columns to wrap at 50 characters each.
-    $table->setColumnMaxWidth(4, 50);
-    $table->setColumnMaxWidth(5, 50);
+    // (Not available when running a phpunit test.)
+    if (property_exists($table, 'setColumnMaxWidth')) {
+      $table->setColumnMaxWidth(4, 50);
+      $table->setColumnMaxWidth(5, 50);
+    }
 
     $rows = [];
     foreach ($problems as $specific_issues) {
@@ -1451,7 +1537,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     $offer_fix = !$options['no-fix'];
     $fix = $this->askOrRespectOptions(
-      'Would you like us to update the non-critical cvterm columns to match our expectations?',
+      $this->t('Would you like us to update the non-critical cvterm columns to match our expectations?'),
       $options,
       'auto-fix',
       $offer_fix,
@@ -1459,7 +1545,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     );
     if ($fix) {
       $this->updateChadoTermRecords('cvterm', 'cvterm_id', $solutions);
-      $this->io()->success('Terms have been updated to match our expectations.');
+      $this->ssio->success($this->t('Terms have been updated to match our expectations.'));
     }
   }
 
