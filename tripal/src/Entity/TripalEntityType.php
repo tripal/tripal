@@ -273,9 +273,12 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     // This is when the id is assigned.
     $return_status = parent::save();
 
-    // Grant 'view all {content_type} content' permission to anonymous user.
+    // Grant 'view all {content_type} content' permission to anonymous
+    // and authenticated user.
     if ($return_status == 1) {
-      TripalEntityAccessControlHandler::grantViewAllPermission($this, 'anonymous');
+      foreach (['anonymous', 'authenticated'] as $role) {
+        TripalEntityAccessControlHandler::grantViewAllPermission($this, $role);
+      }
     }
 
     return $return_status;
