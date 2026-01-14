@@ -1075,11 +1075,15 @@ function tripal_update_10403() {
 /**
  * Implements hook_update_10404().
  *
- * Grants anonymous user permission to view Tripal Content by default.
+ * Grants view Tripal Content permission to anonymous user and
+ * authenticated user by default.
  */
 function tripal_update_10404() {
   // Load the anonymous role.
   $anonymous_role = Role::load('anonymous');
+
+  // Load the authenticated role.
+  $authenticated_role = Role::load('authenticated');
 
   // Load all Tripal entity types.
   $entity_types = \Drupal::service('entity_type.manager')
@@ -1093,12 +1097,14 @@ function tripal_update_10404() {
     $permissions_to_grant[] = "view all $entity_id content";
   }
 
-  // Grant the permissions to the anonymous role.
-  if ($anonymous_role) {
-    foreach ($permissions_to_grant as $permission) {
-      $anonymous_role->grantPermission($permission);
+  // Grant the permissions to the anonymous and authenticated roles.
+  foreach ([$anonymous_role, $authenticated_role] as $role) {
+    if ($role) {
+      foreach ($permissions_to_grant as $permission) {
+        $role->grantPermission($permission);
+      }
+    $role->save();
     }
-    $anonymous_role->save();
   }
 }
 
