@@ -13,7 +13,7 @@
 
 // Define exclusion file names.
 $drupal_ignore_file = DRUPAL_ROOT . '/core/.deprecation-ignore.txt';
-$tripal_ignore_file = __DIR__ . '../../.tripal-deprecation-ignore.txt';
+$tripal_ignore_file = __DIR__ . '/../../.tripal-deprecation-ignore.txt';
 $combined_ignore_file = __DIR__ . '/../../.deprecation-ignore.txt';
 
 // Append Tripal's phpunit deprecation exclusions to those already
