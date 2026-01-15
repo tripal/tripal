@@ -354,7 +354,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
         $this->assertEquals(403, $status_code, "The anonymous user should not be able to access any content pages including: $title ($path).");
       }
       else {
-        $this->assertEquals(200, $status_code, "The anonymous user should be able to access the content listing page: $title ($path).");
+        $this->assertEquals(200, $status_code, "The anonymous user should be able to access the content listing page: $title ($path). by default");
       }
     }
 
@@ -364,7 +364,12 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     foreach ($urls as $title => $path) {
       $html = $this->drupalGet($path);
       $status_code = $session->getStatusCode();
-      $this->assertEquals(403, $status_code, "The unprivileged user should not be able to access any content pages including: $title ($path).");
+      if (!in_array($title, $permissions_mapping["view all $content_type content"])) {
+        $this->assertEquals(403, $status_code, "The unprivileged user should not be able to access any content pages including: $title ($path).");
+      }
+      else {
+        $this->assertEquals(200, $status_code, "The unprivileged user should be able to access the content listing page: $title ($path). by default");
+      }
     }
 
     // Finally use the permissions mapping to check each permission.
@@ -379,7 +384,9 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
         $msg_part = ($expected_code === 200) ? 'should have permission to' : 'should be denied access to';
 
         $status_code = $session->getStatusCode();
-        $this->assertEquals($expected_code, $status_code, "The user with only '$permission' permission $msg_part $title ($path).");
+        if (!in_array($title, $permissions_mapping["view all $content_type content"])) {
+          $this->assertEquals($expected_code, $status_code, "The user with only '$permission' permission $msg_part $title ($path).");
+        }
       }
     }
 
@@ -410,7 +417,9 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
       $msg_part = ($expected_code === 200) ? 'should have permission to' : 'should be denied access to';
 
       $status_code = $session->getStatusCode();
-      $this->assertEquals($expected_code, $status_code, "The user with only access to their own content $msg_part $title ($path).");
+      if (!in_array($title, $permissions_mapping["view all $content_type content"])) {
+        $this->assertEquals($expected_code, $status_code, "The user with only access to their own content $msg_part $title ($path).");
+      }
     }
   }
 

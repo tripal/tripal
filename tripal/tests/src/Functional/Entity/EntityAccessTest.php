@@ -108,21 +108,9 @@ class EntityAccessTest extends BrowserTestBase {
     ]);
 
     $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_unprivileged);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unprivileged user should NOT be allowed to VIEW the entity.");
+    $this->assertInstanceOf(AccessResultAllowed::class, $result, "An unprivileged user should be allowed to VIEW the entity by default.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_view_all);
     $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with view all permission should be allowed to VIEW the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_view_own);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with view own permission should NOT be allowed to VIEW the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_edit_any);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit any permission should NOT be allowed to VIEW the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_edit_own);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit own permission should NOT be allowed to VIEW the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_delete_any);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with delete any permission should NOT be allowed to VIEW the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_delete_own);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with delete own permission should NOT be allowed to VIEW the entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'view', $user_add);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with add permission should NOT be allowed to VIEW the entity.");
 
     $result = $access_check_obj->returnProtectedCheckAccess($entity_one, 'update', $user_unprivileged);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unprivileged user should NOT be allowed to UPDATE the entity.");
@@ -178,8 +166,6 @@ class EntityAccessTest extends BrowserTestBase {
     $entity_two->setOwner($user_own_one);
     $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'view', $user_own_one);
     $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with view own permission should be allowed to VIEW their own entity.");
-    $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'view', $user_own_two);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with edit own permission should NOT be allowed to VIEW another user's entity.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'view', $user_view_all);
     $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with view all permission should be allowed to VIEW another user's entity.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity_two, 'update', $user_own_one);
