@@ -3,10 +3,10 @@
 namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
-use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
+use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 
 /**
  * Plugin implementation of the chado dbxref buddy.
@@ -53,7 +53,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
 
-    $query = $this->connection->select('1:db', 'db');
+    $query = $this->chado_connection->select('1:db', 'db');
     // Return the joined fields aliased to the unique names
     // as listed in this function's header.
     foreach ($valid_columns as $key) {
@@ -71,7 +71,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
       $new_record = new ChadoBuddyRecord();
-      $new_record->setSchemaName($this->connection->getSchemaName());
+      $new_record->setSchemaName($this->chado_connection->getSchemaName());
       $new_record->setBaseTable('db');
       foreach ($values as $key => $value) {
         $new_record->setValue($this->unmakeAlias($key), $value);
@@ -122,7 +122,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
 
-    $query = $this->connection->select('1:dbxref', 'dbxref');
+    $query = $this->chado_connection->select('1:dbxref', 'dbxref');
 
     // Return the joined fields aliased to the unique names
     // as listed in this function's header.
@@ -143,7 +143,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
       $new_record = new ChadoBuddyRecord();
-      $new_record->setSchemaName($this->connection->getSchemaName());
+      $new_record->setSchemaName($this->chado_connection->getSchemaName());
       $new_record->setBaseTable('dbxref');
       foreach ($values as $key => $value) {
         $new_record->setValue($this->unmakeAlias($key), $value);
@@ -238,7 +238,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $this->validateInput($values, $valid_columns);
 
     try {
-      $query = $this->connection->insert('1:db');
+      $query = $this->chado_connection->insert('1:db');
       $query->fields($this->removeTablePrefix($values));
       $query->execute();
     }
@@ -315,7 +315,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     }
 
     try {
-      $query = $this->connection->insert('1:dbxref');
+      $query = $this->chado_connection->insert('1:dbxref');
       // Create a subset of the passed $values for just the dbxref table.
       $dbxref_values = $this->subsetInput($values, ['dbxref']);
       $query->fields($this->removeTablePrefix($dbxref_values));
@@ -389,7 +389,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     if (array_key_exists('db.db_id', $values)) {
       unset($values['db.db_id']);
     }
-    $query = $this->connection->update('1:db');
+    $query = $this->chado_connection->update('1:db');
     $query->condition('db_id', $db_id, '=');
     $query->fields($this->removeTablePrefix($values));
     try {
@@ -466,7 +466,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       unset($values['dbxref.dbxref_id']);
     }
 
-    $query = $this->connection->update('1:dbxref');
+    $query = $this->chado_connection->update('1:dbxref');
     $query->condition('dbxref_id', $dbxref_id, '=');
     // Create a subset of the passed $values for just the dbxref table.
     $dbxref_values = $this->subsetInput($values, ['dbxref']);
@@ -628,7 +628,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
 
     try {
       // Verify that this exact record does not already exist.
-      $query = $this->connection->select('1:' . $linking_table, 'L');
+      $query = $this->chado_connection->select('1:' . $linking_table, 'L');
       $query->condition('L.dbxref_id', $dbxref->getValue('dbxref.dbxref_id'), '=');
       $query->condition('L.' . $base_pkey_col, $record_id, '=');
       $query->fields('L');
@@ -647,7 +647,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
             $fields[$key] = $value;
           }
         }
-        $query = $this->connection->insert('1:'.$linking_table);
+        $query = $this->chado_connection->insert('1:' . $linking_table);
         $query->fields($this->removeTablePrefix($fields));
         $query->execute();
       }

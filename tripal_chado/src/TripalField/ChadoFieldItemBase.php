@@ -254,7 +254,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $default_linker_column =  $storage_settings['linker_fkey_column'] ?? '';
     $default_linker_table_and_column = $storage_settings['linker_table_and_column'] ?? '';
     if (!$default_linker_table_and_column and $default_linker_table and $default_linker_column) {
-      $default_linker_table_and_column = $default_linker_table . self::$table_column_delimiter  . $default_linker_column;
+      $default_linker_table_and_column = $default_linker_table . self::$table_column_delimiter . $default_linker_column;
     }
 
     // Base tables presented in this case are only those that either have
@@ -317,13 +317,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    */
   public function storageSettingsFormBaseTableAjaxCallback($form, &$form_state) {
     $response = new AjaxResponse();
-    $drupal_10_2 = $form_state->getValue(['field_storage']);
-    if ($drupal_10_2) {
-      $response->addCommand(new ReplaceCommand('#edit-base_column', $form['field_storage']['subform']['settings']['storage_plugin_settings']['base_column']));
-    }
-    else {
-      $response->addCommand(new ReplaceCommand('#edit-base_column', $form['settings']['storage_plugin_settings']['base_column']));
-    }
+    $response->addCommand(new ReplaceCommand('#edit-base_column', $form['field_storage']['subform']['settings']['storage_plugin_settings']['base_column']));
     return $response;
   }
 
@@ -338,13 +332,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    */
   public function storageSettingsFormLinkingMethodAjaxCallback($form, &$form_state) {
     $response = new AjaxResponse();
-    $drupal_10_2 = $form_state->getValue(['field_storage']);
-    if ($drupal_10_2) {
-      $response->addCommand(new ReplaceCommand('#edit-linker_table', $form['field_storage']['subform']['settings']['storage_plugin_settings']['linker_table_and_column']));
-    }
-    else {
-      $response->addCommand(new ReplaceCommand('#edit-linker_table', $form['settings']['storage_plugin_settings']['linker_table_and_column']));
-    }
+    $response->addCommand(new ReplaceCommand('#edit-linker_table', $form['field_storage']['subform']['settings']['storage_plugin_settings']['linker_table_and_column']));
     return $response;
   }
 
@@ -366,7 +354,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     if ($schema->tableExists($base_table)) {
-      $form_state->setValue(['settings', 'storage_plugin_settings', 'base_table'], $base_table);
+      $form_state->setValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_table'], $base_table);
     }
     else {
       $form_state->setErrorByName('settings][storage_plugin_settings][base_table',
@@ -434,8 +422,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $linker_table_and_column = $settings['storage_plugin_settings']['linker_table_and_column'];
     $parts = explode(self::$table_column_delimiter, $linker_table_and_column);
     if (count($parts) == 2) {
-      $form_state->setValue(['settings', 'storage_plugin_settings', 'linker_table'], $parts[0]);
-      $form_state->setValue(['settings', 'storage_plugin_settings', 'linker_fkey_column'], $parts[1]);
+      $form_state->setValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'linker_table'], $parts[0]);
+      $form_state->setValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'linker_fkey_column'], $parts[1]);
     }
     else {
       $form_state->setErrorByName('settings][storage_plugin_settings][linker_table_and_column',
@@ -653,22 +641,28 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         // Map for easy lookup.
         $all_fkeys = [];
         foreach ($table_schema_def['foreign keys'] as $foreign_key) {
-          // For example, a table with a type_id column, here we would store
-          // $all_fkeys['a_table'] = ['type_id' => 'cvterm_id']
-          $all_fkeys[$foreign_key['table']] = $foreign_key['columns'];
+          // We reverse the order here for easy lookup. For example,
+          // array_design table has an operator_id column which is a foreign
+          // key to contact.contact_id. We want the key to be contact_id.
+          // Similarly, for a type_id we would store cvterm_id as the key
+          // $all_fkeys['a_table'] = ['cvterm_id' => 'type_id'].
+          $all_fkeys[$foreign_key['table']] = [];
+          foreach ($foreign_key['columns'] as $base_col => $fk_col) {
+            $all_fkeys[$foreign_key['table']][$fk_col] = $base_col;
+          }
         }
 
-        if ($all_fkeys[$object_table] ?? FALSE) {
-          // If the current table is the base table, we have a direct
-          // reference to the object table, otherwise it is a linker table,
-          // and needs to also have a foreign key to the base table.
-          if ($table_name == $base_table) {
-            $linker_tables[] = [$table_name, $all_fkeys[$base_table][$base_pkey_col]];
-          }
-          else if ($all_fkeys[$object_table][$object_pkey_col] ?? FALSE) {
+        if ($all_fkeys[$object_table][$object_pkey_col] ?? FALSE) {
+          // At this point we found a foreign key to the object table.
+          // If the current table is the base table, this is a direct
+          // reference to the object table. If the current table is a
+          // linker table, then we also need to check that we also have
+          // a foreign key to the base table.
+          if (($table_name == $base_table) or ($all_fkeys[$base_table][$base_pkey_col] ?? FALSE)) {
             $linker_tables[] = [$table_name, $all_fkeys[$object_table][$object_pkey_col]];
           }
         }
+
       }
     }
     return $linker_tables;
