@@ -7,10 +7,12 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\tripal\Plugin\views\access\TripalContentViewAccessHandler;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the Tripal Content View Access Handler.
  */
+#[RunTestsInSeparateProcesses]
 class TripalContentViewAccessTest extends TripalTestKernelBase {
 
   /**
