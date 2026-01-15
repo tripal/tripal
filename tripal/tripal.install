@@ -5,7 +5,8 @@
  */
 
 use Drupal\Core\Database\ConnectionNotDefinedException;
-use \Drupal\Core\Database\Database;
+use Drupal\Core\Database\Database;
+use Drupal\Core\Hook\Attribute\LegacyRequirementsHook;
 
 /**
  * Implementation of hook_install().
@@ -123,6 +124,7 @@ function tripal_uninstall() {
 /**
  * Implements hook_requirements().
  */
+#[LegacyRequirementsHook]
 function tripal_requirements($phase) {
   $checks = [];
   // Make sure the current install does not use per-table prefixes.
