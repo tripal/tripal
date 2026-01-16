@@ -91,7 +91,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
         'database',
       ],
     ];
-    $def = $this->connection->schema()->getTableDef($table_name, $parameters);
+    $def = $this->chado_connection->schema()->getTableDef($table_name, $parameters);
     return $def;
   }
 
