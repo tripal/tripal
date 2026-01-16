@@ -1081,12 +1081,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       if ($lookup_columns) {
         // Automatic lookup is enabled.
         // Determine actual columns for this linking table.
-<<<<<<< HEAD
         $linking_table_def = $this->getChadoTableDef($linking_table);
-=======
-        $schema = $this->chado_connection->schema();
-        $linking_table_def = $schema->getTableDef($linking_table, ['format' => 'Drupal']);
->>>>>>> origin/4.x
         foreach ($linking_table_def['fields'] as $field_id => $def) {
           if (array_key_exists($field_id, $defaults)) {
             // Only include if a NOT NULL constraint exists,
