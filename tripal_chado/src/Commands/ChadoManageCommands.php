@@ -886,6 +886,9 @@ class ChadoManageCommands extends DrushCommands {
   /**
    * Display citations of imported publications.
    *
+   * For quotation marks use guillemets «» because standard quotes ' or " get
+   * converted by t() to HTML entities &#039; or &quot;.
+   *
    * @param array $citations
    *   Citations of imported publications, could be an empty array.
    *
@@ -893,16 +896,19 @@ class ChadoManageCommands extends DrushCommands {
    *   No return value, output is to screen.
    */
   protected function listCitations(array $citations): void {
-    if ($citations) {
-      if (count($citations) == 1) {
-        $this->logger->success($this->t('Imported "@cit"', ['@cit' => $citations[0]]));
+    if (count($citations) == 1) {
+      $this->logger->success($this->t('Imported «@cit»',
+        ['@cit' => $citations[0]]));
+    }
+    elseif (count($citations) > 1) {
+      // The citation list is included inside the logger message to make
+      // sure output is in desired order.
+      $list = '';
+      foreach ($citations as $index => $citation) {
+        $list .= "\n" . ($index + 1) . ': «' . $citation . '»';
       }
-      else {
-        $this->logger->success($this->t('Imported @n publications:', ['@n' => count($citations)]));
-        foreach ($citations as $index => $citation) {
-          $this->output()->writeln(($index + 1) . ': "' . $citation . '"');
-        }
-      }
+      $this->logger->success($this->t('Imported @n publications: @list',
+        ['@n' => count($citations), '@list' => $list]));
     }
   }
 
