@@ -6,10 +6,13 @@ use Drupal\pgsql\Driver\Database\pgsql\Connection;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
+use Drupal\tripal\TripalImporter\PluginManagers\TripalImporterManager;
+use Drupal\tripal\TripalPubLibrary\PluginManagers\TripalPubLibraryManager;
 use Drupal\tripal_biodb\Exception\ParameterException;
 use Drupal\tripal_chado\Commands\ChadoManageCommands;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Plugin\TripalBackendPublish\ChadoPublish;
+use Drupal\tripal_chado\Plugin\TripalImporter\PubSearchQueryImporter;
 use Drupal\tripal_chado\Services\ChadoMviewsManager;
 use Drupal\tripal_chado\Task\ChadoApplyMigrations;
 use Drupal\tripal_chado\Task\ChadoInstaller;
@@ -91,6 +94,20 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
   protected string $test_schema;
 
   /**
+   * The name of the test user.
+   *
+   * @var string
+   */
+  protected string $test_user;
+
+  /**
+   * Current version of arguments set for a tripal importer.
+   *
+   * @var array
+   */
+  protected array $importer_args;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -102,14 +119,15 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
     $this->mview_manager = $this->container->get('tripal_chado.materialized_views');
 
     // Install needed schemas.
-    $this->installSchema('tripal', ['tripal_id_space_collection', 'tripal_vocabulary_collection', 'tripal_import']);
+    $this->installSchema('tripal', ['tripal_id_space_collection', 'tripal_vocabulary_collection', 'tripal_import', 'tripal_pub_library_query']);
     $this->installSchema('tripal_chado', ['tripal_custom_tables', 'tripal_mviews', 'tripal_cv_obo', 'chado_migrations']);
     $this->installConfig('system');
     $this->installConfig('tripal_chado');
     $this->installEntitySchema('user');
 
     // Create and log-in a user.
-    $this->setUpCurrentUser();
+    $user = $this->setUpCurrentUser();
+    $this->test_user = $user->getAccountName();
 
     // Store the test schema name for easy access.
     $this->test_schema = $this->chado_connection->getSchemaName();
@@ -198,13 +216,37 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
     $mock_publish->method('createInstance')
       ->willReturn($mock_publish_instance);
 
+
+
+    // Create a mock publication importer returning a mock instance.
+    $mock_pub_importer = $this->createMock(PubSearchQueryImporter::class);
+    $mock_pub_importer->method('setArguments')
+      ->willReturnCallback(function ($options) {
+        $this->importer_args = $options;
+        $this->log_output .= 'mock_pub_importer setArguments called';
+      });
+    $mock_pub_importer->method('run')
+      ->willReturnCallback(function () {
+        // For simplicity in testing, we assume that we import exactly
+        // as many publications as are in the criteria.
+        $citations = [];
+        foreach ($this->importer_args['run_args']['criteria']['criteria'] as $search) {
+          $citations[] = $search['search_terms'];
+        }
+        return $citations;
+      });
+    $mock_importer_manager = $this->createMock(TripalImporterManager::class);
+    $mock_importer_manager->method('createInstance')
+      ->willReturn($mock_pub_importer);
+
     // An instance of the ChadoManageCommands drush command class.
     $this->drush_command = new ChadoManageCommands(
       $this->container->get('config.factory'),
       $this->container->get('date.formatter'),
+      $this->container->get('entity_type.manager'),
       $mock_publish,
       $this->container->get('tripal.dbx'),
-      $this->container->get('tripal.importer'),
+      $mock_importer_manager,
       $this->container->get('tripal.pub_library'),
       $mock_migrator,
       $this->chado_connection,
@@ -371,6 +413,97 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
     $this->drush_command->populateMview('db2cv_mview, bogus_mview', ['schema-name' => $this->testSchemaName]);
     $this->assertStringContainsString('does not exist', $this->getLogOutput(),
       'An error should be included when populating a materialized view that does not exist.');
+
+    $options = [
+      'username' => $this->test_user,
+      'name' => NULL,
+      'id' => NULL,
+      'pmid' => NULL,
+      'schema-name' => $this->testSchemaName,
+      'api-key' => '',
+      'create-contact' => 0,
+    ];
+    $this->drush_command->tripalImportPublication($options);
+    $this->assertStringContainsString('Either the --name, --id, or --pmid argument is required', $this->getLogOutput(),
+      'A message should be included if required argument is missing.');
+
+    // Pub search query tests. Start with no defined pub search queries.
+    $options['name'] = 'non-exist';
+    $this->drush_command->tripalImportPublication($options);
+    $this->assertStringContainsString('No pub search queries have been created on this site', $this->getLogOutput(),
+      'A site with no search queries should display a message.');
+
+    // Add some pub search queries and try again.
+    $first_query_id = $this->createPubSearchQueries();
+    $this->drush_command->tripalImportPublication($options);
+    $this->assertStringContainsString('No pub search query matches the supplied name "non-exist"', $this->getLogOutput(),
+      'A non-existing query name should display a message.');
+
+    $options['name'] = 'query1';
+    $this->drush_command->tripalImportPublication($options);
+    $this->assertStringContainsString('Imported «tripal»', $this->getLogOutput(),
+      'A valid search query (found by name) should import a publication.');
+
+    $options['username'] = NULL;
+    $options['name'] = 'query1';
+    $this->drush_command->tripalImportPublication($options);
+    $this->assertStringContainsString('The --username argument is required', $this->getLogOutput(),
+      'Without username a message should be displayed.');
+
+    $options['username'] = 'I_do_not_exist';
+    $options['name'] = 'query1';
+    $this->drush_command->tripalImportPublication($options);
+    $this->assertStringContainsString('The specified username "I_do_not_exist" does not exist', $this->getLogOutput(),
+      'Invalid username a message should be displayed.');
+
+    $options['username'] = $this->test_user;
+    $options['name'] = NULL;
+    $options['id'] = '123.4';
+    $this->drush_command->tripalImportPublication($options);
+    $this->assertStringContainsString('An ID must be an integer value', $this->getLogOutput(),
+      'An invalid search query ID should display a message.');
+
+    $options['id'] = 999999999;
+    $this->drush_command->tripalImportPublication($options);
+    $this->assertStringContainsString('No pub search query matches the supplied ID "999999999"', $this->getLogOutput(),
+      'An non-existing search query ID should display a message.');
+
+    $options['id'] = ',';
+    $this->drush_command->tripalImportPublication($options);
+    $this->assertStringContainsString('No valid search queries were supplied', $this->getLogOutput(),
+      'If only a comma is specified, should display a message.');
+
+    $options['id'] = $first_query_id;
+    $this->drush_command->tripalImportPublication($options);
+    $this->assertStringContainsString('Imported «tripal»', $this->getLogOutput(),
+      'A valid search query (found by ID) should import a publication.');
+
+    // The second query is marked as disabled.
+    $options['id'] = $first_query_id + 1;
+    $this->drush_command->tripalImportPublication($options);
+    $this->assertStringContainsString('is marked as disabled', $this->getLogOutput(),
+      'A disabled search query (found by ID) should display a message.');
+
+    $options['id'] = NULL;
+    $options['pmid'] = ',';
+    $this->drush_command->tripalImportPublication($options);
+    $this->assertStringContainsString('No valid PMID values were supplied', $this->getLogOutput(),
+      'If only a comma is specified, should display a message.');
+
+    $options['pmid'] = '123.4';
+    $this->drush_command->tripalImportPublication($options);
+    $this->assertStringContainsString('A PMID must be an integer value', $this->getLogOutput(),
+      'An invalid PMID should display a message.');
+
+    $options['pmid'] = '1234, 5678';
+    $this->drush_command->tripalImportPublication($options);
+    $output = $this->getLogOutput();
+    $this->assertStringContainsString('Imported 2 publications', $output,
+      'Multiple valid PMID values should import publications.');
+    $this->assertStringContainsString('1: «1234»', $output,
+      'Multiple valid PMID values should import publications.');
+    $this->assertStringContainsString('2: «5678»', $output,
+      'Multiple valid PMID values should import publications.');
   }
 
   /**
@@ -474,4 +607,18 @@ class ChadoDrushCommandsTest extends ChadoTestKernelBase {
     $this->deleteViewRecords($view_name);
   }
 
+  /**
+   * Helper function to create a publication search query for testing.
+   *
+   * @return int
+   *   The primary key of the first inserted query, i.e. 1.
+   */
+  private function createPubSearchQueries(): int {
+    $test_criteria = 'a:10:{s:9:"remote_db";s:4:"PMID";s:4:"days";s:4:"5000";s:12:"num_criteria";s:1:"1";s:11:"loader_name";s:12:"phpunit_test";s:8:"disabled";i:0;s:10:"do_contact";i:0;s:13:"pub_import_id";s:1:"3";s:8:"criteria";a:1:{i:1;a:4:{s:12:"search_terms";s:6:"tripal";s:5:"scope";s:8:"abstract";s:9:"is_phrase";i:0;s:9:"operation";s:0:"";}}s:21:"form_state_user_input";a:14:{s:13:"pub_import_id";s:1:"3";s:9:"plugin_id";s:23:"tripal_pub_library_PMID";s:11:"button_next";s:4:"Next";s:11:"loader_name";s:12:"phpunit_test";s:12:"ncbi_api_key";s:0:"";s:4:"days";s:4:"5000";s:12:"num_criteria";s:1:"1";s:5:"table";a:1:{i:1;a:4:{s:11:"operation-1";s:0:"";s:7:"scope-1";s:8:"abstract";s:14:"search_terms-1";s:6:"tripal";s:11:"is_phrase-1";N;}}s:13:"form_build_id";s:48:"form-Iv1sxxqlksH-zH4X9veKy960ojwdVdQ1alETYHF0BpA";s:10:"form_token";s:43:"ANL6Kx7R67DNyuK7YzgcDkDhyl-bKnZsLRm7UEZg5bk";s:7:"form_id";s:31:"chado_new_pub_search_query_form";s:8:"disabled";N;s:10:"do_contact";N;s:18:"test_results_table";N;}s:12:"ncbi_api_key";s:0:"";}';
+    $query = $this->drupal_connection->insert('tripal_pub_library_query');
+    $query->fields(['name', 'criteria', 'disabled', 'do_contact']);
+    $query->values(['query1', $test_criteria, 0, 0]);
+    $query->values(['query2', $test_criteria, 1, 0]);
+    return $query->execute();
+  }
 }

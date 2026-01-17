@@ -864,6 +864,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     // Skip remainder if author list was empty
     if ($rank > 0) {
       $first_pubauthor_id = $insert->execute();
+print "CP61 do_contact=";var_dump($do_contact);//;;;@@@
       if ($do_contact) {
         $delta = 0;
         $contact_insert = $this->connection->insert('1:pubauthor_contact');

@@ -731,6 +731,10 @@ class ChadoManageCommands extends DrushCommands {
    */
   protected function tripalImportPublicationByName(string $name, string $chado_schema_name, int $uid): void {
     $all_queries = $this->pub_library_manager->getSearchQueries();
+    if (!$all_queries) {
+      $this->logger->error($this->t('No pub search queries have been created on this site'));
+      return;
+    }
     $query_ids = [];
     foreach ($all_queries as $query) {
       if ($query->name == $name) {
@@ -766,20 +770,30 @@ class ChadoManageCommands extends DrushCommands {
     foreach ($ids as $id) {
       $id = trim($id);
       if ($id) {
-        $query = $this->pub_library_manager->getSearchQuery($id);
-        if ($query) {
-          $disabled = $query->disabled;
-          if ($disabled != 0) {
-            $this->logger->error($this->t('Pub search query "@id" is marked as disabled',
+        // Validate that each ID is numeric.
+        if (!preg_match('/^[0-9]+$/', $id)) {
+          $this->logger->error($this->t('An ID must be an integer value. Invalid value supplied was "@id"',
+            ['@id' => $id]));
+          return;
+        }
+        else {
+          $query = $this->pub_library_manager->getSearchQuery($id);
+          if ($query) {
+            $disabled = $query->disabled;
+            if ($disabled != 0) {
+              $this->logger->error($this->t('Pub search query "@id" is marked as disabled',
+                ['@id' => $id]));
+              return;
+            }
+            else {
+              $valid_queries[$id] = $query;
+            }
+          }
+          else {
+            $this->logger->error($this->t('No pub search query matches the supplied ID "@id"',
               ['@id' => $id]));
             return;
           }
-          $valid_queries[$id] = $query;
-        }
-        else {
-          $this->logger->error($this->t('No pub search query matches the supplied ID "@id"',
-            ['@id' => $id]));
-          return;
         }
       }
     }
@@ -837,8 +851,8 @@ class ChadoManageCommands extends DrushCommands {
       $id = trim($id);
       if ($id) {
         // Validate that each PMID is numeric.
-        if (!is_numeric($id)) {
-          $this->logger->error($this->t('A PMID must be a numeric value. Invalid value supplied was "@id"',
+        if (!preg_match('/^[0-9]+$/', $id)) {
+          $this->logger->error($this->t('A PMID must be an integer value. Invalid value supplied was "@id"',
             ['@id' => $id]));
           return;
         }
@@ -850,6 +864,12 @@ class ChadoManageCommands extends DrushCommands {
           'operation' => $criteria ? 'OR' : '',
         ];
       }
+    }
+
+    // This could happen if only a comma was entered.
+    if (!$criteria) {
+      $this->logger->error($this->t('No valid PMID values were supplied.'));
+      return;
     }
 
     // Set up the importer arguments.
@@ -871,16 +891,11 @@ class ChadoManageCommands extends DrushCommands {
       ],
     ];
 
-    try {
-      $importer->setArguments($importer_args);
-      $citations = $importer->run();
+    $importer->setArguments($importer_args);
+    $citations = $importer->run();
 
-      // Show the citation for each imported publication.
-      $this->listCitations($citations);
-    }
-    catch (\Exception $e) {
-      throw new \Exception('Failed to import publication: ' . $e->getMessage());
-    }
+    // Show the citation for each imported publication.
+    $this->listCitations($citations);
   }
 
   /**
@@ -897,7 +912,7 @@ class ChadoManageCommands extends DrushCommands {
    */
   protected function listCitations(array $citations): void {
     if (count($citations) == 1) {
-      $this->logger->success($this->t('Imported «@cit»',
+      $this->logger->notice($this->t('Imported «@cit»',
         ['@cit' => $citations[0]]));
     }
     elseif (count($citations) > 1) {
@@ -907,7 +922,7 @@ class ChadoManageCommands extends DrushCommands {
       foreach ($citations as $index => $citation) {
         $list .= "\n" . ($index + 1) . ': «' . $citation . '»';
       }
-      $this->logger->success($this->t('Imported @n publications: @list',
+      $this->logger->notice($this->t('Imported @n publications: @list',
         ['@n' => count($citations), '@list' => $list]));
     }
   }
