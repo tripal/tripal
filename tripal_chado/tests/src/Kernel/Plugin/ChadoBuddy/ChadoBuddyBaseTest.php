@@ -796,7 +796,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
    * test getting a table schema directly from the database.
    */
   protected function createMigratedChadoTable() {
-    $testschema = $this->connection->getSchemaName();
+    $testschema = $this->chado_connection->getSchemaName();
     $sqlarr = [
       "CREATE TABLE $testschema.freezer (freezer_id bigint NOT NULL, type_id bigint, name text NOT NULL, description text)",
       "CREATE SEQUENCE $testschema.freezer_freezer_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1",
@@ -807,7 +807,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
       "INSERT INTO $testschema.freezer (type_id, name, description) VALUES (1, 'Ultracold #1', NULL), (1, 'Ultracold #2', 'Broken')",
     ];
     foreach ($sqlarr as $sql) {
-      $this->connection->query($sql, []);
+      $this->chado_connection->query($sql, []);
     }
   }
 
