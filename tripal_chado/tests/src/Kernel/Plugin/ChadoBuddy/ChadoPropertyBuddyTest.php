@@ -24,13 +24,13 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
     parent::setUp();
 
     // Open connection to a test Chado.
-    $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+    $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
     // Create some simple project records.
-    $this->connection->insert('1:project')
+    $this->chado_connection->insert('1:project')
       ->fields(['name' => 'proj001'])
       ->execute();
-    $this->connection->insert('1:project')
+    $this->chado_connection->insert('1:project')
       ->fields(['name' => 'proj002'])
       ->execute();
   }
