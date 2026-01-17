@@ -37,9 +37,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
   /**
    * The database connection to the test chado.
    *
-   * @var \Drupal\Core\Database\Connection
+   * @var Drupal\tripal_chado\Database\ChadoConnection
    */
-  protected ChadoConnection $connection;
+  protected ChadoConnection $chado_connection;
 
   /**
    * Annotations associated with the mock_plugin.
@@ -63,7 +63,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
 
     $this->installConfig('system');
 
-    $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+    $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
   }
 
   /**
@@ -94,11 +94,11 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
       $instance,
       "We did not have an object created when trying to create an ChadoBuddy instance.");
     $this->assertIsObject(
-      $instance->connection,
+      $instance->chado_connection,
       "The chado connection should have been set by the plugin manager but the value is NOT AN OBJECT."
     );
     $this->assertInstanceOf(
-      ChadoConnection::class, $instance->connection,
+      ChadoConnection::class, $instance->chado_connection,
       "The chado connection should have been set by the plugin manager but the value is NOT A CHADOCONNECTION OBJECT."
     );
   }
@@ -705,7 +705,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $addConditions->setAccessible(TRUE);
 
     // CASE: valid values passed to addConditions().
-    $query = $this->connection->select('1:cv', 'cv');
+    $query = $this->chado_connection->select('1:cv', 'cv');
     $conditions = [
       'cv.name' => 'EDAM',
     ];
@@ -723,7 +723,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // a query object ;-p.
     // We don't bother to test this because it is a TypeError.
     // CASE: calling addConditions() with an empty array of conditions.
-    $query = $this->connection->select('1:cv', 'cv');
+    $query = $this->chado_connection->select('1:cv', 'cv');
     $conditions = [];
     $options = [];
     $exception_caught = FALSE;
@@ -737,7 +737,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
 
     // CASE: calling addConditions() with a single key string to be
     // case insensitive.
-    $query = $this->connection->select('1:dbxref', 'dbxref');
+    $query = $this->chado_connection->select('1:dbxref', 'dbxref');
     $conditions = [
       'db.name' => 'Edam',
       'dbxref.accession' => 'Ab000001',
