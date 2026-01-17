@@ -394,6 +394,7 @@ use StringTranslationTrait;
     ],
   ): void {
 
+    // @todo These services will be injected in PR #2399
     /** @var Drupal\tripal\TripalDBX\TripalDbx $tripal_dbx */
     $tripal_dbx = \Drupal::service('tripal.dbx');
     /** @var Drupal\Core\Config\ConfigFactory $config_factory */
@@ -402,14 +403,11 @@ use StringTranslationTrait;
     $mview_manager = \Drupal::service('tripal_chado.materialized_views');
 
     // Get options or set default if not specified.
-    $schema_name = $options['schema-name'] ?? NULL;
+    $schema_name = $options['schema-name'] ?? $config_factory->get('tripal_chado.settings')->get('default_schema');
     $option_all = $options['all'] ?? FALSE;
     $option_list = $options['list'] ?? FALSE;
     $option_time = $options['time'] ?? FALSE;
 
-    if (!$schema_name) {
-      $schema_name = $config_factory->get('tripal_chado.settings')->get('default_schema');
-    }
     $schema_exists = $tripal_dbx->schemaExists($schema_name);
     if (!$schema_exists) {
       $this->logger->error($this->t('The schema "@schema_name" does not exist.',
