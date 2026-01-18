@@ -11,7 +11,7 @@
  https://www.drupal.org/node/2116263 for details.
 -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         bootstrap="../../../core/tests/bootstrap.php"
+         bootstrap="tripal/tests/tripal-bootstrap.php"
          colors="true"
          beStrictAboutTestsThatDoNotTestAnything="true"
          beStrictAboutOutputDuringTests="true"
@@ -33,6 +33,9 @@
     <ini name="error_reporting" value="32767"/>
     <!-- Do not limit the amount of memory tests take to run. -->
     <ini name="memory_limit" value="-1"/>
+    <!-- Defines regular expressions for deprecations in external modules
+      that we want to ignore. Includes those defined by Drupal. -->
+    <env name="SYMFONY_DEPRECATIONS_HELPER" value="ignoreFile=../../../modules/contrib/tripal/.deprecation-ignore.txt"/>
     <!-- Handling of functional tests. See core/phpunit.xml.dist -->
     <env name="MINK_DRIVER_CLASS" value=""/>
     <env name="MINK_DRIVER_ARGS" value=""/>
@@ -58,9 +61,7 @@
     </testsuite>
   </testsuites>
   <!-- Settings for coverage reports. -->
-  <source
-    ignoreSuppressionOfDeprecations="true"
-    >
+  <source ignoreSuppressionOfDeprecations="true">
     <include>
       <directory suffix=".php">tripal/src</directory>
       <file>tripal/tripal.module</file>
