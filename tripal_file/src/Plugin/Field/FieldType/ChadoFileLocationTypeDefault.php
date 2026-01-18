@@ -83,6 +83,23 @@ class ChadoFileLocationTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+    $value['record_id'] = 0;
+    $value[self::$object_id] = 0;
+    $value['linker_id'] = 0;
+    $value['fileloc_uri'] = 0;
+    $value['fileloc_rank'] = 0;
+    $value['fileloc_md5checksum'] = 0;
+    $value['fileloc_size'] = 0;
+    $value['fileloc_filename'] = 0;
+
+    return [$value];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function tripalTypes($field_definition) {
 
     // Create a variable for easy access to settings.

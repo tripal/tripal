@@ -86,6 +86,29 @@ class ChadoFileTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+    $value['record_id'] = 0;
+    $value['entity_id'] = 0;
+    $value['linker_id'] = 0;
+    $value['link'] = 0;
+    $value[self::$object_id] = 0;
+
+    // Do we want to conditionally include type_id and rank?
+    $value['linker_type_id'] = mt_rand(1, 500);
+    $value['linker_rank'] = 0;
+
+    // Object table properties.
+    $value['file_name'] = '';
+    $value['file_description'] = '';
+    $value['file_type'] = mt_rand(1, 500);
+
+    return [$value];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function tripalTypes($field_definition) {
 
     // Create a variable for easy access to settings.
