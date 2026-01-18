@@ -648,7 +648,7 @@ class ChadoManageCommands extends DrushCommands {
   #[CLI\Option(name: 'name', description: 'The name of an existing publication search query.')]
   #[CLI\Option(name: 'id', description: 'The ID number(s) of one or more existing publication search query, comma-delimited.')]
   #[CLI\Option(name: 'pmid', description: 'The PubMed ID(s) of one or more publications to import, comma-delimited.')]
-  #[CLI\Option(name: 'schema-name', description: 'The name of the chado schema to use (defaults to "chado")')]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the chado schema to use')]
   #[CLI\Option(name: 'api-key', description: 'pmid only: Optional NCBI API key for faster requests.')]
   #[CLI\Option(name: 'create-contact', description: 'pmid only: Set to 1 to create contact records for authors (default: 0).')]
   #[CLI\Usage(
