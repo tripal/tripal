@@ -9,10 +9,10 @@ use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the ChadoPhylotreeVisFormatterDefault Field Formatter.
- *
  *
  * @group tripal-field
  * @group chado-field
@@ -21,6 +21,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal-field')]
 #[Group('chado-field')]
 #[Group('phylotree')]
+#[RunTestsInSeparateProcesses]
 class ChadoPhylotreeFormatterTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;
