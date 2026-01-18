@@ -2,9 +2,14 @@
 
 namespace Drupal\Tests\tripal_biodb\Kernel\Task;
 
-use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal_biodb\Task\BioTaskBase;
-use Drupal\Tests\tripal\Kernel\TripalDBX\Subclass\TripalDbxConnectionFake;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use Prophecy\Prophecy\ObjectProphecy;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for tasks.
@@ -14,19 +19,55 @@ use Drupal\Tests\tripal\Kernel\TripalDBX\Subclass\TripalDbxConnectionFake;
  * @group Tripal
  * @group Tripal BioDb
  * @group Tripal BioDb Task
+ *
+ * @covers ::__construct
+ * @covers ::initId
+ * @covers ::getId
+ * @covers ::getLogger
+ * @covers ::setParameters
+ * @covers ::prepareSchemas
  */
+#[CoversClass(BioTaskBase::class)]
+#[CoversMethod(BioTaskBase::class, '__construct')]
+#[CoversMethod(BioTaskBase::class, 'initId')]
+#[CoversMethod(BioTaskBase::class, 'getId')]
+#[CoversMethod(BioTaskBase::class, 'getLogger')]
+#[CoversMethod(BioTaskBase::class, 'setParameters')]
+#[CoversMethod(BioTaskBase::class, 'prepareSchemas')]
+#[Group('biodb-task')]
+#[RunTestsInSeparateProcesses]
 class BioTaskBaseTest extends TripalTestKernelBase {
 
   /**
-   * Test members.
+   * Prophesize config factory object.
    *
-   * "pro*" members are prophesize objects while their "non-pro*" equivqlent are
-   * the revealed objects.
+   * "pro*" members are prophesize objects while their "non-pro*" equivalent
+   * are the revealed objects.
+   *
+   * @var Prophecy\Prophecy\ObjectProphecy
    */
-  protected $proConfigFactory;
-  protected $configFactory;
-  protected $proConfig;
-  protected $config;
+  protected ObjectProphecy $proConfigFactory;
+
+  /**
+   * Revealed config factory object.
+   *
+   * @var object
+   */
+  protected object $configFactory;
+
+  /**
+   * Prophesize config object.
+   *
+   * @var Prophecy\Prophecy\ObjectProphecy
+   */
+  protected ObjectProphecy $proConfig;
+
+  /**
+   * Revealed config object.
+   *
+   * @var object
+   */
+  protected object $config;
 
   /**
    * {@inheritdoc}
@@ -39,16 +80,17 @@ class BioTaskBaseTest extends TripalTestKernelBase {
   }
 
   /**
-   * Setup a mock version of the abstract Bi9oTaskBase for testing.
+   * Setup a mock version of the abstract BioTaskBase for testing.
    */
   public function getMock() {
 
-    // Create a mock for the abstract class
-    // but specify not to run the contructor + mention this is an abstract class.
-    $tmock = $this->getMockBuilder(\Drupal\tripal_biodb\Task\BioTaskBase::class)
-      ->onlyMethods(['getTripalDbxClass'])
-      ->getMockForAbstractClass();
-    // Ensure when getTripalDbxClass() is asked for the connection class, it returns our fake class.
+    // Create a mock for the abstract class, but specify not to run the
+    // constructor + mention this is an abstract class.
+    $tmock = $this->getMockBuilder(BioTaskBase::class)
+      ->onlyMethods(['getTripalDbxClass', 'validateParameters', 'getProgress'])
+      ->getMock();
+    // Ensure when getTripalDbxClass() is asked for the connection class,
+    // it returns our fake class.
     $tmock
       ->expects($this->any())
       ->method('getTripalDbxClass')
@@ -60,11 +102,6 @@ class BioTaskBaseTest extends TripalTestKernelBase {
 
   /**
    * Tests constructor: check constructor calls.
-   *
-   * @cover ::__construct
-   * @cover ::initId
-   * @cover ::getId
-   * @cover ::getLogger
    */
   public function testBioTaskBaseConstructor() {
 
@@ -75,12 +112,16 @@ class BioTaskBaseTest extends TripalTestKernelBase {
     // Since the variables set by the constructor are protected properties,
     // we cannot test them directly. As such, we will use PHP closures to
     // access these properties for testing.
-    //  -- Create a variable to store a copy of this test object for use within the closure.
+    // -- Create a variable to store a copy of this test object for use within
+    // the closure.
     $that = $this;
-    //  -- Create a closure (i.e. a function tied to a variable) that does not need any parameters.
-    //     Within this function we will want all of the assertions we will use to test the private methods.
-    //     Also, $this within the function will actually be the plugin object that you bind later (mind blown).
-    $assertConstructorClosure = function ()  use ($that){
+    // -- Create a closure (i.e. a function tied to a variable) that does not
+    // need any parameters.
+    // Within this function we will want all of the assertions we will use
+    // to test the private methods.
+    // Also, $this within the function will actually be the plugin object
+    // that you bind later (mind blown).
+    $assertConstructorClosure = function () use ($that) {
       $that->assertIsObject($this->connection,
         "The connection object was not set properly by our constructor.");
       $that->assertIsObject($this->logger,
@@ -97,18 +138,16 @@ class BioTaskBaseTest extends TripalTestKernelBase {
       $that->assertEquals($this->logger, $this->getLogger(),
         "Retrieving the logger did not return the logger set in the object.");
     };
-    //  -- Now, bind our assertion closure to the $plugin object. This is what makes the plugin available
-    //     inside the function.
+    // -- Now, bind our assertion closure to the $plugin object. This is what
+    // makes the plugin available inside the function.
     $doAssertConstructorClosure = $assertConstructorClosure->bindTo($tmock, get_class($tmock));
-    //  -- Finally, call our bound closure function to run the assertions on our plugin.
+    // -- Finally, call our bound closure function to run the assertions on
+    // our plugin.
     $doAssertConstructorClosure();
   }
 
   /**
    * Tests setting + preparing input/output schema.
-   *
-   * @cover ::setParameters
-   * @cover ::prepareSchemas
    */
   public function testBioTaskBaseParameters() {
 
@@ -121,7 +160,7 @@ class BioTaskBaseTest extends TripalTestKernelBase {
     ];
     $tmock->setParameters($parameters);
     $that = $this;
-    $assertParametersClosure = function ()  use ($that, $parameters){
+    $assertParametersClosure = function () use ($that, $parameters) {
       $that->assertIsArray($this->parameters, "Parameters should be an array.");
       $that->assertArrayHasKey('input_schemas', $this->parameters,
         "Input schema key not set in parameters array.");
@@ -135,14 +174,14 @@ class BioTaskBaseTest extends TripalTestKernelBase {
       $that->assertCount(1, $this->inputSchemas,
         "We expect there should be one input schema based on the parameters passed in.");
       $that->assertContainsOnlyInstancesOf(
-        \Drupal\tripal\TripalDBX\TripalDbxConnection::class,
+        TripalDbxConnection::class,
         $this->inputSchemas,
         "All input schema should be prepared as TripalDBXConnection objects but are not."
       );
       $that->assertCount(1, $this->outputSchemas,
         "We expect there should be one output schema based on the parameters passed in.");
       $that->assertContainsOnlyInstancesOf(
-        \Drupal\tripal\TripalDBX\TripalDbxConnection::class,
+        TripalDbxConnection::class,
         $this->outputSchemas,
         "All output schema should be prepared as TripalDBXConnection objects but are not."
       );
@@ -150,4 +189,5 @@ class BioTaskBaseTest extends TripalTestKernelBase {
     $doAssertParametersClosure = $assertParametersClosure->bindTo($tmock, get_class($tmock));
     $doAssertParametersClosure();
   }
+
 }

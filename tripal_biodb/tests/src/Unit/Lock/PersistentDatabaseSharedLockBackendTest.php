@@ -2,10 +2,14 @@
 
 namespace Drupal\Tests\tripal_biodb\Unit\Lock;
 
-use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Core\Lock\DatabaseLockBackend;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Core\Lock\PersistentDatabaseLockBackend;
 use Drupal\tripal_biodb\Lock\PersistentDatabaseSharedLockBackend;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for PersistentDatabaseSharedLockBackend.
@@ -30,7 +34,31 @@ use Drupal\tripal_biodb\Lock\PersistentDatabaseSharedLockBackend;
  * @group Tripal
  * @group Tripal BioDb
  * @group Tripal BioDb Lock
+ *
+ * @covers ::acquire
+ * @covers ::acquireShared
+ * @covers ::lockMayBeAvailable
+ * @covers ::getOwnerPid
+ * @covers ::getStartTime
+ * @covers ::release
+ * @covers ::releaseShared
+ * @covers ::releaseAll
+ * @covers ::cleanUnusedSharedLocks
+ * @covers ::getCurrentExpirationDelay
  */
+#[CoversClass(PersistentDatabaseSharedLockBackend::class)]
+#[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'acquire')]
+#[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'acquireShared')]
+#[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'lockMayBeAvailable')]
+#[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'getOwnerPid')]
+#[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'getStartTime')]
+#[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'release')]
+#[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'releaseShared')]
+#[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'releaseAll')]
+#[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'cleanUnusedSharedLocks')]
+#[CoversMethod(PersistentDatabaseSharedLockBackend::class, 'getCurrentExpirationDelay')]
+#[Group('biodb-lock')]
+#[RunTestsInSeparateProcesses]
 class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
@@ -55,10 +83,10 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
   protected $state;
 
   /**
-   * A variable set by our custom error handler when an E_USER_WARNING is thrown.
+   * A variable set by our custom error handler when E_USER_WARNING is thrown.
    *
    * If it's TRUE it means a warning was thrown.
-   * Remember to reset this variable back to false after a warning is asserted.
+   * Remember to reset this variable back to FALSE after a warning is asserted.
    *
    * @var bool
    */
@@ -78,7 +106,7 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
    */
   protected function setUp(): void {
     parent::setUp();
-    $this->internalLocker = new \Drupal\Core\Lock\DatabaseLockBackend(
+    $this->internalLocker = new DatabaseLockBackend(
       $this->container->get('database')
     );
     $this->state = $this->container->get('state');
@@ -103,6 +131,7 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
    * Tears down the test environment.
    *
    * @return void
+   *   No return value.
    */
   protected function tearDown(): void {
     // Restore the original error handler now that we are done our tests.
@@ -111,8 +140,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests exclusive lock.
-   *
-   * @covers ::acquire
    */
   public function testExclusiveLockBasics() {
     $lock_name = 'test_lock_a';
@@ -144,7 +171,7 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
       $this->warning_message,
       "We did not get the warning we expected."
     );
-    // Reset warning handler
+    // Reset warning handler.
     $this->warning_thrown = FALSE;
     $this->warning_message = '';
 
@@ -200,8 +227,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests shared lock.
-   *
-   * @covers ::acquire
    */
   public function testSharedLockBasics() {
     $lock_name = 'test_lock_a';
@@ -278,8 +303,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests exclusive acquire denies a shared lock.
-   *
-   * @covers ::acquire
    */
   public function testNotAcquireWhenShared() {
     $lock_name = 'test_lock_share';
@@ -302,10 +325,7 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
   }
 
   /**
-   * Tests acquire will continue even if it could not use state API to store
-   * infos.
-   *
-   * @covers ::acquire
+   * Tests acquire will continue even if it could not use state API for storage.
    */
   public function testAcquireWithoutState() {
     $lock_name = 'test_lock_share';
@@ -332,10 +352,9 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
       $this->warning_message,
       "We did not get the warning we expected."
     );
-    // Reset warning handler
+    // Reset warning handler.
     $this->warning_thrown = FALSE;
     $this->warning_message = '';
-
 
     // Make sure state lock was not released.
     $this->assertFalse($other_locker->lockMayBeAvailable(PersistentDatabaseSharedLockBackend::STATE_KEY_EXCLUSIVE), 'States still locked.');
@@ -357,8 +376,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests acquireShared will stop if it could not use state API.
-   *
-   * @covers ::acquireShared
    */
   public function testAcquireSharedWithoutState() {
     $lock_name = 'test_lock_share';
@@ -375,7 +392,7 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
       $this->warning_message,
       "We did not get the warning we expected."
     );
-    // Reset warning handler
+    // Reset warning handler.
     $this->warning_thrown = FALSE;
     $this->warning_message = '';
 
@@ -385,8 +402,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests acquireShared can allocate a main shared lock.
-   *
-   * @covers ::acquireShared
    */
   public function testAcquireSharedNoMainLock() {
     $lock_name = 'test_lock_share';
@@ -405,9 +420,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests acquireShared can not use an existing exclusive lock as main lock.
-   *
-   * @covers ::acquireShared
-   * @covers ::lockMayBeAvailable
    */
   public function testAcquireSharedExistingExclusiveLock() {
     $lock_name = 'test_lock_share';
@@ -435,9 +447,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests acquireShared can use an existing main shared lock.
-   *
-   * @covers ::acquireShared
-   * @covers ::lockMayBeAvailable
    */
   public function testAcquireSharedExistingMainLock() {
     $lock_name = 'test_lock_share';
@@ -465,8 +474,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests acquireShared can extend a timeout.
-   *
-   * @covers ::acquireShared
    */
   public function testAcquireSharedExtendTimeout() {
     $lock_name = 'test_lock_share';
@@ -506,10 +513,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests acquireShared can extend a timeout.
-   *
-   * @covers ::acquireShared
-   * @covers ::getOwnerPid
-   * @covers ::getStartTime
    */
   public function testAcquireSharedDetails() {
     $lock_name = 'test_lock_share';
@@ -538,9 +541,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests no release other locks.
-   *
-   * @covers ::release
-   * @covers ::lockMayBeAvailable
    */
   public function testNoReleaseOther() {
     $lock_name = 'test_lock_share';
@@ -554,8 +554,7 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
     $this->sharedLocker->release($lock_name);
     $is_free =
       $this->sharedLocker->lockMayBeAvailable($lock_name)
-      || $other_locker->lockMayBeAvailable($lock_name)
-    ;
+      || $other_locker->lockMayBeAvailable($lock_name);
     $this->assertFalse($is_free, 'Other lock not released.');
 
     $other_locker->release($lock_name);
@@ -566,9 +565,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests no exclusive release on shared locks.
-   *
-   * @covers ::release
-   * @covers ::lockMayBeAvailable
    */
   public function testNoReleaseOnShared() {
     $lock_name = 'test_lock_share';
@@ -590,9 +586,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests no releaseShared on exclusive locks.
-   *
-   * @covers ::releaseShared
-   * @covers ::lockMayBeAvailable
    */
   public function testNoReleaseSharedOnExclusive() {
     $lock_name = 'test_lock_share';
@@ -617,10 +610,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests releaseAll only release all owned locks.
-   *
-   * @covers ::releaseAll
-   * @covers ::lockMayBeAvailable
-   * @covers ::cleanUnusedSharedLocks
    */
   public function testReleaseAllOwn() {
     $lock_prefix = 'test_lock_share_';
@@ -694,8 +683,6 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Tests expiration delay.
-   *
-   * @covers ::getCurrentExpirationDelay
    */
   public function testGetCurrentExpirationDelay() {
     $lock_name = 'test_lock_share';
@@ -725,4 +712,5 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
     // Release shared lock.
     $this->sharedLocker->releaseShared($lock_name, $owner);
   }
+
 }

@@ -2,10 +2,16 @@
 
 namespace Drupal\Tests\tripal\Kernel\TripalStorage;
 
+use Drupal\tripal\TripalStorage\StoragePropertyValue;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\tripal\Services\TripalLogger;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
+use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
-use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Tripal Storage Base class.
@@ -13,6 +19,8 @@ use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
  * @group Tripal
  * @group TripalStorage
  */
+#[Group('tripal-storage')]
+#[RunTestsInSeparateProcesses]
 class TripalStorageTest extends TripalTestKernelBase {
 
   /**
@@ -22,6 +30,7 @@ class TripalStorageTest extends TripalTestKernelBase {
 
   /**
    * A dummy Tripal Term for use whereever tripal storage needs one.
+   *
    * NOTE: This is a dummy object so any methods called on it will return NULL.
    *
    * @var \Drupal\tripal\TripalVocabTerms\TripalTerm
@@ -29,9 +38,11 @@ class TripalStorageTest extends TripalTestKernelBase {
   protected object $mock_term;
 
   /**
-   * A dummy tripal logger. This exists to ensure that nothing is written to the
-   * PHP error_log as that causes a PHPUnit exception. Instead this mock will
-   * always print the message to the screen.
+   * A dummy tripal logger.
+   *
+   * This exists to ensure that nothing is written to the PHP error_log as
+   * that causes a PHPUnit exception. Instead this mock will alway print
+   * the message to the screen.
    */
   protected object $mock_logger;
 
@@ -49,31 +60,31 @@ class TripalStorageTest extends TripalTestKernelBase {
     $container = \Drupal::getContainer();
 
     // We need a term for property types so we will create a generic mocked one
-    // here which will be pulled from the container any time a term is requested.
-    $this->mock_term = $this->createMock(\Drupal\tripal\TripalVocabTerms\TripalTerm::class);
+    // here which will be pulled from the container any time a term is needed.
+    $this->mock_term = $this->createMock(TripalTerm::class);
     // Create a mock ID space to return our mock term when asked.
-    $mock_idspace = $this->createMock(\Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface::class);
+    $mock_idspace = $this->createMock(TripalIdSpaceInterface::class);
     $mock_idspace->method('getTerm')
       ->willReturn($this->mock_term);
-    // Create a mock Tripal ID Space service to return our mock idspace when asked.
-    $mock_idspace_service = $this->createMock(\Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager::class);
+    // Create a mock Tripal ID Space service to return our mock idspace.
+    $mock_idspace_service = $this->createMock(TripalIdSpaceManager::class);
     $mock_idspace_service->method('loadCollection')
       ->willReturn($mock_idspace);
     $container->set('tripal.collection_plugin_manager.idspace', $mock_idspace_service);
 
     // Some of our tests will check logged messages that would normally go to
     // php error_log. PHPUnit will throw an exception if anything is added to
-    // error_log so we want to mock TripalLogger to ensure all errors are printed
-    // to the screen.
+    // error_log so we want to mock TripalLogger to ensure all errors are
+    // printed to the screen.
     // We only need to mock the error method. Other methods will not be mocked.
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['error'])
       ->getMock();
     $mock_logger->method('error')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
           print 'ERROR: ' . str_replace(array_keys($context), $context, $message);
           return NULL;
-        });
+      });
     $container->set('tripal.logger', $mock_logger);
 
   }
@@ -88,13 +99,19 @@ class TripalStorageTest extends TripalTestKernelBase {
     $configuration = [];
     $plugin_id = 'fakePluginName';
     $plugin_definition = [];
-    $logger = \Drupal::service('tripal.logger');;
+    $logger = \Drupal::service('tripal.logger');
+
     // Tripal Storage Base is an abstract class.
     // Therefore, in order to test it we need to mock the abstract methods.
-    $tripalStorage = $this->getMockForAbstractClass(
-      'Drupal\tripal\TripalStorage\TripalStorageBase',
-      [$configuration, $plugin_id, $plugin_definition, $logger]
-    );
+    $tripalStorage = $this->getMockBuilder('Drupal\tripal\TripalStorage\TripalStorageBase')
+      ->setConstructorArgs([
+        $configuration,
+        $plugin_id,
+        $plugin_definition,
+        $logger,
+      ])
+      ->onlyMethods(['getStoredTypes', 'getNonStoredTypes', 'insertValues', 'updateValues', 'loadValues', 'deleteValues', 'findValues', 'validateValues'])
+      ->getMock();
     $this->assertIsObject($tripalStorage, "Unable to create tripal storage mock object.");
 
     // This will be our set of fields to test.
@@ -107,13 +124,13 @@ class TripalStorageTest extends TripalTestKernelBase {
       'name!with+symbols' => NULL,
     ];
 
-    // We also need a FieldConfig object for each field
+    // We also need a FieldConfig object for each field.
     foreach ($fields as $field_name => $placeholder) {
-      $fields[$field_name] = $this->createMock(\Drupal\field\Entity\FieldConfig::class);
+      $fields[$field_name] = $this->createMock(FieldConfig::class);
       $fields[$field_name]->method('getLabel')
         ->willReturn($field_name);
 
-      // Now add it to the storage
+      // Now add it to the storage.
       $success = $tripalStorage->addFieldDefinition($field_name, $fields[$field_name]);
       $this->assertTrue($success, "add Field Definition did not return true for $field_name");
     }
@@ -136,7 +153,7 @@ class TripalStorageTest extends TripalTestKernelBase {
     // and reset it that we get the most recent one.
     $altered_mock = $fields['NameSnakeCase'];
     $altered_mock->method('getLabel')
-        ->willReturn('NEW LABEL');
+      ->willReturn('NEW LABEL');
     $success = $tripalStorage->addFieldDefinition('NameSnakeCase', $altered_mock);
     $this->assertTrue($success, "add Field Definition did not return true for NameSnakeCase (second time)");
     $retrieved_defn = $tripalStorage->getFieldDefinition('NameSnakeCase');
@@ -158,10 +175,15 @@ class TripalStorageTest extends TripalTestKernelBase {
     $logger = \Drupal::service('tripal.logger');
     // Tripal Storage Base is an abstract class.
     // Therefore, in order to test it we need to mock the abstract methods.
-    $tripalStorage = $this->getMockForAbstractClass(
-      'Drupal\tripal\TripalStorage\TripalStorageBase',
-      [$configuration, $plugin_id, $plugin_definition, $logger]
-    );
+    $tripalStorage = $this->getMockBuilder('Drupal\tripal\TripalStorage\TripalStorageBase')
+      ->setConstructorArgs([
+        $configuration,
+        $plugin_id,
+        $plugin_definition,
+        $logger,
+      ])
+      ->onlyMethods(['getStoredTypes', 'getNonStoredTypes', 'insertValues', 'updateValues', 'loadValues', 'deleteValues', 'findValues', 'validateValues'])
+      ->getMock();
     $this->assertIsObject($tripalStorage, "Unable to create tripal storage mock object.");
 
     // This will be our set of fields to test.
@@ -174,8 +196,8 @@ class TripalStorageTest extends TripalTestKernelBase {
       'name!with+symbols',
     ];
 
-    // We want to use the same set of property keys for each field to confirm that
-    // they will not be overridden.
+    // We want to use the same set of property keys for each field to confirm
+    // that they will not be overridden.
     $property_keys = [
       'record_id',
       'value',
@@ -186,7 +208,8 @@ class TripalStorageTest extends TripalTestKernelBase {
 
     $propertyTyleClass_namespace = 'Drupal\tripal\TripalStorage\\';
     $propertyTypeClasses = ['BoolStoragePropertyType', 'DateTimeStoragePropertyType',
-      'IntStoragePropertyType', 'RealStoragePropertyType', 'TextStoragePropertyType'];
+      'IntStoragePropertyType', 'RealStoragePropertyType', 'TextStoragePropertyType',
+    ];
 
     $expected_types = [];
     $expected_class_type = [];
@@ -225,7 +248,7 @@ class TripalStorageTest extends TripalTestKernelBase {
       $tripalStorage->addTypes($field_name, $expected_types[$field_name]);
     }
 
-    // Also test that if we try to add a type that is not an object
+    // Also test that if we try to add a type that is not an object.
     $bad_test_properties = [
       'NotClass' => 'fred really wanted to be a property type but alas he was a string',
     ];
@@ -237,10 +260,10 @@ class TripalStorageTest extends TripalTestKernelBase {
     $this->assertDoesNotMatchRegularExpression('/ERROR.*ERROR/', $printed_output,
       "We only expected a single error and yet we may have found multiple?");
 
-    // or is not a propertyType object that we get an error.
+    // Or is not a propertyType object that we get an error.
     // We use Drupal\tripal\TripalStorage\StoragePropertyValue to check that it
     // is really specific.
-    $propertyValueNotType = new \Drupal\tripal\TripalStorage\StoragePropertyValue(
+    $propertyValueNotType = new StoragePropertyValue(
       'tripal_entity',
       'name_all_underscores',
       'NotAPropertyType',
@@ -248,7 +271,7 @@ class TripalStorageTest extends TripalTestKernelBase {
       'entity_test'
     );
     $bad_test_properties = [
-      'NotAPropertyType' => $propertyValueNotType
+      'NotAPropertyType' => $propertyValueNotType,
     ];
     ob_start();
     $tripalStorage->addTypes('fieldWithBadPropertyTypes', $bad_test_properties);
@@ -258,7 +281,8 @@ class TripalStorageTest extends TripalTestKernelBase {
     $this->assertDoesNotMatchRegularExpression('/ERROR.*ERROR/', $printed_output,
       "We only expected a single error and yet we may have found multiple?");
 
-    // Now we use the generic getTypes method to test that we can retrieve what we added.
+    // Now we use the generic getTypes method to test that we can retrieve what
+    // we added.
     // Retrieved types should be of the form:
     // field_name -> property key -> property type object.
     $retrieved_types = $tripalStorage->getTypes();
@@ -301,7 +325,8 @@ class TripalStorageTest extends TripalTestKernelBase {
       }
     }
 
-    // Also check that if we ask for a non-existant property type that we don't get one.
+    // Also check that if we ask for a non-existant property type that we
+    // don't get one.
     $retrieved_property_object = $tripalStorage->getPropertyType('A field that definitely doesnt exist', 'also not a property that exists');
     $this->assertIsNotObject($retrieved_property_object,
       "We should not have had an object returned as the field/property type combo should not exist.");
@@ -329,4 +354,5 @@ class TripalStorageTest extends TripalTestKernelBase {
     $this->assertCount($expected_count, $retrieved_types[$field_name],
       "We did not have the expected number of properties remaining after removing some.");
   }
+
 }

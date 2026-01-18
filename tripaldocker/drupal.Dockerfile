@@ -2,8 +2,8 @@ ARG phpversion='8.3'
 FROM php:${phpversion}-apache-bookworm
 
 ARG phpversion='8.3'
-ARG drupalversion='11.0.x-dev'
-ARG postgresqlversion='17'
+ARG drupalversion='11.2.x-dev'
+ARG postgresqlversion='18'
 ARG modules='devel devel_php field_group field_group_table'
 ARG chadoschema='chado'
 ARG installchado=TRUE
@@ -16,6 +16,8 @@ LABEL tripal.version="4.x-dev"
 LABEL tripal.stability="development"
 LABEL os.version="bookworm"
 LABEL postgresql.version="${postgresqlversion}"
+
+HEALTHCHECK --interval=2m --timeout=30s --start-period=2m --retries=3 CMD [ "pg_isready", "-U", "postgres" ]
 
 COPY . /app
 COPY tripaldocker/init_scripts/motd /etc/motd

@@ -3,8 +3,7 @@ namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoTestTrait;
-use Drupal\tripal\TripalDBX\TripalDbx;
-use Drupal\tripal_chado\Database\ChadoConnection;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * This is a base class for Chado tests that need a full Drupal install.
@@ -25,6 +24,7 @@ use Drupal\tripal_chado\Database\ChadoConnection;
  *
  * @group Tripal Chado
  */
+#[Group('Tripal Chado')]
 abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
 
   use ChadoTestTrait;

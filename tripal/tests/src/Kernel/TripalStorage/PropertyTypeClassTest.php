@@ -2,7 +2,19 @@
 
 namespace Drupal\Tests\tripal\Kernel\TripalStorage;
 
+use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
+use Drupal\tripal\TripalStorage\TextStoragePropertyType;
+use Drupal\tripal\TripalStorage\RealStoragePropertyType;
+use Drupal\tripal\TripalStorage\IntStoragePropertyType;
+use Drupal\tripal\TripalStorage\DateTimeStoragePropertyType;
+use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
+use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
+use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Tripal Storage Base class.
@@ -10,6 +22,8 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group Tripal
  * @group TripalStorage
  */
+#[Group('tripal-storage')]
+#[RunTestsInSeparateProcesses]
 class PropertyTypeClassTest extends TripalTestKernelBase {
 
   /**
@@ -19,6 +33,7 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
 
   /**
    * A dummy Tripal Term for use where ever tripal storage needs one.
+   *
    * NOTE: This is a dummy object so any methods called on it will return NULL.
    *
    * @var \Drupal\tripal\TripalVocabTerms\TripalTerm
@@ -27,13 +42,14 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
 
   /**
    * A dummy Tripal ID Space for use where ever tripal storage needs one.
+   *
    * NOTE: This is a dummy object so any methods called on it will return NULL.
    *
    * @var \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase
    */
   protected object $mock_idspace;
 
-    /**
+  /**
    * {@inheritdoc}
    */
   protected function setUp() :void {
@@ -47,12 +63,12 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $container = \Drupal::getContainer();
 
     // We need a term for property types so we will create a generic mocked one
-    // here which will be pulled from the container any time a term is requested.
-    $this->mock_term = $this->createMock(\Drupal\tripal\TripalVocabTerms\TripalTerm::class);
+    // here which will be pulled from the container any time a term is needed.
+    $this->mock_term = $this->createMock(TripalTerm::class);
     // Create a mock ID space to return our mock term when asked.
-    $this->mock_idspace = $this->createMock(\Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface::class);
+    $this->mock_idspace = $this->createMock(TripalIdSpaceInterface::class);
     $this->mock_idspace->method('getTerm')
-      ->willReturnCallback(function($accession) {
+      ->willReturnCallback(function ($accession) {
         if ($accession == 'term') {
           return $this->mock_term;
         }
@@ -60,10 +76,10 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
           return NULL;
         }
       });
-    // Create a mock Tripal ID Space service to return our mock idspace when asked.
-    $mock_idspace_service = $this->createMock(\Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager::class);
+    // Create a mock Tripal ID Space service to return our mock idspace.
+    $mock_idspace_service = $this->createMock(TripalIdSpaceManager::class);
     $mock_idspace_service->method('loadCollection')
-      ->willReturnCallback(function($id_space) {
+      ->willReturnCallback(function ($id_space) {
         if ($id_space == 'mock') {
           return $this->mock_idspace;
         }
@@ -85,7 +101,7 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $term_id = 'mock:term';
     $id = 'FAKEStoragePropertyType';
     $storage_settings = ['put something in here' => 'so that we know its been retrieved'];
-    $propertyType = new \Drupal\tripal\TripalStorage\StoragePropertyTypeBase($entityType, $fieldType, $key, $term_id, $id, $storage_settings);
+    $propertyType = new StoragePropertyTypeBase($entityType, $fieldType, $key, $term_id, $id, $storage_settings);
 
     $retrieved = $propertyType->getEntityType();
     $this->assertEquals($entityType, $retrieved,
@@ -122,7 +138,8 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $this->assertEquals($new_settings, $retrieved,
       "We were not able to retrieve the storage settings that we just set.");
 
-    // Now expand our tests to other methods that do not just access exactly what we supplied.
+    // Now expand our tests to other methods that do not just access exactly
+    // what we supplied.
     // -- Cardinality.
     $retrieved = $propertyType->getCardinality();
     $this->assertEquals(1, $retrieved, "We were not able to retrieve the default cardinality.");
@@ -177,7 +194,7 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
    *  - IntStoragePropertyType
    *  - RealStoragePropertyType
    *  - TextStoragePropertyType
-   *  - VarCharStoragePropertyType
+   *  - VarCharStoragePropertyType.
    */
   public function testPropertyTypes() {
 
@@ -185,52 +202,51 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $fieldType = 'AFakeFieldType';
     $key = 'AFakePropertyTypeKey';
     $term_id = 'mock:term';
-    $storage_settings = ['put something in here' => 'so that we know its been retrieved'];
 
-    // BoolStoragePropertyType
+    // BoolStoragePropertyType.
     $type = 'BoolStoragePropertyType';
     $instance = '\Drupal\tripal\TripalStorage\\' . $type;
-    $propertyType = new \Drupal\tripal\TripalStorage\BoolStoragePropertyType($entityType, $fieldType, $key, $term_id);
+    $propertyType = new BoolStoragePropertyType($entityType, $fieldType, $key, $term_id);
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
 
-    // DateTimeStoragePropertyType
+    // DateTimeStoragePropertyType.
     $type = 'DateTimeStoragePropertyType';
     $instance = '\Drupal\tripal\TripalStorage\\' . $type;
-    $propertyType = new \Drupal\tripal\TripalStorage\DateTimeStoragePropertyType($entityType, $fieldType, $key, $term_id);
+    $propertyType = new DateTimeStoragePropertyType($entityType, $fieldType, $key, $term_id);
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
 
-    // IntStoragePropertyType
+    // IntStoragePropertyType.
     $type = 'IntStoragePropertyType';
     $instance = '\Drupal\tripal\TripalStorage\\' . $type;
-    $propertyType = new \Drupal\tripal\TripalStorage\IntStoragePropertyType($entityType, $fieldType, $key, $term_id);
+    $propertyType = new IntStoragePropertyType($entityType, $fieldType, $key, $term_id);
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
 
-    // RealStoragePropertyType
+    // RealStoragePropertyType.
     $type = 'RealStoragePropertyType';
     $instance = '\Drupal\tripal\TripalStorage\\' . $type;
-    $propertyType = new \Drupal\tripal\TripalStorage\RealStoragePropertyType($entityType, $fieldType, $key, $term_id);
+    $propertyType = new RealStoragePropertyType($entityType, $fieldType, $key, $term_id);
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
 
-    // TextStoragePropertyType
+    // TextStoragePropertyType.
     $type = 'TextStoragePropertyType';
     $instance = '\Drupal\tripal\TripalStorage\\' . $type;
-    $propertyType = new \Drupal\tripal\TripalStorage\TextStoragePropertyType($entityType, $fieldType, $key, $term_id);
+    $propertyType = new TextStoragePropertyType($entityType, $fieldType, $key, $term_id);
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
 
-      // VarCharStoragePropertyType
+    // VarCharStoragePropertyType.
     $type = 'VarCharStoragePropertyType';
     $instance = '\Drupal\tripal\TripalStorage\\' . $type;
-    $propertyType = new \Drupal\tripal\TripalStorage\VarCharStoragePropertyType($entityType, $fieldType, $key, $term_id);
+    $propertyType = new VarCharStoragePropertyType($entityType, $fieldType, $key, $term_id);
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
@@ -245,12 +261,11 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $fieldType = 'AFakeFieldType';
     $key = 'AFakePropertyTypeKey';
     $term_id = 'mock:term';
-    $id = 'FAKEStoragePropertyType';
 
     // Check the default max char size.
     $type = 'VarCharStoragePropertyType';
     $instance = '\Drupal\tripal\TripalStorage\\' . $type;
-    $propertyType = new \Drupal\tripal\TripalStorage\VarCharStoragePropertyType($entityType, $fieldType, $key, $term_id);
+    $propertyType = new VarCharStoragePropertyType($entityType, $fieldType, $key, $term_id);
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
@@ -263,7 +278,7 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     // Check a non-default max char size.
     $type = 'VarCharStoragePropertyType';
     $instance = '\Drupal\tripal\TripalStorage\\' . $type;
-    $propertyType = new \Drupal\tripal\TripalStorage\VarCharStoragePropertyType($entityType, $fieldType, $key, $term_id, 333);
+    $propertyType = new VarCharStoragePropertyType($entityType, $fieldType, $key, $term_id, 333);
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
@@ -274,4 +289,5 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
       "We did not retrieve the expected max char size based on what we passed in during creation.");
 
   }
+
 }

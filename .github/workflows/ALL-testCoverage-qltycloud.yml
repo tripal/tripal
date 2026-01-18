@@ -1,0 +1,31 @@
+name: 'Test Coverage on Drupal 11.2.x-dev + PHP 8.3'
+
+on:
+  push:
+    branches:
+      - '4.x'
+  workflow_dispatch:
+  pull_request:
+    types: ['opened', 'synchronize']
+
+permissions: read-all
+
+jobs:
+  run-tests:
+    runs-on: 'ubuntu-latest'
+    name: 'Test Coverage'
+
+    steps:
+      - name: 'Checkout Repository'
+        uses: 'actions/checkout@v6'
+      - name: Run Automated testing + report coverage
+        uses: tripal/test-tripal-action@v1.8
+        with:
+          directory-name: 'tripal'
+          modules: ''
+          build-image: TRUE
+          dockerfile: 'Dockerfile'
+          php-version: 8.4
+          pgsql-version: 18
+          drupal-version: 11.2.x-dev
+          qltycloud-reporter-id: ${{ secrets.QLTY_COVERAGE_TOKEN }}

@@ -1,5 +1,5 @@
 services:
   tripal.command:
-    class: \Drupal\tripal\Commands\TripalCommands
+    class: '\Drupal\tripal\Commands\TripalCommands'
     tags:
-      - { name: drush.command }
+      - { name: 'drush.command' }

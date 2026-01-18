@@ -1,8 +1,6 @@
 <?php
 
 use Drupal\tripal\Services\TripalJob;
-use Drupal\tripal\TripalImporter\TripalImporterBase;
-use Drupal\tripal\Services\TripalLogger;
 
 /**
  * @file
@@ -79,16 +77,15 @@ function hook_importer_finish($importer) {
  * arguments provided by the user.
  *
  * @param int $import_id
- *  The ID of the import record.
- *
- * @param \Drupal\tripal\Services\TripalJob $job
- *  An optional Job object.
+ *   The ID of the import record.
+ * @param Drupal\tripal\Services\TripalJob|null $job
+ *   An optional Job object.
  *
  * @throws Exception
  *
  * @ingroup tripal_importer_api
  */
-function tripal_run_importer($import_id, TripalJob $job = NULL) {
+function tripal_run_importer($import_id, ?TripalJob $job = NULL) {
 
   // Initialize the logger.
   $logger = \Drupal::service('tripal.logger');

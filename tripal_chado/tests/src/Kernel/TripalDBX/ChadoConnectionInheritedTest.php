@@ -2,10 +2,12 @@
 
 namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
-use Drupal\tripal_chado\Database\ChadoConnection;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for ChadoConnection.
@@ -15,6 +17,9 @@ use Drupal\tripal_chado\Database\ChadoConnection;
  * @group ChadoDBX
  * @group ChadoConnection
  */
+#[Group('tripal-dbx')]
+#[Group('chado-schema')]
+#[RunTestsInSeparateProcesses]
 class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
 
   /**
@@ -88,6 +93,7 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
    * @param string $version
    *   The version of chado to test against.
    */
+  #[DataProvider('provideChadoSchemaVersions')]
   public function testConnectionGettersSetters(string $version) {
     $chado_connection = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY, $version);
 
@@ -117,7 +123,7 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
     $chado_connection->setMessageLogger($logger);
     $retrieved_logger = $chado_connection->getMessageLogger();
     $this->assertInstanceOf(
-      \Drupal\tripal\Services\TripalLogger::class,
+      TripalLogger::class,
       $retrieved_logger,
       "TripalDbxConnection::getMessageLogger() did not return a Tripal message logger."
     );
@@ -136,6 +142,7 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
    * @param string $version
    *   The version of chado to test against.
    */
+  #[DataProvider('provideChadoSchemaVersions')]
   public function testConnectionExtraSchemas(string $version) {
     $chado_connection = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY, $version);
 
@@ -235,6 +242,7 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
    * @param string $version
    *   The version of chado to test against.
    */
+  #[DataProvider('provideChadoSchemaVersions')]
   public function testConnectionExtraSchemasExceptions(string $version) {
     $chado_connection = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY, $version);
     $extra_schema = $this->createTestSchema(ChadoTestKernelBase::CREATE_SCHEMA);
@@ -249,7 +257,8 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $chado_connection->addExtraSchema($invalid_schema_name);
-    } catch (ConnectionException $e) {
+    }
+    catch (ConnectionException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -269,7 +278,8 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $chado_connection->setExtraSchema($invalid_schema_name, 2);
-    } catch (ConnectionException $e) {
+    }
+    catch (ConnectionException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -289,7 +299,8 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $chado_connection->setExtraSchema($extra_schema->getSchemaName(), 1);
-    } catch (ConnectionException $e) {
+    }
+    catch (ConnectionException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -303,12 +314,13 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
       "We expect to be told the issue is an invalid index since that is what we did to trigger the exception."
     );
 
-    // index is not the next one in line.
+    // Index is not the next one in line.
     $exception_caught = FALSE;
     $exception_message = '';
     try {
       $chado_connection->setExtraSchema($extra_schema->getSchemaName(), 99);
-    } catch (ConnectionException $e) {
+    }
+    catch (ConnectionException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -333,7 +345,7 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
     try {
       $chado_connection->addExtraSchema($extra_schema->getSchemaName());
     }
-    catch(ConnectionException $e) {
+    catch (ConnectionException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -353,7 +365,8 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $chado_connection->setExtraSchema($extra_schema->getSchemaName(), 2);
-    } catch (ConnectionException $e) {
+    }
+    catch (ConnectionException $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -367,4 +380,5 @@ class ChadoConnectionInheritedTest extends ChadoTestKernelBase {
       "We expect to be told the issue is a missing primary schema since that is what we did to trigger the exception."
     );
   }
+
 }

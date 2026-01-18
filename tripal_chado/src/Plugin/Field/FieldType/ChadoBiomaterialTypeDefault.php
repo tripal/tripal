@@ -2,6 +2,9 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
@@ -10,27 +13,57 @@ use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal biomaterial field type.
- *
- * @FieldType(
- *   id = "chado_biomaterial_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Biomaterial"),
- *   description = @Translation("Add a Chado biomaterial to the content type."),
- *   default_widget = "chado_biomaterial_widget_default",
- *   default_formatter = "chado_biomaterial_formatter_default",
- * )
  */
+#[TripalFieldType(
+  id: 'chado_biomaterial_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Biomaterial'),
+  description: new TranslatableMarkup('Add a Chado biomaterial to the content type.'),
+  default_widget: 'chado_biomaterial_widget_default',
+  default_formatter: 'chado_biomaterial_formatter_default',
+)]
 class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = 'chado_biomaterial_type_default';
+
+  /**
+   * The chado table which is the object of the relationship.
+   *
+   * Note: this should be in all fields linking a base table to another
+   * main chado table (i.e. object table).
+   *
+   * @var string
+   */
   protected static $object_table = 'biomaterial';
+
+  /**
+   * The foreign key that links the linking table to the object table.
+   *
+   * Note: this should be in all fields linking a base table to another
+   * main chado table (i.e. object table).
+   *
+   * @var string
+   */
   protected static $object_id = 'biomaterial_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'
+    // The property that indicates if this field is empty.
+    return self::$object_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'biomaterial_name';
   }
 
@@ -51,10 +84,42 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'Biologically Derived Material'
+    // CV Term is 'Biologically Derived Material'.
     $field_settings['termIdSpace'] = 'NCIT';
     $field_settings['termAccession'] = 'C70699';
     return $field_settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    $value['record_id'] = 0;
+    $value['entity_id'] = 0;
+    $value['linker_id'] = 0;
+    $value['link'] = 0;
+    $value[self::$object_id] = 0;
+
+    // Do we want to conditionally include type_id and rank?
+    $value['linker_type_id'] = mt_rand(1, 500);
+    $value['linker_rank'] = 0;
+
+    // Object table properties.
+    $value['biomaterial_name'] = '';
+    $value['biomaterial_description'] = '';
+    $value['biomaterial_biosourceprovider'] = '';
+    $value['biomaterial_genus'] = '';
+    $value['biomaterial_species'] = '';
+    $value['biomaterial_infraspecific_type'] = '';
+    $value['biomaterial_infraspecific_name'] = '';
+    $value['biomaterial_abbreviation'] = '';
+    $value['biomaterial_common_name'] = '';
+    $value['biomaterial_database_accession'] = '';
+    $value['biomaterial_database_name'] = '';
+
+    return [$value];
   }
 
   /**
@@ -73,32 +138,31 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
     }
 
     // Get the various tables and columns needed for this field.
-    // We will get the property terms by using the Chado table columns they map to.
+    // We will get the terms by using the Chado table columns they map to.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
-    // Base table
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    // Base table.
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
-    // Object table
+    // Object table.
     $object_table = self::$object_table;
-    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_schema_def = self::getChadoTableDef($object_table, $schema);
     $object_pkey_col = $object_schema_def['primary key'];
     $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
     $description_term = self::getColumnTermId($object_table, 'description', 'schema:description');
 
-    // Columns from linked tables
+    // Columns from linked tables.
     $dbxref_term = self::getColumnTermId('dbxref', 'accession', 'data:2091');
     $db_term = self::getColumnTermId('db', 'name', 'ERO:0001716');
-    $contact_schema_def = $schema->getTableDef('contact', ['format' => 'Drupal']);
+    $contact_schema_def = self::getChadoTableDef('contact', $schema);
     $biosourceprovider_term = self::getColumnTermId('contact', 'name', 'NCIT:C47954');
     $biosourceprovider_len = $contact_schema_def['fields']['name']['size'];
-    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $cvterm_schema_def = self::getChadoTableDef('cvterm', $schema);
     $infraspecific_type_term = self::getColumnTermId('cvterm', 'name', 'local:infraspecific_type');
     $infraspecific_type_len = $cvterm_schema_def['fields']['name']['size'];
-    $organism_schema_def = $schema->getTableDef('organism', ['format' => 'Drupal']);
+    $organism_schema_def = self::getChadoTableDef('organism', $schema);
     $genus_term = self::getColumnTermId('organism', 'genus', 'TAXRANK:0000005');
     $genus_len = $organism_schema_def['fields']['genus']['size'];
     $species_term = self::getColumnTermId('organism', 'species', 'TAXRANK:0000006');
@@ -115,22 +179,24 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
       $linker_pkey_col = $linker_schema_def['primary key'];
-      // the following should be the same as $base_pkey_col @todo make sure it is
-      $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
+      // The following should be the same as $base_pkey_col.
+      // @todo make sure it is.
+      $linker_left_col = self::getChadoForeignKeyColumn($linker_table, $base_table, $schema);
       $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
       $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
 
-      // Some but not all linker tables contain rank, type_id, and maybe other columns.
-      // These are conditionally added only if they exist in the linker
-      // table, and if a term is defined for them.
+      // Some but not all linker tables contain rank, type_id, and maybe
+      // other columns. These are conditionally added only if they exist in
+      // the linker table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
-          // Special case, we don't support channel_id because there may be none defined
-          // in the channel table, and if not we cannot have a default value in the widget,
-          // and the widget can't pass a null. For now just ignore it.
-          // @todo Do we need a mechanism to be able to pass null to chado storage?
+          // Special case, we don't support channel_id because there may be
+          // none defined in the channel table, and if not we cannot have a
+          // default value in the widget, and the widget can't pass a null.
+          // For now just ignore it.
+          // @todo Do we need a way to be able to pass null to chado storage?
           if ($column == 'channel_id') {
             continue;
           }
@@ -165,7 +231,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       'fkey' => $linker_fkey_column,
     ]);
 
-    // Base table links directly
+    // Base table links directly.
     if ($base_table == $linker_table) {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
@@ -175,7 +241,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
         'empty_value' => 0,
       ]);
     }
-    // An intermediate linker table is used
+    // An intermediate linker table is used.
     else {
       // Define the linker table that links the base table to the object table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', self::$record_id_term, [
@@ -200,9 +266,10 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
         'empty_value' => 0,
       ]);
 
-      // Other columns in the linker table. Set in the widget, but currently not implemented in the formatter.
-      // Typically these are type_id and rank, but are not present in all linker tables,
-      // so they are added only if present in the linker table.
+      // Other columns in the linker table.
+      // Set in the widget, but currently not implemented in the formatter.
+      // Typically these are type_id and rank, but are not present in all
+      // linker tables, so they are added only if present in the linker table.
       foreach ($extra_linker_columns as $column => $term) {
         $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
           'action' => 'store',
@@ -213,7 +280,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       }
     }
 
-    // The object table, the destination table of the linker table
+    // The object table, the destination table of the linker table.
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'biomaterial_name', $name_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -232,7 +299,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.biosourceprovider_id>contact.contact_id;name',
+      . ';' . $object_table . '.biosourceprovider_id>contact.contact_id;name',
       'as' => 'biomaterial_biosourceprovider',
     ]);
 
@@ -240,7 +307,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;genus',
+      . ';' . $object_table . '.taxon_id>organism.organism_id;genus',
       'as' => 'biomaterial_genus',
     ]);
 
@@ -248,7 +315,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;species',
+      . ';' . $object_table . '.taxon_id>organism.organism_id;species',
       'as' => 'biomaterial_species',
     ]);
 
@@ -256,7 +323,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;organism.type_id>cvterm.cvterm_id;name',
+      . ';' . $object_table . '.taxon_id>organism.organism_id;organism.type_id>cvterm.cvterm_id;name',
       'as' => 'biomaterial_infraspecific_type',
     ]);
 
@@ -264,7 +331,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;infraspecific_name',
+      . ';' . $object_table . '.taxon_id>organism.organism_id;infraspecific_name',
       'as' => 'biomaterial_infraspecific_name',
     ]);
 
@@ -272,7 +339,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;abbreviation',
+      . ';' . $object_table . '.taxon_id>organism.organism_id;abbreviation',
       'as' => 'biomaterial_abbreviation',
     ]);
 
@@ -280,7 +347,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;common_name',
+      . ';' . $object_table . '.taxon_id>organism.organism_id;common_name',
       'as' => 'biomaterial_common_name',
     ]);
 
@@ -288,7 +355,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;accession',
+      . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;accession',
       'as' => 'biomaterial_database_accession',
     ]);
 
@@ -296,7 +363,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
+      . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
       'as' => 'biomaterial_database_name',
     ]);
 
@@ -305,6 +372,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -321,12 +389,18 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
-      array $field_instances, array $options = []): array {
+  public static function discover(
+    TripalEntityType $bundle,
+    string $field_id,
+    array $field_types,
+    array $field_instances,
+    array $options = [],
+  ): array {
 
-    // Specific settings for this field
+    // Specific settings for this field.
     $options += [
       'id' => self::$id,
       'table' => self::$object_table,
@@ -336,7 +410,7 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       'description' => 'A biological sample analysed by a particular technology.',
     ];
 
-    // Call the parent discover() with this field's specific options
+    // Call the parent discover() with this field's specific options.
     $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
 
     return $field_list;

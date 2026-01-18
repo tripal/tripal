@@ -2,25 +2,24 @@
 
 namespace Drupal\tripal\Plugin\TripalStorage;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalStorage\Attribute\TripalStorage;
 use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Validator\ConstraintViolation;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\tripal\Services\TripalLogger;
 
 /**
  * Chado implementation of the TripalStorageInterface.
- *
- * @TripalStorage(
- *   id = "drupal_sql_storage",
- *   label = @Translation("Drupal SQL Storage"),
- *   description = @Translation("This storage backend is used for fields which would like to use the default Drupal SQL-based field storage with a Tripal-based Field."),
- * )
  */
+#[TripalStorage(
+  id: 'drupal_sql_storage',
+  label: new TranslatableMarkup('Drupal SQL Storage'),
+  description: new TranslatableMarkup('This storage backend is used for fields which would like to use the default Drupal SQL-based field storage with a Tripal-based Field.'),
+)]
 class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterface {
 
   /**
+   * Adds the property type objects for the current field.
+   *
    * @{inheritdoc}
    *
    * OVERRIDES TripalStorageBase to ensure all field properties are set
@@ -45,7 +44,7 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
    */
   public function updateValues(&$values): bool {
     // No need to do anything here.  This is handled by the
-    // default SQL storage provided by Drupal
+    // default SQL storage provided by Drupal.
     return TRUE;
   }
 
@@ -54,7 +53,7 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
    */
   public function deleteValues($values): bool {
     // No need to do anything here.  This is handled by the
-    // default SQL storage provided by Drupal
+    // default SQL storage provided by Drupal.
     return TRUE;
   }
 
@@ -62,7 +61,7 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
    * {@inheritDoc}
    */
   public function findValues($values) {
-    /** @todo: impelment this function properly **/
+    /** @todo implement this function properly **/
     return $values;
   }
 
@@ -71,7 +70,7 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
    */
   public function insertValues(&$values): bool {
     // No need to do anything here.  This is handled by the
-    // default SQL storage provided by Drupal
+    // default SQL storage provided by Drupal.
     return TRUE;
   }
 
@@ -80,7 +79,7 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
    */
   public function loadValues(&$values, bool $ignore_cached_fields = TRUE): bool {
     // No need to do anything here.  This is handled by the
-    // default SQL storage provided by Drupal
+    // default SQL storage provided by Drupal.
     return TRUE;
   }
 
@@ -89,7 +88,7 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
    */
   public function validateValues($values) {
     // No need to do anything here.  This is handled by the
-    // default SQL storage provided by Drupal
+    // default SQL storage provided by Drupal.
     $violations = [];
     return $violations;
   }

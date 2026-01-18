@@ -2,21 +2,19 @@
 
 namespace Drupal\Tests\tripal\Functional\Plugin;
 
-use Drupal\Core\Database\Database;
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
-use Drupal\Core\Test\FunctionalTestSetupTrait;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
-
-
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * Tests for the TripalDefaultIdSpace classes
+ * Tests for the TripalDefaultIdSpace classes.
  *
  * @group Tripal
  * @group TripalDefaultIdSpace
  */
+#[Group('tripal-term')]
+#[RunTestsInSeparateProcesses]
 class TripalDefaultIdSpaceTest extends TripalTestBrowserBase {
-
 
   /**
    * A helper function to retrieve an id_space record.
@@ -40,8 +38,7 @@ class TripalDefaultIdSpaceTest extends TripalTestBrowserBase {
   }
 
   /**
-   * Tests the TripalDefaultIdSpace and TripalDefaultVocabulary Classes
-   *
+   * Tests the TripalDefaultIdSpace and TripalDefaultVocabulary Classes.
    */
   public function testTripaDefaultIdSpace() {
 
@@ -63,8 +60,7 @@ class TripalDefaultIdSpaceTest extends TripalTestBrowserBase {
 
     //
     // Testing TripalDefaultIdSpace Functionality
-    //
-
+    // .
     // Create the ID space object and make sure a Chado record got created.
     $GO = $idsmanager->createCollection($GO_idspace, "tripal_default_id_space");
     $db = $this->getIdSpace($GO_idspace);
@@ -90,11 +86,12 @@ class TripalDefaultIdSpaceTest extends TripalTestBrowserBase {
     $this->assertTrue($GO->getURLPrefix() == $GO_urlprefix, "The TripaDefaultIdSpace object did not return a correct URL prefix.");
     $this->assertTrue($GO->getDescription() == $GO_description, "The TripaDefaultIdSpace object did not return a correct description.");
 
-    // Change the description and URL prefix and make sure it updates
+    // Change the description and URL prefix and make sure it updates.
     $GO->setDescription('Changed');
     $GO->setURLPrefix('Changed');
     $this->assertTrue($GO->getDescription() == 'Changed', "The TripaDefaultIdSpace object did not update the description.");
     $this->assertTrue($GO->getURLPrefix() == 'Changed', "The TripaDefaultIdSpace object did not update the URL prefix.");
 
   }
+
 }

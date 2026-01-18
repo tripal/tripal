@@ -3,8 +3,8 @@
 namespace Drupal\tripal_chado\Plugin\views\field;
 
 use Drupal\Core\Url;
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
 use Drupal\Core\Render\Markup;
@@ -13,9 +13,8 @@ use Drupal\Core\Render\Markup;
  * Field handler to present a link to delete a chado custom table.
  *
  * @ingroup views_field_handlers
- *
- * @ViewsField("chado_custom_tables_edit_link")
  */
+#[ViewsField('chado_custom_tables_edit_link')]
 class ChadoCustomTablesEditLink extends FieldPluginBase {
 
   /**

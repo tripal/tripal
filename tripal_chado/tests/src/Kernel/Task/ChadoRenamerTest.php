@@ -4,7 +4,10 @@ namespace Drupal\Tests\tripal_chado\Kernel\Task;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\Task\ChadoRenamer;
-
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for renamer task.
@@ -15,14 +18,20 @@ use Drupal\tripal_chado\Task\ChadoRenamer;
  * @group Tripal Chado
  * @group Tripal Chado Task
  * @group Tripal Chado Renamer
+ *
+ * @covers ::setParameters
+ * @covers ::performTask
  */
+#[CoversClass(ChadoRenamer::class)]
+#[CoversMethod(ChadoRenamer::class, 'setParameters')]
+#[CoversMethod(ChadoRenamer::class, 'performTask')]
+#[Group('biodb-task')]
+#[group('task-renamer')]
+#[RunTestsInSeparateProcesses]
 class ChadoRenamerTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
-   *
-   * @cover ::setParameters
-   * @cover ::performTask
    */
   public function testPerformTaskRenamer() {
     // Create a temporary schema.
@@ -48,4 +57,5 @@ class ChadoRenamerTest extends ChadoTestKernelBase {
     $this->freeTestSchema($tripaldbx_db2);
     $this->freeTestSchema($tripaldbx_db1);
   }
+
 }

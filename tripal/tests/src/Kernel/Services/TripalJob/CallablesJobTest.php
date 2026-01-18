@@ -2,9 +2,13 @@
 
 namespace Drupal\Tests\tripal\Kernel\Services\TripalJob;
 
+use Drupal\tripal\Services\TripalJob;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\tripal\Kernel\Services\TripalJob\FakeClasses\callableClassForTripalJobs;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Focused on testing callables as the callback.
@@ -12,6 +16,8 @@ use Drupal\Tests\tripal\Kernel\Services\TripalJob\FakeClasses\callableClassForTr
  * @group Tripal
  * @group TripalJobs
  */
+#[Group('service-job')]
+#[RunTestsInSeparateProcesses]
 class CallablesJobTest extends TripalTestKernelBase {
   use UserCreationTrait;
 
@@ -55,22 +61,22 @@ class CallablesJobTest extends TripalTestKernelBase {
    *   Each element is a test set to pass to testTripalJob_create_valid()
    *   and is expected to have the following keys:
    *    - details: An associative array of the job details.
-   *        The following keys are allowed:
-   *        - job_name: The human readable name for the job.
-   *        - modulename: The name of the module adding the job.
-   *        - callback: The name of a function to be called when the job is executed.
-   *        - arguments:  An array of arguments to be passed on to the callback.
-   *        - uid: The uid of the user adding the job
-   *        - priority: The priority at which to run the job where the highest
-   *          priority is 10 and the lowest priority is 1. The default
-   *          priority is 10.
-   *        - includes: An array of paths to files that should be included in order
-   *          to execute the job. Use the module_load_include function to get a path
-   *          for a given file.
-   *        - ignore_duplicate: (Optional). Set to TRUE to ignore a job if it has
-   *          the same name as another job which has not yet run. If TRUE and a job
-   *          already exists then this object will reference the job already in the
-   *          queue rather than a new submission.  The default is TRUE.
+   *      The following keys are allowed:
+   *      - job_name: human readable name for the job.
+   *      - modulename: name of the module adding the job.
+   *      - callback: name of a function to be called when executing the job.
+   *      - arguments:  An array of arguments to be passed on to the callback.
+   *      - uid: id of the user adding the job
+   *      - priority: priority at which to run the job where the highest
+   *        priority is 10 and the lowest priority is 1. The default
+   *        priority is 10.
+   *      - includes: array of paths to files that should be included in order
+   *        to execute the job. Use the module_load_include function to get a
+   *        path for a given file.
+   *      - ignore_duplicate: (Optional). Set to TRUE to ignore a job if it has
+   *        the same name as another job which has not yet run. If TRUE and a
+   *        job already exists then this object will reference the job already
+   *        in the queue rather than a new submission.  The default is TRUE.
    */
   public static function provideValidJobs() {
     $sets = [];
@@ -111,7 +117,8 @@ class CallablesJobTest extends TripalTestKernelBase {
    *
    * @dataProvider provideValidJobs
    */
-  public function testTripalJob_validjobs($details) {
+  #[DataProvider('provideValidJobs')]
+  public function testTripalJobValidjobs($details) {
 
     // Add user to the job details since we can't do it in the data provider.
     $details['uid'] = $this->user->id();
@@ -130,11 +137,11 @@ class CallablesJobTest extends TripalTestKernelBase {
       "Creating a TripalJob was not successful as we did not have a job_id returned.");
 
     // Try to load it.
-    $job = new \Drupal\tripal\Services\TripalJob();
+    $job = new TripalJob();
     $job->load($job_id);
     $this->assertIsObject($job, "Unableto retrieve the job we just created.");
 
-    // Use the getters to get all the details to check that it was loaded properly.
+    // Use the getters to get details + check that it was loaded properly.
     $this->assertEquals($job_id, $job->getJobID(),
       "Unable to retrieve the job ID of the job we just created.");
     $this->assertEquals($details['uid'], $job->getUID(),
@@ -160,4 +167,5 @@ class CallablesJobTest extends TripalTestKernelBase {
     $this->assertStringContainsString('We were able to successfully run the job.', $output,
       "We did not recieve the expected output when the job was run.");
   }
+
 }

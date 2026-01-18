@@ -250,6 +250,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: qtl_sequence
         content_type: QTL
@@ -655,6 +656,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: sequence_variant_sequence
         content_type: sequence_variant
@@ -1059,6 +1061,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: genetic_marker_sequence
         content_type: genetic_marker
@@ -1463,6 +1466,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: phenotypic_marker_sequence
         content_type: phenotypic_marker

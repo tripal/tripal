@@ -3,11 +3,7 @@
 namespace Drupal\tripal\TripalStorage\Interfaces;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Symfony\Component\HttpKernel\DependencyInjection\AddAnnotatedClassesToCachePass;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element\Button;
-
 
 /**
  * Defines an interface for tripal storage plugins.
@@ -36,7 +32,8 @@ interface TripalStorageInterface extends PluginInspectionInterface {
 
   /**
    * Returns a list of all property types added to this storage plugin type.
-   * WARING! This could be a very expensive call!
+   *
+   * WARNING! This could be a very expensive call!
    *
    * @return array
    *   Array of all \Drupal\tripal\Base\StoragePropertyTypeBase objects that
@@ -51,6 +48,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *   The name of the field the properties belong to.
    * @param string $key
    *   The key of the property type to return.
+   *
    * @return object
    *   An instance of the propertyType indicated.
    */
@@ -68,8 +66,9 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * @param object $field_definition
    *   The field configuration object. This can be an instance of:
    *   \Drupal\field\Entity\FieldStorageConfig or
-   *   \Drupal\field\Entity\FieldConfig
-   * @return boolean
+   *   \Drupal\field\Entity\FieldConfig.
+   *
+   * @return bool
    *   Returns true if no errors were encountered and false otherwise.
    */
   public function addFieldDefinition(string $field_name, object $field_definition);
@@ -79,7 +78,8 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *
    * @param string $field_name
    *   The name of the field based on its annotation 'id'.
-   * @return object $field_definition
+   *
+   * @return object
    *   The field configuration object. This can be an instance of:
    *   \Drupal\field\Entity\FieldStorageConfig or
    *   \Drupal\field\Entity\FieldConfig
@@ -96,22 +96,21 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * the list of properties that must be stored in order
    * to uniquely identify an entity in the datastore.
    *
-   * @return @array
+   * @return array
    *   Array of \Drupal\tripal\Base\StoragePropertyTypeBase objects.
    */
   public function getStoredTypes();
 
   /**
-   * Returns a list of property types whose value should not be stored in Drupal
-   * field tables.
+   * Returns a list of property types that should not be stored in Drupal.
    *
    * This is the inverse of the getStoredTypes() method. It's needed because all
-   * field property types have a column in the Drupal table. However, the "Stored"
-   * ones save the value both in Drupal and in the storage backend and the
-   * "unstored" ones save an empty value in Drupal that is populated on load by
-   * the storage backend.
+   * field property types have a column in the Drupal table. However, the
+   * "Stored" ones save the value both in Drupal and in the storage backend and
+   * the "unstored" ones save an empty value in Drupal that is populated on
+   * load by the storage backend.
    *
-   * @return @array
+   * @return array
    *   Array of \Drupal\tripal\Base\StoragePropertyTypeBase objects.
    */
   public function getNonStoredTypes();
@@ -122,7 +121,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * This function returns an array of property value objects that
    * correspond to the types returned by getStoredTypes().
    *
-   * @return @array
+   * @return array
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
    */
   public function getStoredValues();
@@ -181,10 +180,11 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *   The 4th level must contain the following three keys/value pairs
    *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
    *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
-   *   - "definition": a \Drupal\Field\Entity\FieldConfig object
+   *   - "definition": a \Drupal\Field\Entity\FieldConfig object.
    * @param bool $ignore_cached_fields
    *   If TRUE then values from fully cached fields should be ignored as they
-   *   will be loaded by Drupal; if FALSE then load them from the storage backend.
+   *   will be loaded by Drupal; if FALSE then load them from the
+   *   tripal storage backend.
    *
    * @return bool
    *   True if successful. False otherwise.
@@ -203,8 +203,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   public function deleteValues($values) : bool;
 
   /**
-   * Finds and returns all property values stored in this storage plugin
-   * implementation that matches the given match argument.
+   * Finds all property values for this backend instance based on $values.
    *
    * @param array $values
    *   Associative array 5-levels deep.
@@ -237,6 +236,8 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   public function validateValues($values);
 
   /**
+   * Marks which properties should be stored in the Drupal field tables.
+   *
    * Uses isDrupalStoreByFieldNameKey() to mark each property type as whether
    * it should be cached in the Drupal tables or not. This should be done before
    * calling TripalEntity::tripalClear() on these property types.
@@ -251,7 +252,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   /**
    * Check if a single field property should be cached in the Drupal tables.
    *
-   * This interacts with the tripal_entity_type.default_cache_backend_field_values
+   * This interacts with tripal_entity_type.default_cache_backend_field_values
    * setting in the base implementation of this method.
    *
    * WARNING: This method should only be called after the property type for this
@@ -262,7 +263,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * @param string $key
    *   The storage property key to check.
    * @param object|null $property_type
-   *   An instance of the propertyType to check if it should be stored in Drupal.
+   *   An instance of the propertyType to be checked.
    *   Optional. If not provided it will be looked up by the field name and key.
    *
    * @return bool|null
@@ -292,7 +293,6 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *   The form array definition.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
-   *
    */
   public function publishFormValidate($form, FormStateInterface &$form_state);
 

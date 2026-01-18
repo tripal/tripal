@@ -2,13 +2,11 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
-
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
-use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests that specific ChadoStorage actions perform as expected.
@@ -18,16 +16,36 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * @group ChadoStorage
  * @group ChadoStorage Actions
  */
+#[Group('tripal-field')]
+#[Group('chado-field')]
+#[Group('tripal-storage')]
+#[Group('chado-storage')]
+#[RunTestsInSeparateProcesses]
 class ChadoStorageActions_StoreLinkTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test
-  // with fields specific to that test.
+  /**
+   * With fields specific to that test.
+   *
+   * Note: We will populate this variable at the start of each test.
+   *
+   * @var array
+   */
   protected $fields = [];
 
+  /**
+   * The file describing the testing environment.
+   *
+   * @var string
+   */
   protected $yaml_file = __DIR__ . "/ChadoStorageActions-FieldDefinitions.yml";
 
+  /**
+   * Projects added in the testing environment.
+   *
+   * @var array
+   */
   protected int $project_id;
 
   /**
@@ -41,16 +59,16 @@ class ChadoStorageActions_StoreLinkTest extends ChadoTestKernelBase {
 
     // We need to mock the logger to test the progress reporting.
     $container = \Drupal::getContainer();
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['warning', 'error'])
       ->getMock();
     $mock_logger->method('warning')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
     $mock_logger->method('error')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
@@ -59,7 +77,7 @@ class ChadoStorageActions_StoreLinkTest extends ChadoTestKernelBase {
     $this->setUpChadoStorageTestEnviro();
   }
 
-/**
+  /**
    * Test the store_link action.
    *
    * Chado Table: projectprop
@@ -74,7 +92,6 @@ class ChadoStorageActions_StoreLinkTest extends ChadoTestKernelBase {
     $this->setFieldsFromYaml($this->yaml_file, 'testStoreLinkAction');
     $this->cleanChadoStorageValues();
 
-
     $types_used = [
       'right_linker'  => $this->getCvtermId('schema', 'comment'),
       'left_linker'  => $this->getCvtermId('schema', 'description'),
@@ -82,26 +99,26 @@ class ChadoStorageActions_StoreLinkTest extends ChadoTestKernelBase {
     $total_num_records = 4;
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
-    // ---------------------------------------------------------
+    // ---------------------------------------------------------.
     $insert_values = [
       'project' => [
         [
           'record_id' => NULL,
           'name_store' => uniqid(),
-        ]
+        ],
       ],
       'right_linker' => [
         [
           'record_pkey' => NULL,
           'fkey' => NULL,
           'type' => $types_used['right_linker'],
-          'rank' => 0
+          'rank' => 0,
         ],
         [
           'record_pkey' => NULL,
           'fkey' => NULL,
           'type' => $types_used['right_linker'],
-          'rank' => 1
+          'rank' => 1,
         ],
       ],
       'left_linker' => [
@@ -109,13 +126,13 @@ class ChadoStorageActions_StoreLinkTest extends ChadoTestKernelBase {
           'record_pkey' => NULL,
           'fkey' => NULL,
           'type' => $types_used['left_linker'],
-          'rank' => 0
+          'rank' => 0,
         ],
         [
           'record_pkey' => NULL,
           'fkey' => NULL,
           'type' => $types_used['left_linker'],
-          'rank' => 3
+          'rank' => 3,
         ],
       ],
     ];
@@ -149,7 +166,8 @@ class ChadoStorageActions_StoreLinkTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
     // First we want to reset all the chado storage arrays to ensure we are
     // doing a clean test. The values will purposefully remain in Chado but the
-    // Property Types, Property Values and Data Values will be built from scratch.
+    // Property Types, Property Values and Data Values will be built from
+    // scratch.
     $this->cleanChadoStorageValues();
 
     // For loading only the store id/pkey/link items should be populated.
@@ -158,7 +176,7 @@ class ChadoStorageActions_StoreLinkTest extends ChadoTestKernelBase {
       'project' => [
         [
           'record_id' => $project_id,
-        ]
+        ],
       ],
       'right_linker' => [
         [
@@ -179,7 +197,8 @@ class ChadoStorageActions_StoreLinkTest extends ChadoTestKernelBase {
     ];
     $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
 
-    // Lets put together an expected array here based on the load and insert values.
+    // Lets put together an expected array here based on the load and insert
+    // values.
     $expected_values = $insert_values;
     $expected_values['project'][0]['record_id'] = $project_id;
     $expected_values['right_linker'][0]['record_pkey'] = $right_linker_pkeys[0];
@@ -191,11 +210,14 @@ class ChadoStorageActions_StoreLinkTest extends ChadoTestKernelBase {
     $expected_values['left_linker'][1]['record_pkey'] = $left_linker_pkeys[1];
     $expected_values['left_linker'][1]['fkey'] = $project_id;
 
-    // Check that the store values in our fields have been loaded as they were inserted.
+    // Check that the store values in our fields have been loaded as they were
+    // inserted.
     foreach ($expected_values as $field_name => $delta_records) {
-      if ($field_name == 'project') { continue; }
+      if ($field_name == 'project') {
+        continue;
+      }
       foreach ($delta_records as $delta => $expected_values) {
-        foreach(['fkey', 'type', 'rank'] as $property) {
+        foreach (['fkey', 'type', 'rank'] as $property) {
           $retrieved = $retrieved_values[$field_name][$delta][$property]['value']->getValue();
           $expected = $expected_values[$property];
 
@@ -229,4 +251,5 @@ class ChadoStorageActions_StoreLinkTest extends ChadoTestKernelBase {
       "We did not get the number of records in the projectprop table that we excepted after update.");
 
   }
+
 }

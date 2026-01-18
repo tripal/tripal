@@ -2,21 +2,22 @@
 
 namespace Drupal\tripal\Plugin\TripalPubLibrary;
 
-use Drupal\tripal\TripalPubLibrary\TripalPubLibraryBase;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Core\Link;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
+use Drupal\tripal\TripalPubLibrary\Attribute\TripalPubLibrary;
+use Drupal\tripal\TripalPubLibrary\TripalPubLibraryBase;
 
 /**
- * PubMed publication parser
+ * PubMed publication parser.
  *
- *  @TripalPubLibrary(
- *    id = "tripal_pub_library_PMID",
- *    label = @Translation("NIH PubMed database"),
- *    description = @Translation("Retrieves and parses publication data from the NIH PubMed database"),
- *  )
- *  n.b. last part of id must match the record in the chado.db table name column
+ * n.b. last part of id must match the record in the chado.db table name column.
  */
+#[TripalPubLibrary(
+  id: 'tripal_pub_library_PMID',
+  label: new TranslatableMarkup('NIH PubMed database'),
+  description: new TranslatableMarkup('NIH PubMed database'),
+)]
 class TripalPubLibraryPubMed extends TripalPubLibraryBase {
 
   /**
@@ -27,6 +28,22 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    * @var array $webquery
    */
   protected array $webquery = [];
+
+  /**
+   * Options for file retrieval from NCBI.
+   *
+   * NOTE: NCBI accepts 3 requests/second by default but will allow 
+   * 10 requests/second if an API key is provided. This is defined
+   * via the rate_limit key.
+   *
+   * @var array
+   *   Options to be passed to the file retrieval service.
+   *   @see Drupal\tripal\Services\TripalFileRetriever::retrieveFileContents()
+   */
+  protected array $retrieval_options = [
+    'rate_limit' => 0.334,
+    'retry_delay' => 1.0,
+  ];
 
   public function formSubmit(array $form, \Drupal\Core\Form\FormStateInterface &$form_state): void {
     // DUMMY function from inheritance so it had to be kept.
@@ -246,6 +263,12 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       }
     }
 
+    // A 400 error will return a page but no expected information.
+    if (!array_key_exists('Count', $this->webquery)) {
+      $this->logger->error('Skipping due to download error, NCBI may be in maintenance mode.');
+      return NULL;
+    }
+
     // initialize the retrieval loop
     $total_records = $this->webquery['Count'];
     $start = $page * $num_to_retrieve;
@@ -277,6 +300,10 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
         // Skip over any individual publication that had a download error
         $n_skipped++;
         $this->logger->error('Skipping publication @acc due to download error.',
+          ['@acc' => $pmid]);
+      }
+      else if (!$this->xmlIsValid($pub_xml)) {
+        $this->logger->error('Skipping publication @acc due to download error, NCBI may be in maintenance mode.',
           ['@acc' => $pmid]);
       }
       else {
@@ -323,25 +350,23 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       "&usehistory=y" .
       "&term=" . urlencode($search_str);
 
-    $sleep_time = 333334;
     if ($api_key) {
+      // NCBI accepts 10 requests/second when an API key is provided.
+      // The default rate limit is set when this property is defined.
+      $this->retrieval_options['rate_limit'] = 0.1;
       $query_url .= "&api_key=" . $api_key;
-      $sleep_time = 100000;
     }
 
-    usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
-    $rfh = fopen($query_url, "r");
-    if (!$rfh) {
+    $query_xml = $this->fileretriever->retrieveFileContents($query_url, $this->retrieval_options);
+    if (is_null($query_xml)) {
       $this->logger->error("Could not perform Pubmed query. Cannot connect to Entrez.");
       return FALSE;
     }
-
-    // retrieve the XML results
-    $query_xml = '';
-    while (!feof($rfh)) {
-      $query_xml .= fread($rfh, 255);
+    else if (!$this->xmlIsValid($query_xml)) {
+      $this->logger->error("Invalid XML returned, NCBI may be in maintenance mode.");
+      return FALSE;
     }
-    fclose($rfh);
+
     $xml = new \XMLReader();
     $xml->xml($query_xml);
 
@@ -412,10 +437,11 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       "&query_key=" . $this->webquery['QueryKey'] .
       "&WebEnv=" . $this->webquery['WebEnv'];
 
-    $sleep_time = 333334;
     if ($api_key) {
+      // NCBI accepts 10 requests/second when an API key is provided.
+      // The default rate limit is set when this property is defined.
+      $this->retrieval_options['rate_limit'] = 0.1;
       $fetch_url .= "&api_key=" . $api_key;
-      $sleep_time = 100000;
     }
 
     foreach ($args as $key => $value) {
@@ -430,19 +456,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
         $fetch_url .= "&$key=$value";
       }
     }
-    usleep($sleep_time);  // 1/3 or 1/10 of a second delay, NCBI limits requests to 3 / second without API key
-    $rfh = fopen($fetch_url, "r");
-    if (!$rfh) {
-      $this->logger->error("Could not perform PubMed query: $fetch_url.");
-      return NULL;
-    }
-    $results = '';
-    if ($rfh) {
-      while (!feof($rfh)) {
-        $results .= fread($rfh, 255);
-      }
-      fclose($rfh);
-    }
+
+    $results = $this->fileretriever->retrieveFileContents($fetch_url, $this->retrieval_options);
 
     return $results;
   }

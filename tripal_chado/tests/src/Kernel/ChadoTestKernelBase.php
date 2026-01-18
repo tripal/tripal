@@ -1,11 +1,11 @@
 <?php
+
 namespace Drupal\Tests\tripal_chado\Kernel;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\tripal\TripalDBX\TripalDbx;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
-use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\Tests\tripal_chado\Traits\ChadoTestTrait;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * This is a base class for Chado tests.
@@ -27,6 +27,9 @@ use Drupal\Tests\tripal_chado\Traits\ChadoTestTrait;
  * @group Tripal
  * @group Tripal Chado
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[RunTestsInSeparateProcesses]
 abstract class ChadoTestKernelBase extends TripalTestKernelBase {
 
   use ChadoTestTrait;
@@ -37,35 +40,35 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
    * {@inheritdoc}
    */
 
-   /**
-    * Just get a free test schema name.
-    */
-   public const SCHEMA_NAME_ONLY = 0;
+  /**
+   * Just get a free test schema name.
+   */
+  public const SCHEMA_NAME_ONLY = 0;
 
-   /**
-    * Create an empty schema.
-    */
-   public const CREATE_SCHEMA = 1;
+  /**
+   * Create an empty schema.
+   */
+  public const CREATE_SCHEMA = 1;
 
-   /**
-    * Create a schema and initialize it with dummy data.
-    */
-   public const INIT_DUMMY = 2;
+  /**
+   * Create a schema and initialize it with dummy data.
+   */
+  public const INIT_DUMMY = 2;
 
-   /**
-    * Create a Chado schema with default data.
-    */
-   public const INIT_CHADO_EMPTY = 3;
+  /**
+   * Create a Chado schema with default data.
+   */
+  public const INIT_CHADO_EMPTY = 3;
 
-   /**
-    * Create a Chado schema and initialize it with dummy data.
-    */
-   public const INIT_CHADO_DUMMY = 4;
+  /**
+   * Create a Chado schema and initialize it with dummy data.
+   */
+  public const INIT_CHADO_DUMMY = 4;
 
-   /**
-    * Create a Chado schema and prepare both it and the associated drupal schema.
-    */
-   public const PREPARE_TEST_CHADO = 5;
+  /**
+   * Create a Chado schema and prepare both it and the associated drupal schema.
+   */
+  public const PREPARE_TEST_CHADO = 5;
 
   /**
    * {@inheritdoc}
@@ -86,7 +89,7 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
       // As such we are going to manually set some needed ones within
       // the test config based on the real config.
       $fromReal = $this->realConfigFactory->get('tripal.settings')
-      ->get('test_schema_base_names', []);
+        ->get('test_schema_base_names', []);
       \Drupal::configFactory()
         ->getEditable('tripal.settings')
         ->set('test_schema_base_names', $fromReal)
@@ -95,7 +98,7 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
   }
 
   /**
-   * Prepare kernel environments to suppor specific functionality.
+   * Prepare kernel environments to support specific functionality.
    *
    * This method is foccused on making it easier to write kernel test for Tripal
    * functionality. Simply pass in the parts of Tripal core you need in your
@@ -105,14 +108,14 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
    * friendly failure then the typical one provided by Drupal.
    *
    * @param array $functionality
-   *  A list of functionality you need to support. Although this method handles
-   *  dependencies, you should include all items in the supported keys below
-   *  that you need. This is because in some cases you will want to mock rather
-   *  then include in your kernel tests and this way, this method supports that.
-   *  Supported keys are:
+   *   A list of functionality you need to support. Although this method handles
+   *   dependencies, you should include all items in the supported keys below
+   *   that you need. This is because in some cases you will want to mock rather
+   *   then include in your kernel tests and this way, this method supports that.
+   *   Supported keys are:
    *   - TripalTerm
    *   - TripalEntity
-   *   - TripalField
+   *   - TripalField.
    *
    * @return void
    */
@@ -145,6 +148,12 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
       $this->installEntitySchema('file');
       $this->installSchema('file', ['file_usage']);
       $this->installSchema('tripal', ['tripal_import', 'tripal_jobs']);
+      // Get services used by importers.
+      $this->messenger = \Drupal::messenger();
+      $this->logger = \Drupal::service('tripal.logger');
+      $this->fileretriever = \Drupal::service('tripal.fileretriever');
+      $this->publish_manager = \Drupal::service('tripal.backend_publish');
     }
   }
+
 }

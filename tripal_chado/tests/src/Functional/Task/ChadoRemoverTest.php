@@ -4,7 +4,10 @@ namespace Drupal\Tests\tripal_chado\Functional\Task;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\tripal_chado\Task\ChadoRemover;
-
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for remover task.
@@ -15,14 +18,20 @@ use Drupal\tripal_chado\Task\ChadoRemover;
  * @group Tripal Chado
  * @group Tripal Chado Task
  * @group Tripal Chado Remover
+ *
+ * @covers ::setParameters
+ * @covers ::performTask
  */
+#[CoversClass(ChadoRemover::class)]
+#[CoversMethod(ChadoRemover::class, 'setParameters')]
+#[CoversMethod(ChadoRemover::class, 'performTask')]
+#[Group('biodb-task')]
+#[group('task-remover')]
+#[RunTestsInSeparateProcesses]
 class ChadoRemoverTest extends ChadoTestBrowserBase {
 
   /**
    * Tests task.
-   *
-   * @cover ::setParameters
-   * @cover ::performTask
    */
   public function testPerformTaskRemover() {
     // Create a temporary schema.
@@ -39,4 +48,5 @@ class ChadoRemoverTest extends ChadoTestBrowserBase {
     // Already dropped but we need to let know the "garbage schema collector".
     $this->freeTestSchema($tripaldbx_db);
   }
+
 }

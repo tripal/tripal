@@ -2,12 +2,12 @@
 
 namespace Drupal\Tests\tripal\Kernel\Entity;
 
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\field\Entity\FieldConfig;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
-use Drupal\tripal\Entity\TripalEntityType;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalEntity URL alias system specifically.
@@ -15,6 +15,9 @@ use Drupal\tripal\Entity\TripalEntityType;
  * @group TripalEntity
  * @group TripalTokenParser
  */
+#[Group('tripal-content')]
+#[Group('service-token-parser')]
+#[RunTestsInSeparateProcesses]
 class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
 
   use TripalEntityFieldTestTrait;
@@ -115,7 +118,7 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
       "use form element value on update for URL alias",
       "use form element value for URL alias (duplicate already exists)",
       "use format for URL alias on create then form on edit (duplicate on edit)",
-      "format for title generates duplicate, fix on update"
+      "format for title generates duplicate, fix on update",
     ];
     foreach ($labels as $key => $label) {
       $scenarios[] = [$key, $label];
@@ -127,16 +130,16 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
   /**
    * Tests that TripalEntity::save() handles URL alias' + titles.
    *
-   * @dataProvider provideScenarios
-   *
    * @param int $current_scenario_key
    *   The key of the scenario in the YAML.
    * @param string $current_scenario_label
    *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
    */
+  #[DataProvider('provideScenarios')]
   public function testTripalEntitySaveContent(int $current_scenario_key, string $current_scenario_label) {
-    $current_scenario = $this->scenarios[$current_scenario_key];
-    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+    $current_scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
 
     // 0.a Make any changes needed to the bundle.
     if (array_key_exists('alter_bundle', $current_scenario)) {
@@ -149,7 +152,7 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
       $this->tripalEntityType['test_gemstone']->save();
     }
 
-    // 0.b Create any pre-existing entities before the test if some are specified.
+    // 0.b Create any pre-existing entities before the test if specified.
     if (array_key_exists('pre_create', $current_scenario)) {
       $entity = TripalEntity::create([
         'type' => $this->bundle_name,
@@ -186,7 +189,7 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
       "The message of the exception thrown on create was not what we expected."
     );
 
-    // If we expected postSave errors then check they were present and as expected.
+    // If we expected postSave errors then check they were as expected.
     $ret_postSave_errors = $entity->getPostSaveErrors();
     if (isset($current_scenario['create']['expected']['postSave'])) {
       $expected_postSave_errors = $current_scenario['create']['expected']['postSave'];
@@ -215,13 +218,13 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
     $this->assertEquals($current_scenario['create']['expected']['title'], $created_entity->getTitle(), "We did not get the title we expected when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     // -- URL.
     $retrieved_alias = $created_entity->getAlias();
-    // when an alias expected...
+    // When an alias expected...
     if ($current_scenario['create']['expected']['url_alias']) {
       $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
       $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
       $this->assertEquals($current_scenario['create']['expected']['url_alias'], $retrieved_alias['alias'], "We did not get the url alias we expected when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     }
-    // if an alias is NOT expected...
+    // If an alias is NOT expected...
     else {
       $this->assertEquals(NULL, $retrieved_alias, "We did not expect an alias to be set when CREATING the entity for the '" . $current_scenario['label'] . "' scenario and yet it was.");
     }
@@ -235,7 +238,8 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
     $exception_message = '';
     try {
       $status = $created_entity->save();
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -252,7 +256,7 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
       "The message of the exception thrown on update was not what we expected."
     );
 
-    // If we expected postSave errors then check they were present and as expected.
+    // If we expected postSave errors then check they were as expected.
     $ret_postSave_errors = $created_entity->getPostSaveErrors();
     if (isset($current_scenario['edit']['expected']['postSave'])) {
       $expected_postSave_errors = $current_scenario['edit']['expected']['postSave'];
@@ -264,7 +268,8 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
           $this->assertEquals($expected_value, $ret_error[$key], "The '$key' for this error encountered during postSave() did not match what we expected.");
         }
       }
-    } else {
+    }
+    else {
       $this->assertCount(0, $ret_postSave_errors, "We did not expect any errors on postSave() and yet we retrieved some.");
     }
 
@@ -275,13 +280,13 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
     $this->assertEquals($current_scenario['edit']['expected']['title'], $updated_entity->getTitle(), "We did not get the title we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     // -- URL.
     $retrieved_alias = $created_entity->getAlias();
-    // when an alias expected...
+    // When an alias expected...
     if ($current_scenario['edit']['expected']['url_alias']) {
       $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
       $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
       $this->assertEquals($current_scenario['edit']['expected']['url_alias'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     }
-    // if an alias is NOT expected...
+    // If an alias is NOT expected...
     else {
       $this->assertEquals(NULL, $retrieved_alias, "We did not expect an alias to be set when CREATING the entity for the '" . $current_scenario['label'] . "' scenario and yet it was.");
     }
@@ -297,7 +302,7 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
     // - an alias is not yet set (i.e. was duplicate on entity create)
     // - the new alias is unique.
     // - we set the new alias outside of entity save.
-    // Specifically: "use format for URL (duplicate already exists)"
+    // Specifically: "use format for URL (duplicate already exists)".
     $current_scenario = $this->scenarios[2];
 
     // Create any pre-existing entities before the test if some are specified.
@@ -319,7 +324,8 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
     $exception_message = '';
     try {
       $status = $entity->save();
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -353,7 +359,7 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
     try {
       $set_alias = $created_entity->setAlias($expected_alias);
     }
-    catch( \Exception $e) {
+    catch (\Exception $e) {
       $exception_caught = TRUE;
       $exception_message = $e->getMessage();
     }
@@ -372,5 +378,7 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
     $this->assertIsArray($retrieved_alias, "The retrieved path should be an array.");
     $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property.");
     $this->assertEquals($expected_alias, $retrieved_alias['alias'], "We did not get the url alias we expected after re-loading the entity whose url alias was set outside of save.");
+    $this->assertIsObject($loaded_entity, "We expected to be able to load the entity when checking for the alias.");
   }
+
 }

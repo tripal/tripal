@@ -4,20 +4,21 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
- * Plugin implementation of default Chado Sequence widget.
- *
- * @FieldWidget(
- *   id = "chado_sequence_widget_default",
- *   label = @Translation("Chado Sequence Residues Widget"),
- *   description = @Translation("The default chado sequence widget which allows curators to manually enter sequence residues on the content edit page."),
- *   field_types = {
- *     "chado_sequence_type_default"
- *   }
- * )
+ * Plugin implementation of default Chado Sequence Residues widget.
  */
+#[TripalFieldWidget(
+  id: 'chado_sequence_widget_default',
+  label: new TranslatableMarkup('Chado Sequence Residues Widget'),
+  description: new TranslatableMarkup('The default chado sequence widget which allows curators to manually enter sequence residues on the content edit page.'),
+  field_types: [
+    'chado_sequence_type_default',
+  ],
+)]
 class ChadoSequenceWidgetDefault extends ChadoWidgetBase {
 
   /**

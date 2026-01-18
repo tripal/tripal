@@ -1,0 +1,31 @@
+
+name: 'PHPUnit'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 4.x
+  schedule:
+    - cron: '0 6 * * *'
+
+permissions: read-all
+
+
+jobs:
+  running-tests:
+    name: 'PHP 8.3 - Drupal 11.2.x-dev - PostgreSQL 18'
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: 'Checkout Repository'
+        uses: 'actions/checkout@v6'
+      - name: 'Run Automated testing'
+        uses: 'tripal/test-tripal-action@v1.8'
+        with:
+          directory-name: 'tripal'
+          modules: 'tripal, tripal_biodb, tripal_chado, tripal_layout'
+          php-version: '8.3'
+          drupal-version: '11.2.x-dev'
+          pgsql-version: '18'
+          build-image: TRUE
+          dockerfile: 'Dockerfile'

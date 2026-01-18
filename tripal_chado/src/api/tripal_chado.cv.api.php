@@ -480,6 +480,8 @@ function chado_insert_cvterm($term, $options = [], $schema_name = NULL) {
   if (!$schema_name) {
     $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
   }
+  $chado_connection = \Drupal::service('tripal_chado.database');
+  $chado_connection->setSchemaName($schema_name);
 
   // Get the term properties.
   $id = (isset($term['id'])) ? $term['id'] : '';
@@ -561,8 +563,8 @@ function chado_insert_cvterm($term, $options = [], $schema_name = NULL) {
   // Check if CV already exists
   //$cv = chado_get_cv(['name' => $cvname], [], $schema_name); // BEFOREOPT: 5.9ms
   // OPT: 5.3ms
-  $sql_cv = "SELECT cv_id FROM {cv} WHERE name = :name LIMIT 1";
-  $results_cv = chado_query($sql_cv, [':name' => $cvname], [], $schema_name);
+  $sql_cv = "SELECT cv_id FROM {1:cv} WHERE name = :name LIMIT 1";
+  $results_cv = $chado_connection->query($sql_cv, [':name' => $cvname]);
   $cv = null;
   foreach ($results_cv as $row_cv) {
     $cv = new stdClass();
@@ -584,10 +586,10 @@ function chado_insert_cvterm($term, $options = [], $schema_name = NULL) {
   $cvtermsql = "
     SELECT CVT.name, CVT.cvterm_id, CV.cv_id, CV.name as cvname,
       DB.name as dbname, DB.db_id, DBX.accession
-    FROM {cvterm} CVT
-      INNER JOIN {dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
-      INNER JOIN {db} DB on DBX.db_id = DB.db_id
-      INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
+    FROM {1:cvterm} CVT
+      INNER JOIN {1:dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
+      INNER JOIN {1:db} DB on DBX.db_id = DB.db_id
+      INNER JOIN {1:cv} CV on CV.cv_id = CVT.cv_id
     WHERE DBX.accession = :accession and DB.name = :name
   ";
   // Add the database. The function will just return the DB object if the
@@ -618,8 +620,8 @@ function chado_insert_cvterm($term, $options = [], $schema_name = NULL) {
     $dbxref = $result[0];
     if (!$dbxref) {
       tripal_report_error('tripal_cv', TRIPAL_ERROR,
-        'Unable to access the dbxref record for the :term cvterm. Term Record: !record',
-        [':term' => $name, '!record' => print_r($cvterm, TRUE)]
+        'Unable to access the dbxref record for the :term cvterm. Term Record: @record',
+        [':term' => $name, '@record' => print_r($cvterm, TRUE)]
       );
       return FALSE;
     }
@@ -694,10 +696,10 @@ function chado_insert_cvterm($term, $options = [], $schema_name = NULL) {
         }
       }
       // Get the original cvterm with the same name and return that.
-      $result = chado_query($cvtermsql, [
+      $result = $chado_connection->query($cvtermsql, [
         ':accession' => $dbxref->accession,
         ':name' => $dbname,
-      ], [], $schema_name);
+      ]);
       $cvterm = $result->fetchObject();
       return $cvterm;
     }
@@ -705,10 +707,10 @@ function chado_insert_cvterm($term, $options = [], $schema_name = NULL) {
     // We can now perform and updated if we need to.
   }
   // Get the CVterm record.
-  $result = chado_query($cvtermsql, [
+  $result = $chado_connection->query($cvtermsql, [
     ':accession' => $accession,
     ':name' => $dbname,
-  ], [], $schema_name);
+  ]);
   $cvterm = $result->fetchObject();
   if (!$cvterm) {
     // Check to see if the dbxref exists if not, add it.
@@ -751,10 +753,10 @@ function chado_insert_cvterm($term, $options = [], $schema_name = NULL) {
       tripal_report_error('tripal_cv', TRIPAL_WARNING, "The dbxref already exists for another cvterm record: $name (cv: " . $cvname . " db: $dbname)", []);
       return 0;
     }
-    $result = chado_query($cvtermsql, [
+    $result = $chado_connection->query($cvtermsql, [
       ':accession' => $accession,
       ':name' => $dbname,
-    ], [], $schema_name);
+    ]);
     $cvterm = $result->fetchObject();
   }
   // Update the cvterm.
@@ -776,18 +778,18 @@ function chado_insert_cvterm($term, $options = [], $schema_name = NULL) {
     // it.
     $checksql = "
       SELECT cvterm_id
-      FROM {cvterm} CVT
-        INNER JOIN {dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
-        INNER JOIN {db} DB on DBX.db_id = DB.db_id
-        INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
+      FROM {1:cvterm} CVT
+        INNER JOIN {1:dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
+        INNER JOIN {1:db} DB on DBX.db_id = DB.db_id
+        INNER JOIN {1:cv} CV on CV.cv_id = CVT.cv_id
       WHERE DBX.accession = :accession and DB.name = :dbname and CVT.name = :term and CV.name = :cvname
     ";
-    $check = chado_query($checksql, [
+    $check = $chado_connection->query($checksql, [
       ':accession' => $accession,
       ':dbname' => $dbname,
       ':term' => $name,
       ':cvname' => $cvname,
-    ], [], $schema_name)->fetchObject();
+    ])->fetchObject();
     if (!$check) {
       // Check to see if the dbxref exists if not, add it.
       $dbxref = chado_insert_dbxref([
@@ -810,10 +812,10 @@ function chado_insert_cvterm($term, $options = [], $schema_name = NULL) {
       }
     }
     // Finally grab the updated details.
-    $result = chado_query($cvtermsql, [
+    $result = $chado_connection->query($cvtermsql, [
       ':accession' => $accession,
       ':name' => $dbname,
-    ], [], $schema_name);
+    ]);
     $cvterm = $result->fetchObject();
   }
   else {
@@ -839,12 +841,12 @@ function chado_insert_cvterm($term, $options = [], $schema_name = NULL) {
 function chado_autocomplete_cv($string = '') {
   $sql = "
     SELECT CV.cv_id, CV.name
-    FROM {cv} CV
+    FROM {1:cv} CV
     WHERE lower(CV.name) like lower(:name)
     ORDER by CV.name
     LIMIT 25 OFFSET 0
   ";
-  $results = chado_query($sql, [':name' => $string . '%']);
+  $results = \Drupal::service('tripal_chado.database')->query($sql, [':name' => $string . '%']);
   $items = [];
   foreach ($results as $cv) {
     $items[$cv->name] = $cv->name;
@@ -871,17 +873,17 @@ function chado_autocomplete_cvterm($cv_id, $string = '') {
   if ($cv_id) {
     $sql = "
       SELECT CVT.cvterm_id, CVT.name
-      FROM {cvterm} CVT
+      FROM {1:cvterm} CVT
       WHERE CVT.cv_id = :cv_id and lower(CVT.name) like lower(:name)
       UNION
       SELECT CVT2.cvterm_id, CVTS.synonym as name
-      FROM {cvterm} CVT2
+      FROM {1:cvterm} CVT2
         INNER JOIN {cvtermsynonym} CVTS ON CVTS.cvterm_id = CVT2.cvterm_id
       WHERE CVT2.cv_id = :cv_id and lower(CVTS.synonym) like lower(:name)
       ORDER by name
       LIMIT 25 OFFSET 0
     ";
-    $results = chado_query($sql, [
+    $results = \Drupal::service('tripal_chado.database')->query($sql, [
       ':cv_id' => $cv_id,
       ':name' => $string . '%',
     ]);
@@ -895,19 +897,19 @@ function chado_autocomplete_cvterm($cv_id, $string = '') {
   else {
     $sql = "
       SELECT CVT.cvterm_id, CVT.name, CV.name as cvname, CVT.cv_id
-      FROM {cvterm} CVT
-        INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+      FROM {1:cvterm} CVT
+        INNER JOIN {1:cv} CV on CVT.cv_id = CV.cv_id
       WHERE lower(CVT.name) like lower(:name)
       UNION
       SELECT CVT2.cvterm_id, CVTS.synonym as name, CV2.name as cvname, CVT2.cv_id
-      FROM {cvterm} CVT2
-        INNER JOIN {cv} CV2 on CVT2.cv_id = CV2.cv_id
-        INNER JOIN {cvtermsynonym} CVTS ON CVTS.cvterm_id = CVT2.cvterm_id
+      FROM {1:cvterm} CVT2
+        INNER JOIN {1:cv} CV2 on CVT2.cv_id = CV2.cv_id
+        INNER JOIN {1:cvtermsynonym} CVTS ON CVTS.cvterm_id = CVT2.cvterm_id
       WHERE lower(CVTS.synonym) like lower(:name)
       ORDER by name
       LIMIT 25 OFFSET 0
     ";
-    $results = chado_query($sql, [':name' => $string . '%']);
+    $results = \Drupal::service('tripal_chado.database')->query($sql, [':name' => $string . '%']);
     $items = [];
     foreach ($results as $term) {
       $items[$term->name] = $term->name;

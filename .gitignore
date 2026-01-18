@@ -6,9 +6,11 @@ tripaldocker/dev/.env
 vendor
 .phpunit.result.cache
 .phpunit.cache
+.deprecation-ignore.txt
 clover.xml
 cc-test-reporter
 coverage/
 */.DS_Store
 .DS_Store
 supervisord.*
+tmp*

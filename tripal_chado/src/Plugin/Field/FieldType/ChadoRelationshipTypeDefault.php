@@ -2,41 +2,73 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
-
 /**
  * Plugin implementation of default Tripal relationship field type.
- *
- * @FieldType(
- *   id = "chado_relationship_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Relationship"),
- *   description = @Translation("Add a relationship to the content type."),
- *   default_widget = "chado_relationship_widget_default",
- *   default_formatter = "chado_relationship_formatter_default",
- *   cardinality = -1
- * )
  */
+#[TripalFieldType(
+  id: 'chado_relationship_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Relationship'),
+  description: new TranslatableMarkup('Add a relationship to the content type.'),
+  default_widget: 'chado_relationship_widget_default',
+  default_formatter: 'chado_relationship_formatter_default',
+  cardinality: -1,
+)]
 class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = 'chado_relationship_type_default';
+
+  /**
+   * The ID Space to use with this field.
+   *
+   * @var string
+   */
   protected static $termIdSpace = 'SBO';
+
+  /**
+   * The Accession to use with this field.
+   *
+   * @var string
+   */
   protected static $termAccession = '0000374';
 
-  // This is a flag to the ChadoFieldItemBase parent
-  // class to provide a column selector in the form
+  /**
+   * Indicate if we should provide a column selector in the add field form.
+   *
+   * @var bool
+   *   If TRUE then provide the select element for the column; if FALSE don't.
+   * @see ChadoFieldItemBase
+   */
   protected static $select_base_column = TRUE;
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    // Overrides the default of 'value'
+    // The property that indicates if this field is empty.
+    return 'linker_id';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'value';
   }
 
@@ -57,10 +89,36 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'Relationship'
+    // CV Term is 'Relationship'.
     $field_settings['termIdSpace'] = self::$termIdSpace;
     $field_settings['termAccession'] = self::$termAccession;
     return $field_settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    $value['record_id'] = 0;
+    $value['linker_id'] = 0;
+
+    $value['subject_id'] = 0;
+    $value['subject_entity_id'] = 0;
+    $value['subject_name'] = '';
+
+    $value['object_id'] = 0;
+    $value['object_entity_id'] = 0;
+    $value['object_name'] = '';
+
+    $value['type_id'] = mt_rand(1, 500);
+    $value['type_name'] = '';
+
+    $value['relationship_value'] = '';
+    $value['relationship_rank'] = 0;
+
+    return [$value];
   }
 
   /**
@@ -79,26 +137,27 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     }
 
     // Get the various tables and columns needed for this field.
-    // We will get the property terms by using the Chado table columns they map to.
+    // We will get the terms by using the Chado table columns they map to.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
-    // Base table
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    // Base table.
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
     $base_column = $storage_settings['base_column'];
     $base_column_term = self::getColumnTermId($base_table, $base_column, 'schema:name');
 
-    // Relationship table
+    // Relationship table.
     $linker_table = $storage_settings['linker_table'] ?? ($base_table . '_relationship');
-    $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+    $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
     $linker_pkey_col = $linker_schema_def['primary key'];
-    // Relationship table column naming is not consistent for nd_reagent and project
+    // Relationship table column naming is not consistent for
+    // nd_reagent and project.
     $linker_subject_col = $storage_settings['subject_column'] ?? NULL;
     $linker_object_col = $storage_settings['object_column'] ?? NULL;
     if (!$linker_subject_col || !$linker_object_col) {
-      // When this field is added through the UI, these will not have been set yet, so save the settings
+      // When this field is added through the UI, these will not have been
+      // set yet, so save the settings.
       [$linker_subject_col, $linker_object_col] = self::getRelationshipColumns($chado, $base_table, $linker_table);
       $storage_settings['subject_column'] = $linker_subject_col;
       $storage_settings['object_column'] = $linker_object_col;
@@ -109,8 +168,8 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $linker_object_term = self::getColumnTermId($linker_table, $linker_object_col, 'local:relationship_object');
     $linker_type_term = self::getColumnTermId($linker_table, $linker_type_col, 'schema:additionalType');
 
-    // Columns from linked tables to specify the relationship type
-    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    // Columns from linked tables to specify the relationship type.
+    $cvterm_schema_def = self::getChadoTableDef('cvterm', $schema);
     $type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $type_len = $cvterm_schema_def['fields']['name']['size'];
 
@@ -143,7 +202,8 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
       'fkey' => 'object_id',
     ]);
 
-    // Define the relationship table that links the base table back to itself at another record.
+    // Define the relationship table that links the base table back to itself
+    // at another record.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', self::$record_id_term, [
       'action' => 'store_pkey',
       'drupal_store' => TRUE,
@@ -166,8 +226,8 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
       'as' => 'object_id',
     ]);
 
-    // The column which will be used for the record name. One will be the hosting record,
-    // but we don't know in advance which it is, so store both.
+    // The column which will be used for the record name. One will be the
+    // hosting record, but we don't know in advance which it is, so store both.
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'subject_name', $base_column_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -223,6 +283,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -232,10 +293,10 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $schema = $chado->schema();
     // Get the base table for the content type.
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-    // Relationship tables have a standard naming method
+    // Relationship tables have a standard naming method.
     $relationship_table = $base_table . '_relationship';
-    $relationship_schema_def = $schema->getTableDef($relationship_table, ['format' => 'Drupal']);
-    if ($relationship_schema_def) {
+    $table_exists = $schema->tableExists($relationship_table);
+    if ($table_exists) {
       $compatible = TRUE;
     }
 
@@ -244,6 +305,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances, array $options = []): array {
@@ -257,8 +319,9 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
       /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
       $chado = \Drupal::service('tripal_chado.database');
       // We need to know which column in the base table should be used for an
-      // autocomplete. When this field is added through UI this can be selected.
-      // We will get this from the title format if possible, otherwise use 'name'.
+      // autocomplete. When this field is added through UI this can be
+      // selected. We will get this from the title format if possible,
+      // otherwise use 'name'.
       $base_column = self::getBaseColumnFromTitleFormat($chado, $bundle, $base_table);
 
       if ($base_column) {
@@ -266,7 +329,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
         $relationship_table = $base_table . '_relationship';
         if ($chado->schema()->tableExists($relationship_table)) {
 
-          // Lookup actual names of subject_id and object_id columns
+          // Lookup actual names of subject_id and object_id columns.
           [$subject_column, $object_column] = self::getRelationshipColumns($chado, $base_table, $relationship_table);
           if ($subject_column and $object_column) {
 
@@ -303,12 +366,12 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
                 'form' => [
                   'default' => [
                     'region' => 'content',
-                    'weight' => 10
+                    'weight' => 10,
                   ],
                 ],
               ],
             ];
-            // The parent class adds collection plugin IDs
+            // The parent class adds collection plugin IDs.
             $field_list = parent::discoverPostprocess($field_list);
           }
         }
@@ -321,16 +384,20 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
    * Finds the name of the base table column to be used for discovery.
    *
    * @param \Drupal\tripal_chado\Database\ChadoConnection $chado
-   *   Connection to the chado database
+   *   Connection to the chado database.
    * @param \Drupal\tripal\Entity\TripalEntityType $bundle
-   *   The bundle object
+   *   The bundle object.
    * @param string $base_table
-   *   The name of the chado base table
+   *   The name of the chado base table.
+   *
    * @return string
    *   The name of a column in the base table, or an empty string.
    */
-  protected static function getBaseColumnFromTitleFormat(\Drupal\tripal_chado\Database\ChadoConnection $chado,
-      \Drupal\tripal\Entity\TripalEntityType $bundle, string $base_table): string {
+  protected static function getBaseColumnFromTitleFormat(
+    ChadoConnection $chado,
+    TripalEntityType $bundle,
+    string $base_table,
+  ): string {
     $title_format = $bundle->getTitleFormat();
     $bundle_id = $bundle->id();
 
@@ -340,13 +407,13 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     // The notable case of failure for this is for organism.
     $base_column = 'name';
     if (preg_match_all('/\[' . $bundle_id . '_([^\[\]]+)\]/', $title_format, $matches)) {
-      // Use the captured pattern
+      // Use the captured pattern.
       if (count($matches[1]) == 1) {
         $base_column = $matches[1][0];
       }
     }
 
-    // Validation that the column exists
+    // Validation that the column exists.
     if (!$base_column or !$chado->schema()->fieldExists($base_table, $base_column)) {
       $base_column = '';
     }
@@ -354,25 +421,30 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
   }
 
   /**
-   * Returns the names of the subject and object columns in the relationship table.
-   * This lookup is necessary because column names are not consistent for nd_reagent and project.
+   * Returns the names of the relationship subject and object columns.
    *
-   * @param $chado
-   *   Connection to Chado database
+   * This lookup is necessary because column names are not consistent
+   * for nd_reagent and project.
+   *
+   * @param Drupal\tripal_chado\Database\ChadoConnection $chado
+   *   Connection to Chado database.
    * @param string $base_table
-   *   The name of the base table, e.g. "project"
+   *   The name of the base table, e.g. "project".
    * @param string $relationship_table
-   *   The name of the relationship table, e.g. "project_relationship"
+   *   The name of the relationship table, e.g. "project_relationship".
+   *
    * @return array
    *   Array with two elements, the names of subject and object columns.
    */
-  protected static function getRelationshipColumns($chado, string $base_table, string $relationship_table): array {
+  protected static function getRelationshipColumns(ChadoConnection $chado, string $base_table, string $relationship_table): array {
     $subject_column = '';
     $object_column = '';
-    // The subject and object columns will be among the foreign keys to the base table
-    $table_schema_def = $chado->schema()->getTableDef($relationship_table, ['format' => 'Drupal']);
-    if ($table_schema_def['foreign keys'][$base_table]['columns'] ?? NULL) {
-      foreach (array_keys($table_schema_def['foreign keys'][$base_table]['columns']) as $relationship_column) {
+    // The subject and object columns will be among the foreign keys
+    // to the base table.
+    $schema = $chado->schema();
+    $foreign_key_def = self::getChadoForeignKeyDef($relationship_table, $base_table, $schema);
+    if ($foreign_key_def) {
+      foreach (array_keys($foreign_key_def['columns']) as $relationship_column) {
         if (preg_match('/subject/', $relationship_column)) {
           $subject_column = $relationship_column;
         }
@@ -383,4 +455,5 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     }
     return [$subject_column, $object_column];
   }
+
 }

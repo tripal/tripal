@@ -4,29 +4,30 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Link;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\UrlHelper;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * Plugin implementation of default Tripal linker property formatter.
- *
- * @FieldFormatter(
- *   id = "chado_property_formatter_default",
- *   label = @Translation("Chado Property"),
- *   description = @Translation("Add a property or attribute to the content type."),
- *   field_types = {
- *     "chado_property_type_default"
- *   }
- * )
  */
+#[TripalFieldFormatter(
+  id: 'chado_property_formatter_default',
+  label: new TranslatableMarkup('Chado Property'),
+  description: new TranslatableMarkup('Add a property or attribute to the content type.'),
+  field_types: [
+    'chado_property_type_default',
+  ],
+)]
 class ChadoPropertyFormatterDefault extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $elements = [];
+    parent::viewElements($items, $langcode);
 
     // Default filter format.
     $filter_format = 'basic_html';
@@ -59,22 +60,8 @@ class ChadoPropertyFormatterDefault extends ChadoFormatterBase {
       ];
     }
 
-    // If only one element has been found, don't make into a list.
-    if (count($list) == 1) {
-      $elements = $list;
-    }
-
-    // If more than one value has been found, display all values in an
-    // unordered list.
-    elseif (count($list) > 1) {
-      $elements[0] = [
-        '#theme' => 'item_list',
-        '#list_type' => 'ul',
-        '#items' => $list,
-        '#wrapper_attributes' => ['class' => 'container'],
-      ];
-    }
-
+    // Will convert $list to a markup list if there is more than one item.
+    $elements = $this->createListMarkup($list);
     return $elements;
   }
 }

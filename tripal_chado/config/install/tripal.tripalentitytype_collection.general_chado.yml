@@ -15,6 +15,16 @@ content_types:
         settings:
             chado_base_table: organism
 
+    -   label: Species Tree
+        term: data:3272
+        help_text: Use the species tree page for data or plotting of taxonomic trees of organisms on this site.
+        category: General
+        id: speciestree
+        title_format: "[speciestree_name]"
+        url_format: "speciestree/[TripalEntity__entity_id]"
+        settings:
+            chado_base_table: phylotree
+
     -   label:  Analysis
         term: operation:2945
         help_text: Use the analysis page for an individual analysis, workflow or pipeline that was performed using statistical or computational means.

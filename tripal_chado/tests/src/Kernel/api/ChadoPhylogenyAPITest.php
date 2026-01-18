@@ -1,9 +1,11 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Kernel\Api;
+namespace Drupal\Tests\tripal_chado\Kernel\api;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for API functions dealing with phylogenetic trees.
@@ -13,11 +15,29 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  * @group Tripal Chado
  * @group Tripal API
  * @group Tripal Phylotree
+ *
+ * @covers ::chado_phylogeny_lookup_organism_by_name
+ * @covers ::chado_phylogeny_get_node_types_vocab
+ * not yet implemented because newick importer not completed
+ *   ::chado_phylogeny_import_tree_file
+ *   ::chado_validate_phylotree
+ *   ::chado_insert_phylotree
+ *   ::chado_update_phylotree
+ *   ::chado_delete_phylotree
+ *   ::chado_assign_phylogeny_tree_indices
+ *   ::chado_phylogeny_import_tree
  */
+#[CoversFunction('chado_phylogeny_lookup_organism_by_name')]
+#[CoversFunction('chado_phylogeny_get_node_types_vocab')]
+#[Group('legacy-api')]
+#[Group('bio-organism')]
+#[Group('bio-phylogeny')]
+#[RunTestsInSeparateProcesses]
 class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
 
   /**
    * Modules to enable.
+   *
    * @var array
    */
   protected static $modules = ['tripal', 'tripal_biodb', 'tripal_chado'];
@@ -31,25 +51,13 @@ class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
 
   /**
    * Schema to do testing out of.
+   *
    * @var string
    */
   protected $schemaName;
 
   /**
    * Tests the following phylotree API functions:
-   * @cover ::chado_phylogeny_lookup_organism_by_name
-   * @cover ::chado_phylogeny_get_node_types_vocab
-   * not yet implemented because newick importer not completed
-   *   ::chado_phylogeny_import_tree_file
-   *   ::chado_validate_phylotree
-   *   ::chado_insert_phylotree
-   *   ::chado_update_phylotree
-   *   ::chado_delete_phylotree
-   *   ::chado_assign_phylogeny_tree_indices
-   *   ::chado_phylogeny_import_tree
-   *
-   * @group tripal-chado
-   * @group chado-organism
    */
   public function testChadoPhylotreeAPIFunctions() {
 
@@ -57,31 +65,37 @@ class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
     $this->chado_connection = $this->createTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
     $this->schemaName = $this->chado_connection->getSchemaName();
 
-    // Lookup cvterm_id for 'subspecies'
-    $cvterm = chado_get_cvterm(['name' => 'subspecies'], [], $this->schemaName);
-    $this->assertNotNull($cvterm, 'Unable to retrieve cvterm for "subspecies" using chado_get_cvterm()');
-    $subspecies_id = $cvterm->cvterm_id;
+    // Lookup cvterm_id for 'subspecies'.
+    $query = $this->chado_connection->select('1:cvterm', 't');
+    $query->condition('name', 'subspecies', '=');
+    $query->addField('t', 'cvterm_id', 'cvterm_id');
+    $subspecies_id = $query->execute()->fetchField();
+    $this->assertNotNull($subspecies_id, 'Unable to retrieve cvterm_id for "subspecies"');
 
-    // Create two test organisms of the same genus and species
+    // Create two test organisms of the same genus and species.
     $species = 'bogusii' . uniqid();
     $organism_ids = [];
     $org = [
-            'genus' => 'Tripalus',
-            'species' => $species,
-            'type_id' => $subspecies_id,
-            'infraspecific_name' => 'sativus',
-            'common_name' => 'False Tripal',
-            'abbreviation' => 'T. ' . $species . ' subsp. sativus',
-           ];
-    $dbq = chado_insert_record('organism', $org, [], $this->schemaName);
-    $this->assertNotNull($dbq, 'Unable to insert test organism 1.');
-    $organism_ids[0] = $dbq['organism_id'];
+      'genus' => 'Tripalus',
+      'species' => $species,
+      'type_id' => $subspecies_id,
+      'infraspecific_name' => 'sativus',
+      'common_name' => 'False Tripal',
+      'abbreviation' => 'T. ' . $species . ' subsp. sativus',
+    ];
+    $query = $this->chado_connection->insert('1:organism')
+      ->fields($org);
+    $organism_id = $query->execute();
+    $this->assertEquals('1', $organism_id, 'Unable to insert test organism 1.');
+    $organism_ids[0] = $organism_id;
 
     $org['infraspecific_name'] = 'selvaticus';
     $org['abbreviation'] = 'T. ' . $species . ' subsp. selvaticus';
-    $dbq = chado_insert_record('organism', $org, [], $this->schemaName);
-    $this->assertNotNull($dbq, 'Unable to insert test organism 2.');
-    $organism_ids[1] = $dbq['organism_id'];
+    $query = $this->chado_connection->insert('1:organism')
+      ->fields($org);
+    $organism_id = $query->execute();
+    $this->assertEquals('2', $organism_id, 'Unable to insert test organism 2.');
+    $organism_ids[1] = $organism_id;
 
     // Test chado_phylogeny_lookup_organism_by_name().
     // This function is expected to return an organism_id. It returns FALSE if

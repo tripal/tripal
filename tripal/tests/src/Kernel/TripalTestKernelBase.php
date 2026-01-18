@@ -1,8 +1,10 @@
 <?php
+
 namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\tripal\Traits\TripalTestTrait;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * This is a base class for Tripal Kernel tests.
@@ -12,41 +14,67 @@ use Drupal\Tests\tripal\Traits\TripalTestTrait;
  *
  * @group Tripal
  */
+#[Group('tripal-testing')]
 abstract class TripalTestKernelBase extends KernelTestBase {
 
   use TripalTestTrait;
 
-  protected static $modules = ['tripal'];
-
   /**
    * {@inheritdoc}
    */
-  protected function setUp() :void {
-    parent::setUp();
-  }
+  protected static $modules = ['tripal'];
 
   /**
-   * Prepare kernel environments to suppor specific functionality.
+   * An instance of the Drupal messenger.
+   *
+   * @var ?Drupal\Core\Messenger\Messenger
+   */
+  protected $messenger = NULL;
+
+  /**
+   * The drupal logger for tripal, allowing importers to log messages.
+   *
+   * @var ?Drupal\tripal\Services\TripalLogger
+   */
+  protected $logger = NULL;
+
+  /**
+   * An instance of the Tripal file retriever service.
+   *
+   * @var ?Drupal\tripal\Services\TripalFileRetriever
+   */
+  protected $fileretriever = NULL;
+
+  /**
+   * An instance of the Tripal publish service.
+   *
+   * @var ?Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager
+   */
+  protected $publish_manager = NULL;
+
+  /**
+   * Prepare kernel environments to support specific functionality.
    *
    * This method is focused on making it easier to write kernel test for Tripal
    * functionality. Simply pass in the parts of Tripal core you need in your
-   * tests and this method will handle any dependencies to install all the needed
+   * tests and this method will handle any dependencies to install all needed
    * schema + config associated with that functionality. Additionally it will
    * try to warn you if your modules array is missing entries with a more user
    * friendly failure then the typical one provided by Drupal.
    *
    * @param array $functionality
-   *  A list of functionality you need to support. Although this method handles
-   *  dependencies, you should include all items in the supported keys below
-   *  that you need. This is because in some cases you will want to mock rather
-   *  then include in your kernel tests and this way, this method supports that.
-   *  Supported keys are:
+   *   A list of functionality you need to support. Although this method handles
+   *   dependencies, you should include all items in the supported keys below
+   *   that you need. This is because in some cases you will want to mock rather
+   *   then include in your kernel tests and this method supports that.
+   *   Supported keys are:
    *   - TripalTerm
    *   - TripalEntity
    *   - TripalField
-   *   - TripalImporter
+   *   - TripalImporter.
    *
    * @return void
+   *   All changes are stored in variables rather than returned.
    */
   protected function prepareEnvironment(array $functionality) {
 
@@ -71,12 +99,18 @@ abstract class TripalTestKernelBase extends KernelTestBase {
       $this->installConfig(['field']);
     }
 
-    if(in_array('TripalImporter', $functionality)) {
+    if (in_array('TripalImporter', $functionality)) {
       $this->installConfig('system');
       $this->installEntitySchema('user');
       $this->installEntitySchema('file');
       $this->installSchema('file', ['file_usage']);
       $this->installSchema('tripal', ['tripal_import', 'tripal_jobs']);
+      // Get services used by importers.
+      $this->messenger = \Drupal::messenger();
+      $this->logger = \Drupal::service('tripal.logger');
+      $this->fileretriever = \Drupal::service('tripal.fileretriever');
+      $this->publish_manager = \Drupal::service('tripal.backend_publish');
     }
   }
+
 }

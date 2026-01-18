@@ -5,1088 +5,1012 @@ fields:
 
 ## Germplasm ##
 
-    -   name: germplasm_name
-        content_type: germplasm
-        label: Name
-        type: chado_string_type_default
-        description: The name of the item.
+    -   name: 'germplasm_name'
+        content_type: 'germplasm'
+        label: 'Name'
+        type: 'chado_string_type_default'
+        description: 'The name of the item.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: name
+                base_table: 'stock'
+                base_column: 'name'
             max_length: 255
         settings:
-            termIdSpace: schema
-            termAccession: name
+            termIdSpace: 'schema'
+            termAccession: 'name'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 10
           form:
             default:
-              region: content
+              region: 'content'
               weight: 10
 
-    -   name: germplasm_unique_name
-        content_type: germplasm
-        label: Unique Name
-        type: chado_text_type_default
-        description: A name that uniquely identifies the germplasm within this organism.
+    -   name: 'germplasm_unique_name'
+        content_type: 'germplasm'
+        label: 'Unique Name'
+        type: 'chado_text_type_default'
+        description: 'A name that uniquely identifies the germplasm within this organism.'
         cardinality: 1
         required: true
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: uniquename
+                base_table: 'stock'
+                base_column: 'uniquename'
         settings:
-            termIdSpace: data
-            termAccession: "0842"
+            termIdSpace: 'data'
+            termAccession: '0842'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 15
           form:
             default:
-              region: content
+              region: 'content'
               weight: 15
               settings:
-                filter_format: plain_text
+                filter_format: 'plain_text'
+                num_rows: 1
 
-    -   name: germplasm_organism
-        content_type: germplasm
-        label: Organism
-        type: chado_organism_type_default
-        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+    -   name: 'germplasm_organism'
+        content_type: 'germplasm'
+        label: 'Organism'
+        type: 'chado_organism_type_default'
+        description: 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.'
         cardinality: 1
         required: true
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: organism_id
+                base_table: 'stock'
+                base_column: 'organism_id'
         settings:
-            termIdSpace: OBI
-            termAccession: "0100026"
+            termIdSpace: 'OBI'
+            termAccession: '0100026'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 10
           form:
             default:
-              region: content
+              region: 'content'
               weight: 10
 
-    -   name: germplasm_description
-        content_type: germplasm
-        label: Description
-        type: chado_text_type_default
-        description: A description of the item.
+    -   name: 'germplasm_description'
+        content_type: 'germplasm'
+        label: 'Description'
+        type: 'chado_text_type_default'
+        description: 'A description of the item.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: description
+                base_table: 'stock'
+                base_column: 'description'
         settings:
-            termIdSpace: schema
-            termAccession: description
+            termIdSpace: 'schema'
+            termAccession: 'description'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 20
           form:
             default:
-              region: content
+              region: 'content'
               weight: 20
 
-    -   name: germplasm_type
-        content_type: germplasm
-        label: Type
-        type: chado_additional_type_type_default
-        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+    -   name: 'germplasm_type'
+        content_type: 'germplasm'
+        label: 'Type'
+        type: 'chado_additional_type_type_default'
+        description: 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.'
         cardinality: 1
         required: true
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                type_table: stock
-                type_column: type_id
+                base_table: 'stock'
+                type_table: 'stock'
+                type_column: 'type_id'
         settings:
-            termIdSpace: CO_010
-            termAccession: "0000044"
-            fixed_value: CO_010:0000044
+            termIdSpace: 'EFO'
+            termAccession: '0007059'
+            fixed_value: 'EFO:0007059'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 25
           form:
             default:
-              region: content
+              region: 'content'
               weight: 25
 
-    -   name: germplasm_pub
-        content_type: germplasm
-        label: Publication
-        type: chado_pub_type_default
-        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+    -   name: 'germplasm_pub'
+        content_type: 'germplasm'
+        label: 'Publication'
+        type: 'chado_pub_type_default'
+        description: 'Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.'
         cardinality: -1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_pub
-                linker_fkey_column: pub_id
+                base_table: 'stock'
+                linker_table: 'stock_pub'
+                linker_fkey_column: 'pub_id'
         settings:
-            termIdSpace: TPUB
-            termAccession: "0000002"
+            termIdSpace: 'TPUB'
+            termAccession: '0000002'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 30
           form:
             default:
-              region: content
+              region: 'content'
               weight: 30
 
-    -   name: germplasm_relationship
-        content_type: germplasm
-        label: Relationship
-        type: chado_relationship_type_default
+    -   name: 'germplasm_relationship'
+        content_type: 'germplasm'
+        label: 'Relationship'
+        type: 'chado_relationship_type_default'
         description: "Germplasm related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current germplasm is the subject; chose Reverse if the object is the current germplasm."
         cardinality: -1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: name
-                linker_table: stock_relationship
-                subject_column: subject_id
-                object_column: object_id
+                base_table: 'stock'
+                base_column: 'name'
+                linker_table: 'stock_relationship'
+                subject_column: 'subject_id'
+                object_column: 'object_id'
         settings:
-            termIdSpace: "SBO"
-            termAccession: "0000374"
+            termIdSpace: 'SBO'
+            termAccession: '0000374'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 49
           form:
             default:
-              region: content
+              region: 'content'
               weight: 49
 
-    -   name: germplasm_dbxref
-        content_type: germplasm
-        label: Primary Database Reference
-        type: chado_dbxref_type_default
-        description: The ID where this record may be available in an external online database.
+    -   name: 'germplasm_dbxref'
+        content_type: 'germplasm'
+        label: 'Primary Database Reference'
+        type: 'chado_dbxref_type_default'
+        description: 'The ID where this record may be available in an external online database.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: dbxref_id
+                base_table: 'stock'
+                base_column: 'dbxref_id'
         settings:
-            termIdSpace: SBO
-            termAccession: "0000554"
+            termIdSpace: 'SBO'
+            termAccession: '0000554'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 68
           form:
             default:
-              region: content
+              region: 'content'
               weight: 68
 
-    -   name: germplasm_dbxref_ann
-        content_type: germplasm
-        label: Database Reference Annotations
-        type: chado_dbxref_type_default
-        description: The IDs where this record may be available in other external online databases.
+    -   name: 'germplasm_dbxref_ann'
+        content_type: 'germplasm'
+        label: 'Database Reference Annotations'
+        type: 'chado_dbxref_type_default'
+        description: 'The IDs where this record may be available in other external online databases.'
         cardinality: -1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_dbxref
-                linker_fkey_column: dbxref_id
+                base_table: 'stock'
+                linker_table: 'stock_dbxref'
+                linker_fkey_column: 'dbxref_id'
         settings:
-            termIdSpace: SBO
-            termAccession: "0000552"
+            termIdSpace: 'SBO'
+            termAccession: '0000552'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 68
           form:
             default:
-              region: content
+              region: 'content'
               weight: 68
 
-    -   name: germplasm_is_obsolete
-        content_type: germplasm
-        label: Is Obsolete
-        type: chado_boolean_type_default
-        description: Indicates if this record is obsolete.
+    -   name: 'germplasm_is_obsolete'
+        content_type: 'germplasm'
+        label: 'Is Obsolete'
+        type: 'chado_boolean_type_default'
+        description: 'Indicates if this record is obsolete.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: is_obsolete
+                base_table: 'stock'
+                base_column: 'is_obsolete'
         settings:
-            termIdSpace: local
-            termAccession: is_obsolete
+            termIdSpace: 'local'
+            termAccession: 'is_obsolete'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 90
           form:
             default:
-              region: content
+              region: 'content'
               weight: 90
 
 ## Breeding Cross ##
 
-    -   name: breeding_cross_name
-        content_type: breeding_cross
-        label: Name
-        type: chado_string_type_default
-        description: The name of the item.
+    -   name: 'breeding_cross_name'
+        content_type: 'breeding_cross'
+        label: 'Name'
+        type: 'chado_string_type_default'
+        description: ' The name of the item.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: name
+                base_table: 'stock'
+                base_column: 'name'
             max_length: 255
         settings:
-            termIdSpace: schema
-            termAccession: name
+            termIdSpace: 'schema'
+            termAccession: 'name'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 10
           form:
             default:
-              region: content
+              region: 'content'
               weight: 10
 
-    -   name: breeding_cross_unique_name
-        content_type: breeding_cross
-        label: Unique Name
-        type: chado_text_type_default
-        description: A name that uniquely identifies the breeding cross within this organism.
+    -   name: 'breeding_cross_unique_name'
+        content_type: 'breeding_cross'
+        label: 'Unique Name'
+        type: 'chado_text_type_default'
+        description: 'A name that uniquely identifies the breeding cross within this organism.'
         cardinality: 1
         required: true
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: uniquename
+                base_table: 'stock'
+                base_column: 'uniquename'
         settings:
-            termIdSpace: data
-            termAccession: "0842"
+            termIdSpace: 'data'
+            termAccession: '0842'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 15
           form:
             default:
-              region: content
+              region: 'content'
               weight: 15
               settings:
-                filter_format: plain_text
+                filter_format: 'plain_text'
+                num_rows: 1
 
-    -   name: breeding_cross_organism
-        content_type: breeding_cross
-        label: Organism
-        type: chado_organism_type_default
-        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+    -   name: 'breeding_cross_organism'
+        content_type: 'breeding_cross'
+        label: 'Organism'
+        type: 'chado_organism_type_default'
+        description: 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.'
         cardinality: 1
         required: true
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: organism_id
+                base_table: 'stock'
+                base_column: 'organism_id'
         settings:
-            termIdSpace: OBI
-            termAccession: "0100026"
+            termIdSpace: 'OBI'
+            termAccession: '0100026'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 10
           form:
             default:
-              region: content
+              region: 'content'
               weight: 10
 
-    -   name: breeding_cross_description
-        content_type: breeding_cross
-        label: Description
-        type: chado_text_type_default
-        description: A description of the item.
+    -   name: 'breeding_cross_description'
+        content_type: 'breeding_cross'
+        label: 'Description'
+        type: 'chado_text_type_default'
+        description: 'A description of the item.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: description
+                base_table: 'stock'
+                base_column: 'description'
         settings:
-            termIdSpace: schema
-            termAccession: description
+            termIdSpace: 'schema'
+            termAccession: 'description'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 20
           form:
             default:
-              region: content
+              region: 'content'
               weight: 20
 
-    -   name: breeding_cross_type
-        content_type: breeding_cross
-        label: Type
-        type: chado_additional_type_type_default
-        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+    -   name: 'breeding_cross_type'
+        content_type: 'breeding_cross'
+        label: 'Type'
+        type: 'chado_additional_type_type_default'
+        description: 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.'
         cardinality: 1
         required: true
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                type_table: stock
-                type_column: type_id
+                base_table: 'stock'
+                type_table: 'stock'
+                type_column: 'type_id'
         settings:
-            termIdSpace: CO_010
-            termAccession: "0000255"
-            fixed_value: CO_010:0000255
+            termIdSpace: 'PBO'
+            termAccession: '0000065'
+            fixed_value: 'PBO:0000065'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 25
           form:
             default:
-              region: content
+              region: 'content'
               weight: 25
 
-    -   name: breeding_cross_pub
-        content_type: breeding_cross
-        label: Publication
-        type: chado_pub_type_default
-        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+    -   name: 'breeding_cross_pub'
+        content_type: 'breeding_cross'
+        label: 'Publication'
+        type: 'chado_pub_type_default'
+        description: 'Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.'
         cardinality: -1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_pub
-                linker_fkey_column: pub_id
+                base_table: 'stock'
+                linker_table: 'stock_pub'
+                linker_fkey_column: 'pub_id'
         settings:
-            termIdSpace: TPUB
-            termAccession: "0000002"
+            termIdSpace: 'TPUB'
+            termAccession: '0000002'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 30
           form:
             default:
-              region: content
+              region: 'content'
               weight: 30
 
-    -   name: breeding_cross_relationship
-        content_type: breeding_cross
-        label: Relationship
-        type: chado_relationship_type_default
+    -   name: 'breeding_cross_relationship'
+        content_type: 'breeding_cross'
+        label: 'Relationship'
+        type: 'chado_relationship_type_default'
         description: "Germplasm related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current germplasm is the subject; chose Reverse if the object is the current germplasm."
         cardinality: -1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: name
-                linker_table: stock_relationship
-                subject_column: subject_id
-                object_column: object_id
+                base_table: 'stock'
+                base_column: 'name'
+                linker_table: 'stock_relationship'
+                subject_column: 'subject_id'
+                object_column: 'object_id'
         settings:
-            termIdSpace: "SBO"
-            termAccession: "0000374"
+            termIdSpace: 'SBO'
+            termAccession: '0000374'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 49
           form:
             default:
-              region: content
+              region: 'content'
               weight: 49
 
-    -   name: breeding_cross_dbxref
-        content_type: breeding_cross
-        label: Primary Database Reference
-        type: chado_dbxref_type_default
-        description: The ID where this record may be available in an external online database.
+    -   name: 'breeding_cross_dbxref'
+        content_type: 'breeding_cross'
+        label: 'Primary Database Reference'
+        type: 'chado_dbxref_type_default'
+        description: 'The ID where this record may be available in an external online database.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: dbxref_id
+                base_table: 'stock'
+                base_column: 'dbxref_id'
         settings:
-            termIdSpace: SBO
-            termAccession: "0000554"
+            termIdSpace: 'SBO'
+            termAccession: '0000554'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 68
           form:
             default:
-              region: content
+              region: 'content'
               weight: 68
 
-    -   name: breeding_cross_dbxref_ann
-        content_type: breeding_cross
-        label: Database Reference Annotations
-        type: chado_dbxref_type_default
-        description: The IDs where this record may be available in other external online databases.
+    -   name: 'breeding_cross_dbxref_ann'
+        content_type: 'breeding_cross'
+        label: 'Database Reference Annotations'
+        type: 'chado_dbxref_type_default'
+        description: 'The IDs where this record may be available in other external online databases.'
         cardinality: -1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_dbxref
-                linker_fkey_column: dbxref_id
+                base_table: 'stock'
+                linker_table: 'stock_dbxref'
+                linker_fkey_column: 'dbxref_id'
         settings:
-            termIdSpace: SBO
-            termAccession: "0000552"
+            termIdSpace: 'SBO'
+            termAccession: '0000552'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 68
           form:
             default:
-              region: content
+              region: 'content'
               weight: 68
 
-    -   name: breeding_cross_is_obsolete
-        content_type: breeding_cross
-        label: Is Obsolete
-        type: chado_boolean_type_default
-        description: Indicates if this record is obsolete.
+    -   name: 'breeding_cross_is_obsolete'
+        content_type: 'breeding_cross'
+        label: 'Is Obsolete'
+        type: 'chado_boolean_type_default'
+        description: 'Indicates if this record is obsolete.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: is_obsolete
+                base_table: 'stock'
+                base_column: 'is_obsolete'
         settings:
-            termIdSpace: local
-            termAccession: is_obsolete
+            termIdSpace: 'local'
+            termAccession: 'is_obsolete'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 90
           form:
             default:
-              region: content
+              region: 'content'
               weight: 90
 
 ## Germplasm Variety ##
 
-    -   name: germplasm_variety_name
-        content_type: germplasm_variety
-        label: Name
-        type: chado_string_type_default
-        description: The name of the item.
+    -   name: 'germplasm_variety_name'
+        content_type: 'germplasm_variety'
+        label: 'Name'
+        type: 'chado_string_type_default'
+        description: 'The name of the item.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: name
+                base_table: 'stock'
+                base_column: 'name'
             max_length: 255
         settings:
-            termIdSpace: schema
-            termAccession: name
+            termIdSpace: 'schema'
+            termAccession: 'name'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 10
           form:
             default:
-              region: content
+              region: 'content'
               weight: 10
 
-    -   name: germplasm_variety_unique_name
-        content_type: germplasm_variety
-        label: Unique Name
-        type: chado_text_type_default
-        description: A name that uniquely identifies the germplasm variety within this organism.
+    -   name: 'germplasm_variety_unique_name'
+        content_type: 'germplasm_variety'
+        label: 'Unique Name'
+        type: 'chado_text_type_default'
+        description: 'A name that uniquely identifies the germplasm variety within this organism.'
         cardinality: 1
         required: true
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: uniquename
+                base_table: 'stock'
+                base_column: 'uniquename'
         settings:
-            termIdSpace: data
-            termAccession: "0842"
+            termIdSpace: 'data'
+            termAccession: '0842'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 15
           form:
             default:
-              region: content
+              region: 'content'
               weight: 15
               settings:
-                filter_format: plain_text
+                filter_format: 'plain_text'
+                num_rows: 1
 
-    -   name: germplasm_variety_organism
-        content_type: germplasm_variety
-        label: Organism
-        type: chado_organism_type_default
-        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+    -   name: 'germplasm_variety_organism'
+        content_type: 'germplasm_variety'
+        label: 'Organism'
+        type: 'chado_organism_type_default'
+        description: 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.'
         cardinality: 1
         required: true
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: organism_id
+                base_table: 'stock'
+                base_column: 'organism_id'
         settings:
-            termIdSpace: OBI
-            termAccession: "0100026"
+            termIdSpace: 'OBI'
+            termAccession: '0100026'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 10
           form:
             default:
-              region: content
+              region: 'content'
               weight: 10
 
-    -   name: germplasm_variety_description
-        content_type: germplasm_variety
-        label: Description
-        type: chado_text_type_default
-        description: A description of the item.
+    -   name: 'germplasm_variety_description'
+        content_type: 'germplasm_variety'
+        label: 'Description'
+        type: 'chado_text_type_default'
+        description: 'A description of the item.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: description
+                base_table: 'stock'
+                base_column: 'description'
         settings:
-            termIdSpace: schema
-            termAccession: description
+            termIdSpace: 'schema'
+            termAccession: 'description'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 20
           form:
             default:
-              region: content
+              region: 'content'
               weight: 20
 
-    -   name: germplasm_variety_type
-        content_type: germplasm_variety
-        label: Type
-        type: chado_additional_type_type_default
-        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+    -   name: 'germplasm_variety_type'
+        content_type: 'germplasm_variety'
+        label: 'Type'
+        type: 'chado_additional_type_type_default'
+        description: 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.'
         cardinality: 1
         required: true
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                type_table: stock
-                type_column: type_id
+                base_table: 'stock'
+                type_table: 'stock'
+                type_column: 'type_id'
         settings:
-            termIdSpace: CO_010
-            termAccession: "0000029"
-            fixed_value: "CO_010:0000029"
+            termIdSpace: 'EFO'
+            termAccession: '0005136'
+            fixed_value: 'EFO:0005136'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 25
           form:
             default:
-              region: content
+              region: 'content'
               weight: 25
 
-    -   name: germplasm_variety_pub
-        content_type: germplasm_variety
-        label: Publication
-        type: chado_pub_type_default
-        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+    -   name: 'germplasm_variety_pub'
+        content_type: 'germplasm_variety'
+        label: 'Publication'
+        type: 'chado_pub_type_default'
+        description: 'Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.'
         cardinality: -1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_pub
-                linker_fkey_column: pub_id
+                base_table: 'stock'
+                linker_table: 'stock_pub'
+                linker_fkey_column: 'pub_id'
         settings:
-            termIdSpace: TPUB
-            termAccession: "0000002"
+            termIdSpace: 'TPUB'
+            termAccession: '0000002'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 30
           form:
             default:
-              region: content
+              region: 'content'
               weight: 30
 
-    -   name: germplasm_variety_relationship
-        content_type: germplasm_variety
-        label: Relationship
-        type: chado_relationship_type_default
+    -   name: 'germplasm_variety_relationship'
+        content_type: 'germplasm_variety'
+        label: 'Relationship'
+        type: 'chado_relationship_type_default'
         description: "Germplasm related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current germplasm is the subject; chose Reverse if the object is the current germplasm."
         cardinality: -1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: name
-                linker_table: stock_relationship
-                subject_column: subject_id
-                object_column: object_id
+                base_table: 'stock'
+                base_column: 'name'
+                linker_table: 'stock_relationship'
+                subject_column: 'subject_id'
+                object_column: 'object_id'
         settings:
-            termIdSpace: "SBO"
-            termAccession: "0000374"
+            termIdSpace: 'SBO'
+            termAccession: '0000374'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 49
           form:
             default:
-              region: content
+              region: 'content'
               weight: 49
 
-    -   name: germplasm_variety_dbxref
-        content_type: germplasm_variety
-        label: Primary Database Reference
-        type: chado_dbxref_type_default
-        description: The ID where this record may be available in an external online database.
+    -   name: 'germplasm_variety_dbxref'
+        content_type: 'germplasm_variety'
+        label: 'Primary Database Reference'
+        type: 'chado_dbxref_type_default'
+        description: 'The ID where this record may be available in an external online database.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: dbxref_id
+                base_table: 'stock'
+                base_column: 'dbxref_id'
         settings:
-            termIdSpace: SBO
-            termAccession: "0000554"
+            termIdSpace: 'SBO'
+            termAccession: '0000554'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 68
           form:
             default:
-              region: content
+              region: 'content'
               weight: 68
 
-    -   name: germplasm_variety_dbxref_ann
-        content_type: germplasm_variety
-        label: Database Reference Annotations
-        type: chado_dbxref_type_default
-        description: The IDs where this record may be available in other external online databases.
+    -   name: 'germplasm_variety_dbxref_ann'
+        content_type: 'germplasm_variety'
+        label: 'Database Reference Annotations'
+        type: 'chado_dbxref_type_default'
+        description: 'The IDs where this record may be available in other external online databases.'
         cardinality: -1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_dbxref
-                linker_fkey_column: dbxref_id
+                base_table: 'stock'
+                linker_table: 'stock_dbxref'
+                linker_fkey_column: 'dbxref_id'
         settings:
-            termIdSpace: SBO
-            termAccession: "0000552"
+            termIdSpace: 'SBO'
+            termAccession: '0000552'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 68
           form:
             default:
-              region: content
+              region: 'content'
               weight: 68
 
-    -   name: germplasm_variety_is_obsolete
-        content_type: germplasm_variety
-        label: Is Obsolete
-        type: chado_boolean_type_default
-        description: Indicates if this record is obsolete.
+    -   name: 'germplasm_variety_is_obsolete'
+        content_type: 'germplasm_variety'
+        label: 'Is Obsolete'
+        type: 'chado_boolean_type_default'
+        description: 'Indicates if this record is obsolete.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: is_obsolete
+                base_table: 'stock'
+                base_column: 'is_obsolete'
         settings:
-            termIdSpace: local
-            termAccession: is_obsolete
+            termIdSpace: 'local'
+            termAccession: 'is_obsolete'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 90
           form:
             default:
-              region: content
+              region: 'content'
               weight: 90
 
-## Recombinant Inbred Line ##
+## Germplasm Collection ##
 
-    -   name: ril_name
-        content_type: ril
-        label: Name
-        type: chado_string_type_default
-        description: The name of the item.
+    -   name: 'germcollection_name'
+        content_type: 'germcollection'
+        label: 'Name'
+        type: 'chado_string_type_default'
+        description: 'The name of the collection.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: name
+                base_table: 'stockcollection'
+                base_column: 'name'
             max_length: 255
         settings:
-            termIdSpace: schema
-            termAccession: name
+            termIdSpace: 'schema'
+            termAccession: 'name'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'inline'
               weight: 10
           form:
             default:
-              region: content
+              region: 'content'
               weight: 10
 
-    -   name: ril_unique_name
-        content_type: ril
-        label: Unique Name
-        type: chado_text_type_default
-        description: A name that uniquely identifies the ril within this organism.
+    -   name: 'germcollection_unique_name'
+        content_type: 'germcollection'
+        label: 'Unique Name'
+        type: 'chado_text_type_default'
+        description: 'A name that uniquely identifies this germplasm collection.'
         cardinality: 1
         required: true
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: uniquename
+                base_table: 'stockcollection'
+                base_column: 'uniquename'
         settings:
-            termIdSpace: data
-            termAccession: "0842"
+            termIdSpace: 'data'
+            termAccession: '0842'
         display:
           view:
             default:
-              region: content
-              label: above
-              weight: 15
+              region: 'content'
+              label: 'inline'
+              weight: 20
           form:
             default:
-              region: content
-              weight: 15
+              region: 'content'
+              weight: 20
               settings:
-                filter_format: plain_text
+                filter_format: 'plain_text'
+                num_rows: 1
 
-    -   name: ril_organism
-        content_type: ril
-        label: Organism
-        type: chado_organism_type_default
-        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+    -   name: 'germcollection_type'
+        content_type: 'germcollection'
+        label: 'Type'
+        type: 'chado_additional_type_type_default'
+        description: 'The type of collection. In this case it is a germplasm collection.'
         cardinality: 1
         required: true
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: organism_id
+                base_table: 'stockcollection'
+                type_table: 'stockcollection'
+                type_column: 'type_id'
         settings:
-            termIdSpace: OBI
-            termAccession: "0100026"
+            termIdSpace: 'OBI'
+            termAccession: '0002076'
+            fixed_value: 'OBI:0002076'
         display:
           view:
             default:
-              region: content
-              label: above
-              weight: 10
-          form:
-            default:
-              region: content
-              weight: 10
-
-    -   name: ril_description
-        content_type: ril
-        label: Description
-        type: chado_text_type_default
-        description: A description of the item.
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: stock
-                base_column: description
-        settings:
-            termIdSpace: schema
-            termAccession: description
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 20
-          form:
-            default:
-              region: content
-              weight: 20
-
-    -   name: ril_type
-        content_type: ril
-        label: Type
-        type: chado_additional_type_type_default
-        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
-        cardinality: 1
-        required: true
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: stock
-                type_table: stock
-                type_column: type_id
-        settings:
-            termIdSpace: CO_010
-            termAccession: "0000162"
-            fixed_value: CO_010:0000162
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 25
-          form:
-            default:
-              region: content
-              weight: 25
-
-    -   name: ril_pub
-        content_type: ril
-        label: Publication
-        type: chado_pub_type_default
-        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_pub
-                linker_fkey_column: pub_id
-        settings:
-            termIdSpace: TPUB
-            termAccession: "0000002"
-        display:
-          view:
-            default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'inline'
               weight: 30
           form:
             default:
-              region: content
+              region: 'content'
               weight: 30
 
-    -   name: ril_relationship
-        content_type: ril
-        label: Relationship
-        type: chado_relationship_type_default
-        description: "Germplasm related to this RIL. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current RIL is the subject; chose Reverse if the object is the current RIL."
+    -   name: 'germcollection_addtltype'
+        content_type: 'germcollection'
+        label: 'Germplasm Collection Type'
+        type: 'chado_property_type_default'
+        description: 'Indicate the type of germplasm collection (e.g. Diversity Panel)'
         cardinality: -1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: name
-                linker_table: stock_relationship
-                subject_column: subject_id
-                object_column: object_id
+                base_table: 'stockcollection'
+                prop_table: 'stockcollectionprop'
         settings:
-            termIdSpace: "SBO"
-            termAccession: "0000374"
+            termIdSpace: 'schema'
+            termAccession: 'additionalType'
         display:
           view:
             default:
-              region: content
-              label: above
-              weight: 49
+              region: 'content'
+              label: 'inline'
+              weight: 40
           form:
             default:
-              region: content
-              weight: 49
+              region: 'content'
+              weight: 40
+              type: 'chado_property_string_widget_default'
 
-    -   name: ril_dbxref
-        content_type: ril
-        label: Primary Database Reference
-        type: chado_dbxref_type_default
-        description: The ID where this record may be available in an external online database.
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: stock
-                base_column: dbxref_id
-        settings:
-            termIdSpace: SBO
-            termAccession: "0000554"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 68
-          form:
-            default:
-              region: content
-              weight: 68
-
-    -   name: ril_dbxref_ann
-        content_type: ril
-        label: Database Reference Annotations
-        type: chado_dbxref_type_default
-        description: The IDs where this record may be available in other external online databases.
+    -   name: 'germcollection_description'
+        content_type: 'germcollection'
+        label: 'Description'
+        type: 'chado_property_type_default'
+        description: 'Describe this germplasm collection.'
         cardinality: -1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_dbxref
-                linker_fkey_column: dbxref_id
+                base_table: 'stockcollection'
+                prop_table: 'stockcollectionprop'
         settings:
-            termIdSpace: SBO
-            termAccession: "0000552"
+            termIdSpace: 'schema'
+            termAccession: 'description'
         display:
           view:
             default:
-              region: content
-              label: above
-              weight: 68
+              region: 'content'
+              label: 'above'
+              weight: 50
           form:
             default:
-              region: content
-              weight: 68
+              region: 'content'
+              weight: 50
 
-    -   name: ril_is_obsolete
-        content_type: ril
-        label: Is Obsolete
-        type: chado_boolean_type_default
-        description: Indicates if this record is obsolete.
-        cardinality: 1
+    -   name: 'germcollection_contact'
+        content_type: 'germcollection'
+        label: 'Contact'
+        type: 'chado_contact_type_default'
+        description: 'An individual or organization that serves as a contact for this record.'
+        cardinality: -1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: stock
-                base_column: is_obsolete
+                base_table: 'stockcollection'
+                linker_table: 'stockcollection'
+                linker_fkey_column: 'contact_id'
         settings:
-            termIdSpace: local
-            termAccession: is_obsolete
+            termIdSpace: 'NCIT'
+            termAccession: 'C47954'
         display:
           view:
             default:
-              region: content
-              label: above
-              weight: 90
+              region: 'content'
+              label: 'above'
+              weight: 60
           form:
             default:
-              region: content
-              weight: 90
+              region: 'content'
+              weight: 60
+
+    -   name: 'germcollection_stock'
+        content_type: 'germcollection'
+        label: 'Germplasm'
+        type: 'chado_stock_type_default'
+        description: 'All germplasm that are part of this collection.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'stockcollection'
+                linker_table: 'stockcollection_stock'
+                linker_fkey_column: 'stock_id'
+        settings:
+            termIdSpace: 'EFO'
+            termAccession: '0007059'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 70
+          form:
+            default:
+              region: 'content'
+              weight: 70

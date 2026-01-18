@@ -1,13 +1,15 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Kernel;
+namespace Drupal\Tests\tripal_chado\Kernel\Controller;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\tripal_chado\Database\ChadoConnection;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
 use Drupal\tripal_chado\Controller\ChadoProjectAutocompleteController;
 use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the Generic Autocomplete.
@@ -16,6 +18,9 @@ use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
  * @group Tripal Chado
  * @group Autocomplete
  */
+#[Group('autocomplete')]
+#[IgnoreDeprecations]
+#[RunTestsInSeparateProcesses]
 class ChadoAutocompleteControllerTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 

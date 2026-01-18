@@ -5,7 +5,8 @@
  */
 
 use Drupal\Core\Database\ConnectionNotDefinedException;
-use \Drupal\Core\Database\Database;
+use Drupal\Core\Database\Database;
+use Drupal\Core\Hook\Attribute\LegacyRequirementsHook;
 
 /**
  * Implementation of hook_install().
@@ -25,10 +26,10 @@ function tripal_install() {
 
   // Add the Data Search Menu for Tripal specific searches.
   $storage = Drupal::entityTypeManager()->getStorage('menu');
-  $menu = $storage->load('data_search');
+  $menu = $storage->load('data-search');
   if (is_null($menu)) {
     $storage->create([
-      'id' => 'data_search',
+      'id' => 'data-search',
       'label' => t('Data Search'),
       'description' => t('The Data Search menu contains links to search tools for finding biological data.'),
     ])->save();
@@ -123,6 +124,7 @@ function tripal_uninstall() {
 /**
  * Implements hook_requirements().
  */
+#[LegacyRequirementsHook]
 function tripal_requirements($phase) {
   $checks = [];
   // Make sure the current install does not use per-table prefixes.
@@ -1045,5 +1047,28 @@ function tripal_update_10402() {
   // Delete the configuration.
   if ($config) {
     \Drupal::configFactory()->getEditable('tripaldbx.settings')->delete();
+  }
+}
+
+/**
+ * Renames /data_search menu to /data-search.
+ */
+function tripal_update_10403() {
+  // This hook added with PR #2283.
+  // Menu machine names cannot have underscores. The old menu name
+  // does not actually work, so just delete it.
+  $menu_storage = Drupal::entityTypeManager()->getStorage('menu');
+  $old_menu = $menu_storage->load('data_search');
+  if (!empty($old_menu)) {
+    $old_menu->delete();
+  }
+  $new_menu = $menu_storage->load('data-search');
+  if (empty($new_menu)) {
+    // Create the new menu.
+    $menu_storage->create([
+      'id' => 'data-search',
+      'label' => t('Data Search'),
+      'description' => t('The Data Search menu contains links to search tools for finding biological data.'),
+    ])->save();
   }
 }

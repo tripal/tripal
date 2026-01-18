@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\tripal_layout\Form;
 
 use Drupal\Core\Entity\EntityConfirmFormBase;
@@ -22,11 +23,11 @@ class TripalLayoutDefaultViewDeleteForm extends EntityConfirmFormBase {
    */
   public function getDescription() {
     $content = '<p>'
-      . $this->t('You are deleting an entire configuration that specifies how '
-      . 'tripal content pages should be organized by default.')
+      . $this->t('You are deleting an entire configuration that specifies how tripal content pages should be organized by default.')
       . '</p>';
-    $content .= '<p>' . $this->t('Rebuild the cache to re-import the '
-      . 'default settings of this configuration.') . '</p>';
+    $content .= '<p>'
+      . $this->t('Rebuild the cache to re-import the default settings of this configuration.')
+      . '</p>';
     return $content;
   }
 

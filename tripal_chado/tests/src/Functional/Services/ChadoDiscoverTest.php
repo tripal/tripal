@@ -1,10 +1,11 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Functional\Services;
 
-use Drupal\Core\Database\Database;
-use Drupal\Core\Test\FunctionalTestSetupTrait;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the discover() functions for Chado.
@@ -13,10 +14,14 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  * @group Tripal Chado
  * @group Discover
  */
+#[Group('tripal-field')]
+#[Group('chado-field')]
+#[Group('field-discovery')]
+#[RunTestsInSeparateProcesses]
 class ChadoDiscoverTest extends ChadoTestBrowserBase {
 
   /**
-   *  Tests the Chado discover() function
+   * Tests the Chado discover() function.
    */
   public function testDiscover() {
     // Create and then get the existing test chado schema name.
@@ -219,19 +224,19 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
       $this->assertArrayHasKey($expected_key, $discovered_fields, 'Missing the "' . $expected_key . '" key in the array returned by the discover() function.');
     }
 
-    // So far there should be no existing fields
+    // So far there should be no existing fields.
     $this->assertEmpty($discovered_fields['existing'], 'We did not expect to find any existing fields yet');
 
-    // Test that the direct field was discovered, i.e. organism
+    // Test that the direct field was discovered, i.e. organism.
     $this->assertNotEmpty($discovered_fields['new'], 'No new fields were discovered for stock');
     $this->assertArrayHasKey('stock_organism', $discovered_fields['new'], 'The organism field was not discovered for stock');
-    // The type field should also have been discovered
+    // The type field should also have been discovered.
     $this->assertArrayHasKey('stock_type', $discovered_fields['new'], 'The type field was not discovered for stock');
 
-    // Test that a field through a linker table was discovered
+    // Test that a field through a linker table was discovered.
     $this->assertArrayHasKey('stock_pub', $discovered_fields['new'], 'The publication field was not discovered for stock');
 
-    // Because we didn't set up terms for these types, they should be flagged as invalid
+    // Because we didn't set up terms for these types, they should be flagged as invalid.
     $this->assertNotEmpty($discovered_fields['invalid'], 'No invalid fields were discovered for stock');
     $this->assertArrayHasKey('stock_feature', $discovered_fields['invalid'], 'The feature field was not flagged as invalid for stock');
     $this->assertArrayHasKey('stock_featuremap', $discovered_fields['invalid'], 'The featuremap field was not flagged as invalid for stock');
@@ -241,10 +246,11 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
     $discovered_fields = $fields_service->discover($content_types['map']);
     $this->assertArrayHasKey('map_unittype_id', $discovered_fields['new'], 'The unit type field was not discovered for featuremap');
 
-    // Test discovery of a field using a column in the base table
+    // Test discovery of a field using a column in the base table.
     $discovered_fields = $fields_service->discover($content_types['gene']);
     $this->assertArrayHasKey('gene_residues', $discovered_fields['new'], 'The sequence residues field was not discovered for gene');
     $this->assertArrayHasKey('gene_seqlen', $discovered_fields['new'], 'The sequence length field was not discovered for gene');
     $this->assertArrayHasKey('gene_md5checksum', $discovered_fields['new'], 'The MD5 checksum field was not discovered for gene');
   }
+
 }

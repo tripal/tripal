@@ -2,13 +2,11 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
-
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
-use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests that ChadoStorage::findValues() works as expected.
@@ -17,17 +15,32 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * @group Tripal Chado
  * @group ChadoStorage
  */
+#[Group('tripal-field')]
+#[Group('chado-field')]
+#[Group('tripal-storage')]
+#[Group('chado-storage')]
+#[RunTestsInSeparateProcesses]
 class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test
-  // with fields specific to that test.
+  /**
+   * With fields specific to that test.
+   *
+   * Note: We will populate this variable at the start of each test.
+   *
+   * @var array
+   */
   protected $fields = [];
 
+  /**
+   * The file describing the testing environment.
+   *
+   * @var string
+   */
   protected $yaml_file = __DIR__ . "/ChadoStorageFindValuesTest-FieldDefinitions.yml";
 
-    /**
+  /**
    * {@inheritdoc}
    */
   protected function setUp() :void {
@@ -35,16 +48,16 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
 
     // We need to mock the logger to test the progress reporting.
     $container = \Drupal::getContainer();
-    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
       ->onlyMethods(['warning', 'error'])
       ->getMock();
     $mock_logger->method('warning')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
     $mock_logger->method('error')
-      ->willReturnCallback(function($message, $context, $options) {
+      ->willReturnCallback(function ($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
       });
@@ -64,10 +77,10 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
    */
   public function testDeleteValues() {
 
-    // Setup an empty values array based on $this->fields
+    // Setup an empty values array based on $this->fields.
     $values = [];
-    foreach($this->fields as $field_name => $parts) {
-      $values[$field_name] = [ 0 => []];
+    foreach ($this->fields as $field_name => $parts) {
+      $values[$field_name] = [0 => []];
       foreach ($parts['properties'] as $propery_key => $storage_deets) {
         $values[$field_name][0][$propery_key] = NULL;
       }
@@ -98,7 +111,7 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
     // Add the types to chado storage.
     $this->addPropertyTypes2ChadoStorage($field_names, $expected_property_counts);
 
-    // Create the property values + format them for testing with *Values methods.
+    // Create property values + format them for testing with *Values methods.
     $this->createDataStoreValues($field_names, $values);
 
     // Set the values in the propertyValue objects.
@@ -122,7 +135,7 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
 
     // Before we delete a record, as a sanity check, let's confirm the
     // record exists in the database using straight SQL.
-    $query1 = $this->chado_connection->select('1:feature','f');
+    $query1 = $this->chado_connection->select('1:feature', 'f');
     $query1->fields('f');
     $query1->condition('feature_id', $record_id1);
     $result1 = $query1->execute()->fetchObject();
@@ -130,12 +143,12 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
         'Could not find the first record in the database returned by findValues().');
 
     // Make sure the contact link is gone, but not the contact.
-    $query = $this->chado_connection->select('1:feature_contact','fc');
+    $query = $this->chado_connection->select('1:feature_contact', 'fc');
     $query->fields('fc');
     $result = $query->execute()->fetchObject();
     $this->assertIsObject($result, 'Missing the feature_contact record');
 
-    $query2 = $this->chado_connection->select('1:feature','f');
+    $query2 = $this->chado_connection->select('1:feature', 'f');
     $query2->fields('f');
     $query2->condition('feature_id', $record_id2);
     $result2 = $query2->execute()->fetchObject();
@@ -157,8 +170,8 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
     $this->assertCount(49, $found_list,
         "There were 49 genes in the SQL file we populated the database with for this test. We should have found all of them and none others BUT we forgot to restrict the find to genes!!!");
 
-    // Make sure that the CVterm record is not deleted
-    $query = $this->chado_connection->select('1:cvterm','cvt');
+    // Make sure that the CVterm record is not deleted.
+    $query = $this->chado_connection->select('1:cvterm', 'cvt');
     $query->fields('cvt');
     $query->condition('cvterm_id', $type_id);
     $result = $query->execute()->fetchObject();
@@ -166,16 +179,17 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
         'Deleted the cvterm record that should not have been deleted.');
 
     // Make sure the contact link is gone, but not the contact.
-    $query = $this->chado_connection->select('1:feature_contact','fc');
+    $query = $this->chado_connection->select('1:feature_contact', 'fc');
     $query->fields('fc');
     $result = $query->execute()->fetchObject();
     $this->assertFalse($result, 'Did not delete the feature_contact record');
 
-    // Make srue the contact record is still present.
-    $query = $this->chado_connection->select('1:contact','c');
+    // Make sure the contact record is still present.
+    $query = $this->chado_connection->select('1:contact', 'c');
     $query->fields('c');
     $query->condition('contact_id', $contact_id);
     $result = $query->execute()->fetchObject();
     $this->assertIsObject($result, 'Should not have deleted the contact record');
   }
+
 }

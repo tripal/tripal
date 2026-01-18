@@ -2,28 +2,51 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Component\Utility\Random;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of Tripal linker property field type.
- *
- * @FieldType(
- *   id = "chado_property_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Property"),
- *   description = @Translation("Add a property or attribute to the content type."),
- *   default_widget = "chado_property_widget_default",
- *   default_formatter = "chado_property_formatter_default"
- * )
  */
+#[TripalFieldType(
+  id: 'chado_property_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Property'),
+  description: new TranslatableMarkup('Add a property or attribute to the content type.'),
+  default_widget: 'chado_property_widget_default',
+  default_formatter: 'chado_property_formatter_default',
+)]
 class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "chado_property_type_default";
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
+    return 'value';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
+    return 'value';
+  }
 
   /**
    * {@inheritdoc}
@@ -51,17 +74,18 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    $values = [];
+    $value = [];
 
-    $random = new \Drupal\Component\Utility\Random();
-    $values['record_id'] = 1;
-    $values['prop_id'] = 1;
-    $values['linker_id'] = 1;
-    $values['value'] = 'fred';
-    $values['type_id'] = 4;
-    $values['rank'] = 0;
+    $random = new Random();
+    $cvterm_id = mt_rand(1, 500);
+    $value['record_id'] = 0;
+    $value['prop_id'] = 0;
+    $value['linker_id'] = 0;
+    $value['value'] = $random->sentences(3, TRUE);
+    $value['type_id'] = $cvterm_id;
+    $value['rank'] = 0;
 
-    return $values;
+    return [$value];
   }
 
   /**
@@ -84,11 +108,9 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // Get the base table columns needed for this field.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
-    $prop_schema_def = $schema->getTableDef($prop_table, ['format' => 'Drupal']);
-    $prop_pkey_col = $prop_schema_def['primary key'];
-    $prop_fk_col = array_keys($prop_schema_def['foreign keys'][$base_table]['columns'])[0];
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
+    $prop_pkey_col = self::getPrimaryKey($prop_table, $schema);
+    $prop_fk_col = self::getChadoForeignKeyColumn($prop_table, $base_table, $schema);
 
     // Get the property terms by using the Chado table columns they map to.
     $link_term = self::getColumnTermId($prop_table, $prop_fk_col, self::$record_id_term);
@@ -103,8 +125,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // table alias.
     $field_settings = $field_definition->getSettings();
     $term = $field_settings['termIdSpace'] . ':' . $field_settings['termAccession'];
-    $table_alias = $prop_table . '_' . preg_replace( '/[^a-z0-9]+/', '', strtolower( $term ) );
-
+    $table_alias = $prop_table . '_' . preg_replace('/[^a-z0-9]+/', '', strtolower($term));
 
     // Create the property types.
     return [
@@ -119,7 +140,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_pkey_col,
         'table_alias_mapping' => [$table_alias => $prop_table],
       ]),
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id',  $link_term, [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $link_term, [
         'action' => 'store_link',
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col,
         'table_alias_mapping' => [$table_alias => $prop_table],
@@ -129,9 +150,9 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col . ';value',
         'table_alias_mapping' => [$table_alias => $prop_table],
         'delete_if_empty' => TRUE,
-        'empty_value' => ''
+        'empty_value' => '',
       ]),
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'rank', $rank_term,  [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'rank', $rank_term, [
         'action' => 'store',
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col . ';rank',
         'table_alias_mapping' => [$table_alias => $prop_table],
@@ -151,6 +172,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    * `type_id` property a default value.
    *
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\TripalFieldItemBase::tripalValuesTemplate()
    */
   public function tripalValuesTemplate($field_definition, $default_value = NULL) {
@@ -185,12 +207,14 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // the base table to do that. So we'll add a new validation function so
     // we can get it and set the proper storage settings.
     $elements = parent::storageSettingsForm($form, $form_state, $has_data);
-    $elements['storage_plugin_settings']['base_table']['#element_validate'] = [[static::class, 'storageSettingsFormValidate']];
+    $elements['storage_plugin_settings']['base_table']['#element_validate'] = [
+      [static::class, 'storageSettingsFormValidate'],
+    ];
     return $elements;
   }
 
   /**
-   * Form element validation handler
+   * Form element validation handler.
    *
    * @param array $form
    *   The form where the settings form is being included in.
@@ -224,6 +248,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -238,7 +263,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
 
     // If the property table exists, and has a foreign key to the base table,
     // then this content type is compatible.
-    $prop_def = $schema->getTableDef($base_table . 'prop', ['format' => 'Drupal']);
+    $prop_def = self::getChadoTableDef($base_table . 'prop', $schema);
     if ($prop_def) {
       if (array_key_exists($base_table, $prop_def['foreign keys'])) {
         $compatible = TRUE;
@@ -249,6 +274,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances, array $options = []): array {
@@ -294,13 +320,13 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
         'type' => self::$id,
         'description' => $recprop->definition ? 'A record property with the following definition: ' . $recprop->definition : '',
         'cardinality' => -1,
-        'required' => False,
+        'required' => FALSE,
         'cvterm_id' => $recprop->cvterm_id,
         'storage_settings' => [
           'storage_plugin_id' => 'chado_storage',
           'storage_plugin_settings' => [
             'base_table' => $base_table,
-            'prop_table' => $prop_table
+            'prop_table' => $prop_table,
           ],
         ],
         'settings' => [
@@ -317,15 +343,16 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
           ],
           'form' => [
             'default' => [
+              'type' => 'chado_property_string_widget_default',
               'region' => 'content',
-              'weight' => 10
+              'weight' => 10,
             ],
           ],
         ],
       ];
     }
 
-    // The parent class adds collection plugin IDs
+    // The parent class adds collection plugin IDs.
     $field_list = parent::discoverPostprocess($field_list);
     return $field_list;
   }

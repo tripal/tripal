@@ -5,7 +5,6 @@ namespace Drupal\tripal_layout\ListBuilders;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 
-
 /**
  * Provides a listing of View Layout collections.
  */
@@ -30,7 +29,6 @@ class TripalLayoutDefaultViewListBuilder extends ConfigEntityListBuilder {
     $row['description'] = $entity->description();
 
     // You probably want a few more properties here...
-
     return $row + parent::buildRow($entity);
   }
 

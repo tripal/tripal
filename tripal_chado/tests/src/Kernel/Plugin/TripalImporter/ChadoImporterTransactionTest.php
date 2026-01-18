@@ -2,9 +2,10 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalImporter;
 
-use Drupal\Core\Url;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the Chado Importer base class transaction functionality.
@@ -12,19 +13,23 @@ use Drupal\Tests\user\Traits\UserCreationTrait;
  * @group TripalImporter
  * @group ChadoImporter
  */
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
+#[RunTestsInSeparateProcesses]
 class ChadoImporterTransactionTest extends ChadoTestKernelBase {
 
   use UserCreationTrait;
 
-	protected $defaultTheme = 'stark';
+  protected $defaultTheme = 'stark';
 
-	protected static $modules = ['system', 'user', 'file', 'tripal', 'tripal_chado'];
+  protected static $modules = ['system', 'user', 'file', 'tripal', 'tripal_chado'];
 
   protected $connection;
 
   /**
    * Annotations associated with the mock_plugin.
-   * @var Array
+   *
+   * @var array
    */
   protected $plugin_definition = [
     'id' => 'fakeImporterName',
@@ -54,7 +59,7 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
-    // Open connection to Chado
+    // Open connection to Chado.
     $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
     // Ensure we install the schema/modules we need.
@@ -67,21 +72,33 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
     $plugin_defn = $this->plugin_definition;
     $configuration = [];
     $plugin_id = 'fakeImporterName';
-    $this->importer = $this->getMockForAbstractClass(
-      '\Drupal\tripal_chado\TripalImporter\ChadoImporterBase',
-      [$configuration, $plugin_id, $plugin_defn, $this->connection]
-    );
+    $this->importer = $this->getMockBuilder('\Drupal\tripal_chado\TripalImporter\ChadoImporterBase')
+      ->setConstructorArgs([
+        $configuration,
+        $plugin_id,
+        $plugin_defn,
+        $this->connection,
+        $this->messenger,
+        $this->logger,
+        $this->fileretriever,
+        $this->publish_manager,
+      ])
+      ->onlyMethods(['form', 'formValidate', 'formSubmit', 'run', 'addAnalysis'])
+      ->getMock();
     $import_id = $this->importer->createImportJob(['schema_name' => $this->connection->getSchemaName()]);
     $this->assertIsNumeric($import_id, "We were unable to create a tripal import record during setup.");
 
   }
 
+  /**
+   *
+   */
   public function testTransactionRollback() {
     // Override the run() method of our mock importer to:
     // 1. Insert a record into the chado.organism table
     // 2. Throw an exception
     // This mimics the situation where an importer run encounters an
-    // exception partway through a transaction
+    // exception partway through a transaction.
     $this->importer
       ->method('run')
       ->willReturnCallback(function (): bool {
@@ -89,7 +106,7 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
         $connection->insert('1:organism')
           ->fields([
             'genus' => 'Tripalus',
-            'species' => 'databasica'
+            'species' => 'databasica',
           ])
           ->execute();
           throw new \Exception(
@@ -98,17 +115,18 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
       });
     $logger = \Drupal::service("tripal.logger");
 
-    // Try running our importer to ensure an exception is thrown
+    // Try running our importer to ensure an exception is thrown.
     $exception_caught = FALSE;
     try {
       tripal_run_importer_run($this->importer, $logger);
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $exception_caught = TRUE;
     }
     $this->assertTrue($exception_caught, 'Did not catch exception that should have been thrown by overriding the run() method.');
 
     // Now query organism table to ensure the database transaction was
-    // successfully rolled back
+    // successfully rolled back.
     $organism_count_query = $this->connection->select('1:organism', 'o')
       ->countQuery()->execute()->fetchField();
     $this->assertEquals($organism_count_query, 0, 'The chado.organism table is not empty despite triggering a database rollback.');
@@ -119,11 +137,14 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
     $this->assertEquals($tripal_import_count_query, 1, 'The drupal tripal_import table doesn\'t contain the record even though a rollback on chado should not effect Drupal.');
   }
 
+  /**
+   *
+   */
   public function testTransactionCommit() {
     // Override the run() method of our mock importer to:
     // 1. Insert a record into the chado.organism table
     // This mimics the situation where a database transaction
-    // should occur to completion
+    // should occur to completion.
     $this->importer
       ->method('run')
       ->willReturnCallback(function (): bool {
@@ -131,24 +152,25 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
         $connection->insert('1:organism')
           ->fields([
             'genus' => 'Tripalus',
-            'species' => 'databasica'
+            'species' => 'databasica',
           ])
           ->execute();
-          return true;
+          return TRUE;
       });
     $logger = \Drupal::service("tripal.logger");
 
-    // Try running our importer to ensure NO exception is thrown
+    // Try running our importer to ensure NO exception is thrown.
     $exception_caught = FALSE;
     try {
       tripal_run_importer_run($this->importer, $logger);
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $exception_caught = TRUE;
     }
     $this->assertFalse($exception_caught, 'Caught an exception that should not have been thrown from overriding the run() method.');
 
     // Now query organism table to ensure the database transaction was
-    // successfully committed
+    // successfully committed.
     $organism_count_query = $this->connection->select('1:organism', 'o')
       ->countQuery()->execute()->fetchField();
     $this->assertEquals($organism_count_query, 1, 'The chado.organism table does not contain one record as expected from overriding the run() method.');

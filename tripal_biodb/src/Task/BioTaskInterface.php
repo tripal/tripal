@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_biodb\Task;
 
+use Psr\Log\LoggerInterface;
+
 /**
  * Provides an interface to manage a task on one or more biological schemas.
  */
@@ -47,7 +49,7 @@ interface BioTaskInterface {
    * Parameters are validate at runtime by ::performTask, just before the actual
    * task is started.
    *
-   * @param $parameters
+   * @param array $parameters
    *   A associative array of parameters used to configure the task. The
    *   array should include the keys 'input_schemas' and 'output_schemas', both
    *   containing an array of ordered schema names (or an empty array).
@@ -57,7 +59,7 @@ interface BioTaskInterface {
    *   exclusive use) during the task. If a schema comes from a different
    *   database than the default one (ie. the one used by Drupal), the schema
    *   name must be prefixed by the database key name (and not the "target", as
-   *   describbed in \Drupal\Core\Database\Database::getConnection()) followed
+   *   described in \Drupal\Core\Database\Database::getConnection()) followed
    *   by a dot.
    *
    * @throws \Drupal\tripal_biodb\Exception\ParameterException
@@ -126,6 +128,6 @@ interface BioTaskInterface {
    * @return \Psr\Log\LoggerInterface
    *   The task logger.
    */
-  public function getLogger() :\Psr\Log\LoggerInterface;
+  public function getLogger() :LoggerInterface;
 
 }

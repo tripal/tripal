@@ -2,26 +2,30 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of the 'boolean' field type.
- *
- * @FieldType(
- *   id = "tripal_boolean_type",
- *   category = "tripal",
- *   label = @Translation("Tripal Boolean Field Type"),
- *   description = @Translation("A boolean field."),
- *   default_widget = "default_tripal_boolean_type_widget",
- *   default_formatter = "default_tripal_boolean_type_formatter"
- * )
  */
+#[TripalFieldType(
+  id: 'tripal_boolean_type',
+  category: 'tripal',
+  label: new TranslatableMarkup('Tripal Boolean Field Type'),
+  description: new TranslatableMarkup('A boolean field.'),
+  default_widget: 'default_tripal_boolean_type_widget',
+  default_formatter: 'default_tripal_boolean_type_formatter',
+)]
 class TripalBooleanTypeItem extends TripalFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "tripal_boolean_type";
 
   /**
@@ -46,12 +50,12 @@ class TripalBooleanTypeItem extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    $values = [];
+    $value = [];
 
-    $random = new \Drupal\Component\Utility\Random();
-    $values['value'] = mt_rand(0, 1) ? TRUE : FALSE;
+    $value['record_id'] = 0;
+    $value['value'] = mt_rand(0, 1) ? TRUE : FALSE;
 
-    return $values;
+    return [$value];
   }
 
   /**
@@ -73,4 +77,5 @@ class TripalBooleanTypeItem extends TripalFieldItemBase {
       new BoolStoragePropertyType($entity_type_id, self::$id, "value", $term),
     ];
   }
+
 }

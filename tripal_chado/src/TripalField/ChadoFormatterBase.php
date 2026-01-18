@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal_chado\TripalField;
 
-use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal\TripalField\TripalFormatterBase;
 

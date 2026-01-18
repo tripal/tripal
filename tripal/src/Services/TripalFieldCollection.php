@@ -1,7 +1,6 @@
 <?php
 namespace Drupal\tripal\Services;
 
-use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager;
 use Drupal\field\Entity\FieldConfig;
@@ -578,7 +577,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    *   - display: Provides details for display of the field. By default it
    *     should provide the following keys:
    *     - view: an array of settings for the "view" display.  The keys of this
-   *       array should be the names of the available view modes. By deafult it
+   *       array should be the names of the available view modes. By default it
    *       should always provide a 'default' key.  Each display mode can
    *       then have the following key/value pairs:
    *       - weight: indicates the weight (or position) of the field in the
@@ -590,7 +589,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    *         placed in relationship to the value. Valid values include 'above',
    *         'inline' or 'hidden'.
    *     - form: an array of settings for the "form" display.  The keys of this
-   *       array should be the names of the available form modes. By deafult it
+   *       array should be the names of the available form modes. By default it
    *       should always provide a 'default' key.  Each display mode can
    *       then have the following key/value pairs:
    *       - weight: indicates the weight (or position) of the field in the
@@ -717,10 +716,12 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
         $view_modes = $entity_display->getViewModeOptionsByBundle('tripal_entity', $bundle_id);
         foreach (array_keys($view_modes) as $view_mode) {
           $view_mode_options = $field_def['display']['view'][$view_mode] ?? [];
-          \Drupal::service('entity_display.repository')
-            ->getViewDisplay('tripal_entity', $bundle_id, $view_mode)
-            ->setComponent($field_def['name'], $view_mode_options)
-            ->save();
+          if (($view_mode_options['region'] ?? '') !== 'hidden') {
+            \Drupal::service('entity_display.repository')
+              ->getViewDisplay('tripal_entity', $bundle_id, $view_mode)
+              ->setComponent($field_def['name'], $view_mode_options)
+              ->save();
+          }
         }
         $form_modes = $entity_display->getFormModeOptionsByBundle('tripal_entity', $bundle_id);
         foreach (array_keys($form_modes) as $form_mode) {

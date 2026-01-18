@@ -1,34 +1,50 @@
 services:
   # Using '' will find default Chado schema instance (which may not be 'chado').
   tripal_chado.database:
-    class: Drupal\tripal_chado\Database\ChadoConnection
+    class: 'Drupal\tripal_chado\Database\ChadoConnection'
     arguments: ['']
+  tripal_chado.hooks:
+    class: 'Drupal\tripal_chado\Hook\TripalChadoHooks'
+  tripal_chado.rebuild_service:
+    class: 'Drupal\tripal_chado\Services\TripalChadoRebuildService'
+    arguments:
+      - '@entity_type.manager'
+      - '@extension.list.module'
+      - '@extension.path.resolver'
   tripal_chado.field_debugger:
-    class: Drupal\tripal_chado\Services\ChadoFieldDebugger
-    arguments: ['@tripal_chado.database', '@module_handler', '@tripal.logger']
+    class: 'Drupal\tripal_chado\Services\ChadoFieldDebugger'
+    arguments:
+      - '@tripal_chado.database'
+      - '@module_handler'
+      - '@tripal.logger'
   tripal_chado.custom_tables:
-    class: Drupal\tripal_chado\Services\ChadoCustomTableManager
-    arguments: ['@database', '@tripal_chado.database']
+    class: 'Drupal\tripal_chado\Services\ChadoCustomTableManager'
+    arguments:
+      - '@database'
+      - '@tripal_chado.database'
   tripal_chado.materialized_views:
-    class: Drupal\tripal_chado\Services\ChadoMviewsManager
-    arguments: ['@database', '@tripal_chado.database']
+    class: 'Drupal\tripal_chado\Services\ChadoMviewsManager'
+    arguments:
+      - '@database'
+      - '@tripal_chado.database'
   tripal_chado.terms_init:
-    class: Drupal\tripal_chado\Services\ChadoTermsInit
+    class: 'Drupal\tripal_chado\Services\ChadoTermsInit'
   tripal_chado.cloner:
-    class: Drupal\tripal_chado\Task\ChadoCloner
+    class: 'Drupal\tripal_chado\Task\ChadoCloner'
   tripal_chado.installer:
-    class: Drupal\tripal_chado\Task\ChadoInstaller
+    class: 'Drupal\tripal_chado\Task\ChadoInstaller'
   tripal_chado.integrator:
-    class: Drupal\tripal_chado\Task\ChadoIntegrator
+    class: 'Drupal\tripal_chado\Task\ChadoIntegrator'
   tripal_chado.renamer:
-    class: Drupal\tripal_chado\Task\ChadoRenamer
+    class: 'Drupal\tripal_chado\Task\ChadoRenamer'
   tripal_chado.remover:
-    class: Drupal\tripal_chado\Task\ChadoRemover
+    class: 'Drupal\tripal_chado\Task\ChadoRemover'
   tripal_chado.preparer:
-    class: Drupal\tripal_chado\Task\ChadoPreparer
+    class: 'Drupal\tripal_chado\Task\ChadoPreparer'
   tripal_chado.apply_migrations:
-    class: Drupal\tripal_chado\Task\ChadoApplyMigrations
+    class: 'Drupal\tripal_chado\Task\ChadoApplyMigrations'
   tripal_chado.chado_buddy:
-    class: Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
-    parent: default_plugin_manager
-    arguments: ['@tripal_chado.database']
+    class: 'Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager'
+    parent: 'default_plugin_manager'
+    arguments:
+      - '@tripal_chado.database'

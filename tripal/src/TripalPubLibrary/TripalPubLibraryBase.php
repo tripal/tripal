@@ -6,6 +6,8 @@ use Drupal\Component\Plugin\PluginBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Database\Connection;
+use Drupal\tripal\Services\TripalFileRetriever;
+
 /**
  * Defines the base class for the tripal pub parser plugins.
  */
@@ -22,6 +24,13 @@ abstract class TripalPubLibraryBase extends PluginBase implements TripalPubLibra
    * @var \Drupal\tripal\Services\TripalLogger
    */
   protected $logger;
+
+  /**
+   * An instance of the Tripal file retriever service
+   *
+   * @var object \Drupal\tripal\Services\TripalFileRetriever
+   */
+  protected $fileretriever = NULL;
 
   /**
    * The Tripal Citation generation service.
@@ -49,7 +58,7 @@ abstract class TripalPubLibraryBase extends PluginBase implements TripalPubLibra
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
    * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the contructor.
+   * this method is used to determine the parameters to pass to the constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    * @param array $configuration
@@ -66,6 +75,7 @@ abstract class TripalPubLibraryBase extends PluginBase implements TripalPubLibra
       $container->get('database'),
       $container->get('tripal.logger'),
       $container->get('tripal.citation'),
+      $container->get('tripal.fileretriever'),
     );
   }
 
@@ -75,14 +85,49 @@ abstract class TripalPubLibraryBase extends PluginBase implements TripalPubLibra
   public function __construct(array $configuration, $plugin_id, $plugin_definition,
                               Connection $public,
                               \Drupal\tripal\Services\TripalLogger $logger,
-                              \Drupal\tripal\Services\TripalCitationManager $citation_manager) {
+                              \Drupal\tripal\Services\TripalCitationManager $citation_manager,
+                              TripalFileRetriever $fileretriever) {
 
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    // Dependency injection for public schema, tripal logger, and citation generator
+    // Dependency injection for public schema, tripal logger, citation generator, and file retriever
     $this->public = $public;
     $this->logger = $logger;
     $this->citation_manager = $citation_manager;
+    $this->fileretriever = $fileretriever;
+  }
+
+  /**
+   * Validates whether XML is valid or not.
+   *
+   * @param string $xml
+   *   The XML to be checked.
+   *
+   * @return bool
+   *   Return TRUE if valid, FALSE if not valid.
+   * 
+   * @see Drupal\tripal\TripalImporter\TripalImporterBase::xmlIsValid().
+   */
+  protected function xmlIsValid(string $xml): bool {
+    $valid = TRUE;
+
+    // Enable user handling of errors so that exceptions are not
+    // thrown when invalid XML is read.
+    libxml_use_internal_errors(TRUE);
+    // Attempt to load the XML.
+    $doc = simplexml_load_string($xml);
+    // If SimpleXML fails to parse the XML string then it will return FALSE.
+    if ($doc === FALSE) {
+      $valid = FALSE;
+    }
+    // If not, we will check for any errors logged during parsing.
+    else {
+      $errors = libxml_get_errors();
+      if (!empty($errors)) {
+        $valid = FALSE;
+      }
+    }
+    return $valid;
   }
 
 }

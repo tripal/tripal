@@ -2,8 +2,6 @@
 
 namespace Drupal\tripal\Services;
 
-use Drupal\Core\Database\Database;
-
 class bulkPgSchemaInstaller {
 
 

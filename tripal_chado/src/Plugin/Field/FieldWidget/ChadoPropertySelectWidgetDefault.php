@@ -4,20 +4,21 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
  * Plugin implementation of default Tripal linker property widget.
- *
- * @FieldWidget(
- *   id = "chado_property_select_widget_default",
- *   label = @Translation("Chado Property: Select Drop-down"),
- *   description = @Translation("Provides a configurable drop-down widget for Chado Properties."),
- *   field_types = {
- *     "chado_property_type_default"
- *   }
- * )
  */
+#[TripalFieldWidget(
+  id: 'chado_property_select_widget_default',
+  label: new TranslatableMarkup('Chado Property: Select Drop-down'),
+  description: new TranslatableMarkup('Provides a configurable drop-down widget for Chado Properties.'),
+  field_types: [
+    'chado_property_type_default',
+  ],
+)]
 class ChadoPropertySelectWidgetDefault extends ChadoWidgetBase {
 
 

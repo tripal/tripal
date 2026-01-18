@@ -2,32 +2,46 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- * Plugin implementation of Default Tripal field for sequence data.
- *
- * @FieldType(
- *   id = "chado_sequence_length_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Feature Sequence Length"),
- *   description = @Translation("A chado feature sequence length"),
- *   default_widget = "chado_sequence_length_widget_default",
- *   default_formatter = "chado_sequence_length_formatter_default"
- * )
+ * Plugin implementation of Default Tripal field for sequence length.
  */
-
-
+#[TripalFieldType(
+  id: 'chado_sequence_length_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Feature Sequence Length'),
+  description: new TranslatableMarkup('A chado feature sequence length'),
+  default_widget: 'chado_sequence_length_widget_default',
+  default_formatter: 'chado_sequence_length_formatter_default',
+)]
 class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "chado_sequence_length_type_default";
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
+    // The property that indicates if this field is empty.
+    return 'seqlen';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainDisplayPropertyName() {
+    // The property to use in the entity title/url.
     return 'seqlen';
   }
 
@@ -54,6 +68,18 @@ class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    $value['record_id'] = 0;
+    $value['seqlen'] = 18;
+
+    return [$value];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
@@ -63,11 +89,11 @@ class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
     // Return the properties for this field.
     $properties = [];
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
-        'action' => 'store_id',
-        'drupal_store' => TRUE,
-        'path' => 'feature.feature_id',
+      'action' => 'store_id',
+      'drupal_store' => TRUE,
+      'path' => 'feature.feature_id',
     ]);
-    $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
       'action' => 'read_value',
       'path' => 'feature.seqlen',
     ]);
@@ -76,6 +102,7 @@ class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -83,7 +110,7 @@ class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
 
     // Get the base table for the content type.
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-    // This is a "specialty" field for a single content type
+    // This is a "specialty" field for a single content type.
     if ($base_table == 'feature') {
       $compatible = TRUE;
     }
@@ -92,12 +119,18 @@ class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
-      array $field_instances, array $options = []): array {
+  public static function discover(
+    TripalEntityType $bundle,
+    string $field_id,
+    array $field_types,
+    array $field_instances,
+    array $options = [],
+  ): array {
 
-    // Specific settings for this field
+    // Specific settings for this field.
     $options += [
       'id' => self::$id,
       'base_table' => 'feature',
@@ -108,7 +141,7 @@ class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
       'description' => 'The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.',
     ];
 
-    // Call the parent discover() with this field's specific options
+    // Call the parent discover() with this field's specific options.
     $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
     return $field_list;
   }
