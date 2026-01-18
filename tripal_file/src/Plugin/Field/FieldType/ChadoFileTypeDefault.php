@@ -3,6 +3,7 @@
 namespace Drupal\tripal_file\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
