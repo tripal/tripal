@@ -2,22 +2,23 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
+use Drupal\tripal\TripalField\TripalWidgetBase;
 
 /**
  * Plugin implementation of default Tripal datetime type widget.
- *
- * @FieldWidget(
- *   id = "default_tripal_datetime_type_widget",
- *   label = @Translation("Tripal Datetime Widget"),
- *   description = @Translation("The default datetime type widget."),
- *   field_types = {
- *     "tripal_datetimetext_type"
- *   }
- * )
  */
+#[TripalFieldWidget(
+  id: 'default_tripal_datetime_type_widget',
+  label: new TranslatableMarkup('Tripal Datetime Widget'),
+  description: new TranslatableMarkup('The default datetime type widget.'),
+  field_types: [
+    'tripal_datetime_type',
+  ],
+)]
 class TripalDatetimeTextTypeWidget extends TripalWidgetBase {
 
   /**

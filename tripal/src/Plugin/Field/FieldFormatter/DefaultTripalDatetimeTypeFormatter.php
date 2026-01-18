@@ -2,23 +2,24 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldFormatter;
 
-use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
+use Drupal\tripal\TripalField\TripalFormatterBase;
 
 /**
  * Plugin implementation of default Tripal datetime type formatter.
- *
- * @FieldFormatter(
- *   id = "default_tripal_datetime_type_formatter",
- *   label = @Translation("Default Datetime Type Formatter"),
- *   description = @Translation("The default datetime type formatter."),
- *   field_types = {
- *     "tripal_datetime_type"
- *   }
- * )
  */
+#[TripalFieldFormatter(
+  id: 'default_tripal_datetime_type_formatter',
+  label: new TranslatableMarkup('Default Datetime Type Formatter'),
+  description: new TranslatableMarkup('The default datetime type formatter.'),
+  field_types: [
+    'tripal_datetime_type',
+  ],
+)]
 class DefaultTripalDatetimeTypeFormatter extends TripalFormatterBase {
 
   /**

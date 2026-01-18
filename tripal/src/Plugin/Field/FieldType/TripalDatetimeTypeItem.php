@@ -2,24 +2,25 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
+use Drupal\core\Form\FormStateInterface;
+use Drupal\core\Field\FieldDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\DatetimeStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
- * Plugin implementation of the 'datetime' field type.
- *
- * @FieldType(
- *   id = "tripal_datetime_type",
- *   category = "tripal",
- *   label = @Translation("Tripal Datetime Field Type"),
- *   description = @Translation("A datetime field."),
- *   default_widget = "default_tripal_datetime_type_widget",
- *   default_formatter = "default_tripal_datetime_type_formatter"
- * )
+ * Plugin implementation of the datetime field type.
  */
+#[TripalFieldType(
+  id: 'tripal_datetime_type',
+  category: 'tripal',
+  label: new TranslatableMarkup('Tripal Datetime Field Type'),
+  description: new TranslatableMarkup('A datetime field.'),
+  default_widget: 'default_tripal_datetime_type_widget',
+  default_formatter: 'default_tripal_datetime_type_formatter',
+)]
 class TripalDatetimeTypeItem extends TripalFieldItemBase {
 
   public static $id = "tripal_datetime_type";
