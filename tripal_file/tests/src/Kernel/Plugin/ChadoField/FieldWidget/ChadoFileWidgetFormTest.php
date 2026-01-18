@@ -8,6 +8,7 @@ use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the widgets on a File entity.
@@ -22,6 +23,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal-field')]
 #[Group('chado-field')]
 #[Group('tripal-file')]
+#[RunTestsInSeparateProcesses]
 class ChadoFileWidgetFormTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;

@@ -9,6 +9,7 @@ use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the File Field Type.
@@ -23,6 +24,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal-field')]
 #[Group('chado-field')]
 #[Group('tripal-file')]
+#[RunTestsInSeparateProcesses]
 class ChadoFileTypeCRUDTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;
