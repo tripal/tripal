@@ -20,10 +20,10 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - '8.1'
           - '8.2'
           - '8.3'
           - '8.4'
+          - '8.5'
         pgsql-version:
           - '14'
           - '15'
@@ -31,39 +31,35 @@ jobs:
           - '17'
           - '18'
         drupal-version:
-          - '10.4.x-dev'
           - '10.5.x-dev'
-          - '11.1.x-dev'
+          - '10.6.x-dev'
           - '11.2.x-dev'
+          - '11.3.x-dev'
           - '11.x-dev'
         exclude:
-          ## Only Drupal 11.x supports PHP 8.4
-          - php-version: '8.4'
-            drupal-version: '10.4.x-dev'
-          - php-version: '8.4'
+          # Only Drupal 11.3+ supports PHP 8.5
+          - php-version: '8.5'
             drupal-version: '10.5.x-dev'
-          ## Drupal 11.x requires PHP 8.3+
-          - php-version: '8.1'
-            drupal-version: '11.1.x-dev'
+          - php-version: '8.5'
+            drupal-version: '10.6.x-dev'
+          - php-version: '8.5'
+            drupal-version: '11.2.x-dev'
+          # Drupal 11.x requires PHP 8.3+
           - php-version: '8.2'
-            drupal-version: '11.1.x-dev'
-          - php-version: '8.1'
             drupal-version: '11.2.x-dev'
           - php-version: '8.2'
-            drupal-version: '11.2.x-dev'
-          - php-version: '8.1'
-            drupal-version: '11.x-dev'
+            drupal-version: '11.3.x-dev'
           - php-version: '8.2'
             drupal-version: '11.x-dev'
-          ## Drupal 11.x requires PostgreSQL 16+
-          - pgsql-version: '14'
-            drupal-version: '11.1.x-dev'
-          - pgsql-version: '15'
-            drupal-version: '11.1.x-dev'
+          # Drupal 11.x requires PostgreSQL 16+
           - pgsql-version: '14'
             drupal-version: '11.2.x-dev'
           - pgsql-version: '15'
             drupal-version: '11.2.x-dev'
+          - pgsql-version: '14'
+            drupal-version: '11.3.x-dev'
+          - pgsql-version: '15'
+            drupal-version: '11.3.x-dev'
           - pgsql-version: '14'
             drupal-version: '11.x-dev'
           - pgsql-version: '15'
@@ -84,10 +80,10 @@ jobs:
           password: '${{ secrets.DOCKERHUB_PASSWORD }}'
           buildArgs: 'drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}'
           labels: 'drupal.version.label=${{ matrix.drupal-version }},php.version.label=${{ matrix.php-version }}, postgresql.version.label=${{ matrix.pgsql-version }}'
-      ## Build Images tagged drupal{VER} focused on php 8.4 + postgresql 18
+      ## Build Images tagged drupal{VER} focused on php 8.5 + postgresql 18
       - uses: 'mr-smithers-excellent/docker-build-push@v6'
         name: 'Build & push Docker image Drupal focused Docker images.'
-        if: ${{ matrix.php-version == '8.4' && matrix.pgsql-version == '18' }}
+        if: ${{ matrix.php-version == '8.5' && matrix.pgsql-version == '18' }}
         with:
           image: 'tripalproject/tripaldocker-drupal'
           tags: 'drupal${{ matrix.drupal-version }}'
@@ -99,8 +95,8 @@ jobs:
           labels: 'drupal.version.label=${{ matrix.drupal-version }},php.version.label=${{ matrix.php-version }}, postgresql.version.label=${{ matrix.pgsql-version }}'
       ## Build the image tagged as latest which is the highest version combo that we feel is well supported.
       - uses: 'mr-smithers-excellent/docker-build-push@v6'
-        name: 'Build latest using 11.2.x-dev, PHP 8.4, PgSQL 18'
-        if: ${{ matrix.drupal-version == '11.2.x-dev' && matrix.php-version == '8.4' && matrix.pgsql-version == '18' }}
+        name: 'Build latest using 11.3.x-dev, PHP 8.5, PgSQL 18'
+        if: ${{ matrix.drupal-version == '11.3.x-dev' && matrix.php-version == '8.5' && matrix.pgsql-version == '18' }}
         with:
           image: 'tripalproject/tripaldocker-drupal'
           tags: 'latest'
