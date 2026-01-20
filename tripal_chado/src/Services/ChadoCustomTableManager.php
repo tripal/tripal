@@ -14,7 +14,7 @@ class ChadoCustomTableManager {
   /**
    * The Drupal database connection.
    */
-  public Connection $connection;
+  public Connection $drupal_connection;
 
   /**
    * The chado connection used to query chado.
@@ -30,7 +30,7 @@ class ChadoCustomTableManager {
    *   The chado connection used to query chado.
    */
   public function __construct(Connection $drupal_connection, ChadoConnection $chado_connection) {
-    $this->drupal_connection = $connection;
+    $this->drupal_connection = $drupal_connection;
     $this->chado_connection = $chado_connection;
   }
 
