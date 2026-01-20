@@ -214,7 +214,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $exception_message = '';
     try {
       $instance->setSchemaName('0Invalid');
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $exception_message = $e->getMessage();
     }
     $this->assertStringContainsString('Could not use the schema name', $exception_message,
