@@ -122,11 +122,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // Make protected methods accessible.
     $reflection = new \ReflectionClass($instance);
     $makeAlias = $reflection->getMethod('makeAlias');
-    $makeAlias->setAccessible(TRUE);
     $unmakeAlias = $reflection->getMethod('unmakeAlias');
-    $unmakeAlias->setAccessible(TRUE);
     $removeTablePrefix = $reflection->getMethod('removeTablePrefix');
-    $removeTablePrefix->setAccessible(TRUE);
 
     // Label.
     $label = $instance->label();
@@ -221,13 +218,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // Make protected methods accessible.
     $reflection = new \ReflectionClass($instance);
     $getTableColumns = $reflection->getMethod('getTableColumns');
-    $getTableColumns->setAccessible(TRUE);
     $addTableToCache = $reflection->getMethod('addTableToCache');
-    $addTableToCache->setAccessible(TRUE);
     $getTableCache = $reflection->getMethod('getTableCache');
-    $getTableCache->setAccessible(TRUE);
     $makeUpsertConditions = $reflection->getMethod('makeUpsertConditions');
-    $makeUpsertConditions->setAccessible(TRUE);
 
     // CASE: getTableColumns() with no tables.
     $returned_columns = $getTableColumns->invoke($instance, []);
@@ -356,13 +349,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // Make protected methods accessible.
     $reflection = new \ReflectionClass($instance);
     $validateInput = $reflection->getMethod('validateInput');
-    $validateInput->setAccessible(TRUE);
     $subsetInput = $reflection->getMethod('subsetInput');
-    $subsetInput->setAccessible(TRUE);
     $dereferenceBuddyRecord = $reflection->getMethod('dereferenceBuddyRecord');
-    $dereferenceBuddyRecord->setAccessible(TRUE);
     $validateOutput = $reflection->getMethod('validateOutput');
-    $validateOutput->setAccessible(TRUE);
 
     // CASE: valid values passed to validateInput().
     $user_values = [
@@ -702,7 +691,6 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // Make protected methods accessible.
     $reflection = new \ReflectionClass($instance);
     $addConditions = $reflection->getMethod('addConditions');
-    $addConditions->setAccessible(TRUE);
 
     // CASE: valid values passed to addConditions().
     $query = $this->chado_connection->select('1:cv', 'cv');
