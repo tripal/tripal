@@ -116,13 +116,11 @@ class ChadoStockcollectionDBTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table.
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($base_table, $schema);
 
     // Object table.
     $object_table = self::$object_table;
-    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
-    $object_pkey_col = $object_schema_def['primary key'];
+    $object_pkey_col = self::getPrimaryKey($object_table, $schema);
     $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
 
     // Linker table, when used, requires specifying the linker table and column.
@@ -132,7 +130,7 @@ class ChadoStockcollectionDBTypeDefault extends ChadoFieldItemBase {
     $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
     $linker_fkey_path = $base_table . '.' . $linker_fkey_column;
     if ($linker_table != $base_table) {
-      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_schema_def = self::getChadoTableDef($linker_table, $schema);
       $linker_pkey_col = $linker_schema_def['primary key'];
       // The following should be the same as $base_pkey_col.
       // @todo make sure it is.
