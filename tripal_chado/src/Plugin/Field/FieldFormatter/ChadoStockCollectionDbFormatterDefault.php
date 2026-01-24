@@ -18,7 +18,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     'chado_stockcollection_db_type_default',
   ],
 )]
-class ChadoStockcollectionDbFormatterDefault extends ChadoFormatterBase {
+class ChadoStockCollectionDbFormatterDefault extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}
