@@ -38,3 +38,21 @@ tripal.content_type.*:
         tripal:
           type: mapping
           label: "Tripal Third-party settings"
+
+views.access.tripal_content_views_access:
+  type: mapping
+  label: 'Tripal Content Views Access Handler'
+  mapping:
+    content_types:
+      type: mapping
+      label: 'Tripal Content Types'
+      mapping:
+        all:
+          type: string
+          label: 'Content Types'
+    mode:
+      type: string
+      label: 'Multiple Permission Handling'
+    operation:
+      type: string
+      label: 'Content Type Permission'

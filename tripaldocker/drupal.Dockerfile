@@ -26,6 +26,11 @@ COPY tripaldocker/init_scripts/motd /etc/motd
 RUN chmod -R +x /app && apt-get update 1> ~/aptget.update.log \
   && apt-get install git unzip zip wget gnupg2 supervisor vim --yes -qq 1> ~/aptget.extras.log
 
+## Php Installer for Extensions (PIE)
+RUN wget -q https://github.com/php/pie/releases/latest/download/pie.phar \
+  && chmod +x pie.phar \
+  && mv pie.phar /usr/local/bin/pie
+
 ########## POSTGRESQL #########################################################
 
 ## See https://stackoverflow.com/questions/51033689/how-to-fix-error-on-postgres-install-ubuntu
@@ -74,19 +79,23 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/${postgresqlversion}/main/pos
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 ## Xdebug
-RUN pecl install xdebug-3.4.0 \
+RUN pie install xdebug/xdebug \
   && docker-php-ext-enable xdebug \
   && cat /app/tripaldocker/default_files/xdebug/xdebug-coverage.ini >> /usr/local/etc/php/php.ini \
   && echo "error_reporting=E_ALL" >> /usr/local/etc/php/conf.d/error_reporting.ini \
   && cp /app/tripaldocker/default_files/xdebug/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.dis \
   && rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-## install the PHP extensions we need
+## install the PHP extensions we need.
+## Opcache extension is bundled by default in PHP 8.5+.
 RUN set -eux; \
   \
   if command -v a2enmod; then \
   a2enmod rewrite; \
   fi; \
+  \
+  opcache="opcache"; \
+  if $(dpkg --compare-versions "${phpversion}" "ge" "8.5"); then opcache=""; fi; \
   \
   savedAptMark="$(apt-mark showmanual)"; \
   \
@@ -108,7 +117,7 @@ RUN set -eux; \
   \
   docker-php-ext-install -j "$(nproc)" \
   gd \
-  opcache \
+  $opcache \
   pdo_mysql \
   pdo_pgsql \
   pgsql \
