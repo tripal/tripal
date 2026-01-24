@@ -22,7 +22,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
   default_formatter: 'chado_stockcollection_db_formatter_default',
   cardinality: 1,
 )]
-class ChadoStockcollectionDbTypeDefault extends ChadoFieldItemBase {
+class ChadoStockCollectionDbTypeDefault extends ChadoFieldItemBase {
 
   /**
    * The id of this field. This must match what is in the attribute above.
