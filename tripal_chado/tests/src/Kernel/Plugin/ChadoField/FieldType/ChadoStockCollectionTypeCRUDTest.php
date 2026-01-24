@@ -7,6 +7,7 @@ use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the ChadoStockCollectionTypeDefault Field Type.
@@ -19,6 +20,7 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('TripalField')]
 #[Group('ChadoField')]
+#[RunTestsInSeparateProcesses]
 class ChadoStockCollectionTypeCRUDTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;
