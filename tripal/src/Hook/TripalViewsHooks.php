@@ -2,11 +2,12 @@
 
 namespace Drupal\tripal\Hook;
 
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\views\ViewEntityInterface;
-use Drupal\views\ViewExecutable;
 use Drupal\views\ViewsConfigUpdater;
+use Drupal\views\ViewExecutable;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\tripal\Access\TripalEntityAccessControlHandler;
 
 /**
  * Hook implementations for the Tripal module.
@@ -14,42 +15,6 @@ use Drupal\views\ViewsConfigUpdater;
  * This class contains hook implementations related to Drupal views.
  */
 class TripalViewsHooks {
-
-  /**
-   * Implements hook_views_pre_view().
-   */
-  #[Hook('views_pre_view')]
-  public function viewsPreView(ViewExecutable $view, $display_id, array &$args) {
-    // Override permission of Tripal Content Type listing
-    // (admin/content/bio_data) in order to support OR when evaluating
-    // permissions since views UI does not support this.
-    // WARNING: requires you to have NO Permissions on this view through the UI!
-    if ($view->id() == 'tripal_content_type_listing') {
-      // The user must have 1+ of the following permissions to access the
-      // Tripal Content Type listing (admin/content/bio_data).
-      $perm = [
-        'access tripal content overview',
-        'administer tripal content',
-      ];
-
-      // Check if current user has either permissions when attempting to
-      // view listing.
-      $user = \Drupal::currentUser();
-
-      $has_permission = FALSE;
-      foreach ($perm as $permission) {
-        if ($user->hasPermission($permission)) {
-          $has_permission = TRUE;
-          break;
-        }
-      }
-
-      // Deny access if user does not have necessary permission.
-      if (!$has_permission) {
-        throw new AccessDeniedHttpException();
-      }
-    }
-  }
 
   /**
    * Implements hook_ENTITY_TYPE_presave().
@@ -68,6 +33,45 @@ class TripalViewsHooks {
       $config_updater->setDeprecationsEnabled(FALSE);
       $config_updater->processTableCssClassUpdate($view);
     }
+  }
+
+  /**
+   * Implements hook_views_query_alter().
+   *
+   * Adds a where clause to any view showing Tripal Content which
+   * restricts the results to Tripal Content Types that the current
+   * user has permission to view.
+   */
+  #[Hook('views_query_alter')]
+  public function viewsQueryAlter(ViewExecutable $view, QueryPluginBase $query) {
+    // Only alter the views with base table 'tripal_entity'.
+    if ($view->storage->get('base_table') !== 'tripal_entity') {
+      return;
+    }
+
+    // Get the current user account.
+    $account = \Drupal::currentUser();
+
+    // Ensure that the Tripal Content Admin permission bypasses
+    // the following permissions.
+    if ($account->hasPermission('administer tripal content')) {
+      return;
+    }
+
+    $permissions = TripalEntityAccessControlHandler::getTripalContentPermissionsList('view');
+
+    // Determine which entity types the user has permission to view.
+    $allowed_types = [];
+    foreach ($permissions as $permission) {
+      if (preg_match('/^view\s+(?:own|all)\s+(.+)\s+content$/i', $permission, $m)) {
+        $entity_id = $m[1];
+      }
+      if ($account->hasPermission($permission)) {
+        $allowed_types[] = $entity_id;
+      }
+    }
+
+    $query->addWhere('AND', "tripal_entity.type", $allowed_types, 'IN');
   }
 
 }
