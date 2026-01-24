@@ -12,6 +12,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\tripal\Services\TripalJob;
 use Drupal\user\Entity\User;
 use Drupal\views\ViewExecutable;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
 
 require_once 'src/api/tripal.api.php';
 require_once 'src/api/tripal.entities.api.php';
@@ -382,17 +383,6 @@ function tripal_gin_content_form_routes() {
 }
 
 /**
- * Implements hook_views_pre_view().
- *
- * This legacy hook is only run for Drupal < 11, and is replaced by class
- * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
- */
-#[LegacyHook]
-function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
-  return \Drupal::service('tripal.views_hooks')->viewsPreView($view, $display_id, $args);
-}
-
-/**
  * Legacy implementation for TripalEntityHooks::tripalEntityStorageLoad().
  *
  * This legacy hook is only run for Drupal < 11, and is replaced by class
@@ -402,4 +392,15 @@ function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) 
 #[LegacyHook]
 function tripal_tripal_entity_storage_load(&$entities) {
   \Drupal::service('tripal.entity_hooks')->tripalEntityStorageLoad($entities);
+}
+
+/**
+ * Implements hook_views_query_alter().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
+  return \Drupal::service('tripal.views_hooks')->viewsQueryAlter($view, $query);
 }

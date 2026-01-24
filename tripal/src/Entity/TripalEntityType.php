@@ -6,6 +6,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\Core\Entity\Attribute\ConfigEntityType;
 use Drupal\Core\Entity\EntityViewBuilder;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\Access\TripalEntityAccessControlHandler;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\tripal\ListBuilders\TripalEntityTypeListBuilder;
 use Drupal\tripal\Form\TripalEntityTypeForm;
@@ -271,6 +272,14 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     // Save the rest of the entity using the parent implementation.
     // This is when the id is assigned.
     $return_status = parent::save();
+
+    // Grant 'view all {content_type} content' permission to anonymous
+    // and authenticated user.
+    if ($return_status == 1) {
+      foreach (['anonymous', 'authenticated'] as $role) {
+        TripalEntityAccessControlHandler::grantViewAllPermission($this, $role);
+      }
+    }
 
     return $return_status;
   }
