@@ -287,7 +287,7 @@ class ChadoPhylotree {
       $node = [
         'phylonode_id' => $phylonode_id,
         'parent_phylonode_id' => (int) $r->parent_phylonode_id,
-        'length' => (double) $r->length,
+        'length' => (float) $r->length,
         'cvterm_name' => $r->cvterm_name,
       ];
 
