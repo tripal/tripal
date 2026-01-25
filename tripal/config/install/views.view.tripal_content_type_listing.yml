@@ -442,8 +442,12 @@ display:
           sort_asc_label: Asc
           sort_desc_label: Desc
       access:
-        type: none
-        options: {  }
+        type: tripal_content_views_access
+        options:
+          content_types:
+            all: all
+          mode: any
+          operation: view
       cache:
         type: none
         options: {  }

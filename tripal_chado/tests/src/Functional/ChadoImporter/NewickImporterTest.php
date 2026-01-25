@@ -249,14 +249,11 @@ class NewickImporterTest extends ChadoTestBrowserBase {
       'administer tripal',
       'administer users',
       'administer permissions',
-      'access tripal content overview',
       'allow tripal import',
       'administer tripal content',
       'admin tripal files',
-      'add tripal content entities',
       'manage tripal jobs',
       'use chado_newick_tree_loader importer',
-      'view tripal content entities',
       'upload files',
     ]);
     // Login the drupal user.
