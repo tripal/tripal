@@ -17,6 +17,7 @@ use Drupal\tripal_chado\Services\ChadoPhylotree;
   id: 'chado_phylotreevis_type_default',
   label: new TranslatableMarkup('Chado Phylogenetic Visualization Field Type'),
   description: new TranslatableMarkup('Visualization of a phylogenetic tree.'),
+  default_widget: '',
   default_formatter: 'chado_phylotreevis_formatter_default',
   cardinality: 1,
 )]
