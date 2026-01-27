@@ -453,10 +453,6 @@ fields:
               weight: 95
               settings:
                 phylogram_skip_ticks: 1
-          form:
-            default:
-              region: 'content'
-              weight: 95
 
 ## Analysis ##
 ## Chado Table: analysis

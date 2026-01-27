@@ -1113,10 +1113,6 @@ fields:
               region: 'content'
               label: 'above'
               weight: 95
-          form:
-            default:
-              region: 'content'
-              weight: 95
 
 ## Physical Map ##
 
