@@ -726,10 +726,12 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
         $form_modes = $entity_display->getFormModeOptionsByBundle('tripal_entity', $bundle_id);
         foreach (array_keys($form_modes) as $form_mode) {
           $form_mode_options = $field_def['display']['form'][$form_mode] ?? [];
-          \Drupal::service('entity_display.repository')
-            ->getFormDisplay('tripal_entity', $bundle_id, $form_mode)
-            ->setComponent($field_def['name'], $form_mode_options)
-            ->save();
+          if (isset($form_mode_options['type'])) {
+            \Drupal::service('entity_display.repository')
+              ->getFormDisplay('tripal_entity', $bundle_id, $form_mode)
+              ->setComponent($field_def['name'], $form_mode_options)
+              ->save();
+          }
         }
 
         $this->logger->notice(t('Added field, "@field", to content type: "@type".',
