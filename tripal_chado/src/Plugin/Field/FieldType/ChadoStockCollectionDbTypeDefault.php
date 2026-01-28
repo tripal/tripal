@@ -17,7 +17,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
   id: 'chado_stockcollection_db_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Stock Collection DB reference'),
-  description: new TranslatableMarkup('Indicates that a current stock collection is from a specific DB.'),
+  description: new TranslatableMarkup('Indicates that a stock collection is from a specific database.'),
   default_widget: 'chado_stockcollection_db_widget_default',
   default_formatter: 'chado_stockcollection_db_formatter_default',
   cardinality: 1,
