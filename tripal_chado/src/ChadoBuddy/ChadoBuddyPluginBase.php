@@ -8,7 +8,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
-use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
 /**
  * Base class for chado_buddy plugins.
@@ -16,23 +15,28 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInterface, ContainerFactoryPluginInterface {
 
   /**
-   * Provides the TripalDBX connection to chado that this ChadoBuddy should act upon.
-   * @var Drupal\tripal_chado\Database\ChadoConnection
+   * Provides the TripalDBX connection to chado.
    *
+   * @var Drupal\tripal_chado\Database\ChadoConnection
    */
-  public ChadoConnection $connection;
+  public ChadoConnection $chado_connection;
 
- /**
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
-   * Since we have implemented the ContainerFactoryPluginInterface this static function
-   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the constructor.
+   * Since we have implemented the ContainerFactoryPluginInterface this static
+   * function will be called behind the scenes when a Plugin Manager uses
+   * createInstance(). Specifically, this method is used to determine the
+   * parameters to pass to the constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The current container.
    * @param array $configuration
+   *   A configuration array.
    * @param string $plugin_id
+   *   The plugin identifier.
    * @param mixed $plugin_definition
+   *   The definition of the plugin.
    *
    * @return static
    */
@@ -48,9 +52,9 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ChadoConnection $connection) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ChadoConnection $chado_connection) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->connection = $connection;
+    $this->chado_connection = $chado_connection;
   }
 
   /**
@@ -70,21 +74,48 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
+   * Returns the currently active chado schema name.
+   *
+   * @return string
+   *   The name of the active chado schema.
+   */
+  public function getSchemaName(): string {
+    return $this->chado_connection->getSchemaName();
+  }
+
+  /**
+   * Sets the current chado schema name.
+   *
+   * @var string $schema_name
+   *   The name of the chado schema to be used.
+   *
+   * @return void
+   *   No return value.
+   *
+   * @throws Drupal\tripal\TripalDBX\Exceptions\ConnectionException
+   *   If schema name is not valid.
+   */
+  public function setSchemaName(string $schema_name): void {
+    $this->chado_connection->setSchemaName($schema_name);
+  }
+
+  /**
    * Retrieve a list of table columns for one or more chado tables.
+   *
    * Schema information is cached for better performance.
    *
    * @param array $chado_tables
    *   One or more chado table names.
    * @param string $filter
-   *   'required' = return columns that [1]: have a NOT NULL
-   *     constraint, and [2]: do not have a default value and
-   *     are not serial, such as a primary key.
-   *     In other words, a column with a NOT NULL constraint
-   *     but with some form of a default value is considered
-   *     to be not required.
-   *   'unique' = return only columns that are part
-   *     of any unique constraint.
-   *   'all' (default) or anything else = return all columns.
+   *   A string that indicates which subset of columns to return.
+   *   Valid values are:
+   *   - required: return columns that [1]: have a NOT NULL constraint,
+   *     and [2]: do not have a default value and are not serial, such as a
+   *     primary key. In other words, a column with a NOT NULL constraint
+   *     but with some form of a default value is considered to be not required.
+   *   - unique: return only columns that are part of any unique constraint.
+   *   - all: return all columns. This is the default if an unrecognized filter
+   *     is provided.
    *
    * @return array
    *   An array of table+dot+column name, e.g. for 'db' table:
@@ -92,12 +123,12 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   For invalid table name.
-   **/
-  protected function getTableColumns(array $chado_tables, string $filter = 'all') {
+   */
+  protected function getTableColumns(array $chado_tables, string $filter = 'all'): array {
     $columns = [];
     $cache_updated = FALSE;
 
-    // Get cached columns if available
+    // Get cached columns if available.
     $cached_tables = $this->getTableCache();
     foreach ($chado_tables as $chado_table) {
       if (!array_key_exists($chado_table, $cached_tables)) {
@@ -105,7 +136,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
         $this->addTableToCache($chado_table, $cached_tables);
       }
 
-      // Lookup all or requested subset of columns, depending on $filter setting
+      // Lookup all or requested subset of columns, based on $filter setting.
       foreach (array_keys($cached_tables[$chado_table]['all']) as $column) {
         $is_required = $cached_tables[$chado_table]['required'][$column];
         $is_in_constraint = $cached_tables[$chado_table]['unique'][$column];
@@ -122,7 +153,8 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
       }
     }
 
-    // If $cached_tables was updated, cache the new version, specifying expiration in 1 hour.
+    // If $cached_tables was updated, cache the new version, specifying
+    // expiration in 1 hour.
     if ($cache_updated) {
       $this->setTableCache($cached_tables);
     }
@@ -147,7 +179,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *          unique constraint.
    */
   protected function getTableCache() {
-    $schema_name = $this->connection->getSchemaName();
+    $schema_name = $this->chado_connection->getSchemaName();
 
     // Get cached columns.
     $cache_id = $schema_name . '_buddy_table_columns';
@@ -176,9 +208,10 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *          unique constraint.
    *
    * @return void
+   *   No return value.
    */
-  private function setTableCache(array $cached_tables) {
-    $schema_name = $this->connection->getSchemaName();
+  private function setTableCache(array $cached_tables): void {
+    $schema_name = $this->chado_connection->getSchemaName();
     $cache_id = $schema_name . '_buddy_table_columns';
 
     \Drupal::cache()->set($cache_id, $cached_tables, \Drupal::time()->getRequestTime() + (3600));
@@ -188,7 +221,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * Add a chado table to the cache, used only by getTableColumns()
    *
    * @param string $chado_table
-   *   Name of the table to add
+   *   Name of the table to add.
    * @param array $cached_tables
    *   Schema information will be inserted in this array for the table indicated
    *   above. The array follows this format:
@@ -201,21 +234,23 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *      - 'unique':
    *        - <field name>: TRUE|FALSE depending on if this field is in a
    *          unique constraint.
+   *
    * @return void
+   *   No return value.
    */
-  protected function addTableToCache(string $chado_table, array &$cached_tables) {
+  protected function addTableToCache(string $chado_table, array &$cached_tables): void {
     $cached_tables[$chado_table] = [];
-    $table_schema = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
+    $table_schema = $this->chado_connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
     if (!array_key_exists('fields', $table_schema)) {
-      $calling_function = debug_backtrace()[2]['function'];  // two levels up
-      throw new ChadoBuddyException("ChadoBuddy $calling_function error, invalid table"
-                                   . " \"$chado_table\" passed to getTableColumns()");
+      // Two levels up.
+      $calling_function = debug_backtrace()[2]['function'];
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, invalid table \"$chado_table\" passed to getTableColumns()");
     }
 
-    // Obtain a list of the columns that are present in any unique key
+    // Obtain a list of the columns that are present in any unique key.
     $in_unique_constraint = [];
     if (array_key_exists('unique keys', $table_schema)) {
-      foreach ($table_schema['unique keys'] as $key => $constraint_columns) {
+      foreach ($table_schema['unique keys'] as $constraint_columns) {
         foreach (explode(', ', $constraint_columns) as $column) {
           $in_unique_constraint[$column] = TRUE;
         }
@@ -234,9 +269,11 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
-   * Used by upsert functions to generate a subset of values using only
-   * key columns, e.g. 'name' for cv table. The key columns are those which
-   * are present in any of the unique constraints that the table may have.
+   * Used by upsert functions to generate a subset of values.
+   *
+   * The subset uses only key columns, e.g. 'name' for cv table.
+   * Key columns are those which are present in any of the unique
+   * constraints that the table may have.
    *
    * @param array $values
    *   An associative array where the key is the table.column_name.
@@ -245,7 +282,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *
    * @return array
    *   The subset of the passed $values array.
-   **/
+   */
   protected function makeUpsertConditions(array $values, array $key_columns): array {
     $conditions = [];
     foreach ($key_columns as $column) {
@@ -257,36 +294,39 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
-   * Replace the first period with a double underscore
+   * Replace the first period with a double underscore.
+   *
    * This makes the string valid as a table column alias.
    *
    * @param string $name
-   *   table name+dot+table column
+   *   Table name+dot+table column.
    *
    * @return string
    *   The first period is replaced with double underscore.
-   **/
+   */
   protected function makeAlias(string $name): string {
     return preg_replace('/\./', '__', $name, 1);
   }
 
   /**
    * Replace the first double underscore with a period.
+   *
    * This reverts the change made by the makeAlias() function.
    *
    * @param string $name
-   *   table name+__+table column
+   *   Table name+__+table column.
    *
    * @return string
    *   The first __ is replaced with a period.
-   **/
+   */
   protected function unmakeAlias(string $name): string {
     return preg_replace('/__/', '.', $name, 1);
   }
 
   /**
-   * Removes the table prefix from $values keys so that
-   * they can be used directly in an INSERT.
+   * Removes the table prefix from $values keys.
+   *
+   * This allows the $values keys to be used directly in an INSERT.
    * The prefix is anything up to and including the first period.
    *
    * @param array $values
@@ -294,14 +334,14 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *
    * @return array
    *   The keys have had the table name prefix removed, values are unchanged.
-   **/
+   */
   protected function removeTablePrefix(array $values): array {
     $new_values = [];
     foreach ($values as $key => $value) {
       $new_key = preg_replace('/^[^\.]*\./', '', $key);
       if (array_key_exists($new_key, $new_values)) {
-        throw new ChadoBuddyException("Ambiguous columns passed to removeTablePrefix(), this function"
-          . " can only handle columns in a single table. Passed values: " . print_r($values, TRUE));
+        throw new ChadoBuddyException("Ambiguous columns passed to removeTablePrefix(), this function can only handle columns in a single table. Passed values: "
+          . print_r($values, TRUE));
       }
       $new_values[$new_key] = $value;
     }
@@ -309,7 +349,8 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
-   * Adds the conditions to the database query.
+   * Adds conditions to the database query.
+   *
    * Implements case insensitive queries if requested.
    *
    * @param object $query
@@ -321,8 +362,10 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *   The option 'case_insensitive' can contain a single key string, or an
    *   array of multiple keys for which a case insensitive query is desired.
    *
-   **/
-  protected function addConditions(object &$query, array $conditions, array $options) {
+   * @return void
+   *   No return value.
+   */
+  protected function addConditions(object &$query, array $conditions, array $options): void {
     // Obtain a list of case insensitive columns, can be empty.
     $insensitive_columns = [];
     if (array_key_exists('case_insensitive', $options)) {
@@ -334,12 +377,12 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
       }
     }
 
-    // Conditions are not aliased
+    // Conditions are not aliased.
     $n = 0;
     foreach ($conditions as $key => $value) {
       if (in_array($key, $insensitive_columns)) {
-        $query->where('LOWER('.$key.') = LOWER(:value'.$n.')',
-                      [':value'.$n => $value]);
+        $query->where('LOWER(' . $key . ') = LOWER(:value' . $n . ')',
+                      [':value' . $n => $value]);
         $n++;
       }
       else {
@@ -369,15 +412,17 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     foreach ($user_values as $key => $value) {
       if (!in_array($key, $valid_values)) {
         $calling_function = debug_backtrace()[1]['function'];
-        throw new ChadoBuddyException("ChadoBuddy $calling_function error, the key \"$key\" is not"
-          . " valid for this function. Valid keys are: " . implode(', ', $valid_values));
+        throw new ChadoBuddyException("ChadoBuddy $calling_function error, the key \"$key\" is not valid for this function. Valid keys are: "
+          . implode(', ', $valid_values));
       }
     }
   }
 
   /**
-   * Used to dereference a ChadoBuddyRecord in the $values
-   * array into its component values.
+   * Dereference a ChadoBuddyRecord into its component values.
+   *
+   * If a ChadoBuddyRecords is present in the $values array,
+   * then it is converted to its component array values.
    *
    * @param array $values
    *   An associative array to be validated. Keys are
@@ -392,22 +437,22 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *   Merged associative array of values
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If the key 'buddy_record' does not have a ChadoBuddyRecord as its value.
-   *   If a value inside the ChadoBuddyRecord is different than one in the $values array.
+   *   - If the key 'buddy_record' does not have a ChadoBuddyRecord as
+   *     its value.
+   *   - If a value inside the ChadoBuddyRecord is different than one in
+   *     the $values array.
    */
-  protected function dereferenceBuddyRecord(array $values) {
+  protected function dereferenceBuddyRecord(array $values): array {
     if (array_key_exists('buddy_record', $values)) {
       if (!$values['buddy_record'] instanceof ChadoBuddyRecord) {
         $calling_function = debug_backtrace()[1]['function'];
-        throw new ChadoBuddyException("ChadoBuddy $calling_function error, something other than"
-          . " a ChadoBuddyRecord was stored under the 'buddy_record' key");
+        throw new ChadoBuddyException("ChadoBuddy $calling_function error, something other than a ChadoBuddyRecord was stored under the 'buddy_record' key");
       }
       $buddy_values = $values['buddy_record']->getValues();
       foreach ($buddy_values as $buddy_key => $buddy_value) {
         if (array_key_exists($buddy_key, $values) and ($values[$buddy_key] != $buddy_value)) {
           $calling_function = debug_backtrace()[1]['function'];
-          throw new ChadoBuddyException("ChadoBuddy $calling_function error, a value with the key"
-            . " $buddy_key was declared twice with different values");
+          throw new ChadoBuddyException("ChadoBuddy $calling_function error, a value with the key $buddy_key was declared twice with different values");
         }
         $values[$buddy_key] = $buddy_value;
       }
@@ -417,24 +462,29 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
-   * Used to return a subset of values applicable to a
-   * single chado table, e.g. remove db table columns when
-   * inserting a new dbxref.
+   * Used to return a subset of values applicable to a single chado table.
+   *
+   * For example, remove db table columns when inserting a new dbxref.
    *
    * @param array $user_values
    *   An associative array to be filtered. Keys are
    *   table+dot+column name, values are for that table+column.
    * @param array $valid_tables
    *   An array listing which tables should have keys returned.
+   * @param array $options
+   *   Associative array of options.
+   *   The only supported option is 'strict'. If after subsetting there are no
+   *   values left, and this option is set to TRUE, then an exception is thrown.
+   *   If FALSE, returns an empty array. Defaults to TRUE.
    *
    * @return array
    *   The subset of passed $user_values with table prefixes
    *   present in the $valid_tables array.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If after subsetting there is nothing left.
+   *   If after subsetting there is nothing left and 'strict' option is TRUE.
    */
-  protected function subsetInput(array $user_values, array $valid_tables) {
+  protected function subsetInput(array $user_values, array $valid_tables, array $options = []) {
     $subset = [];
     foreach ($user_values as $key => $value) {
       $parts = explode('.', $key, 2);
@@ -442,17 +492,18 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
         $subset[$key] = $value;
       }
     }
-    if (!$subset) {
+    if (!$subset && (array_key_exists('strict', $options) ? $options['strict'] : TRUE)) {
       $calling_function = debug_backtrace()[1]['function'];
-      throw new ChadoBuddyException("ChadoBuddy $calling_function error, no valid values were"
-                                    . " specified for tables: " . implode(', ', $valid_tables));
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, no valid values were specified for tables: "
+        . implode(', ', $valid_tables));
     }
     return $subset;
   }
 
   /**
-   * Used to validate results from a buddy function,
-   * to ensure there is exactly one record present.
+   * Used to validate results from a buddy function.
+   *
+   * Validates that there is exactly one record present.
    *
    * @param mixed $output_records
    *   An array of zero or more ChadoBuddyRecords.
@@ -468,18 +519,17 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     if (!is_array($output_records) or (count($output_records) < 1)) {
       $calling_function = debug_backtrace()[1]['function'];
       throw new ChadoBuddyException("ChadoBuddy $calling_function error, did not retrieve the expected record\n"
-                                   . print_r($values, TRUE));
+        . print_r($values, TRUE));
     }
     $n = count($output_records);
     if ($n > 1) {
       $calling_function = debug_backtrace()[1]['function'];
-      throw new ChadoBuddyException("ChadoBuddy $calling_function error, more than one record ($n) was"
-                                    . " retrieved, only one was expected\n" . print_r($values, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, more than one record ($n) was retrieved, only one was expected\n"
+        . print_r($values, TRUE));
     }
     if (!array_key_exists(0, $output_records) or !($output_records[0] instanceof ChadoBuddyRecord)) {
       $calling_function = debug_backtrace()[1]['function'];
-      throw new ChadoBuddyException("ChadoBuddy $calling_function error, the array passed to validateOutput"
-                                    . " does not contain a ChadoBuddyRecord");
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, the array passed to validateOutput does not contain a ChadoBuddyRecord");
     }
   }
 

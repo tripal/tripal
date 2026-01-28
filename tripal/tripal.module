@@ -5,21 +5,14 @@
  * Contains tripal.module.
  */
 
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\user\Entity\User;
 use Drupal\Core\Entity\EntityBase;
-use Symfony\Component\HttpFoundation\JsonResponse;
-// use Drupal\shortcut\Entity\ShortcutSet;
-use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\LegacyHook;
-use Drupal\Core\Config\FileStorage;
-use Drupal\Core\Url;
-use Drupal\Component\Utility\Xss;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\tripal\Services\TripalJob;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Drupal\views\ViewEntityInterface;
+use Drupal\user\Entity\User;
 use Drupal\views\ViewExecutable;
-use Drupal\views\ViewsConfigUpdater;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
 
 require_once 'src/api/tripal.api.php';
 require_once 'src/api/tripal.entities.api.php';
@@ -34,288 +27,18 @@ require_once 'src/api/tripal.importer.api.php';
 require_once 'src/api/tripal.viewsdata.inc';
 
 /**
- * Implements hook_help().
- */
-function tripal_help($route_name, RouteMatchInterface $route_match) {
-  switch ($route_name) {
-    // Main module help for the tripal module.
-    case 'help.page.tripal':
-      $output = '';
-      $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('Tripal is a toolkit to facilitate construction of online genomic, genetic (and other biological) websites.') . '</p>';
-      return $output;
-
-    default:
-  }
-}
-
-/**
- * Implements hook_theme().
- */
-function tripal_theme() {
-  $theme = [];
-
-  $theme['tripal_entity_type'] = [
-    'render element' => 'elements',
-    'file' => 'templates/tripal_entity_type.page.php',
-    'template' => 'tripal_entity_type',
-  ];
-
-  $theme['tripal_entity'] = array(
-    'render element' => 'elements',
-    'file' => 'templates/tripal_entity.page.php',
-    'template' => 'tripal_entity',
-  );
-
-  $theme['tripal_entity_edit_form'] = array(
-    'render element' => 'form',
-    'template' => 'tripal-entity-edit-form',
-  );
-
-  $theme['tripal_entity_content_add_list'] = [
-    'render element' => 'types',
-    'variables' => ['types' => NULL],
-    'file' => 'templates/tripal_entity.page.php',
-  ];
-
-  return $theme;
-}
-
-/**
- * Implements hook_toolbar().
- */
-function tripal_toolbar () {
-  $items = [];
-
-  $items['tripal'] = [
-    '#cache' => [
-      'contexts' => [
-        'user.permissions',
-      ],
-    ],
-  ];
-
-  if (!\Drupal::currentUser()->hasPermission('administer tripal')) {
-    return $items;
-  }
-
-  $items['tripal'] += [
-    '#type' => 'toolbar_item',
-    'tab' => [
-      '#type' => 'link',
-      '#title' => t('Tripal'),
-      '#url' => Url::fromRoute('tripal.admin'),
-      '#attributes' => [
-        'title' => t('Tripal administration'),
-        'class' => ['toolbar-icon', 'toolbar-icon-tripal'],
-        'aria-pressed' => 'false',
-      ],
-    ],
-    'tray' => [
-      '#heading' => t('Tripal Administration'),
-      'tripal-toolbar-tray' => [
-        '#prefix' => '<ul class="toolbar-menu">',
-        '#suffix' => '</ul>',
-        'content' => [
-          '#type' => 'link',
-          '#title' => t('Content'),
-          '#url' => Url::fromRoute('entity.tripal_entity.collection'),
-          '#attributes' => [
-            'title' => 'Find biological content pages.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-content'],
-          ],
-          '#prefix' => '<li class="menu-item">',
-          '#suffix' => '</li>',
-        ],
-        'jobs' => [
-          '#type' => 'link',
-          '#title' => t('Jobs'),
-          '#url' => Url::fromRoute('tripal.jobs'),
-          '#attributes' => [
-            'title' => 'Configure the form/page display for biological content.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-jobs'],
-          ],
-          '#prefix' => '<li class="menu-item">',
-          '#suffix' => '</li>',
-        ],
-        'importers' => [
-          '#type' => 'link',
-          '#title' => t('Data Loaders'),
-          '#url' => Url::fromRoute('tripal.data_loaders'),
-          '#attributes' => [
-            'title' => 'Importers for biological content.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-importers'],
-          ],
-          '#prefix' => '<li class="menu-item">',
-          '#suffix' => '</li>',
-        ],
-        'page_structure' => [
-          '#type' => 'link',
-          '#title' => t('Page Structure'),
-          '#url' => Url::fromRoute('entity.tripal_entity_type.collection'),
-          '#attributes' => [
-            'title' => 'Configure the form/page display for biological content.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-structure'],
-          ],
-          '#prefix' => '<li class="menu-item">',
-          '#suffix' => '</li>',
-        ],
-        /*
-        'vocabs' => [
-          '#type' => 'link',
-          '#title' => t('Vocabularies'),
-          '#url' => Url::fromRoute('entity.tripal_vocab.collection'),
-          '#attributes' => [
-            'title' => 'The ontological structure behind your Tripal site.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-vocab'],
-          ],
-          '#prefix' => '<li class="menu-item">',
-          '#suffix' => '</li>',
-        ],
-        */
-        'storage' => [
-          '#type' => 'link',
-          '#title' => t('Data Storage'),
-          '#url' => Url::fromRoute('tripal.storage'),
-          '#attributes' => [
-            'title' => 'Flexible data storage for your biological content.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-storage'],
-          ],
-          '#prefix' => '<li class="menu-item">',
-          '#suffix' => '</li>',
-        ],
-        'extensions' => [
-          '#type' => 'link',
-          '#title' => t('Extensions'),
-          '#url' => Url::fromRoute('tripal.extension'),
-          '#attributes' => [
-            'title' => 'Provides administration of Tripal Extension modules.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-extend'],
-          ],
-          '#prefix' => '<li class="menu-item">',
-          '#suffix' => '</li>',
-        ],
-        'more' => [
-          '#type' => 'link',
-          '#title' => t('more'),
-          '#url' => Url::fromRoute('tripal.admin'),
-          '#attributes' => [
-            'title' => 'For additional Tripal administration.',
-            'class' => ['toolbar-icon','toolbar-icon-tripal-more'],
-          ],
-          '#prefix' => '<li class="menu-item">',
-          '#suffix' => '</li>',
-        ],
-      ],
-    ],
-    '#attached' => [
-      'library' => 'tripal/tripal-toolbar',
-    ],
-  ];
-
-  // Determine which tray item should be active
-  // based on the current page.
-  Url::fromRoute('<current>', [], ['absolute'=>'true'])->toString();
-  $curr_route_name = \Drupal::routeMatch()->getRouteName();
-
-  // Tray items routeNames (#url key in the toolbar tray definition above).
-  $tray_items = [
-    'entity.tripal_entity.collection' => 'content',
-    'tripal.jobs' => 'jobs',
-    'tripal.data_loaders' => 'importers',
-    'entity.tripal_entity_type.collection' => 'page_structure',
-    //'entity.tripal_vocab.collection' => 'vocab',
-    'tripal.storage' => 'storage',
-    'tripal.extension' => 'extensions',
-    'tripal.admin' => 'more'
-  ];
-
-  foreach($tray_items as $route_name => $page_name) {
-    if ($route_name == $curr_route_name) {
-      array_push($items['tripal']['tray']['tripal-toolbar-tray'][ $page_name ]['#attributes']['class'], 'is-active');
-      break;
-    }
-  }
-
-  return $items;
-}
-
-/**
- * Implements hook_page_attachments().
- */
-function tripal_page_attachments(array &$attachments) {
-  $attachments['#attached']['drupalSettings']['tripal']['vars'] = [
-    'baseurl' => \Drupal::request()->getSchemeAndHttpHost(),
-    'tripal_path' => \Drupal::service('extension.list.module')->getPath('tripal'),
-  ];
-  $attachments['#attached']['library'][] = 'tripal/vars';
-}
-
-/**
-* Implements hook_theme_suggestions_HOOK().
-*/
-function tripal_theme_suggestions_tripal_entity(array $variables) {
-  $suggestions = array();
-  $entity = $variables['elements']['#tripal_entity'];
-  $sanitized_view_mode = strtr($variables['elements']['#view_mode'], '.', '_');
-
-  $suggestions[] = 'tripal_entity__' . $sanitized_view_mode;
-  $suggestions[] = 'tripal_entity__' . $entity->bundle();
-  $suggestions[] = 'tripal_entity__' . $entity->bundle() . '__' . $sanitized_view_mode;
-  $suggestions[] = 'tripal_entity__' . $entity->id();
-  $suggestions[] = 'tripal_entity__' . $entity->id() . '__' . $sanitized_view_mode;
-  return $suggestions;
-}
-
-/**
- * Replacement for tripal_init.
- * Implements hook_preprocess_html()
- * @param &$variables
- *   An associative array containing:
- *    page: A render element representing the page.
- */
-function tripal_preprocess_html(&$variables) {
-  global $base_url;
-  //@todo Need to look into service injection in the module file.
-  $config = \Drupal::config('tripal_admin.settings');
-  // add some variables for all javasript to use for building URLs
-  $clean_urls = $config->get('clean_url', 0);
-  $tripal_path = \Drupal::service('extension.list.module')->getPath('tripal');
-  //Add a JS library
-  $variables['#attached']['library'][] = 'tripal/tripal-js';
-  $variables['#attached']['drupalSettings']['tripal']['tripalJS']['baseurl'] = $base_url;
-  $variables['#attached']['drupalSettings']['tripal']['tripalJS']['isClean'] = $clean_urls;
-  $variables['#attached']['drupalSettings']['tripal']['tripalJS']['tripal_path'] = $tripal_path;
-  // make sure the date time settings are the way Tripal will insert them
-  // otherwise PostgreSQL version that may have a different datestyle setting
-  // will fail when inserting or updating a date column in a table.
-  Drupal::database()->query("SET DATESTYLE TO :style", array(':style' => 'MDY'));
-
-  //Ask users to do the registration form
-  // @upgrade when Issue #45 is closed.
-  //if (\Drupal::currentUser()->hasPermission('administer tripal')) {
-    //if (empty($config->get('tripal_site_registration') ?: FALSE) || !($config->get('disable_tripal_reporting') ?: FALSE)) {
-      //\Drupal::messenger()->addWarning(t('Please register your Tripal Site.
-      //Registering provides important information that will help secure funding
-      //for continued improvements to Tripal. <a href="admin/tripal/register">Click to register
-      //now or opt out</a>.'));
-    //}
-  //}
-}
-
-/**
  * Checks if the current user has permissions to perform an action on a file.
  *
- * @param $op
+ * @param string $op
  *   The operation to perform.  These include 'view', 'download', 'renew' and
- *   'delete'
- * @param $uid
+ *   'delete'.
+ * @param int $uid
  *   The user ID of the user's account that owns the file.
- * @param $fid
+ * @param int|null $fid
  *   The file ID.
  */
-function tripal_access_user_files($op, $uid, $fid = NULL) {
-  // global $user is deprecated in D8 use the currentUser service.
+function tripal_access_user_files(string $op, int $uid, ?int $fid = NULL) {
+  // Global $user is deprecated in D8 use the currentUser service.
   // this only returns an AccountProxyInterface object and not a full
   // UserInterface object.  To get access to the full UserInterface object, load
   // the user using the uid of the currentUser
@@ -357,9 +80,13 @@ function tripal_access_user_files($op, $uid, $fid = NULL) {
 /**
  * An access function for data collections.
  *
- * @return boolean
+ * @param int $uid
+ *   User ID value.
+ *
+ * @return bool
+ *   TRUE if access allowed, FALSE if not.
  */
-function tripal_accesss_user_collections($uid) {
+function tripal_accesss_user_collections(int $uid) {
   $config = \Drupal::config('tripal_admin.settings');
   if (!tripal_access_user_data($uid)) {
     return FALSE;
@@ -378,93 +105,17 @@ function tripal_accesss_user_collections($uid) {
  * function can be used to check access for any type of user-specfic data
  * added by any Tripal module.
  *
- * @param  $uid
+ * @param int $uid
  *   The UID of the user's account to access.
- * @return boolean
+ *
+ * @return bool
+ *   TRUE if passed UID matches the current user, FALSE if not.
  */
-function tripal_access_user_data($uid) {
+function tripal_access_user_data(int $uid): bool {
   if ($uid == \Drupal::currentUser()->id()) {
     return TRUE;
   }
   return FALSE;
-}
-
-/**
- * Implements hook_menu_local_tasks_alter().
- * https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Menu%21menu.api.php/function/hook_menu_local_tasks_alter/8.8.x
- * Used to add action links to pages.
- */
-function tripal_menu_local_tasks_alter(&$data, $router_item, $root_path) {
-  // Add an "Add Tripal Content" action link to the Admin >> Content >>
-  // Biological Content page.
-  if ($root_path == 'admin/content/bio_data') {
-    $item = menu_get_item('bio_data/add');
-    if ($item['access']) {
-      $data['actions']['output'][] = array(
-        '#theme' => 'menu_local_task',
-        '#link' => $item,
-      );
-    }
-  }
-}
-
-/**
- * Implements hook_shortcut_default_set().
- * Modify the shortcut menu to include Biological content links.
- * @upgrade when Issue #21 decides what to do here.
- *
- * @param object $account
- *   The user account whose default shortcut set will be returned. If not provided, the
- *   function will return the currently logged-in user's default shortcut set.
- *
- * @return
- *   An object representing the default shortcut set.
- */
-function tripal_shortcut_default_set($account) {
-  //@todo This will set another dependency as this is a contrib module.
-  // $sets = ShortcutSet::getShortcuts();
-  // $found = FALSE;
-  // foreach ($sets as $set) {
-  //   if ($set->title == 'TripalDefault') {
-  //     $found = TRUE;
-  //   }
-  // }
-  // if (!$found) {
-  //   $t = get_t();
-  //   // Create an initial default shortcut set.
-  //   $shortcut_set = new stdClass();
-  //   $shortcut_set->title = $t('TripalDefault');
-  //   $shortcut_set->links = array(
-  //     array(
-  //       'link_path' => 'node/add',
-  //       'link_title' => $t('Add content'),
-  //       'weight' => -35,
-  //     ),
-  //     array(
-  //       'link_path' => 'bio_data/add',
-  //       'link_title' => 'Add Tripal Content',
-  //       'weight' => -30,
-  //     ),
-  //     array(
-  //       'link_path' => 'admin/content',
-  //       'link_title' => $t('Find content'),
-  //       'weight' => -25,
-  //     ),
-  //     array(
-  //       'link_path' => 'admin/content/tripal',
-  //       'link_title' => 'Find Tripal Content',
-  //       'weight' => -20,
-  //     ),
-  //   );
-  //   shortcut_set_save($shortcut_set);
-  // }
-
-  // $sets = shortcut_sets();
-  // foreach ($sets as $set) {
-  //   if ($set->title == 'TripalDefault') {
-  //     return $set->set_name;
-  //   }
-  // }
 }
 
 /**
@@ -473,12 +124,15 @@ function tripal_shortcut_default_set($account) {
  * This function is not meant to be used as an API function. It is only meant
  * for use in the menu to resolve the %tripal_bundle wildcard.
  *
- * @param $type
+ * @param string $bundle_type
  *   The machine-readable name of a tripal data type to load.
- * @return
+ * @param bool|null $reset
+ *   Probably a bug here, this is not used.
+ *
+ * @return array|bool
  *   A tripal data type array or FALSE if $type does not exist.
  */
-function TripalBundle_load($bundle_type, $reset = FALSE) {
+function TripalBundle_load(string $bundle_type, bool $reset = FALSE) {
   // Get the type of entity by the ID.
   $bundle = Drupal::database()->select('tripal_bundle', 'tdt')
     ->fields('tdt')
@@ -501,18 +155,19 @@ function TripalBundle_load($bundle_type, $reset = FALSE) {
  * This function is not meant to be used as an API function. It is only meant
  * for use in the menu to resolve the %tripal_entity wildcard.
  *
- * @param $id
+ * @param int $id
  *   Integer specifying the tripal_entity id.
- * @param $reset
+ * @param bool|null $reset
  *   A boolean indicating that the internal cache should be reset.
- * @return
+ *
+ * @return object|bool
  *   A fully-loaded $tripal_entity object or FALSE if it cannot be loaded.
  *
  * @see tripal_entity_load_multiple()
  */
-function TripalEntity_load($id, $reset = FALSE) {
+function TripalEntity_load(int $id, bool $reset = FALSE) {
   // $entity = entity_load('TripalEntity', array($id), array(), $reset);
-  $entity = tripal_load_entity('TripalEntity', array($id), $reset);
+  $entity = tripal_load_entity('TripalEntity', [$id], $reset);
   return reset($entity);
 }
 
@@ -522,14 +177,13 @@ function TripalEntity_load($id, $reset = FALSE) {
  * Typically this function call is not necessary as all of the API is
  * automaticaly included by the tripal module.  However this function can
  * be useful in the .install files during a site upgrade when the tripal
- * module is not enabld.
+ * module is not enabled.
  *
  * Example usage:
  * @code
  *   module_load_include('module', 'tripal', 'tripal');
  *   tripal_import_api();
  * @endcode
- *
  */
 function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.d3js.api');
@@ -547,71 +201,37 @@ function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.DEPRECATED.api');
 }
 
+/**
+ * Adds new fields to a bundle.
+ *
+ * @param string $bundle_name
+ *   The name of the bundle to process.
+ */
 function tripal_check_new_fields($bundle_name) {
-  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+  $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
+  $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
 
   $added = tripal_create_bundle_fields($bundle, $term);
   if (count($added) == 0) {
     \Drupal::messenger()->addStatus(t('No new fields were added'));
   }
   foreach ($added as $field_name) {
-    \Drupal::messenger()->addStatus(t('Added field: ' . $field_name));
+    \Drupal::messenger()->addStatus(t('Added field: @field_name', ['@field_name' => $field_name]));
   }
 
   $response = new RedirectResponse("admin/structure/tripal/manage/$bundle_name/fields");
   $response->send();
 }
 
-
-/**
- * Implements hook_rebuild().
- */
-function tripal_rebuild() {
-
-  tripal_load_configuration('tripal', 'tripalentitytype_collection');
-  tripal_load_configuration('tripal', 'tripal_content_terms');
-  tripal_load_configuration('tripal', 'tripalfield_collection');
-
-  //
-  // Make sure the CustomTables view is present. If not then add it.
-  //
-
-  // First get the config file.
-  $dir = \Drupal::service('extension.list.module')->getPath('tripal');
-  $fileStorage = new FileStorage($dir);
-  $config = $fileStorage->read('config/install/views.view.tripal_jobs');
-
-  // Next load the storage system for views entities and check if the view
-  // already exists. If it does then don't reload it.
-  $storage = \Drupal::entityTypeManager()->getStorage('view');
-  $view = $storage->load('tripal_jobs');
-  if (!$view) {
-    $view = $storage->create($config);
-    $view->save();
-  }
-
-  /* Installs the Manage Pub Search Queries View */
-  $config = $fileStorage->read('config/install/views.view.manage_pub_search_queries');
-
-  // Next load the storage system for views entities and check if the view
-  // already exists. If it does then don't reload it.
-  $storage = \Drupal::entityTypeManager()->getStorage('view');
-  $view = $storage->load('manage_pub_search_queries');
-  if (!$view) {
-    $view = $storage->create($config);
-    $view->save();
-  }
-}
-
 /**
  * Callback: Allows Tripal Jobs to create a set of TripalEntityType Collections.
  *
  * @param array $options
+ *   Currently only one option is supported.
  *   - collection_ids:
- *       An array where each found collection has a key entry and only the chosen
- *       ones have a value the same as the key. All collections not chosen to be
- *       installed will have a value of 0.
+ *     An array where each found collection has a key entry and only the chosen
+ *     ones have a value the same as the key. All collections not chosen to be
+ *     installed will have a value of 0.
  * @param Drupal\tripal\Services\TripalJob|null $job
  *   An optional Job object.
  */
@@ -619,8 +239,8 @@ function import_tripalentitytype_collection(array $options, ?TripalJob $job = NU
 
   // We need to ensure that we only submit the chosen collections.
   $collection_ids = $options['collection_ids'];
-  $chosen_collection_ids = array_filter($collection_ids, function($e) {
-      return ($e !== 0);
+  $chosen_collection_ids = array_filter($collection_ids, function ($e) {
+    return ($e !== 0);
   });
 
   $content_type_setup = \Drupal::service('tripal.tripalentitytype_collection');
@@ -631,134 +251,156 @@ function import_tripalentitytype_collection(array $options, ?TripalJob $job = NU
 }
 
 /**
+ * Implements hook_help().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_help($route_name, RouteMatchInterface $route_match) {
+  return \Drupal::service('tripal.hooks')->help($route_name, $route_match);
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalTheme in tripal/src/Hook/TripalTheme.php.
+ */
+#[LegacyHook]
+function tripal_theme() {
+  return \Drupal::service('tripal.theme_hooks')->theme();
+}
+
+/**
+ * Implements template_preprocess hook for tripal entity type.
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalTheme in tripal/src/Hook/TripalTheme.php.
+ */
+#[LegacyHook]
+function template_preprocess_tripal_entity_type(array &$variables): void {
+  \Drupal::service('tripal.theme_hooks')->templatePreprocessTripalEntityType($variables);
+}
+
+/**
+ * Implements template_preprocess hook for tripal entity.
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalTheme in tripal/src/Hook/TripalTheme.php.
+ */
+#[LegacyHook]
+function template_preprocess_tripal_entity(array &$variables): void {
+  \Drupal::service('tripal.theme_hooks')->templatePreprocessTripalEntity($variables);
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_theme_suggestions_tripal_entity(array $variables) {
+  return \Drupal::service('tripal.theme_hooks')->themeSuggestionsTripalEntity($variables);
+}
+
+/**
+ * Implements hook_toolbar().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_toolbar() {
+  return \Drupal::service('tripal.hooks')->toolbar();
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_page_attachments(array &$attachments) {
+  \Drupal::service('tripal.theme_hooks')->addPageAttachments($attachments);
+}
+
+/**
+ * Implements hook_preprocess_html().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_preprocess_html(&$variables) {
+  \Drupal::service('tripal.theme_hooks')->preprocessHtml($variables);
+}
+
+/**
+ * Implements hook_rebuild().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_rebuild() {
+  return \Drupal::service('tripal.hooks')->rebuild();
+}
+
+/**
  * Implements hook_form_alter for the field_config_edit_form.
  *
- * Adds the form elements to the field settings form for setting controlled
- * vocabulary.  The function only does this for fields that are not
- * Tripal fields but which are attached to a tripal content type.
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
  */
-function tripal_form_field_config_edit_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-
-  /** @var \Drupal\field\Entity\FieldConfig $field **/
-  $field = $form_state->getFormObject()->getEntity();
-  if ($field->getTargetEntityTypeId() == 'tripal_entity') {
-    $elements = TripalFieldItemBase::buildFieldTermForm($field, $form, $form_state);
-    $form['settings'] = $form['settings'] + $elements;
-  }
+#[LegacyHook]
+function tripal_form_field_config_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  \Drupal::service('tripal.hooks')->formFieldConfigEditFormAlter($form, $form_state, $form_id);
 }
 
 /**
  * Implements hook_preprocess_field for the title field.
  *
- * This is to permit HTML markup in the page title field, for
- * example on an organism page, to display genus and species
- * in italics.
- *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
  */
+#[LegacyHook]
 function tripal_preprocess_field(&$variables) {
-  if ($variables['element']['#field_name'] == 'title') {
-    // We can configure which tags are allowed at /admin/tripal/config
-    $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
-    $tripal_allowed_tags = explode(' ', $tag_string ?? '');
-
-    // Now for each item (usually only a single one)...
-    foreach ($variables['items'] as $delta => $item) {
-      // The title can be either a simple inline template or a link.
-      if ($item['content']['#type'] == 'inline_template') {
-        $value = $item['content']['#context']['value'];
-        // Convert strings into markup, this will cause HTML tags to be rendered.
-        if (is_string($value)) {
-          $sanitized_value = Xss::filter($value, $tripal_allowed_tags);
-          $variables['items'][$delta]['content']['#context']['value'] = Drupal\Core\Render\Markup::create($sanitized_value);
-        }
-      }
-      elseif ($item['content']['#type'] == 'link') {
-        $value = $item['content']['#title']['#context']['value'];
-        // Convert strings into markup, this will cause HTML tags to be rendered.
-        if (is_string($value)) {
-          $sanitized_value = Xss::filter($value, $tripal_allowed_tags);
-          $variables['items'][$delta]['content']['#title']['#context']['value'] = Drupal\Core\Render\Markup::create($sanitized_value);
-        }
-      }
-    }
-  }
+  \Drupal::service('tripal.entity_hooks')->preprocessField($variables);
 }
 
 /**
  * Implements hook gin_content_form_routes provided by the GIN admin theme.
  *
- * @param array $route_names
- *   A simple list of route names that should be considered to be content forms.
- * @return array
- *   The $route_names parameter with our content form routes added.
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
  */
+#[LegacyHook]
 function tripal_gin_content_form_routes() {
-  $route_names = [];
-
-  $route_names[] = 'entity.tripal_entity.add_form';
-  $route_names[] = 'entity.tripal_entity.edit_form';
-
-  return $route_names;
-}
-
-/**
- * Implements hook_views_pre_view().
- */
-function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
-  // Override permission of Tripal Content Type listing (admin/content/bio_data)
-  // in order to support OR when evaluating permissions since views UI does
-  // not support this. 
-  // WARNING: requires you to have NO Permissions on this view through the UI!
-  if ($view->id() == 'tripal_content_type_listing') {
-    // The user must have 1+ of the following permissions to access the
-    // Tripal Content Type listing (admin/content/bio_data).
-    $perm = [
-      'access tripal content overview',
-      'administer tripal content',
-    ];
-
-    // Check if current user has either permissions when attempting to view listing.
-    $user = \Drupal::currentUser();
-
-    $has_permission = FALSE;
-    foreach ($perm as $permission) {
-      if ($user->hasPermission($permission)) {
-        $has_permission = TRUE;
-        break;
-      }
-    }
-
-    // Deny access if user does not have necessary permission.
-    if (!$has_permission) {
-      throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException();
-    }
-  }
-}
-
-/**
- * Implements hook_ENTITY_TYPE_presave().
- */
-#[Hook('view_presave')]
-function tripal_view_presave(ViewEntityInterface $view): void {
-  // A new views 'class' setting was introduced in Drupal 11.2, but it has
-  // not been added to our yaml views configurations so that we maintain
-  // backward compatibility. We do the update here before Drupal does it
-  // in order to avoid a deprecation notice in unit tests.
-  /** @var \Drupal\views\ViewsConfigUpdater $config_updater */
-  $config_updater = \Drupal::classResolver(ViewsConfigUpdater::class);
-  if (method_exists($config_updater, 'processTableCssClassUpdate')) {
-    $config_updater->setDeprecationsEnabled(FALSE);
-    $config_updater->processTableCssClassUpdate($view);
-  }
+  return \Drupal::service('tripal.hooks')->ginContentFormRoutes();
 }
 
 /**
  * Legacy implementation for TripalEntityHooks::tripalEntityStorageLoad().
  *
- * @param array $entities
- *   Entities to be loaded.
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalEntityHooks in
+ * tripal/src/Hook/TripalEntityHooks.php.
  */
 #[LegacyHook]
 function tripal_tripal_entity_storage_load(&$entities) {
   \Drupal::service('tripal.entity_hooks')->tripalEntityStorageLoad($entities);
+}
+
+/**
+ * Implements hook_views_query_alter().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
+  return \Drupal::service('tripal.views_hooks')->viewsQueryAlter($view, $query);
 }

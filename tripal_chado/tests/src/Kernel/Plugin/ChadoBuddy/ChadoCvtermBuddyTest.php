@@ -24,7 +24,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     parent::setUp();
 
     // Open connection to a test Chado.
-    $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+    $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
   }
 
   /**
@@ -35,7 +35,8 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $type = \Drupal::service('tripal_chado.chado_buddy');
     $instance = $type->createInstance('chado_cvterm_buddy', []);
 
-    // TEST: if there is no record then it should return an empty array when we try to get it.
+    // TEST: if there is no record then it should return an empty
+    // array when we try to get it.
     $chado_buddy_records = $instance->getCv(['cv.name' => 'nowaydoesthisexist']);
     $this->assertIsArray($chado_buddy_records, 'We did not retrieve an array for a CV that does not exist');
     $this->assertEquals(0, count($chado_buddy_records), 'We did not retrieve an empty array for a CV that does not exist');
@@ -95,7 +96,8 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $chado_buddy_records = $instance->getCv(['cv.definition' => 'def003']);
     $this->assertEquals(0, count($chado_buddy_records), "A cv was incorrectly inserted when it already exists");
 
-    // TEST: we should be able to get the two records created above. Will also catch if upsert did an insert instead of update.
+    // TEST: we should be able to get the two records created above.
+    // Will also catch if upsert did an insert instead of update.
     foreach (['newCv002', 'newCv003'] as $cv_name) {
       $test_records = [];
       $test_records['get'] = $instance->getCv(['cv.name' => $cv_name]);
@@ -125,12 +127,14 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $type = \Drupal::service('tripal_chado.chado_buddy');
     $instance = $type->createInstance('chado_cvterm_buddy', []);
 
-    // TEST: if there is no record then it should return an empty array when we try to get it.
+    // TEST: if there is no record then it should return an empty
+    // array when we try to get it.
     $chado_buddy_records = $instance->getCvterm(['cvterm.name' => 'nowaydoesthisexist']);
     $this->assertIsArray($chado_buddy_records, 'We did not retrieve an array for a Cvterm that does not exist');
     $this->assertEquals(0, count($chado_buddy_records), 'We did not retrieve an empty array for a Cvterm that does not exist');
 
-    // TEST: We should be able to insert a Cvterm record if it doesn't exist. We must include enough info to create a dbxref also.
+    // TEST: We should be able to insert a Cvterm record if it doesn't
+    // exist. We must include enough info to create a dbxref also.
     $test_records = [];
     $test_records['set'] = $instance->insertCvterm([
       'cvterm.name' => 'newCvterm001',
@@ -189,7 +193,8 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
 
     // TEST: Upsert should update a Cvterm record that does exist.
     // Conditions should not include definition or is_relationshiptype.
-    // Note that is_obsolete is part of a unique constraint and is an integer, as is is_relationshiptype.
+    // Note that is_obsolete is part of a unique constraint and is an
+    // integer, as is is_relationshiptype.
     $test_records = [];
     $test_records['set'] = $instance->upsertCvterm([
       'cvterm.name' => 'newCvterm003',
@@ -214,7 +219,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $exception_caught = FALSE;
     $exception_message = '';
     try {
-      $chado_buddy_record = $instance->insertCvterm([
+      $instance->insertCvterm([
         'cvterm.name' => 'newCvterm001',
         'cvterm.definition' => 'def001',
         'cv.name' => 'local',
@@ -237,7 +242,8 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     ]);
     $this->assertEquals(0, count($chado_buddy_records), "A cv was incorrectly inserted when it already exists");
 
-    // TEST: we should be able to get the two records created above. Will also catch if upsert did an insert instead of update.
+    // TEST: we should be able to get the two records created above.
+    // Will also catch if upsert did an insert instead of update.
     foreach (['newCvterm002', 'newCvterm003'] as $cvterm_name) {
       $test_records = [];
       $test_records['get'] = $instance->getCvterm(['cvterm.name' => $cvterm_name]);
@@ -245,29 +251,43 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     }
 
     // TEST: query should be case sensitive.
-    $chado_buddy_records = $instance->getCvterm(['db.name' => 'LOCAL', 'cv.name' => 'Local', 'cvterm.name' => 'NEWCvTerm003'], []);
+    $chado_buddy_records = $instance->getCvterm(
+      [
+        'db.name' => 'LOCAL',
+        'cv.name' => 'Local',
+        'cvterm.name' => 'NEWCvTerm003',
+      ],
+      []
+    );
     $this->assertEquals(0, count($chado_buddy_records), "We received case insensitive results for getCvterm when we should not have");
 
     // TEST: case insensitive override should work.
-    $chado_buddy_records = $instance->getCvterm(['db.name' => 'LOCAL', 'cv.name' => 'Local', 'cvterm.name' => 'NEWCvTerm003'],
-                                                ['case_insensitive' => ['db.name', 'cv.name', 'cvterm.name']]);
+    $chado_buddy_records = $instance->getCvterm(
+      [
+        'db.name' => 'LOCAL',
+        'cv.name' => 'Local',
+        'cvterm.name' => 'NEWCvTerm003',
+      ],
+      ['case_insensitive' => ['db.name', 'cv.name', 'cvterm.name']]
+    );
     $this->assertEquals(1, count($chado_buddy_records), "We did not receive case insensitive results for getCvterm when we should have");
 
-    // TEST: We should be able to retrieve an existing Cvterm record by its dbxref accession.
+    // TEST: We should be able to retrieve an existing Cvterm record
+    // by its dbxref accession.
     $test_records = [];
     $test_records['get'] = $instance->getCvterm(['dbxref.accession' => 'newAcc003']);
     $values = $this->multiAssert('getCvterm', $test_records, 'cvterm', 'cvterm.cvterm_id', 'cvterm from accession "newAcc003"', 20);
 
     // TEST: associate a cvterm with a base table.
     $base_table = 'phenotype';
-    $query = $this->connection->insert('1:' . $base_table)
+    $query = $this->chado_connection->insert('1:' . $base_table)
       ->fields(['uniquename' => 'phen005'])
       ->execute();
     $linking_table = $base_table . '_cvterm';
     $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records[0], []);
     $this->assertIsBool($status, "We did not retrieve a boolean when associating a cvterm with the base table \"$base_table\"");
     $this->assertTrue($status, "We did not retrieve TRUE when associating a cvterm with the base table \"$base_table\"");
-    $query = $this->connection->select('1:' . $linking_table, 'lt')
+    $query = $this->chado_connection->select('1:' . $linking_table, 'lt')
       ->fields('lt', ['cvterm_id'])
       ->execute();
     $results = $query->fetchAll();
@@ -278,11 +298,17 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
       "We did not get the cvterm_id from \"$linking_table\" that should have been set by associateCvterm");
 
-    // TEST: associate a cvterm with a base table where there are required columns
-    // in the linking table (i.e. pub_id), but we disable automatic lookup and
-    // we don't include pub_id. Exception expected.
+    // TEST: associate a cvterm with a base table but it already exists.
+    // Just repeat the same association, should not be an error.
+    $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records[0], []);
+    $this->assertIsBool($status, "We did not retrieve a boolean when re-associating a cvterm with the base table \"$base_table\"");
+    $this->assertTrue($status, "We did not retrieve TRUE when re-associating a cvterm with the base table \"$base_table\"");
+
+    // TEST: associate a cvterm with a base table where there are required
+    // columns in the linking table (i.e. pub_id), but we disable automatic
+    // lookup and we don't include pub_id. Exception expected.
     $base_table = 'organism';
-    $query = $this->connection->insert('1:' . $base_table)
+    $query = $this->chado_connection->insert('1:' . $base_table)
       ->fields(['genus' => 'org005', 'species' => 'org005'])
       ->execute();
     $linking_table = $base_table . '_cvterm';
@@ -301,10 +327,11 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $this->assertTrue($exception_caught, 'We should get an exception when inserting associating a Cvterm without pub_id.');
     $this->assertStringContainsString('Not null violation', $exception_message, "We did not get the exception message we expected when associating a Cvterm without pub_id.");
 
-    // TEST: associate a cvterm with a base table where there are required columns
-    // in the linking table (i.e. pub_id). Tests the default auto-lookup functionality.
+    // TEST: associate a cvterm with a base table where there are required
+    // columns in the linking table (i.e. pub_id).
+    // Tests the default auto-lookup functionality.
     $base_table = 'stock';
-    $query = $this->connection->insert('1:' . $base_table)
+    $query = $this->chado_connection->insert('1:' . $base_table)
       ->fields(['uniquename' => 'stock006', 'type_id' => 1])
       ->execute();
     $linking_table = $base_table . '_cvterm';
@@ -312,7 +339,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records[0], $options);
     $this->assertIsBool($status, "We did not retrieve a boolean when associating a cvterm with the base table \"$base_table\"");
     $this->assertTrue($status, "We did not retrieve TRUE when associating a cvterm with the base table \"$base_table\"");
-    $query = $this->connection->select('1:' . $linking_table, 'lt')
+    $query = $this->chado_connection->select('1:' . $linking_table, 'lt')
       ->fields('lt', ['cvterm_id', 'pub_id'])
       ->execute();
     $results = $query->fetchAll();
@@ -324,7 +351,8 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $this->assertEquals($expected_pub_id, $retrieved_pub_id,
       "We did not get the pub_id from \"$linking_table\" that should have been set by associateCvterm");
 
-    // TEST: We should be able to create a synonym, knowing only the name of the cv vocabulary and of the cv term.
+    // TEST: We should be able to create a synonym, knowing only the
+    // name of the cv vocabulary and of the cv term.
     $test_records = [];
     $test_records['set'] = $instance->insertCvtermSynonym([
       'cv.name' => 'local',
@@ -345,9 +373,21 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
 
     // TEST: We should be able to update this synonym and change its name.
     $test_records = [];
-    $test_records['set'] = $instance->updateCvtermSynonym(['cvtermsynonym.synonym' => 'syn006', 'cvtermsynonym.type_id' => 6],
-                                                          ['cvtermsynonym.synonym' => 'syn005'], []);
-    $test_records['get'] = $instance->getCvtermSynonym(['cvtermsynonym.synonym' => 'syn006', 'cvtermsynonym.type_id' => 6], []);
+    $test_records['set'] = $instance->updateCvtermSynonym(
+      [
+        'cvtermsynonym.synonym' => 'syn006',
+        'cvtermsynonym.type_id' => 6,
+      ],
+      ['cvtermsynonym.synonym' => 'syn005'],
+      []
+    );
+    $test_records['get'] = $instance->getCvtermSynonym(
+      [
+        'cvtermsynonym.synonym' => 'syn006',
+        'cvtermsynonym.type_id' => 6,
+      ],
+      []
+    );
     $values = $this->multiAssert('updateCvtermSynonym', $test_records, 'cvterm', 'cvtermsynonym.cvtermsynonym_id', 'synonym "syn006"', 24);
     $retrieved_cvterm_id = $values['get']['cvterm.cvterm_id'];
     $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
@@ -359,8 +399,22 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
 
     // TEST: We should be able to upsert this synonym.
     $test_records = [];
-    $test_records['set'] = $instance->upsertCvtermSynonym(['cv.name' => 'local', 'cvtermsynonym.synonym' => 'syn006', 'cvtermsynonym.type_id' => 7], []);
-    $test_records['get'] = $instance->getCvtermSynonym(['cv.name' => 'local', 'cvtermsynonym.synonym' => 'syn006', 'cvtermsynonym.type_id' => 7], []);
+    $test_records['set'] = $instance->upsertCvtermSynonym(
+      [
+        'cv.name' => 'local',
+        'cvtermsynonym.synonym' => 'syn006',
+        'cvtermsynonym.type_id' => 7,
+      ],
+      []
+    );
+    $test_records['get'] = $instance->getCvtermSynonym(
+      [
+        'cv.name' => 'local',
+        'cvtermsynonym.synonym' => 'syn006',
+        'cvtermsynonym.type_id' => 7,
+      ],
+      []
+    );
     $values = $this->multiAssert('upsertCvtermSynonym', $test_records, 'cvterm', 'cvtermsynonym.cvtermsynonym_id', 'synonym "syn006"', 24);
     $retrieved_cvterm_id = $values['get']['cvterm.cvterm_id'];
     $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,

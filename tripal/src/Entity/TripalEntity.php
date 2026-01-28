@@ -65,6 +65,7 @@ use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
     'unpublish-form' => '/bio_data/{tripal_entity}/unpublish',
     'collection' => '/admin/content/bio_data',
   ],
+  permission_granularity: 'bundle',
   bundle_entity_type: 'tripal_entity_type',
   field_ui_base_route: 'entity.tripal_entity_type.edit_form',
 )]

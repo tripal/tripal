@@ -2,8 +2,12 @@
 
 namespace Drupal\tripal\TripalDBX;
 
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Database\Schema;
+use Drupal\tripal\Services\TripalLogger;
+use Drupal\Core\Database\Database;
+use Drupal\Core\Database\Driver\pgsql\Schema as PgSchema;
 use Drupal\pgsql\Driver\Database\pgsql\Connection as PgConnection;
-use Drupal\tripal\TripalDBX\TripalDbxSchema;
 use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
 
 /**
@@ -58,12 +62,12 @@ use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
  *   quoteIdentifiers(), escape*() methods, query*() methods, and more from
  *   \Drupal\Core\Database\Connection.
  *
- * - TripalDbxConnection::schema() that provides a \Drupal\Core\Database\Schema object
- *   and offers, beside others, the follwing methods: addIndex(),
- *   addPrimaryKey(), addUniqueKey(), createTable(), dropField(), dropIndex(),
- *   dropPrimaryKey(), dropTable(), dropUniqueKey(), fieldExists(),
- *   findPrimaryKeyColumns(), findTables(), indexExists(), renameTable()
- *   and more from the documentation.
+ * - TripalDbxConnection::schema() that provides a
+ *   \Drupal\Core\Database\Schema object and offers, beside others, the
+ *   follwing methods: addIndex(), addPrimaryKey(), addUniqueKey(),
+ *   createTable(), dropField(), dropIndex(), dropPrimaryKey(), dropTable(),
+ *   dropUniqueKey(), fieldExists(), findPrimaryKeyColumns(), findTables(),
+ *   indexExists(), renameTable() and more from the documentation.
  *
  * A couple of methods have been added to this class to complete the above list.
  *
@@ -76,13 +80,13 @@ use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
  * one using addExtraSchema(). More work needs to be done to determine the core
  * cause for this.
  *
- * NOTE: the setLogger() and getLogger() methods are reserved for database query
- * logging and is operated by Drupal. It works with a \Drupal\Core\Database\Log
- * class. To log messages in extending classes, use setMessageLogger() and
- * getMessageLogger() instead, which operates with the \Drupal\tripal\Services\TripalLogger
- * class. By default, the message logger is set by the constructor either using
- * the user-provided logger or by instanciating one using the log channel
- * 'tripal.logger'.
+ * NOTE: the setLogger() and getLogger() methods are reserved for database
+ * query logging and is operated by Drupal. It works with a
+ * \Drupal\Core\Database\Log class. To log messages in extending classes,
+ * use setMessageLogger() and getMessageLogger() instead, which operates
+ * with the \Drupal\tripal\Services\TripalLogger class. By default, the
+ * message logger is set by the constructor either using the user-provided
+ * logger or by instantiating one using the log channel 'tripal.logger'.
  *
  * @see https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21Driver%21pgsql%21Connection.php/class/Connection/9.0.x
  * @see https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21Connection.php/class/Connection/9.0.x
@@ -103,25 +107,27 @@ abstract class TripalDbxConnection extends PgConnection {
    * @var array
    */
   protected $self_classes = [
-    \Drupal\Core\Database\Connection::class => TRUE,
-    \Drupal\pgsql\Driver\Database\pgsql\Connection::class => TRUE,
-    \Drupal\tripal\TripalDBX\TripalDbxConnection::class => TRUE,
+    Connection::class => TRUE,
+    PgConnection::class => TRUE,
+    TripalDbxConnection::class => TRUE,
   ];
 
   /**
    * Supported Connection classes.
-   * These must inherit from \Drupal\Core\Database\Connection
+   *
+   * These must inherit from \Drupal\Core\Database\Connection.
    *
    * NOTE: These are in order of preference with the first entry available
-   *  being used to open new connections.
+   * being used to open new connections.
    * NOTE: the pgsql driver changed namespace in 9.4.x
-   *  Drupal\Core\Database\Driver\pgsql\Connection => Drupal\pgsql\Driver\Database\pgsql\Connection
-   *  so there is now only one supported class
+   * Drupal\Core\Database\Driver\pgsql\Connection
+   * => Drupal\pgsql\Driver\Database\pgsql\Connection
+   * so there is now only one supported class.
    *
    * @var array
    */
   protected static $supported_classes = [
-    'Drupal\pgsql\Driver\Database\pgsql\Connection'
+    'Drupal\pgsql\Driver\Database\pgsql\Connection',
   ];
 
   /**
@@ -200,21 +206,22 @@ abstract class TripalDbxConnection extends PgConnection {
    *   Returns the most precise version available. Default: FALSE.
    *
    * @return string
-   *   The version in a simple format like '1.0', '2.3x' or '4.5+' or '0' if the
-   *   version cannot be guessed but an instance of the Tripal DBX managed schema has
-   *   been detected or an empty string if the schema does not appear to be an
-   *   instance of the Tripal DBX managed schema. If $exact_version is FALSE , the
-   *   returned version must always starts by a number and can be tested against
-   *   numeric values (ie. ">= 1.2"). If $exact_version is TRUE, the format is
-   *   free and can start by a letter and hold several dots like 'v1.2.3 alpha'.
+   *   The version in a simple format like '1.0', '2.3x' or '4.5+' or '0' if
+   *   the version cannot be guessed but an instance of the Tripal DBX managed
+   *   schema has been detected or an empty string if the schema does not
+   *   appear to be an instance of the Tripal DBX managed schema.
+   *   If $exact_version is FALSE, the returned version must always start
+   *   with a number and can be tested against numeric values (i.e. ">= 1.2").
+   *   If $exact_version is TRUE, the format is free and can start with a
+   *   letter and hold several dots like 'v1.2.3 alpha'.
    */
   abstract public function findVersion(
     ?string $schema_name = NULL,
-    bool $exact_version = FALSE
+    bool $exact_version = FALSE,
   ) :string;
 
   /**
-   * Get the list of available "Tripal DBX Managed schema" instances in current database.
+   * List available "Tripal DBX Managed schema" instances in current database.
    *
    * This function returns both PostgreSQL schemas integrated with Tripal
    * and free schemas.
@@ -238,10 +245,10 @@ abstract class TripalDbxConnection extends PgConnection {
    *
    * Drupal Database class only opens new connection to a database when it is
    * "necessary", which means when a connection to the database is not opened
-   * already. However, in the context of a TripalDbxConnection, we need a different
-   * database context for each connection since the search_path may be changed.
-   * To not mess up with Drupal stuff, we need to open a new and distinct
-   * database connection for each TripalDbxConnection instance.
+   * already. However, in the context of a TripalDbxConnection, we need a
+   * different database context for each connection since the search_path may
+   * be changed. To not mess up with Drupal stuff, we need to open a new and
+   * distinct database connection for each TripalDbxConnection instance.
    *
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection to duplicate.
@@ -250,18 +257,18 @@ abstract class TripalDbxConnection extends PgConnection {
    *   A \PDO object.
    */
   protected static function openNewPdoConnection(
-    \Drupal\Core\Database\Connection $database
+    Connection $database,
   ) {
     // We call this method in a context of an existing connection already
     // used by Drupal so we can avoid a couple of tests and assume it works.
-    $database_info = \Drupal\Core\Database\Database::getAllConnectionInfo();
+    $database_info = Database::getAllConnectionInfo();
     $target = $database->target;
     $key = $database->key;
 
     // Open a new connection with the first supported connection available.
     $database_class = NULL;
-    array_walk(self::$supported_classes, function($class_name) use(&$database_class) {
-      if (class_exists($class_name) AND is_null($database_class)) {
+    array_walk(self::$supported_classes, function ($class_name) use (&$database_class) {
+      if (class_exists($class_name) and is_null($database_class)) {
         $database_class = $class_name;
       }
     });
@@ -298,7 +305,7 @@ abstract class TripalDbxConnection extends PgConnection {
   public function __construct(
     string $schema_name = '',
     $database = 'default',
-    ?\Drupal\tripal\Services\TripalLogger $logger = NULL
+    ?TripalLogger $logger = NULL,
   ) {
     // Check a key was provided instead of a connection object.
     if (is_string($database)) {
@@ -308,12 +315,11 @@ abstract class TripalDbxConnection extends PgConnection {
       }
       // Get the corresponding connection object.
       $this->dbKey = $database;
-      $database = \Drupal\Core\Database\Database::getConnection(
+      $database = Database::getConnection(
         'default',
         $database
       );
     }
-
 
     // Make sure we are using a supported connection.
     if (is_object($database)) {
@@ -355,17 +361,17 @@ abstract class TripalDbxConnection extends PgConnection {
 
     // Register Schema class to use Tripal DBX managed schema as default.
     // $this->useTripalDbxSchemaFor(PgConnection::class);
-    // $this->useTripalDbxSchemaFor(\Drupal\Core\Database\Connection::class);
-    $this->useTripalDbxSchemaFor(\Drupal\Core\Database\Schema::class);
-    $this->useTripalDbxSchemaFor(\Drupal\Core\Database\Driver\pgsql\Schema::class);
-    $this->useTripalDbxSchemaFor(\Drupal\tripal\TripalDBX\TripalDbxSchema::class);
+    // $this->useTripalDbxSchemaFor(\Drupal\Core\Database\Connection::class);.
+    $this->useTripalDbxSchemaFor(Schema::class);
+    $this->useTripalDbxSchemaFor(PgSchema::class);
+    $this->useTripalDbxSchemaFor(TripalDbxSchema::class);
   }
 
   /**
    * Returns current database name.
    *
    * @return string
-   *  Current schema name.
+   *   Current schema name.
    */
   public function getDatabaseName() :string {
     return $this->databaseName;
@@ -375,7 +381,7 @@ abstract class TripalDbxConnection extends PgConnection {
    * Returns current database key in Drupal settings if one.
    *
    * @return string
-   *  Database key in Drupal settings or an empty string if none.
+   *   Database key in Drupal settings or an empty string if none.
    */
   public function getDatabaseKey() :string {
     return $this->dbKey;
@@ -384,36 +390,36 @@ abstract class TripalDbxConnection extends PgConnection {
   /**
    * Returns current message logger.
    *
-   * Note: the setLogger() and getLogger() methods are reserved for database query
-   * logging and is operated by Drupal. It works with a \Drupal\Core\Database\Log
-   * class. To log messages in extending classes, use setMessageLogger() and
-   * getMessageLogger() instead, which operates with the \Drupal\tripal\Services\TripalLogger
-   * class. By default, the message logger is set by the constructor either using
-   * the user-provided logger or by instanciating one using the log channel
-   * 'tripal.logger'.
+   * Note: the setLogger() and getLogger() methods are reserved for database
+   * query logging and is operated by Drupal. It works with a
+   * \Drupal\Core\Database\Log class. To log messages in extending classes,
+   * use setMessageLogger() and getMessageLogger() instead, which operates
+   * with the \Drupal\tripal\Services\TripalLogger class. By default, the
+   * message logger is set by the constructor either using the user-provided
+   * logger or by instantiating one using the log channel 'tripal.logger'.
    *
    * @return \Drupal\tripal\Services\TripalLogger
-   *  A message logger.
+   *   A message logger.
    */
-  public function getMessageLogger() :\Drupal\tripal\Services\TripalLogger {
+  public function getMessageLogger() :TripalLogger {
     return $this->messageLogger;
   }
 
   /**
    * Sets current message logger.
    *
-   * Note: the setLogger() and getLogger() methods are reserved for database query
-   * logging and is operated by Drupal. It works with a \Drupal\Core\Database\Log
-   * class. To log messages in extending classes, use setMessageLogger() and
-   * getMessageLogger() instead, which operates with the \Drupal\tripal\Services\TripalLogger
-   * class. By default, the message logger is set by the constructor either using
-   * the user-provided logger or by instanciating one using the log channel
-   * 'tripal.logger'.
+   * Note: the setLogger() and getLogger() methods are reserved for database
+   * query logging and is operated by Drupal. It works with a
+   * \Drupal\Core\Database\Log class. To log messages in extending classes,
+   * use setMessageLogger() and getMessageLogger() instead, which operates
+   * with the \Drupal\tripal\Services\TripalLogger class. By default, the
+   * message logger is set by the constructor either using the user-provided
+   * logger or by instantiating one using the log channel 'tripal.logger'.
    *
    * @param \Drupal\tripal\Services\TripalLogger $logger
-   *  A message logger.
+   *   A message logger.
    */
-  public function setMessageLogger(\Drupal\tripal\Services\TripalLogger $logger) :void {
+  public function setMessageLogger(TripalLogger $logger) :void {
     $this->messageLogger = $logger;
   }
 
@@ -423,8 +429,9 @@ abstract class TripalDbxConnection extends PgConnection {
    * OVERRIDES \Drupal\Core\Database\Connection:schema()
    *
    * This method overrides the parent one in order to force the use of the
-   * \Drupal\tripal\TripalDBX\TripalDbxSchema class and manage Tripal DBX managed schema
-   * changes for this connection. The Schema object is updated on changes.
+   * \Drupal\tripal\TripalDBX\TripalDbxSchema class and manage Tripal DBX
+   * managed schema changes for this connection. The Schema object is
+   * updated on changes.
    *
    * @return \Drupal\Core\Database\Schema
    *   The database Schema object for this connection.
@@ -470,7 +477,7 @@ abstract class TripalDbxConnection extends PgConnection {
       );
     }
     // Resets some members.
-    $this->usedSchemas = ['' , '', ];
+    $this->usedSchemas = ['' , ''];
     $this->schema = NULL;
     $this->version = NULL;
 
@@ -484,16 +491,14 @@ abstract class TripalDbxConnection extends PgConnection {
         'SET search_path='
         . $start_quote
         . $schema_name
-        . $end_quote
-      ;
+        . $end_quote;
       $drupal_schema = $this->tripalDbxApi->getDrupalSchemaName();
       if (!empty($drupal_schema)) {
         $search_path .=
           ','
           . $start_quote
           . $drupal_schema
-          . $end_quote
-        ;
+          . $end_quote;
       }
       $this->connectionOptions['init_commands']['search_path'] = $search_path;
       $this->connection->exec($search_path);
@@ -511,7 +516,9 @@ abstract class TripalDbxConnection extends PgConnection {
   }
 
   /**
-   * Returns current Tripal DBX managed schema name quoted for PostgreSQL queries.
+   * Returns quoted current Tripal DBX managed schema name.
+   *
+   * Returned name is quoted for PostgreSQL queries.
    *
    * This getter should rarely be used (and in very specific cases).
    * If the schema name does not contain any special characters, it might not
@@ -530,8 +537,8 @@ abstract class TripalDbxConnection extends PgConnection {
    * @endcode
    *
    * @return string
-   *   Current Tripal DBX managed schema name  quoted by PostgreSQL if necessary or an
-   *   empty string if not set.
+   *   Current Tripal DBX managed schema name  quoted by PostgreSQL if necessary
+   *   or an empty string if not set.
    */
   public function getQuotedSchemaName() :string {
     $quoted_schema_name = '';
@@ -554,18 +561,18 @@ abstract class TripalDbxConnection extends PgConnection {
    *   A user-provided schema name.
    * @param string $error_message
    *   An error message to throw if none of $schema_name and
-   *   $this->usedSchemas[1] are set. Default: 'Invalid schema name.'
+   *   $this->usedSchemas[1] are set. Default: 'Invalid schema name.'.
    *
    * @return string
    *   $schema_name if set and valid, or the current schema name.
    *
    * @throws \Drupal\tripal\TripalDBX\Exceptions\ConnectionException
-   *  If the given schema name is invalid (ignoring schema name reservations)
-   *  or none of $schema_name and $this->usedSchemas[1] are set.
+   *   If the given schema name is invalid (ignoring schema name reservations)
+   *   or none of $schema_name and $this->usedSchemas[1] are set.
    */
   protected function getDefaultSchemaName(
     ?string $schema_name = NULL,
-    string $error_message = ''
+    string $error_message = '',
   ) :string {
     if (empty($error_message)) {
       $error_message =
@@ -707,10 +714,10 @@ abstract class TripalDbxConnection extends PgConnection {
   /**
    * Use the Tripal DBX managed schema as default for the given things.
    *
-   * Register an object or a class to make them use the Tripal DBX managed schema as
-   * default in any method of this instance of TripalDbxConnection.
+   * Register an object or a class to make them use the Tripal DBX managed
+   * schema as default in any method of this instance of TripalDbxConnection.
    *
-   * @param string|object
+   * @param string|object $object_or_class
    *   Object or class to register.
    */
   public function useTripalDbxSchemaFor($object_or_class) {
@@ -725,9 +732,11 @@ abstract class TripalDbxConnection extends PgConnection {
   }
 
   /**
-   * Remove the given things from the lists using Tripal DBX managed schema as default.
+   * Remove the given things from the lists.
    *
-   * @param string|object
+   * Uses Tripal DBX managed schema as default.
+   *
+   * @param string|object $object_or_class
    *   Object or class to unregister.
    */
   public function useDrupalSchemaFor($object_or_class) {
@@ -739,7 +748,9 @@ abstract class TripalDbxConnection extends PgConnection {
       // Remove object from the list.
       $this->objectsUsingTripalDbx = array_filter(
         $this->objectsUsingTripalDbx,
-        function ($o) { return $o != $object_or_class; }
+        function ($o) {
+          return $o != $object_or_class;
+        }
       );
     }
   }
@@ -767,7 +778,7 @@ abstract class TripalDbxConnection extends PgConnection {
   }
 
   /**
-   * Tells if the caller assumes current schema is the Tripal DBX managed schema.
+   * Tells if caller assumes current schema is the Tripal DBX managed schema.
    *
    * @return bool
    *   TRUE if default schema is not Drupal's but the Tripal DBX managed one.
@@ -866,15 +877,15 @@ abstract class TripalDbxConnection extends PgConnection {
       $sql = preg_replace_callback(
         '#\{(\d+):(' . TripalDbx::TABLE_NAME_REGEXP . ')\}#',
         function ($matches) {
-          // If the schema key is 0 then it indicates to use the drupal prefixing.
-          // As such., we will just remove the schema prefix and keet the curly
-          // brackets for the parent call replacements.
+          // If the schema key is 0 then it indicates to use the drupal
+          // prefixing. As such, we will just remove the schema prefix
+          // and keet the curly brackets for the parent call replacements.
           if (0 == $matches[1]) {
             $prefixed = '{' . $matches[2] . '}';
           }
           // Next, check that the schema key we are given is associated with a
           // known schema...
-          elseif (array_key_exists($matches[1], $this->usedSchemas) AND !empty($this->usedSchemas[ $matches[1] ])) {
+          elseif (array_key_exists($matches[1], $this->usedSchemas) and !empty($this->usedSchemas[$matches[1]])) {
             // Quote schema.
             $prefixed =
               $this->identifierQuotes[0]
@@ -889,8 +900,8 @@ abstract class TripalDbxConnection extends PgConnection {
           else {
             // Note: Cannot include $sql here since it's not in scope.
             // Add available schema info for easier debugging since this can
-            // be thrown if the schema exists but just was not set for the primary
-            // schema (key 1) and for unset Extra Schema (key 2,3,4).
+            // be thrown if the schema exists but just was not set for the
+            // primary schema (key 1) and for unset Extra Schema (key 2,3,4).
             $schema_note = [];
             foreach ($this->usedSchemas as $key => $name) {
               if (!empty($name)) {
@@ -930,8 +941,7 @@ abstract class TripalDbxConnection extends PgConnection {
           . '.'
           . $this->identifierQuotes[0]
           . '\1'
-          . $this->identifierQuotes[1]
-        ;
+          . $this->identifierQuotes[1];
         $sql = preg_replace(
           '#\{(' . TripalDbx::TABLE_NAME_REGEXP . ')\}#',
           $default_replacement,
@@ -954,22 +964,21 @@ abstract class TripalDbxConnection extends PgConnection {
           function ($matches) {
             // For example, if given {teapot.chadotable}
             // then return "teapot"."chadotable".
-            return
-              $this->identifierQuotes[0]
+            return $this->identifierQuotes[0]
               . $matches[1]
               . $this->identifierQuotes[1]
               . '.'
               . $this->identifierQuotes[0]
               . $matches[2]
-              . $this->identifierQuotes[1]
-            ;
+              . $this->identifierQuotes[1];
           },
           $sql
         );
       }
     }
 
-    // Finally let Drupal deal with any remaining table prefixing that is needed.
+    // Finally let Drupal deal with any remaining table prefixing
+    // that is needed.
     return parent::prefixTables($sql);
   }
 
@@ -987,20 +996,23 @@ abstract class TripalDbxConnection extends PgConnection {
    * by returning the prefix used for a table in a Tripal DBX managed schema
    * if applicable.
    *
-   * This override adds the optional $use_tdbx_schema parameter which defaults to
-   * False to maintain backwards compatibility for non-cross-schema-aware queries.
-   * Additionally, there is support through this API with this function and
-   * prefixTables() for non-prefixed tables (i.e. {tablename}) to be used for
-   * both Drupal and Chado tables depending on the situation.
+   * This override adds the optional $use_tdbx_schema parameter which defaults
+   * to False to maintain backwards compatibility for non-cross-schema-aware
+   * queries. Additionally, there is support through this API with this
+   * function and prefixTables() for non-prefixed tables (i.e. {tablename})
+   * to be used for both Drupal and Chado tables depending on the situation.
    *
    * There are a couple of ways to use this. Call this function with:
    *   A) $table matching to the index you would use for your Tripal DBX
    *      managed schema (i.e. 0: drupal, 1:current, 2+:extra in order added).
-   *      This would return the expected prefix used by Tripal DBX (e.g. "chado.")
+   *      This would return the expected prefix used by Tripal DBX
+   *      (e.g. "chado.")
    *   B) $myinstance->tablePrefix('default', TRUE).
-   *      This would return the Tripal DBX prefix of the current schema (i.e. index 1).
-   *   C) a Drupal table name  only (i.e. $use_tdbx_schema = FALSE) not realizing
-   *      it's been overriden and get the Drupal table prefix. (Backwards Compatible)
+   *      This would return the Tripal DBX prefix of the current schema
+   *      (i.e. index 1).
+   *   C) a Drupal table name only (i.e. $use_tdbx_schema = FALSE) not realizing
+   *      it's been overriden and get the Drupal table prefix.
+   *      (Backwards Compatible)
    *   D) any table name and $use_tdbx_schema = TRUE and get the prefix for the
    *      current Tripal DBX Managed schema.
    *
@@ -1011,15 +1023,15 @@ abstract class TripalDbxConnection extends PgConnection {
    * @param string $table
    *   (optional) The table to find the prefix for.
    * @param bool $use_tdbx_schema
-   *   (optional) if TRUE, table will be prefixed with the Tripal DBX managed schema
-   *   name (if not empty).
+   *   (optional) if TRUE, table will be prefixed with the Tripal DBX
+   *   managed schema name (if not empty).
    *
    * @return string
    *   The prefix that would be used for a table in the specified schema.
    */
   public function tablePrefix(
     $table = 'default',
-    bool $use_tdbx_schema = FALSE
+    bool $use_tdbx_schema = FALSE,
   ) {
     $use_tdbx_schema = ($use_tdbx_schema || $this->shouldUseTripalDbxSchema());
     if (('default' == $table) && $use_tdbx_schema) {
@@ -1040,7 +1052,8 @@ abstract class TripalDbxConnection extends PgConnection {
    *
    * OVERRIDES \Drupal\Core\Database\Connection:getPrefix().
    *
-   * @return string $prefix
+   * @return string
+   *   The prefix of the table.
    */
   public function getPrefix(): string {
     return $this->usedSchemas[1] . '.';
@@ -1066,7 +1079,7 @@ abstract class TripalDbxConnection extends PgConnection {
    *
    * @param string $sql_queries
    *   A list of SQL queries to execute.
-   * @param $search_path_mode
+   * @param mixed $search_path_mode
    *   If set to an empty value or FALSE, no search_path is changed.
    *   If set to 'none', all "SET search_path" queries are removed from the SQL
    *   queries provided.
@@ -1080,13 +1093,13 @@ abstract class TripalDbxConnection extends PgConnection {
    *   Whether the application succeeded.
    *
    * @throws \Drupal\tripal\TripalDBX\Exceptions\ConnectionException
-   *  If the schema can't be used (unexisting) or if the search_path can't be
-   *  changed (while a specific schema should be used).
+   *   If the schema can't be used (unexisting) or if the search_path can't be
+   *   changed (while a specific schema should be used).
    */
   public function executeSqlQueries(
     string $sql_queries,
     $search_path_mode = FALSE,
-    ?string $schema_name = NULL
+    ?string $schema_name = NULL,
   ) :bool {
     // Get schema to use.
     if (empty($schema_name)) {
@@ -1127,12 +1140,11 @@ abstract class TripalDbxConnection extends PgConnection {
           $search[] =
             '/(SET\s*search_path\s*=(?:[^;]+,)?)\s*'
             . preg_quote($old_name)
-            . '\s*((?:,[^;]+)?;)(?!\s*--\s*KEEP)/im'
-          ;
+            . '\s*((?:,[^;]+)?;)(?!\s*--\s*KEEP)/im';
           $replace[] = '\1' . $replacement . '\2';
 
           // Find/replace any in-query table prefixing.
-          $search[] = '/([ \'])'. preg_quote($old_name) . '\.(\w+[ \'])/';
+          $search[] = '/([ \'])' . preg_quote($old_name) . '\.(\w+[ \'])/';
           $replace[] = '\1' . $replacement . '.\2';
 
         }
@@ -1165,15 +1177,17 @@ abstract class TripalDbxConnection extends PgConnection {
    * This method uses ::executeSqlQueries methods and have the same security
    * concerns. Please read ::executeSqlQueries description.
    *
-   * @param string $sql_queries
-   *   A list of SQL queries to execute.
-   * @param $search_path_mode
+   * @param string $sql_file_path
+   *   A path to a file containing SQL queries to execute.
+   * @param mixed $search_path_mode
    *   If set to an empty value or FALSE, no search_path is changed.
    *   If set to 'none', all "SET search_path" queries are removed from the SQL
    *   queries provided.
    *   If set to an array, keys are schema names to replace in every
    *   "SET search_path" by their corresponding values.
    *   Default: FALSE.
+   * @param ?string $schema_name
+   *   Name of the schema. Default NULL to use current schema.
    *
    * @return bool
    *   Whether the application succeeded.
@@ -1183,7 +1197,7 @@ abstract class TripalDbxConnection extends PgConnection {
   public function executeSqlFile(
     string $sql_file_path,
     $search_path_mode = FALSE,
-    ?string $schema_name = NULL
+    ?string $schema_name = NULL,
   ) :bool {
     // Retrieve the SQL file.
     $sql_queries = file_get_contents($sql_file_path);
@@ -1213,6 +1227,7 @@ abstract class TripalDbxConnection extends PgConnection {
    *
    * @param string $table
    *   The value within the curley brackets (i.e. '{2:feature}').
+   *
    * @return string
    *   The sanitized version of the table name. For Tripal DBX managed schema
    *   this will include the schema prefix (e.g. 'chado2.feature').
@@ -1230,7 +1245,7 @@ abstract class TripalDbxConnection extends PgConnection {
    * Retrieve a list of classes which are using Tripal DBX byb default.
    *
    * @return array
-   *  An array of class names including namespace.
+   *   An array of class names including namespace.
    */
   public function getListClassesUsingTripalDbx() {
     return $this->classesUsingTripalDbx;

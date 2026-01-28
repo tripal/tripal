@@ -2,7 +2,9 @@
 
 namespace Drupal\tripal\Hook;
 
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\Render\Markup;
 use Drupal\tripal\Entity\TripalEntity;
 
 /**
@@ -60,6 +62,45 @@ class TripalEntityHooks {
         }
 
         TripalEntity::saveValuesArray($entity, $values, $tripal_storages);
+      }
+    }
+  }
+
+  /**
+   * Implements hook_preprocess_field().
+   *
+   * This is to permit HTML markup in the page title field, for
+   * example on an organism page, to display genus and species
+   * in italics.
+   */
+  #[Hook('preprocess_field')]
+  public function preprocessField(&$variables) {
+    if ($variables['element']['#field_name'] == 'title') {
+      // We can configure which tags are allowed at /admin/tripal/config.
+      $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
+      $tripal_allowed_tags = explode(' ', $tag_string ?? '');
+
+      // Process each item (usually only a single one).
+      foreach ($variables['items'] as $delta => $item) {
+        // The title can be either a simple inline template or a link.
+        if ($item['content']['#type'] == 'inline_template') {
+          $value = $item['content']['#context']['value'];
+          // Convert strings into markup, this will cause HTML tags to
+          // be rendered.
+          if (is_string($value)) {
+            $sanitized_value = Xss::filter($value, $tripal_allowed_tags);
+            $variables['items'][$delta]['content']['#context']['value'] = Markup::create($sanitized_value);
+          }
+        }
+        elseif ($item['content']['#type'] == 'link') {
+          $value = $item['content']['#title']['#context']['value'];
+          // Convert strings into markup, this will cause HTML tags to
+          // be rendered.
+          if (is_string($value)) {
+            $sanitized_value = Xss::filter($value, $tripal_allowed_tags);
+            $variables['items'][$delta]['content']['#title']['#context']['value'] = Markup::create($sanitized_value);
+          }
+        }
       }
     }
   }

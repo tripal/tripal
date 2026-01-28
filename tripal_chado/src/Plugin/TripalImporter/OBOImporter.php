@@ -380,23 +380,11 @@ class OBOImporter extends ChadoImporterBase {
     $result = $query->execute();
     $vocab = $result->fetchObject();
 
-    // If the name is a URL then keep it as is.
     $uobo_name = $vocab->name;
-    if (preg_match('/^http/', $vocab->path)) {
-      $uobo_url = $vocab->path;
-    }
-    // If the name is a local file then fix the path.
-    else {
-      $uobo_file = trim($vocab->path);
-      $matches = [];
-      if (preg_match('/\{(.*?)\}/', $uobo_file, $matches)) {
-        $modpath = $this->file_system
-          ->realpath($this->module_handler
-          ->getModule($matches[1])
-          ->getPath());
-        $uobo_file = preg_replace('/\{.*?\}/', $modpath, $uobo_file);
-      }
-    }
+
+    // We support having both a URL and a backup local path
+    // by using a "||" separator.
+    $paths = $this->parsePath($vocab->path);
 
     $form['obo_existing']['uobo_name'] = [
       '#type' => 'textfield',
@@ -412,7 +400,7 @@ class OBOImporter extends ChadoImporterBase {
       '#title' => t('Remote URL'),
       '#description' => t('Please enter a URL for the online OBO file. The file '.
         'will be downloaded and parsed. (e.g. https://raw.githubusercontent.com/oborel/obo-relations/master/ro.obo)'),
-      '#default_value' => $uobo_url,
+      '#default_value' => $paths['url'],
       '#id' => 'edit-uobo-url'
     ];
 
@@ -426,7 +414,7 @@ class OBOImporter extends ChadoImporterBase {
         'that Drupal relative paths have no preceeding slash. ' .
         'Otherwise, please provide the full path on the filesystem. The path ' .
         'must be accessible to the web server on which this Drupal instance is running.'),
-      '#default_value' => $uobo_file,
+      '#default_value' => $paths['file'],
       '#id' => 'edit-uobo-file'
     ];
     $form['obo_existing']['update_obo'] = [
@@ -460,7 +448,7 @@ class OBOImporter extends ChadoImporterBase {
     $form['obo_new']['path_instructions'] = [
       '#value' => t('Provide the name and path for the OBO file. If the vocabulary OBO file ' .
         'is stored local to the server provide a file name. If the vocabulary is stored remotely, ' .
-        'provide a URL. Only provide a URL or a local file, not both.'),
+        'provide a URL.'),
     ];
 
     $form['obo_new']['obo_name'] = [
@@ -534,15 +522,26 @@ class OBOImporter extends ChadoImporterBase {
       }
     }
 
-    // If the user requested to alter the details then do that.
+    // Support storing both a URL and a backup local file if URL is down
+    // by using a "||" delimiter.
+    $path = $uobo_url;
+    if ($uobo_file) {
+      if ($uobo_url) {
+        $path = $uobo_url . '||' . $uobo_file;
+      }
+      else {
+        $path = $uobo_file;
+      }
+    }
 
+    // If the user requested to alter the details then do that.
     if ($form_state->getTriggeringElement()['#name'] == 'update_obo') {
 
       $form_state->setRebuild(True);
       $query = $public->update('tripal_cv_obo');
       $query->fields([
         'name' => $uobo_name,
-        'path' => $uobo_url ? $uobo_url : $uobo_file,
+        'path' => $path,
       ]);
       $query->condition('obo_id', $obo_id);
       $success = $query->execute();
@@ -570,7 +569,7 @@ class OBOImporter extends ChadoImporterBase {
       $obo_id = $public->insert('tripal_cv_obo')
         ->fields([
           'name' => $obo_name,
-          'path' => $obo_url ? $obo_url : $obo_file,
+          'path' => $path,
         ])
         ->execute();
 
@@ -585,6 +584,49 @@ class OBOImporter extends ChadoImporterBase {
         \Drupal::messenger()->addError(t("The vocabulary @vocab could not be added.", ['@vocab' => $obo_name]));
       }
     }
+  }
+
+  /**
+   * Parse multiple paths.
+   *
+   * Support having both a URL and a backup local file if URL is down
+   * by using a "||" delimiter.
+   *
+   * @param string $path
+   *   One or more paths delimited with "||".
+   *
+   * @return array
+   *   An associative array with keys:
+   *   - uobo_url: remote URL or empty string.
+   *   - uobo_file: local file path or empty string.
+   */
+  protected function parsePath(string $path): array {
+    $result = [
+      'url' => '',
+      'file' => '',
+    ];
+    $paths = explode('||', $path);
+    foreach ($paths as $path) {
+
+      // If the name is a URL then keep it as is.
+      if (preg_match('/^http/i', $path) || preg_match('/^ftp/i', $path)) {
+        $result['url'] = $path;
+      }
+      // If the name is a local file then fix the path.
+      else {
+        $path = trim($path);
+        $matches = [];
+        if (preg_match('/\{(.*?)\}/', $path, $matches)) {
+          $modpath = $this->file_system
+            ->realpath($this->module_handler
+            ->getModule($matches[1])
+            ->getPath());
+          $path = preg_replace('/\{.*?\}/', $modpath, $path);
+        }
+        $result['file'] = $path;
+      }
+    }
+    return $result;
   }
 
   /**
@@ -621,9 +663,6 @@ class OBOImporter extends ChadoImporterBase {
       if (!$uobo_url and !$uobo_file) {
         $form_state->setErrorByName('uobo_url', t('Please provide either a URL or a path for the vocabulary.'));
       }
-      if ($uobo_url and $uobo_file) {
-        $form_state->setErrorByName('uobo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
-      }
     }
 
     // Submitted with 'Import OBO File' button. This is used both for
@@ -644,9 +683,6 @@ class OBOImporter extends ChadoImporterBase {
         if (!$uobo_url and !$uobo_file) {
           $form_state->setErrorByName('uobo_url', t('Please provide either a URL or a path for the vocabulary.'));
         }
-        if ($uobo_url and $uobo_file) {
-          $form_state->setErrorByName('uobo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
-        }
         // If file specified, make sure it exists, either as a relative or absolute path.
         if (!$this->formValidateFile($uobo_file)) {
           $form_state->setErrorByName('uobo_file',
@@ -657,9 +693,6 @@ class OBOImporter extends ChadoImporterBase {
         // Validate the load new ontology section
         if (!$obo_url and !$obo_file) {
           $form_state->setErrorByName('obo_url', t('Please provide either a URL or a path for the vocabulary.'));
-        }
-        if ($obo_url and $obo_file) {
-          $form_state->setErrorByName('obo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
         }
         // If file specified, make sure it exists, either as a relative or absolute path.
         if (!$this->formValidateFile($obo_file)) {
@@ -1033,28 +1066,21 @@ class OBOImporter extends ChadoImporterBase {
    */
   private function loadOBO_v1_2_id($obo) {
 
-    // Convert the module name to the real path if present
-    $matches = [];
-    if (preg_match("/\{(.*?)\}/", $obo->path, $matches)) {
-      $module = $matches[1];
-      $path = $this->file_system
-        ->realpath($this->module_handler
-        ->getModule($module)
-        ->getPath());
-
-      $obo->path = preg_replace("/\{.*?\}/", $path, $obo->path);
-    }
+    // Support multiple path options
+    $paths = $this->parsePath($obo->path);
 
     // if the reference is for a remote URL then run the URL processing function
-    if (preg_match("/^https:\/\//", $obo->path) or
-        preg_match("/^http:\/\//", $obo->path) or
-        preg_match("/^ftp:\/\//", $obo->path)) {
-      $this->loadOBO_v1_2_url($obo->name, $obo->path, 0);
+    $success = FALSE;
+    if ($paths['url']) {
+      $success = $this->loadOBO_v1_2_url($obo->name, $paths['url'], 0);
     }
-    // if the reference is for a local file then run the file processing function
-    else {
-      // check to see if the file is located local to Drupal
-      $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $obo->path;
+    if ($paths['file'] && !$success) {
+      if ($paths['url']) {
+        $this->logger->notice("Retrying with local OBO file: '" . $paths['file'] . "'");
+      }
+      // if the reference is for a local file then run the file processing function
+      // check to see if the file is located local to Drupal.
+      $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $paths['file'];
       if (file_exists($dfile)) {
         $this->loadOBO_v1_2_file($obo->name, $dfile, 0);
       }
@@ -1062,10 +1088,10 @@ class OBOImporter extends ChadoImporterBase {
       // the full path provided
       else {
         if (file_exists($obo->path)) {
-          $this->loadOBO_v1_2_file($obo->name, $obo->path, 0);
+          $this->loadOBO_v1_2_file($obo->name, $paths['file'], 0);
         }
         else {
-          $this->logger->error( "Could not find OBO file: '$obo->path'");
+          $this->logger->error( "Could not find OBO file: '" . $paths['file'] . "'");
         }
       }
     }
@@ -1104,19 +1130,24 @@ class OBOImporter extends ChadoImporterBase {
    *   Set to TRUE if this is a new ontology that does not yet exist in the
    *   tripal_cv_obo table.  If TRUE the OBO will be added to the table.
    *
+   * @return bool
+   *   TRUE if successful, FALSE if error downloading the OBO file.
+   *
    * @ingroup tripal_obo_loader
    */
-  private function loadOBO_v1_2_url($obo_name, $url, $is_new = TRUE) {
+  private function loadOBO_v1_2_url($obo_name, $url, $is_new = TRUE): bool {
 
     // first download the OBO
     $temp = tempnam(sys_get_temp_dir(), 'obo_');
     $this->logger->notice('Downloading URL "@url", saving to "@temp"', ['@url' => $url, '@temp' => $temp]);
     $status = $this->fileretriever->downloadFile($url, $temp);
     if (!$status) {
-      throw new \Exception("Unable to download the remote OBO file at $url. " .
+      $this->logger->notice("Unable to download the remote OBO file at @url. " .
         "Could a firewall be blocking outgoing connections? If you are unable " .
         "to download the file you may manually download the OBO file and use " .
-        "the web interface to specify the location of the file on your server.");
+        "the web interface to specify the location of the file on your server.",
+        ['@url' => $url]);
+      return FALSE;
     }
 
     if ($is_new) {
@@ -1128,6 +1159,8 @@ class OBOImporter extends ChadoImporterBase {
 
     // now remove the temp file
     unlink($temp);
+
+    return TRUE;
   }
 
   /**
@@ -1735,9 +1768,11 @@ class OBOImporter extends ChadoImporterBase {
           'is_relationshiptype' => $is_relationshiptype,
           'is_obsolete' => $is_obsolete,
         ]);
-        $success = $query->execute();
-        if (!$success) {
-          throw new \Exception('Could not insert the cvterm, "' . $name . '"');
+        try {
+          $query->execute();
+        }
+        catch (\Exception $e) {
+          $this->logger->error("Could not insert the cvterm \"$name\": " . $e->getMessage());
         }
         $cvterm = $this->getChadoCVtermByName($cv->cv_id, $name);
       }
@@ -1785,7 +1820,6 @@ class OBOImporter extends ChadoImporterBase {
     $query->fields('CVT');
     $query->condition('CVT.name', $name);
     $query->condition('CVT.cv_id', $cv->cv_id);
-    $query->condition('CVT.dbxref_id', $dbxref->dbxref_id);
     $results = $query->execute();
     while ($check_cvterm = $results->fetchObject()) {
 
@@ -1812,7 +1846,7 @@ class OBOImporter extends ChadoImporterBase {
       // first and no longer has its own entry.
       $check_stanza = $this->getCachedTermStanza($check_accession);
       if (!$check_stanza) {
-        $new_name = $check_cvterm->getValue('name') . ' (' . $check_accession . ')';
+        $new_name = $check_cvterm->name . ' (' . $check_accession . ')';
         $query = $chado->update('1:cvterm');
         $query->fields([
           'name' => $new_name,
@@ -1820,6 +1854,8 @@ class OBOImporter extends ChadoImporterBase {
         ]);
         $query->condition('cvterm_id', $check_cvterm->cvterm_id);
         $query->execute();
+        $this->logger->notice('Renamed conflicting cv term ":old_name" to ":new_name"',
+          [':old_name' => $check_cvterm->name, ':new_name' => $new_name]);
         return TRUE;
       }
       // Case 2:  The conflicting term is in the OBO file (ie. has a stanza) and
