@@ -1076,7 +1076,7 @@ fields:
         content_type: 'germcollection'
         label: 'Database Name'
         type: 'chado_stockcollection_db_type_default'
-        description: 'Indicates that a current stock collection is from a specific DB.'
+        description: 'Indicates that a stock collection is from a specific database.'
         cardinality: 1
         required: false
         storage_settings:
