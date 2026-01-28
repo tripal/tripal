@@ -185,4 +185,94 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
     return $buddies;
   }
 
+  /**
+   * Retrieves a stock record.
+   *
+   * NOTE: Creation of an organism record is NOT supported. Please use the
+   *   ChadoOrganismBuddy to ensure the organism for your stock exists.
+   *
+   * @param array $values
+   *   An associative array that describes the values to be inserted into the
+   *   chado.stock table. Valid keys include:
+   *     - stock.dbxref_id
+   *     - stock.organism_id
+   *     - stock.name
+   *     - stock.uniquename
+   *     - stock.description
+   *     - stock.type_id
+   *     - stock.is_obsolete
+   *     - organism.genus
+   *     - organism.species
+   *     - organism.infraspecific_name
+   *     - organism.common_name
+   *     - an organism ChadoBuddyRecord can be used in place of or in addition
+   *       to other keys.
+   *   The following terms are valid where it pertains to stock.type_id only:
+   *     - cvterm.name
+   *     - cvterm.is_obsolete
+   *     - cv.name
+   *     - a cvterm ChadoBuddyRecord can be used in place of or in addition to
+   *       other keys.
+   *   The following terms are valid where it pertains to stock.dbxref_id only:
+   *     - dbxref.accession
+   *     - db.name
+   *     - a dbxref ChadoBuddyRecord can be used in place of or in addition to
+   *       other keys.
+   * @param array $options
+   *   (Optional) Associative array of options with these supported keys:
+   *   - create_cvterm - set to TRUE (default FALSE) if you specified the
+   *     necessary fields and want to create the dbxref and cvterm for
+   *     stock.type_id when creating this stock, if they do not already exist.
+   *     NOTE: This is NOT recommended. We suggest you import ontologies first.
+   *   - create_dbxref - set to TRUE (default FALSE) if you specified the
+   *     necessary fields and want to create the dbxref for stock.dbxref_id when
+   *     creating this stock, if it does not already exist.
+   *
+   * @return array
+   *   The inserted ChadoBuddyRecord will be returned on success and an
+   *   exception will be thrown if an error is encountered. If the record
+   *   already exists then an error will be thrown. If this is not the desired
+   *   behaviour, then use the upsert version of this method.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered.
+   */
+  public function insertStock(array $values, array $options = []) {
+    $valid_columns = $this->getTableColumns($this->valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
+    $this->validateInput($values, $valid_columns);
+
+    // @todo do we need to check if this stock already exists? Ie. does Chado
+    // ensure a unique constraint on stock?
+    /**
+     * // Skip the validate step since the values have already been checked.
+     * $options['skip_validate'] = TRUE;
+     * $existing_records = $this->getStock($values, $options);
+     * if (count($existing_records) > 0) {
+     * throw new ChadoBuddyException("ChadoBuddy insertStock error, a stock record already exists that matches the specified values:\n" . print_r($values, TRUE));
+     * }
+     */
+
+    // @todo Validate organism, stock type, and dbxref?
+    // Insert the stock record.
+    try {
+      $query = $this->chado_connection->insert('1:stock');
+      // Create a subset of the passed $values for just the stock table.
+      $stock_values = $this->subsetInput($values, ['stock']);
+      $query->fields($this->removeTablePrefix($stock_values));
+      $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy insertStock database error ' . $e->getMessage());
+    }
+
+    // Retrieve the newly inserted record.
+    $existing_records = $this->getStock($stock_values, $options);
+
+    // Validate that exactly one record was obtained.
+    $this->validateOutput($existing_records, $values);
+
+    return $existing_records[0];
+  }
+
 }
