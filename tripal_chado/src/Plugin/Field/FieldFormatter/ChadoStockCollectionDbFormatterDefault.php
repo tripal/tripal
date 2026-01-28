@@ -13,7 +13,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 #[TripalFieldFormatter(
   id: 'chado_stockcollection_db_formatter_default',
   label: new TranslatableMarkup('Chado Stock Collection DB Formatter'),
-  description: new TranslatableMarkup('Displays the specific database.'),
+  description: new TranslatableMarkup('Displays the specific database that a stock collection links to.'),
   field_types: [
     'chado_stockcollection_db_type_default',
   ],
