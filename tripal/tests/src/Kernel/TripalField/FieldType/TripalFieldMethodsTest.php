@@ -45,6 +45,9 @@ class TripalFieldMethodsTest extends TripalTestKernelBase {
    *   An array with the following keys:
    *   - bundle: an array defining the tripal entity type to create.
    *   - fields: a list of fields to be attached the above bundle.
+   *   - field_index: a mapping where the key is the field name and the value
+   *     is it's position in the fields list. This is populated when setting
+   *     up the system under test.
    */
   protected array $system_under_test;
 
@@ -95,6 +98,11 @@ class TripalFieldMethodsTest extends TripalTestKernelBase {
     $this->bundle_name = $this->system_under_test['bundle']['id'];
 
     $this->setupEntityFieldTestEnvironment($this->system_under_test);
+    // And populate the indices.
+    foreach ($this->system_under_test['fields'] as $field_index => $deets) {
+      $field_name = $deets['name'];
+      $this->system_under_test['field_index'][$field_name] = $field_index;
+    }
   }
 
   /**
@@ -141,8 +149,8 @@ class TripalFieldMethodsTest extends TripalTestKernelBase {
     $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
 
     // 2. Check a number of TripalField methods for their expected values.
-    $k = 0;
     foreach ($entity->getTripalFieldItems() as $field_name => $items) {
+      $field_index = $this->system_under_test['field_index'][$field_name];
       $field = $items->first();
       $field_defn = $field->getFieldDefinition();
       $expected = $current_scenario['create']['expected'][$field_name];
@@ -163,7 +171,7 @@ class TripalFieldMethodsTest extends TripalTestKernelBase {
       $this->assertIsArray($settings, "The getSettings() method for field '$field_name' did not return an array as expected.");
       foreach (['termIdSpace', 'termAccession'] as $setting_key) {
         $this->assertArrayHasKey($setting_key, $settings, "The getSettings() method for field '$field_name' did not return the expected '$setting_key' setting.");
-        $this->assertEquals($this->system_under_test['fields'][$k][$setting_key], $settings[$setting_key], "The getSetting('$setting_key') method for field '$field_name' did not return the expected value.");
+        $this->assertEquals($this->system_under_test['fields'][$field_index][$setting_key], $settings[$setting_key], "The getSetting('$setting_key') method for field '$field_name' did not return the expected value.");
       }
 
       // Test defaultStorageSettings().

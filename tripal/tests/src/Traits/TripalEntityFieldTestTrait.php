@@ -273,6 +273,8 @@ trait TripalEntityFieldTestTrait {
           'widget_id' => $field_details['widget'],
           'formatter_id' => $field_details['formatter'],
           'cardinality' => $field_details['cardinality'] ?? 1,
+          'termIdSpace' => $field_details['termIdSpace'] ?? NULL,
+          'termAccession' => $field_details['termAccession'] ?? NULL,
           'settings' => $field_details['settings'],
         ]
       );
