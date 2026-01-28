@@ -18,7 +18,7 @@ use Drupal\tripal\Entity\TripalEntityType;
   id: 'chado_stockcollection_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Stock Collection'),
-  description: new TranslatableMarkup('Indicate that the current chado stock is part of the indicated stock collection.'),
+  description: new TranslatableMarkup('Indicate that a chado stock is part of the indicated stock collection.'),
   default_widget: 'chado_stockcollection_widget_default',
   default_formatter: 'chado_stockcollection_formatter_default',
 )]
