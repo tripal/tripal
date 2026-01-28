@@ -30,7 +30,7 @@ class ChadoStockCollectionFormatterDefault extends ChadoFormatterBase {
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
-    $settings['token_string'] = '[name] ([uniquename])';
+    $settings['token_string'] = '[uniquename]: [name]';
     return $settings;
   }
 
