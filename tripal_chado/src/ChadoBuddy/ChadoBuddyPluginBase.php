@@ -74,6 +74,32 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
+   * Returns the currently active chado schema name.
+   *
+   * @return string
+   *   The name of the active chado schema.
+   */
+  public function getSchemaName(): string {
+    return $this->chado_connection->getSchemaName();
+  }
+
+  /**
+   * Sets the current chado schema name.
+   *
+   * @var string $schema_name
+   *   The name of the chado schema to be used.
+   *
+   * @return void
+   *   No return value.
+   *
+   * @throws Drupal\tripal\TripalDBX\Exceptions\ConnectionException
+   *   If schema name is not valid.
+   */
+  public function setSchemaName(string $schema_name): void {
+    $this->chado_connection->setSchemaName($schema_name);
+  }
+
+  /**
    * Retrieve a list of table columns for one or more chado tables.
    *
    * Schema information is cached for better performance.
