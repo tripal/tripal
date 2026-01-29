@@ -8,11 +8,14 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 
 /**
  * The base class for TripalStorage plugins.
  */
 abstract class TripalStorageBase extends PluginBase implements TripalStorageInterface, ContainerFactoryPluginInterface {
+
+  use DependencySerializationTrait;
 
   /**
    * The logger for reporting progress, warnings and errors to admin.
