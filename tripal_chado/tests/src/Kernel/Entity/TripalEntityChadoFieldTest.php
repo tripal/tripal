@@ -121,7 +121,26 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
       ->execute();
 
     // Setup the environment.
-    $this->setupEntityFieldTestEnvironment($this->system_under_test);
+    $this->setupEntityFieldTestEnvironment();
+
+    // Create the default TripalTerm used in some fields.
+    $terms = [
+      'schema:ItemPage',
+      'schema:additionalType',
+    ];
+    foreach ($terms as $term_string) {
+      [$id_space_name, $accession] = explode(':', $term_string);
+      $values = [
+        'id_space_name' => $id_space_name,
+        'term' => [
+          'accession' => $accession,
+        ],
+      ];
+      $this->createTripalTerm($values, 'tripal_default_id_space', 'tripal_default_vocabulary');
+    }
+
+    // Now actually create the bundle and attach the fields.
+    $this->setupEntityFieldSystemUnderTest($this->system_under_test);
   }
 
   /**
