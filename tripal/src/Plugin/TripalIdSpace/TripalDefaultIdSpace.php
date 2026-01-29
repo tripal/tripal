@@ -157,6 +157,8 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
       'accession' => $accession,
       'idSpace' => $this->getName(),
       'vocabulary' => $cvterm->vocabulary ? $cvterm->vocabulary : $this->getDefaultVocabulary(),
+      'id_space_plugin_id' => 'tripal_default_id_space',
+      'vocabulary_plugin_id' => 'tripal_default_vocabulary',
       'is_obsolete' => $cvterm->is_obsolete == 1 ? TRUE : FALSE,
       'is_relationship_type' => $cvterm->is_relationship_type == 1 ? TRUE : FALSE,
     ]);
