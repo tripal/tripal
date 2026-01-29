@@ -158,9 +158,19 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   The locally cached version of TripalStorage backends used by fields
    *   attached to this entity; keyed by their plugin id.
    *
-   * @see ::registerTripalField()
+   * @see ::registerAllTripalFields()
    */
   public array $tripal_storages = [];
+
+  /**
+   * Indicates which TripalStorage backends were retrieved from cache.
+   *
+   * @var array
+   *   A list of TripalStorage plugin ids (tsid) which were retrieved from
+   *   cache when setting up $tripal_storages via registerAllTripalFields().
+   *   If the cache was not populated, then this array will be empty.
+   */
+  protected array $tripal_storages_retrieved = [];
 
   /**
    * Keeps track of which TripalStorage Backend each field uses.
@@ -821,6 +831,57 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Bring the cached TripalStorage into this object.
+   *
+   * @return array
+   *   A list of the TripalStorage plugin ids (tsid) that were retrieved
+   *   from cache.
+   *   @see $tripal_storages_retrieved
+   */
+  public function checkEntityTripalStorageCache(): array {
+    // We need the entity ID to create the cache ID.
+    $entity_id = $this->id();
+    if (empty($entity_id)) {
+      // @debug print "\nThere is no entity ID so we cannot check the TripalStorage cache.\n";
+      return $this->tripal_storages_retrieved;
+    }
+
+    // Now we can check the cache and populate the in-class variable if
+    // the cache exists.
+    $cache_id = "entity-tripal_storages:$entity_id";
+    $cached_storage = \Drupal::cache()->get($cache_id);
+    if ($cached_storage) {
+      // @debug print "Retrieving cached TripalStorage backends for entity $entity_id.\n";
+      $this->tripal_storages = $cached_storage->data;
+      $this->tripal_storages_retrieved = array_keys($this->tripal_storages);
+    }
+
+    return $this->tripal_storages_retrieved;
+  }
+
+  /**
+   * Updates the cached TripalStorage backends for this entity.
+   *
+   * @return bool
+   *   TRUE if the cache was updated, FALSE otherwise.
+   */
+  public function updateEntityTripalStorageCache(): bool {
+
+    // We need the entity ID to create the cache ID.
+    $entity_id = $this->id();
+    if (empty($entity_id)) {
+      return FALSE;
+    }
+
+    // Now we can update the cache.
+    // @debug print "Setting TripalStorage backend cache for entity $entity_id.\n";
+    $cache_id = "entity-tripal_storages:$entity_id";
+    \Drupal::cache()->set($cache_id, $this->tripal_storages);
+
+    return TRUE;
+  }
+
+  /**
    * Registers all the Tripal fields for this entity.
    *
    * @param bool $refresh_cache
@@ -834,6 +895,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function registerAllTripalFields(bool $refresh_cache = FALSE): array {
 
+    // Check the cache for pre-registered TripalStorage backends.
+    $this->checkEntityTripalStorageCache();
+
+    // Loop through all fields and register any TripalFields.
     foreach (array_keys($this->getFieldDefinitions()) as $field_name) {
       // @debug print "Registering $field_name.\n";
       $this->registerTripalField($field_name);
@@ -1383,6 +1448,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * {@inheritdoc}
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+
+    // Update the cached TripalStorage backends for this entity.
+    // We do this here to ensure the cache is set before token setting
+    // reloads the entity so that it can be reused there as well.
+    $this->updateEntityTripalStorageCache();
 
     // Set the tokens for title/URL replacement now so that they include all
     // of the field values (i.e. set it before Tripal/Chado storage clears any).
