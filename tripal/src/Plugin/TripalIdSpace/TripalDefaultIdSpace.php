@@ -7,7 +7,6 @@ use Drupal\tripal\TripalVocabTerms\Attribute\TripalIdSpace;
 use Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
-
 /**
  * Default Implementation of TripalIdSpaceBase.
  */
@@ -29,7 +28,7 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    // Instantiate the TripalLogger
+    // Instantiate the TripalLogger.
     $this->messageLogger = \Drupal::service('tripal.logger');
 
   }
@@ -52,19 +51,20 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
   public function setURLPrefix($prefix) {
     // Don't set a value for an ID space that isn't valid.
     if (!$this->is_valid) {
-      return False;
+      return FALSE;
     }
 
     // Make sure the description is not too long.
     if (empty($prefix)) {
       $this->messageLogger->error('TripalDefaultIdSpace: You must provide a urlprefix when calling setURLPrefix().');
-      return False;
+      return FALSE;
     }
     if (strlen($prefix) > 255) {
-      $this->messageLogger->error('TripalDefaultIdSpace: The urlprefix for the vocabulary ID space must not be longer than @size characters. ' +
-          'The value provided was: @value',
-          ['@size' => 255, '@value' => $prefix]);
-      return False;
+      $this->messageLogger->error(
+        'TripalDefaultIdSpace: The urlprefix for the vocabulary ID space must not be longer than @size characters. The value provided was: @value',
+        ['@size' => 255, '@value' => $prefix]
+      );
+      return FALSE;
     }
 
     // Update the record in the Chado `db` table.
@@ -75,32 +75,33 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
     $num_updated = $query->execute();
     if ($num_updated != 1) {
       $this->messageLogger->error('TripalDefaultIdSpace: The urlprefix could not be updated for the vocabulary ID Space.');
-      return False;
+      return FALSE;
     }
-    return True;
+    return TRUE;
   }
 
   /**
    * {@inheritdoc}
    */
   public function setDefaultVocabulary($vocab) {
-    $retval = parent::setDefaultVocabulary($vocab);
+    parent::setDefaultVocabulary($vocab);
 
     // Don't set a value for an ID space that isn't valid.
     if (!$this->is_valid) {
-      return False;
+      return FALSE;
     }
 
     // Make sure the description is not too long.
     if (empty($vocab)) {
       $this->messageLogger->error('TripalDefaultIdSpace: You must provide a default vocabulary when calling setDefaultVocabulary().');
-      return False;
+      return FALSE;
     }
     if (strlen($vocab) > 255) {
-      $this->messageLogger->error('TripalDefaultIdSpace: The default vocabulary must not be longer than @size characters. ' +
-          'The value provided was: @value',
-          ['@size' => 255, '@value' => $vocab]);
-      return False;
+      $this->messageLogger->error(
+        'TripalDefaultIdSpace: The default vocabulary must not be longer than @size characters. The value provided was: @value',
+        ['@size' => 255, '@value' => $vocab]
+      );
+      return FALSE;
     }
 
     // Update the record in the Chado `db` table.
@@ -111,9 +112,9 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
     $num_updated = $update->execute();
     if ($num_updated != 1) {
       $this->messageLogger->error('TripalDefaultIdSpace: The default vocabulary could not be updated for the vocabulary ID Space.');
-      return False;
+      return FALSE;
     }
-    return True;
+    return TRUE;
   }
 
   /**
@@ -122,16 +123,15 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
   public function recordExists() {
     $db = $this->loadIdSpace();
     if ($db and $db['name'] == $this->getName()) {
-      return True;
+      return TRUE;
     }
-    return False;
+    return FALSE;
   }
 
   /**
    * {@inheritDoc}
    */
-  public function getTerm($accession, $options = [ ]) {
-
+  public function getTerm($accession, $options = []) {
 
     if (!$this->is_valid) {
       return NULL;
@@ -146,33 +146,33 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
     if (!$result) {
       return NULL;
     }
-    $cvterm =  $result->fetchObject();
+    $cvterm = $result->fetchObject();
     if (!$cvterm) {
       return NULL;
     }
 
-    $term =  new TripalTerm([
+    $term = new TripalTerm([
       'name' => $cvterm->name,
       'definition' => $cvterm->definition,
       'accession' => $accession,
       'idSpace' => $this->getName(),
       'vocabulary' => $cvterm->vocabulary ? $cvterm->vocabulary : $this->getDefaultVocabulary(),
-      'is_obsolete' => $cvterm->is_obsolete == 1 ? True : False,
-      'is_relationship_type' => $cvterm->is_relationship_type == 1 ? True : False,
+      'is_obsolete' => $cvterm->is_obsolete == 1 ? TRUE : FALSE,
+      'is_relationship_type' => $cvterm->is_relationship_type == 1 ? TRUE : FALSE,
     ]);
 
     // We need an IdSpace manager object to look up synonym an property types.
     /** @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager $idsmanager */
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
 
-    // Add in the synonyms
+    // Add in the synonyms.
     $synonyms = unserialize($cvterm->synonyms);
     foreach ($synonyms as $tuple) {
       $synonym_name = $tuple[0];
       $synonym_type = $tuple[1];
       $syn_type_term = NULL;
       if ($synonym_type) {
-        list($syn_idspace_name, $syn_accession) = explode(':', $synonym_type);
+        [$syn_idspace_name, $syn_accession] = explode(':', $synonym_type);
         /** @var \Drupal\tripal\Plugin\TripalIdSpace\TripalDefaultIdSpace $syn_idspace */
         $syn_type_idspace = $idsmanager->loadCollection($syn_idspace_name);
         $syn_type_term = $syn_type_idspace->getTerm($syn_accession);
@@ -183,8 +183,8 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
     // Add in the property.
     $properties = unserialize($cvterm->properties);
     foreach ($properties as $tuple) {
-      list($prop_term_id, $rank, $prop_value) = $tuple;
-      list($prop_idspace_name, $prop_accession) = explode(':', $prop_term_id);
+      [$prop_term_id, $rank, $prop_value] = $tuple;
+      [$prop_idspace_name, $prop_accession] = explode(':', $prop_term_id);
       /** @var \Drupal\tripal\Plugin\TripalIdSpace\TripalDefaultIdSpace $syn_idspace */
       $prop_type_idspace = $idsmanager->loadCollection($prop_idspace_name);
       $prop_type_term = $prop_type_idspace->getTerm($prop_accession);
@@ -193,15 +193,15 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
 
     $altIds = unserialize($cvterm->altIds);
     foreach ($altIds as $altId) {
-      list($altId_idspace_name, $altId_accession) = explode(':', $altId);
+      [$altId_idspace_name, $altId_accession] = explode(':', $altId);
       $term->addAltId($altId_idspace_name, $altId_accession);
     }
 
     $parents = unserialize($cvterm->parents);
     foreach ($parents as $tuple) {
-      list($parent_term_id, $rel_type_id) = $tuple;
-      list($parent_idspace_name, $parent_accession) = explode(':', $parent_term_id);
-      list($rel_idspace_name, $rel_accession) = explode(':', $rel_type_id);
+      [$parent_term_id, $rel_type_id] = $tuple;
+      [$parent_idspace_name, $parent_accession] = explode(':', $parent_term_id);
+      [$rel_idspace_name, $rel_accession] = explode(':', $rel_type_id);
       $parent_idspace = $idsmanager->loadCollection($parent_idspace_name);
       $parent_term = $parent_idspace->getTerm($parent_accession);
       $rel_idspace = $idsmanager->loadCollection($rel_idspace_name);
@@ -221,12 +221,15 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
    */
   public function isValid() {
 
-    // Make sure the name of this ID Space does not exceeed the allowed size in Chado.
+    // Make sure the name of this ID Space does not exceeed the allowed
+    // size in Chado.
     $name = $this->getName();
 
-    if (!empty($name) AND (strlen($name) > 255)) {
-      $this->messageLogger->error('TripalDefaultIdSpace: The IdSpace name must not be longer than @size characters. ' +
-        'The value provided was: @value', ['@size' => 255, '@value' => $name]);
+    if (!empty($name) and (strlen($name) > 255)) {
+      $this->messageLogger->error(
+        'TripalDefaultIdSpace: The IdSpace name must not be longer than @size characters. The value provided was: @value',
+        ['@size' => 255, '@value' => $name]
+      );
       $this->is_valid = FALSE;
       return FALSE;
     }
@@ -256,19 +259,20 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
 
     // Don't set a value for an ID space that isn't valid.
     if (!$this->is_valid) {
-      return False;
+      return FALSE;
     }
 
     // Make sure the description is not too long.
     if (empty($description)) {
       $this->messageLogger->error('TripalDefaultIdSpace: You must provide a description when calling setDescription().');
-      return False;
+      return FALSE;
     }
     if (strlen($description) > 255) {
-      $this->messageLogger->error('TripalDefaultIdSpace: The description for the vocabulary ID space must not be longer than @size characters. ' +
-          'The value provided was: @value',
-          ['@size' => 255, '@value' => $description]);
-        return False;
+      $this->messageLogger->error(
+        'TripalDefaultIdSpace: The description for the vocabulary ID space must not be longer than @size characters. The value provided was: @value',
+        ['@size' => 255, '@value' => $description]
+      );
+      return FALSE;
     }
 
     // Update the record in the Chado `db` table.
@@ -279,9 +283,9 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
     $num_updated = $query->execute();
     if ($num_updated != 1) {
       $this->messageLogger->error('TripalDefaultIdSpace: The description could not be updated for the vocabulary ID Space.');
-      return False;
+      return FALSE;
     }
-    return True;
+    return TRUE;
   }
 
   /**
@@ -303,45 +307,44 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
   /**
    * {@inheritDoc}
    */
-   public function getChildren($parent = NULL) {
+  public function getChildren($parent = NULL) {
 
-     /** @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager $idsmanager */
-     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    /** @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager $idsmanager */
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
 
-     // Don't get values for an ID space that isn't valid.
-     if (!$this->is_valid) {
-       return NULL;
-     }
+    // Don't get values for an ID space that isn't valid.
+    if (!$this->is_valid) {
+      return NULL;
+    }
 
-     $children = [];
-     $conn = \Drupal::service('database');
-     $query = $conn->select('tripal_terms', 'tt');
-     $query = $query->fields('tt', ['accession', 'parents']);
-     $query = $query->condition('tt.id_space', $this->getName(), '=');
-     $query->condition('tt.parents', '%"' . $parent->getTermId() . '"%', 'LIKE');
-     $results = $query->execute();
-     while ($cvterm = $results->fetchObject()) {
-       /** @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term */
-       $term = $this->getTerm($cvterm->accession);
-       $parents = unserialize($cvterm->parents);
-       foreach ($parents as $tuple) {
-         if ($tuple[0] == $parent->getTermId()) {
-           $rel_type_id = $tuple[1];
-           list($rel_idspace_name, $rel_accession) = explode(':', $rel_type_id);
-           /** @var \Drupal\tripal\Plugin\TripalIdSpace\TripalDefaultIdSpace $syn_idspace */
-           $rel_idspace = $idsmanager->loadCollection($rel_idspace_name);
-           $rel_term = $rel_idspace->getTerm($rel_accession);
-           $children[] = [$term, $rel_term];
-         }
-       }
-     }
+    $children = [];
+    $conn = \Drupal::service('database');
+    $query = $conn->select('tripal_terms', 'tt');
+    $query = $query->fields('tt', ['accession', 'parents']);
+    $query = $query->condition('tt.id_space', $this->getName(), '=');
+    $query->condition('tt.parents', '%"' . $parent->getTermId() . '"%', 'LIKE');
+    $results = $query->execute();
+    while ($cvterm = $results->fetchObject()) {
+      /** @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term */
+      $term = $this->getTerm($cvterm->accession);
+      $parents = unserialize($cvterm->parents);
+      foreach ($parents as $tuple) {
+        if ($tuple[0] == $parent->getTermId()) {
+          $rel_type_id = $tuple[1];
+          [$rel_idspace_name, $rel_accession] = explode(':', $rel_type_id);
+          /** @var \Drupal\tripal\Plugin\TripalIdSpace\TripalDefaultIdSpace $syn_idspace */
+          $rel_idspace = $idsmanager->loadCollection($rel_idspace_name);
+          $rel_term = $rel_idspace->getTerm($rel_accession);
+          $children[] = [$term, $rel_term];
+        }
+      }
+    }
 
-     return $children;
-   }
-
+    return $children;
+  }
 
   /**
-   * Loads an ID Space record
+   * Loads an ID Space record.
    *
    * @return array
    *   An associative array containing the columns of the `db1 table
@@ -389,12 +392,12 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
     return $db['default_vocab'];
   }
 
-
   /**
    * {@inheritDoc}
    */
-  public function getTerms($name, $options = [ ]) {
-    // The list of terms to return
+  public function getTerms($name, $options = []) {
+
+    // The list of terms to return.
     $terms = [];
 
     $conn = \Drupal::service('database');
@@ -414,8 +417,7 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
       $terms[$term->getName()][$term->getTermId()] = $term;
     }
 
-
-    // Now add in any synonyms
+    // Now add in any synonyms.
     $query2 = $conn->select('tripal_terms', 'tt');
     $query2 = $query2->fields('tt', ['accession', 'synonyms']);
     $query2 = $query2->condition('tt.id_space', $this->getName(), '=');
@@ -453,8 +455,9 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
    * This function uses the IdSpace, vocabulary,
    * and accession values to uniquely identify a term.
    *
-   * @param TripalTerm $term
+   * @param Drupal\tripal\TripalVocabTerms\TripalTerm $term
    *   The TripalTerm object to save.
+   *
    * @return object
    *   The cvterm record in object form.
    */
@@ -476,23 +479,27 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
   /**
    * {@inheritDoc}
    */
-  public function saveTerm($term, array $options = [ ]) {
-    // Don't save terms that aren't valid
+  public function saveTerm($term, array $options = []) {
+    // Don't save terms that aren't valid.
     if (!$term->isValid()) {
-      $this->messageLogger->error(t('TripalDefaultIdSpace::saveTerm(). The term, "@term" is not valid and cannot be saved. It must include a name, accession, IdSpace and vocabulary.',
-          ['@term' => $term->getIdSpace() . ':' . $term->getAccession()]));
-      return False;
+      $this->messageLogger->error(
+        'TripalDefaultIdSpace::saveTerm(). The term, "@term" is not valid and cannot be saved. It must include a name, accession, IdSpace and vocabulary.',
+        ['@term' => $term->getIdSpace() . ':' . $term->getAccession()]
+      );
+      return FALSE;
     }
 
     // Make sure the idSpace matches.
     if ($this->getName() != $term->getIdSpace()) {
-      $this->messageLogger->error(t('TripalDefaultIdSpace::saveTerm(). The term, "@term", does not have the same ID space as this one.',
-          ['@term' => $term->getIdSpace() . ':' . $term->getAccession()]));
-      return False;
+      $this->messageLogger->error(
+        'TripalDefaultIdSpace::saveTerm(). The term, "@term", does not have the same ID space as this one.',
+        ['@term' => $term->getIdSpace() . ':' . $term->getAccession()]
+      );
+      return FALSE;
     }
 
     // Get easy to use boolean variables.
-    $fail_if_exists = False;
+    $fail_if_exists = FALSE;
     if (array_key_exists('failIfExists', $options)) {
       $fail_if_exists = $options['failIfExists'];
     }
@@ -501,15 +508,15 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
     $cvterm = $this->findTermRecord($term);
     if (!$cvterm) {
       if (!$this->insertTerm($term, $options)) {
-        return False;
+        return FALSE;
       }
     }
     if ($cvterm and $fail_if_exists) {
-      return False;
+      return FALSE;
     }
     if ($cvterm and !$fail_if_exists) {
       if (!$this->updateTerm($term, $cvterm, $options)) {
-        return False;
+        return FALSE;
       }
     }
 
@@ -517,14 +524,14 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
     $cvterm = $this->findTermRecord($term);
     $term->setInternalId($cvterm->term_id);
 
-    return True;
+    return TRUE;
   }
 
   /**
    * Formats the synonyms for saving in the database.
    *
    * @param \Drupal\tripal\TripalVocabTerms\TripalTerm $term
-   *   The term object
+   *   The term object.
    */
   private function formatTermSynonyms($term) {
     // Convert the synonyms into a list for storing.
@@ -544,7 +551,7 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
    * Formats the parents for saving in the database.
    *
    * @param \Drupal\tripal\TripalVocabTerms\TripalTerm $term
-   *   The term object
+   *   The term object.
    */
   private function formatTermParents($term) {
     // In the parents array, the key is the term ID for the parent
@@ -564,10 +571,10 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
    * Formats the synonyms for saving in the database.
    *
    * @param \Drupal\tripal\TripalVocabTerms\TripalTerm $term
-   *   The term object
+   *   The term object.
    */
   private function formatTermProperties($term) {
-    // properties is an associative array where the first level key is the
+    // Properties is an associative array where the first level key is the
     // term_id for the property. The second level key is the rank and the
     // value is a tuple with the first element being the TripalTerm for the
     // property type and the second being the propertly value.
@@ -589,13 +596,12 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
    * prior to calling this function.
    *
    * @param \Drupal\tripal\TripalVocabTerms\TripalTerm $term
-   *   The term object to update
-   *
+   *   The term object to update.
    * @param array $options
    *   The options passed to the saveTerm() function.
    *
-   * @return boolean
-   *   True if the insert was successful, false otherwise.
+   * @return bool
+   *   TRUE if the insert was successful, FALSE otherwise.
    */
   protected function insertTerm(TripalTerm $term, array $options) {
 
@@ -621,15 +627,15 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
       $insert->execute();
       $cvterm = $this->findTermRecord($term);
       if (!$cvterm) {
-        return False;
+        return FALSE;
       }
     }
     catch (Exception $e) {
       $this->messageLogger->error('TripalDefaultIdSpace::insertTerm(). could not insert the term record: @message',
           ['@message' => $e->getMessage()]);
-      return False;
+      return FALSE;
     }
-    return True;
+    return TRUE;
   }
 
   /**
@@ -639,14 +645,14 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
    * prior to execution of this function.
    *
    * @param \Drupal\tripal\TripalVocabTerms\TripalTerm $term
-   *   The term object to update
+   *   The term object to update.
    * @param object $cvterm
    *   The record object for the term to update from the Chado cvterm table.
    * @param array $options
    *   The options passed to the saveTerm() function.
    *
-   * @return boolean
-   *   True if the update was successful, false otherwise.
+   * @return bool
+   *   TRUE if the update was successful, FALSE otherwise.
    */
   protected function updateTerm(TripalTerm $term, object &$cvterm, array $options) {
 
@@ -675,8 +681,9 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
     catch (Exception $e) {
       $this->messageLogger->error('ChadoIdSpace: could not update the cvterm record: @message',
           ['@message' => $e->getMessage()]);
-      return False;
+      return FALSE;
     }
-    return True;
+    return TRUE;
   }
+
 }
