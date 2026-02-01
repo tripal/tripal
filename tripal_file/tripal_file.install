@@ -233,7 +233,7 @@ function tripal_file_load_EDAM_obo() {
     $insert = $public->insert('tripal_cv_obo');
     $insert->fields([
       'name' => 'EDAM',
-      'path' => 'https://edamontology.org/EDAM.obo',
+      'path' => 'https://edamontology.org/EDAM.obo||{tripal_file}/files/EDAM.obo',
     ]);
     $obo_id = $insert->execute();
   }
