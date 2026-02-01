@@ -1,9 +1,13 @@
 <?php
 
+/**
+ * @file
+ * Provides an application programming interface (API) for tripal.
+ */
+
 use Drupal\Core\Extension\ExtensionDiscovery;
 use Drupal\Core\Config\InstallStorage;
 use Drupal\Core\Config\FileStorage;
-
 
 /**
  * Loads a Tripal managed Configuration Entity.
@@ -19,7 +23,6 @@ use Drupal\Core\Config\FileStorage;
  *   The ID of a Configuration Entity type.
  */
 function tripal_load_configuration($module, $config_type) {
-
   // Get the config entity storage class and definition class.
   $config_storage = \Drupal::entityTypeManager()->getStorage($config_type);
   $definition = \Drupal::entityTypeManager()->getDefinition($config_type);
@@ -32,22 +35,28 @@ function tripal_load_configuration($module, $config_type) {
   $listing = new ExtensionDiscovery(\Drupal::root());
   $modules = $listing->scan('module');
 
+  // Get the list of active modules.
+  $active_modules = array_keys(\Drupal::moduleHandler()->getModuleList());
+
   // Iterate through the list of modules and look for configurations.
   // If any are found but not installed, then install those.
   foreach ($modules as $module) {
-    $extension_path = $module->getPath();
-    $config_path = $extension_path . '/' . InstallStorage::CONFIG_INSTALL_DIRECTORY;
-    if (is_dir($config_path)) {
-      $file_storage = new FileStorage($config_path);
-      $configs = $file_storage->listAll($definition->getConfigPrefix());
-      foreach ($configs as $config_file) {
+    // Only install configuration if the module is enabled.
+    if (in_array($module->getName(), $active_modules)) {
+      $extension_path = $module->getPath();
+      $config_path = $extension_path . '/' . InstallStorage::CONFIG_INSTALL_DIRECTORY;
+      if (is_dir($config_path)) {
+        $file_storage = new FileStorage($config_path);
+        $configs = $file_storage->listAll($definition->getConfigPrefix());
+        foreach ($configs as $config_file) {
 
-        // If a configuration has been found that matches the requested type
-        // then add it only if it doesn't already exist.
-        if (!in_array($config_file, $config_list)) {
-          $config = $file_storage->read($config_file);
-          $mapping = $config_storage->create($config);
-          $mapping->save();
+          // If a configuration has been found that matches the requested type
+          // then add it only if it doesn't already exist.
+          if (!in_array($config_file, $config_list)) {
+            $config = $file_storage->read($config_file);
+            $mapping = $config_storage->create($config);
+            $mapping->save();
+          }
         }
       }
     }
