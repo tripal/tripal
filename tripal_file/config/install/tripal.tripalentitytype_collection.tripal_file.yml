@@ -3,12 +3,11 @@ label: 'Tripal File Content Types (Tripal File)'
 description: 'Files and associated licenses'
 dependencies:
     module:
-        - tripal_file
+        - 'tripal_file'
     enforced:
         module:
-            - tripal_file
+            - 'tripal_file'
 content_types:
-
     -   label: 'File'
         term: 'SIO:000396'
         help_text: 'A file is an information-bearing object that contains a physical embodiment of some information using a particular character encoding.'

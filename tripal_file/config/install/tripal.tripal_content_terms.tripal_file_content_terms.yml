@@ -3,10 +3,10 @@ label: 'Tripal File Terms'
 description: 'Terms for Content Types and Chado Fields for the Tripal File module'
 dependencies:
     module:
-        - tripal_file
+        - 'tripal_file'
     enforced:
         module:
-            - tripal_file
+            - 'tripal_file'
 vocabularies:
     -   name: 'SIO'
         label: 'The Semanticscience Integrated Ontology (SIO) provides a simple, integrated ontology of types and relations for rich description of objects, processes and their attributes.'

@@ -3,12 +3,11 @@ label: 'Tripal File Fields'
 description: 'Default field configurations provided by the Tripal File module'
 dependencies:
     module:
-        - tripal_file
+        - 'tripal_file'
     enforced:
         module:
-            - tripal_file
+            - 'tripal_file'
 fields:
-
     -   name: 'file_name'
         content_type: 'tripal_file'
         label: 'Name'
