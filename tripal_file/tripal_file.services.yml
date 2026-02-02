@@ -10,7 +10,7 @@ services:
     arguments:
       - '@entity_type.manager'
     tags:
-      - { name: module_install.uninstall_validator }
+      - name: 'module_install.uninstall_validator'
     lazy: true
   tripal_file.hooks:
     class: 'Drupal\tripal_file\Hook\TripalFileHooks'
