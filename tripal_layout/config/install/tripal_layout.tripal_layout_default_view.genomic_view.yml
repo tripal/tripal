@@ -1,6 +1,12 @@
 id: 'genomic_view'
 label: 'Genomic Content Types'
 description: 'Layouts for genomic content types (gene, mRNA, etc.) based on Chado and added via the Tripal Chado module.'
+dependencies:
+  module:
+    - 'tripal_layout'
+  enforced:
+    module:
+      - 'tripal_layout'
 layouts:
   - tripal_entity_type: "gene"
     hidden:

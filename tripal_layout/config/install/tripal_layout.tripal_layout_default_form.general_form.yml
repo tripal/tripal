@@ -1,6 +1,12 @@
 id: 'general_form'
 label: 'General Content Types'
 description: 'Layouts for general content types (analysis, organism, etc.) based on Chado and added via the Tripal Chado module.'
+dependencies:
+  module:
+    - 'tripal_layout'
+  enforced:
+    module:
+      - 'tripal_layout'
 layouts:
   - tripal_entity_type: "organism"
     field_groups:
