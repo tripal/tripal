@@ -5,6 +5,13 @@ services:
       - '@tripal_chado.database'
   'Drupal\tripal_file\Services\TripalFileRebuildService':
     alias: 'tripal_file.rebuild_service'
+  tripal_file.uninstall_validator:
+    class: 'Drupal\tripal_file\Services\TripalFileUninstallValidator'
+    arguments:
+      - '@entity_type.manager'
+    tags:
+      - { name: module_install.uninstall_validator }
+    lazy: true
   tripal_file.hooks:
     class: 'Drupal\tripal_file\Hook\TripalFileHooks'
     arguments:
