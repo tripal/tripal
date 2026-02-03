@@ -3,12 +3,13 @@
 namespace Drupal\tripal_file\Services;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleUninstallValidatorInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Service to assist with uninstalling the tripal_file module.
  */
-class TripalFileUninstallValidator {
+class TripalFileUninstallValidator implements ModuleUninstallValidatorInterface {
 
   use StringTranslationTrait;
 
