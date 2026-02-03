@@ -6,6 +6,7 @@ use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Config\InstallStorage;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ExtensionDiscovery;
+use Drupal\Core\Extension\ModuleHandler;
 
 /**
  * Service for handling tripal_layout's rebuild logic.
@@ -24,7 +25,14 @@ class TripalLayoutRebuildService {
    *
    * @var Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entity_type_manager;
+  protected EntityTypeManagerInterface $entity_type_manager;
+
+  /**
+   * The Drupal module handler service.
+   *
+   * @var Drupal\Core\Extension\ModuleHandler
+   */
+  protected ModuleHandler $module_handler;
 
   /**
    * Constructs a new TripalLayoutRebuildService object.
@@ -33,13 +41,17 @@ class TripalLayoutRebuildService {
    *   The drupal root path.
    * @param Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The drupal entity type manager service.
+   * @param Drupal\Core\Extension\ModuleHandler $module_handler
+   *   The drupal module handler service.
    */
   public function __construct(
     string $root,
     EntityTypeManagerInterface $entity_type_manager,
+    ModuleHandler $module_handler,
   ) {
     $this->drupal_root = $root;
     $this->entity_type_manager = $entity_type_manager;
+    $this->module_handler = $module_handler;
   }
 
   /**
@@ -79,34 +91,40 @@ class TripalLayoutRebuildService {
       ->getStorage($config_entity_type)
       ->loadByProperties([]);
 
+    // Get the list of active modules.
+    $active_modules = $this->module_handler->getModuleList();
+
     // Iterate through the config/install directory of all installed modules
     // looking for YAML files encoding this config entity type.
     $listing = new ExtensionDiscovery($this->drupal_root);
     $modules = $listing->scan('module');
     foreach ($modules as $module) {
-      $extension_path = $module->getPath();
-      $config_path = $extension_path . '/' . InstallStorage::CONFIG_INSTALL_DIRECTORY;
-      if (is_dir($config_path)) {
-        $file_storage = new FileStorage($config_path);
-        $configs = $file_storage->listAll($definition->getConfigPrefix());
-        foreach ($configs as $config_file) {
+      // Only install configuration if the module is enabled.
+      if (in_array($module->getName(), $active_modules)) {
+        $extension_path = $module->getPath();
+        $config_path = $extension_path . '/' . InstallStorage::CONFIG_INSTALL_DIRECTORY;
+        if (is_dir($config_path)) {
+          $file_storage = new FileStorage($config_path);
+          $configs = $file_storage->listAll($definition->getConfigPrefix());
+          foreach ($configs as $config_file) {
 
-          // Now for each YAML file found for our config entity type:
-          // -- Read Config from file.
-          $current_config = $file_storage->read($config_file);
-          // -- Extract the ID of the config entity.
-          $parts = explode('.', $config_file);
-          $config_entity_id = $parts[2];
-          // -- If it matches an existing entity then update it.
-          if (array_key_exists($config_entity_id, $existing_entities)) {
-            $config_entity = $existing_entities[$config_entity_id];
-            $config_entity = $config_storage->updateFromStorageRecord($config_entity, $current_config);
-            $config_entity->save();
-          }
-          // -- If it is new, then create a new entity.
-          else {
-            $config_entity = $config_storage->createFromStorageRecord($current_config);
-            $config_entity->save();
+            // Now for each YAML file found for our config entity type:
+            // -- Read Config from file.
+            $current_config = $file_storage->read($config_file);
+            // -- Extract the ID of the config entity.
+            $parts = explode('.', $config_file);
+            $config_entity_id = $parts[2];
+            // -- If it matches an existing entity then update it.
+            if (array_key_exists($config_entity_id, $existing_entities)) {
+              $config_entity = $existing_entities[$config_entity_id];
+              $config_entity = $config_storage->updateFromStorageRecord($config_entity, $current_config);
+              $config_entity->save();
+            }
+            // -- If it is new, then create a new entity.
+            else {
+              $config_entity = $config_storage->createFromStorageRecord($current_config);
+              $config_entity->save();
+            }
           }
         }
       }
