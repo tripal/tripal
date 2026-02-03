@@ -92,7 +92,7 @@ class TripalLayoutRebuildService {
       ->loadByProperties([]);
 
     // Get the list of active modules.
-    $active_modules = $this->module_handler->getModuleList();
+    $active_modules = array_keys($this->module_handler->getModuleList());
 
     // Iterate through the config/install directory of all installed modules
     // looking for YAML files encoding this config entity type.
