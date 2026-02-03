@@ -6,29 +6,31 @@ use Drupal\Core\Database\Connection;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
 
+/**
+ * Provides functions to manage custom tables in chado.
+ */
 class ChadoCustomTableManager {
 
   /**
    * The Drupal database connection.
    */
-  public Connection $connection;
-  
+  public Connection $drupal_connection;
+
   /**
    * The chado connection used to query chado.
    */
   public ChadoConnection $chado_connection;
 
-
   /**
    * Instantiates a new ChadoCustomTableManager object.
-   * 
-   * @param \Drupal\Core\Database\Connection
-   *  The database connection object.
-   * @param Drupal\tripal_chado\Database\ChadoConnection
+   *
+   * @param \Drupal\Core\Database\Connection $drupal_connection
+   *   The database connection object.
+   * @param Drupal\tripal_chado\Database\ChadoConnection $chado_connection
    *   The chado connection used to query chado.
    */
-  public function __construct(Connection $connection, ChadoConnection $chado_connection) {
-    $this->connection = $connection;
+  public function __construct(Connection $drupal_connection, ChadoConnection $chado_connection) {
+    $this->drupal_connection = $drupal_connection;
     $this->chado_connection = $chado_connection;
   }
 
@@ -46,6 +48,7 @@ class ChadoCustomTableManager {
    *   schema is specified then the default schema is used.
    *
    * @return \Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable
+   *   A custom table object for the newly created table.
    */
   public function create(string $table_name, ?string $chado_schema = NULL) {
     // If the schema is not specified, get the default one.
@@ -64,7 +67,7 @@ class ChadoCustomTableManager {
    *   A ChadoCustomTable object or NULL if not found.
    */
   public function loadById(int $id) {
-    $query = $this->connection->select('tripal_custom_tables','tct');
+    $query = $this->drupal_connection->select('tripal_custom_tables', 'tct');
     $query->fields('tct', ['table_name', 'chado']);
     $query->condition('tct.table_id', $id);
     $record = $query->execute()->fetchAssoc();
@@ -114,7 +117,7 @@ class ChadoCustomTableManager {
     if ($chado_schema === NULL) {
       $chado_schema = $this->chado_connection->schema()->getDefault();
     }
-    $query = $this->connection->select('tripal_custom_tables','tct');
+    $query = $this->drupal_connection->select('tripal_custom_tables', 'tct');
     $query->fields('tct', ['table_id']);
     $query->condition('tct.chado', $chado_schema);
     $query->condition('tct.table_name', $table_name);
@@ -129,8 +132,8 @@ class ChadoCustomTableManager {
    *   schema is specified then the default schema is used.
    *
    * @return array
-   *  An associative array of custom tables with the key being the id and
-   *  the value the table name.
+   *   An associative array of custom tables with the key being the id and
+   *   the value the table name.
    */
   public function getTables(?string $chado_schema = NULL) {
     $tables = [];
@@ -139,7 +142,7 @@ class ChadoCustomTableManager {
     if ($chado_schema === NULL) {
       $chado_schema = $this->chado_connection->schema()->getDefault();
     }
-    $query = $this->connection->select('tripal_custom_tables','tct');
+    $query = $this->drupal_connection->select('tripal_custom_tables', 'tct');
     $query->fields('tct', ['table_id', 'table_name']);
     $query->condition('tct.chado', $chado_schema);
     $query->orderBy('table_name');
@@ -149,4 +152,5 @@ class ChadoCustomTableManager {
     }
     return $tables;
   }
+
 }
