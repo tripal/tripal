@@ -275,7 +275,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
   }
 
   /**
-   * A helper method to validate stock type when inserting/updating a stock.
+   * A helper method to validate stock dbxref when inserting/updating a stock.
    *
    * @param array $values
    *   An associative array that describes the values to be inserted/updated in
@@ -297,44 +297,200 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *     option is passed internally from insertStock() or updateStock().
    *
    * @return array
-   *   - If a dbxref_id was found or created for stock.dbxref_id, then the
-   *     $values parameter will be returned with the stock.dbxref_id key and its
-   *     value added.
-   *   - If a organism_id was found stock.organism_id, then the $values
-   *     parameter will be returned with the stock.organism_id key and its value
-   *     added.
+   *   If a dbxref_id was found or created for stock.dbxref_id, then the $values
+   *   parameter will be returned with the stock.dbxref_id key and its value
+   *   added. Otherwise, the $values parameter is returned unchanged.
+   *
+   * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   Throws an exception in the following scenarios:
+   *   - stock.dbxref_id & dbxref.dbxref_id were both provided but don't match.
+   *   - More than one dbxref matched the provided dbxref values.
+   *   - Could not find or create a dbxref for stock.dbxref_id but dbxref
+   *     values were provided.
+   */
+  protected function validateStockDbxref(array $values, array $options = []) {
+    // Check if we already have an stock.dbxref_id AND a dbxref.dbxref_id, and
+    // ensure they match.
+    if (array_key_exists('stock.dbxref_id', $values)) {
+      if (array_key_exists('dbxref.dbxref_id', $values)) {
+        if ($values['stock.dbxref_id'] != $values['dbxref.dbxref_id']) {
+          throw new ChadoBuddyException("ChadoBuddy validateStockDbxref error, stock.dbxref_id and dbxref.dbxref_id values were both provided but do not match:\n" . print_r($values, TRUE));
+        }
+      }
+      elseif ($options['validate_foreign_keys'] ?? TRUE) {
+        // If only stock.dbxref_id was provided and we want to validate it,
+        // set dbxref.dbxref_id to match and unset stock.dbxref_id.
+        $values['dbxref.dbxref_id'] = $values['stock.dbxref_id'];
+        unset($values['stock.dbxref_id']);
+      }
+    }
+
+    if ($options['validate_foreign_keys'] ?? TRUE) {
+      // Check for dbxref identifiers and use ChadoDbxrefBuddy to try and
+      // validate or retrieve the dbxref_id.
+      $dbxref_values = $this->subsetInput($values, ['db', 'dbxref'], ['strict' => FALSE]);
+      if ($dbxref_values) {
+        // Use the buddy manager to create a Dbxref buddy instance.
+        if (!isset($this->dbxref_buddy)) {
+          $this->dbxref_buddy = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
+        }
+        $dbxref_records = $this->dbxref_buddy->getDbxref($dbxref_values, $options);
+        // If a dbxref was retrieved, set stock.dbxref_id to the dbxref_id.
+        if ($dbxref_records) {
+          // Ensure that we didn't retrieve multiple possible dbxrefs.
+          if (count($dbxref_records) > 1) {
+            throw new ChadoBuddyException("ChadoBuddy validateStockDbxref error, more than one record matched the values specified:\n" . print_r($dbxref_values, TRUE));
+          }
+          $values['stock.dbxref_id'] = $dbxref_records[0]->getValue('dbxref.dbxref_id', ['strict' => FALSE]);
+        }
+        // If a dbxref could not be found, try to create it if the required
+        // fields were included. For safety, this is an opt-in setting.
+        elseif ($options['create_dbxref'] ?? FALSE) {
+          $new_dbxref_record = $this->dbxref_buddy->upsertDbxref($dbxref_values, $options);
+          $values['stock.dbxref_id'] = $new_dbxref_record->getValue('dbxref.dbxref_id');
+        }
+        // If we could not find or create a dbxref for stock.dbxref_id, yet
+        // dbxref values were provided, throw an exception.
+        // Note: if the user didn't want to provide a dbxref_id, they wouldn't
+        // have provided dbxref values in the first place.
+        else {
+          throw new ChadoBuddyException("ChadoBuddy validateStockDbxref error, could not find or create a dbxref, but dbxref values were provided:\n" . print_r($dbxref_values, TRUE));
+        }
+      }
+    }
+    elseif (array_key_exists('dbxref.dbxref_id', $values)) {
+      // If only dbxref.dbxref_id was provided and we don't want to validate it,
+      // set it as the stock.dbxref_id.
+      $values['stock.dbxref_id'] = $values['dbxref.dbxref_id'];
+    }
+
+    return $values;
+  }
+
+  /**
+   * A helper method to validate organism when inserting/updating a stock.
+   *
+   * @param array $values
+   *   An associative array that describes the values to be inserted/updated in
+   *   the chado.stock table. Supports all the same keys as insertStock()
+   *   and updateStock().
+   *   @see ::insertStock()
+   *   @see ::updateStock()
+   * @param array $options
+   *   (Optional) Associative array of options with these supported keys:
+   *   - validate_foreign_keys - set to FALSE (default TRUE) if you specified
+   *     the necessary fields to insert a foreign key into the stock table,
+   *     but do not want this method to peform a lookup to validate the key
+   *     exists. This is ideal for performance if you already did an insert or
+   *     lookup on this key and want to pass the information through. This
+   *     option is passed internally from insertStock() or updateStock().
+   *
+   * @return array
+   *   If an organism_id was found for stock.organism_id, then the $values
+   *   parameter will be returned with the stock.organism_id key and its value
+   *   added. Otherwise, the $values parameter is returned unchanged.
+   *
+   * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   Throws an exception in the following scenarios:
+   *   - stock.organism_id & organism.organism_id were both provided but don't
+   *     match.
+   *   - More than one organism match the provided organism values.
+   *   - Could not find an organsim for stock.organism_id but organism values
+   *     were provided.
+   */
+  protected function validateStockOrganism(array $values, array $options = []) {
+    // Check if we already have an stock.organism_id AND a organism.organism_id,
+    // and ensure they match.
+    if (array_key_exists('stock.organism_id', $values)) {
+      if (array_key_exists('organism.organism_id', $values)) {
+        if ($values['stock.organism_id'] != $values['organism.organism_id']) {
+          throw new ChadoBuddyException("ChadoBuddy validateStockOrganism error, stock.organism_id and organism.organism_id values were both provided but do not match:\n" . print_r($values, TRUE));
+        }
+      }
+      elseif ($options['validate_foreign_keys'] ?? TRUE) {
+        // If only stock.organism_id was provided and we want to validate it,
+        // set organism.organism_id to match and unset stock.organism_id.
+        $values['organism.organism_id'] = $values['stock.organism_id'];
+        unset($values['stock.organism_id']);
+      }
+    }
+
+    if ($options['validate_foreign_keys'] ?? TRUE) {
+      // Check for organism identifiers and use ChadoOrganismBuddy to try and
+      // validate or retrieve the organism_id.
+      $organism_values = $this->subsetInput($values, ['organism'], ['strict' => FALSE]);
+      if ($organism_values) {
+        // Use the buddy manager to create an Organism buddy instance.
+        if (!isset($this->organism_buddy)) {
+          $this->organism_buddy = $this->buddy_manager->createInstance('chado_organism_buddy', []);
+        }
+        $organism_records = $this->organism_buddy->getorganism($organism_values, $options);
+        // If a organism was retrieved, set stock.organism_id to the organism_id.
+        if ($organism_records) {
+          // Ensure that we didn't retrieve multiple possible organisms.
+          if (count($organism_records) > 1) {
+            throw new ChadoBuddyException("ChadoBuddy validateStockOrganism error, more than one record matched the values specified:\n" . print_r($organism_values, TRUE));
+          }
+          $values['stock.organism_id'] = $organism_records[0]->getValue('organism.organism_id', ['strict' => FALSE]);
+        }
+        // If an organism could not be found, yet organism values were provided,
+        // throw an exception.
+        else {
+          throw new ChadoBuddyException("ChadoBuddy validateStockOrganism error, could not find or create a organism, but organism values were provided:\n" . print_r($organism_values, TRUE));
+        }
+      }
+    }
+    elseif (array_key_exists('organism.organism_id', $values)) {
+      // If only organism.organism_id was provided and we don't want to validate
+      // it, set it as the stock.organism_id.
+      $values['stock.organism_id'] = $values['organism.organism_id'];
+    }
+
+    return $values;
+  }
+
+  /**
+   * A helper method to validate stock type when inserting/updating a stock.
+   *
+   * @param array $values
+   *   An associative array that describes the values to be inserted/updated in
+   *   the chado.stock table. Supports all the same keys as insertStock()
+   *   and updateStock().
+   *   @see ::insertStock()
+   *   @see ::updateStock()
+   * @param array $options
+   *   (Optional) Associative array of options with these supported keys:
+   *   - validate_foreign_keys - set to FALSE (default TRUE) if you specified
+   *     the necessary fields to insert a foreign key into the stock table,
+   *     but do not want this method to peform a lookup to validate the key
+   *     exists. This is ideal for performance if you already did an insert or
+   *     lookup on this key and want to pass the information through. This
+   *     option is passed internally from insertStock() or updateStock().
+   *
+   * @return array
    *   - If a type_id was found for stock.type_id, then the $values parameter
    *     will be returned with the stock.type_id key and its value added.
    *   - Otherwise, the $values parameter is returned unchanged.
    *
    * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   Throws an exception in the following scenarios:
-   *   - stock.dbxref_id & dbxref.dbxref_id were both provided but don't match.
-   *   - stock.organism_id & organism.organism_id were both provided but don't
-   *     match.
    *   - stock.type_id & cvterm.cvterm_id were both provided but don't match.
-   *   - More than one dbxref matched the provided dbxref values.
-   *   - More than one organism match the provided organism values.
    *   - More than one cvterm matched the provided cvterm values.
-   *   - Could not find or create a dbxref for stock.dbxref_id but dbxref
-   *     values were provided.
-   *   - Could not find an organsim for stock.organism_id but organism values
-   *     were provided.
    *   - Could not find a cvterm for stock.type_id but cvterm values were
    *     provided.
    */
   protected function validateStockType(array $values, array $options = []) {
-    // Check if we already have an stock.type_id AND a cvterm.cvterm_id, and
+    // Check if we already have a stock.type_id AND a cvterm.cvterm_id, and
     // ensure they match.
     if (array_key_exists('stock.type_id', $values)) {
       if (array_key_exists('cvterm.cvterm_id', $values)) {
         if ($values['stock.type_id'] != $values['cvterm.cvterm_id']) {
-          throw new ChadoBuddyException("ChadoBuddy validateStockForeignKeys error, stock.type_id and cvterm.cvterm_id values were both provided but do not match:\n" . print_r($values, TRUE));
+          throw new ChadoBuddyException("ChadoBuddy validateStockType error, stock.type_id and cvterm.cvterm_id values were both provided but do not match:\n" . print_r($values, TRUE));
         }
       }
       elseif ($options['validate_foreign_keys'] ?? TRUE) {
-        // If only stock.type_id was provided and we want to validate it,
-        // set cvterm.cvterm_id to match and unset organism.type_id.
+        // If only stock.type_id was provided and we want to validate it, set
+        // cvterm.cvterm_id to match and unset stock.type_id.
         $values['cvterm.cvterm_id'] = $values['stock.type_id'];
         unset($values['stock.type_id']);
       }
@@ -342,41 +498,33 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
 
     if ($options['validate_foreign_keys'] ?? TRUE) {
       // Check for cvterm identifiers and use ChadoCvtermBuddy to try and
-      // validate or retrieve the cvterm_id.
-      $cvterm_values = $this->subsetInput($values, ['db', 'dbxref', 'cv', 'cvterm'], ['strict' => FALSE]);
+      // validate or retrieve the type_id.
+      $cvterm_values = $this->subsetInput($values, ['cvterm', 'cv'], ['strict' => FALSE]);
       if ($cvterm_values) {
-        // Use the buddy manager to create a Cvterm buddy instance.
+        // Use the buddy manager to create an cvterm buddy instance.
         if (!isset($this->cvterm_buddy)) {
           $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
         }
         $cvterm_records = $this->cvterm_buddy->getCvterm($cvterm_values, $options);
-        // If a cvterm was retrieved, set organism.type_id to the cvterm_id.
+        // If a cvterm was retrieved, set stock.type_id to the cvterm_id.
         if ($cvterm_records) {
           // Ensure that we didn't retrieve multiple possible cvterms.
           if (count($cvterm_records) > 1) {
-            throw new ChadoBuddyException("ChadoBuddy validateOrganismRankCvterm error, more than one record matched the values specified:\n" . print_r($cvterm_values, TRUE));
+            throw new ChadoBuddyException("ChadoBuddy validateStockType error, more than one record matched the values specified:\n" . print_r($cvterm_values, TRUE));
           }
-          $values['organism.type_id'] = $cvterm_records[0]->getValue('cvterm.cvterm_id', ['strict' => FALSE]);
+          $values['stock.type_id'] = $cvterm_records[0]->getValue('cvterm.cvterm_id', ['strict' => FALSE]);
         }
-        // If a cvterm could not be found, try to create it if the required
-        // fields were included. For safety, this is an opt-in setting.
-        elseif ($options['create_cvterm'] ?? FALSE) {
-          $new_cvterm_record = $this->cvterm_buddy->upsertCvterm($cvterm_values, $options);
-          $values['organism.type_id'] = $new_cvterm_record->getValue('cvterm.cvterm_id');
-        }
-        // If we could not find or create a cvterm for organism.type_id, yet
-        // cvterm values were provided, throw an exception.
-        // Note: if the user didn't want to provide a type_id, they wouldn't
-        // have provided cvterm values in the first place.
+        // If an cvterm could not be found, yet cvterm values were provided,
+        // throw an exception.
         else {
-          throw new ChadoBuddyException("ChadoBuddy validateOrganismRankCvterm error, could not find or create a cvterm, but cvterm values were provided:\n" . print_r($cvterm_values, TRUE));
+          throw new ChadoBuddyException("ChadoBuddy validateStockType error, could not find a cvterm, but cvterm values were provided:\n" . print_r($cvterm_values, TRUE));
         }
       }
     }
     elseif (array_key_exists('cvterm.cvterm_id', $values)) {
-      // If only cvterm.cvterm_id was provided and we don't want to validate it,
-      // set it as the organism.type_id.
-      $values['organism.type_id'] = $values['cvterm.cvterm_id'];
+      // If only cvterm.cvterm_id was provided and we don't want to validate
+      // it, set it as the stock.cvterm_id.
+      $values['stock.type_id'] = $values['cvterm.cvterm_id'];
     }
 
     return $values;
