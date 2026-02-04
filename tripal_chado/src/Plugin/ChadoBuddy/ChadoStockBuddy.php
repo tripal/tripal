@@ -38,6 +38,20 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
   public ChadoBuddyPluginManager $buddy_manager;
 
   /**
+   * Used to store the dbxref ChadoBuddy instance.
+   *
+   * @var ChadoDbxrefBuddy
+   */
+  protected ChadoDbxrefBuddy $dbxref_buddy;
+
+  /**
+   * Used to store the organism ChadoBuddy instance.
+   *
+   * @var ChadoOrganismBuddy
+   */
+  protected ChadoOrganismBuddy $organism_buddy;
+
+  /**
    * Used to store the cvterm ChadoBuddy instance.
    *
    * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy
@@ -226,6 +240,11 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *     necessary fields and want to create the dbxref for stock.dbxref_id when
    *     creating this stock, if it does not already exist.
    *     NOTE: This is NOT recommended. We suggest you import ontologies first.
+   *   - validate_foreign_keys - set to FALSE (default TRUE) if you specified
+   *     the necessary fields to insert a foreign key into the stock table,
+   *     but do not want this method to peform a lookup to validate the key
+   *     exists. This is ideal for performance if you already did an insert or
+   *     lookup on this key and want to pass the information through.
    *
    * @return array
    *   The inserted ChadoBuddyRecord will be returned on success and an
@@ -252,7 +271,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
      * }
      */
     // Validate that organism exists.
-    // @todo Validate stock type and dbxref?
+    $values = $this->validateStockOrganism($values, $options);
     // Insert the stock record.
     try {
       $query = $this->chado_connection->insert('1:stock');

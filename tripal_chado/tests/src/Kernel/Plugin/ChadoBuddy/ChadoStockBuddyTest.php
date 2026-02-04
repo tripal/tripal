@@ -53,7 +53,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $this->assertIsArray($stock_buddy_records, 'We did not retrieve an array for a Stock record that does not exist');
     $this->assertEquals(0, count($stock_buddy_records), 'We did not retrieve an empty array for a Stock record that does not exist');
 
-    // TEST: Insert a stock record with name, uniquename, type and organism.
+    // TEST: Insert a stock record with name, uniquename, type_id and organism_id.
     // First create an organism using the ChadoOrganismBuddy.
     $simple_organism_values = [
       'organism.genus' => 'Tripalus',
@@ -63,7 +63,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $organism_buddy_record = $organism_instance->insertOrganism($simple_organism_values);
     $organism_id = $organism_buddy_record->getValue('organism.organism_id');
     $this->assertEquals(1, $organism_id, 'The organism id does not match what was expected to be returned using ChadoOrganismBuddy->insertOrganism().');
-    $simple_stock_values = [
+    $stock1_values = [
       'stock.name' => 'Stock1',
       'stock.uniquename' => 'stock1',
       // Cvterm ID for 'accession'.
@@ -71,8 +71,8 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'stock.organism_id' => $organism_id,
     ];
     $test_records = [];
-    $test_records['set'] = $stock_instance->insertStock($simple_stock_values);
-    $test_records['get'] = $stock_instance->getStock($simple_stock_values);
+    $test_records['set'] = $stock_instance->insertStock($stock1_values);
+    $test_records['get'] = $stock_instance->getStock($stock1_values);
     $values = $this->multiAssert(
       'insertStock',
       $test_records,
@@ -83,6 +83,30 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     );
     $stock_id = $values['get']['stock.stock_id'];
     $this->assertTrue(is_numeric($stock_id), 'We did not retrieve an integer stock_id for the new stock "Stock1"');
+
+    // TEST: Insert a stock record with name, uniquename, type_id, and the
+    // previously inserted organism values.
+    $stock2_values = [
+      'stock.name' => 'Stock2',
+      'stock.uniquename' => 'stock2',
+      // Cvterm ID for 'accession'.
+      'stock.type_id' => '3',
+    ];
+    $stock_organism_values = $stock2_values + $simple_organism_values;
+    $test_records = [];
+    $test_records['set'] = $stock_instance->insertStock($stock_organism_values);
+    $test_records['get'] = $stock_instance->getStock($stock_organism_values);
+    $values = $this->multiAssert(
+      'insertStock',
+      $test_records,
+      'stock',
+      'stock.stock_id',
+      'Stock "Stock2"',
+      36
+    );
+    $stock_id = $values['get']['stock.stock_id'];
+    $this->assertTrue(is_numeric($stock_id), 'We did not retrieve an integer stock_id for the new stock "Stock2"');
+
   }
 
 }
