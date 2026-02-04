@@ -4,8 +4,10 @@ namespace Drupal\tripal_chado\Services;
 
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
-
-class ChadoTermsInit{
+/**
+ * Installs tripal_chado module content terms.
+ */
+class ChadoTermsInit {
 
   /**
    * Instantiates a new ChadoTermsInit object.
@@ -18,9 +20,10 @@ class ChadoTermsInit{
    * Gets a controlled vocabulary object.
    *
    * @param string $name
-   *   The name of the vocabulary
+   *   The name of the vocabulary.
    *
    * @return \Drupal\tripal\TripalVocabTerms\TripalVocabularyBase
+   *   A tripal vocabulary object.
    */
   private function getVocabulary($name) {
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
@@ -38,9 +41,10 @@ class ChadoTermsInit{
    * Gets a controlled vocabulary IDspace object.
    *
    * @param string $name
-   *   The name of the IdSpace
+   *   The name of the IdSpace.
    *
    * @return \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase
+   *   A tripal ID space object.
    */
   private function getIdSpace($name) {
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
@@ -90,7 +94,7 @@ class ChadoTermsInit{
         // If so, that IdSpace should have been created prior to
         // this vocabulary using it.
         if (!array_key_exists('isBorrowed', $idSpace_info) or
-            $idSpace_info['urlPrefix']['isBorrowed'] !== True) {
+            $idSpace_info['urlPrefix']['isBorrowed'] !== TRUE) {
           $idspace->setDefaultVocabulary($vocab_info['name']);
           $vocab->addIdSpace($idSpace_info['name']);
         }
@@ -104,7 +108,7 @@ class ChadoTermsInit{
       // Step 3: Add the terms.
       if (array_key_exists('terms', $vocab_info)) {
         foreach ($vocab_info['terms'] as $term_info) {
-          list($idSpace_name, $accession) = explode(':', $term_info['id']);
+          [$idSpace_name, $accession] = explode(':', $term_info['id']);
           $idspace = $this->getIdSpace($idSpace_name);
           if ($idspace) {
             $term = new TripalTerm([
@@ -112,7 +116,7 @@ class ChadoTermsInit{
               'accession' => $accession,
               'idSpace' => $idSpace_name,
               'vocabulary' => $vocab_info['name'],
-              'definition' => array_key_exists('description', $term_info) ? $term_info['description'] : '' ,
+              'definition' => array_key_exists('description', $term_info) ? $term_info['description'] : '',
             ]);
             $idspace->saveTerm($term);
           }
@@ -120,4 +124,5 @@ class ChadoTermsInit{
       }
     }
   }
+
 }
