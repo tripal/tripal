@@ -252,8 +252,9 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
      * throw new ChadoBuddyException("ChadoBuddy insertStock error, a stock record already exists that matches the specified values:\n" . print_r($values, TRUE));
      * }
      */
+    // Validate that organism exists.
 
-    // @todo Validate organism, stock type, and dbxref?
+    // @todo Validate stock type and dbxref?
     // Insert the stock record.
     try {
       $query = $this->chado_connection->insert('1:stock');

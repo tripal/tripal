@@ -61,15 +61,15 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'organism.species' => 'databasica',
       'organism.common_name' => 'Tripal',
     ];
-    $organism_buddy_records = $organism_instance->insertOrganism($simple_organism_values);
-    // $this->assertEquals(1, count($organism_buddy_records), 'We did not successfully insert one organism using the ChadoOrganismBuddy.');
+    $organism_buddy_record = $organism_instance->insertOrganism($simple_organism_values);
+    $organism_id = $organism_buddy_record->getValue('organism.organism_id');
+    $this->assertEquals(1, $organism_id, 'The organism id does not match what was expected to be returned using ChadoOrganismBuddy->insertOrganism().');
     $simple_stock_values = [
       'stock.name' => 'Stock1',
       'stock.uniquename' => 'stock1',
       // Cvterm ID for 'accession'.
       'stock.type_id' => '3',
-      'organism.genus' => 'Tripalus',
-      'organism.species' => 'databasica',
+      'stock.organism_id' => $organism_id,
     ];
     $test_records = [];
     $test_records['set'] = $stock_instance->insertStock($simple_stock_values);
