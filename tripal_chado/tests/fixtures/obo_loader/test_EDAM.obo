@@ -118,3 +118,40 @@ synonym: "http://purl.bioontology.org/ontology/MSH/D015870" RELATED []
 created_in: "beta12orEarlier"
 def: "Topic concerning primarily raw or processed gene (mRNA) expression (typically microarray) data, including the analysis of gene expression levels, by identifying, quantifying or comparing mRNA transcripts and the interpretation (in functional terms) of gene expression data." [http://edamontology.org]
 namespace: topic
+
+[Typedef]
+id: has_format
+name: has format
+comment: Subject A can be any concept or entity outside of and so on...
+subset: bioinformatics
+subset: edam
+subset: relations
+synonym: "has-quality" RELATED []
+synonym: "OBI:0000298" RELATED []
+def: "'A has_format B' defines for the subject A, that it has the object B as its data format." [http://edamontology.org]
+is_anti_symmetric: false
+is_reflexive: false
+is_symmetric: false
+is_cyclic: false
+transitive_over: OBO_REL:is_a
+domain: EDAM_data:0006 ! Data
+range: EDAM_format:1915 ! Format
+
+[Typedef]
+id: has_function
+name: has function
+comment: Subject A can be any concept or entity outside and so on...
+subset: bioinformatics
+subset: edam
+subset: relations
+synonym: "has-quality" RELATED []
+synonym: "has_function" EXACT []
+synonym: "OBI:0000306" NARROW []
+synonym: "OBO_REL:bearer_of" RELATED []
+def: "'A has_function B' defines for the subject A, that it has the object B as its function." [http://edamontology.org]
+is_anti_symmetric: false
+is_reflexive: false
+is_symmetric: false
+is_cyclic: true
+transitive_over: OBO_REL:is_a
+range: EDAM_operation:0004 ! Operation
