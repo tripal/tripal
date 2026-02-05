@@ -5,12 +5,12 @@ namespace Drupal\tripal_chado\TripalStorage;
 use Drupal\tripal\TripalStorage\DatetimeStoragePropertyType;
 
 /**
- * Defines the fixed length text Tripal storage property type.
+ * Defines the datetime Tripal storage property type.
  */
 class ChadoDatetimeStoragePropertyType extends DatetimeStoragePropertyType {
 
   /**
-   * Constructs a new text tripal storage property type.
+   * Constructs a new datetime tripal storage property type.
    *
    * @param string entityType
    *   The entity type associated with this property type.

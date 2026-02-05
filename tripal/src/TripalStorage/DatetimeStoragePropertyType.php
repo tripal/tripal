@@ -10,7 +10,7 @@ use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 class DatetimeStoragePropertyType extends StoragePropertyTypeBase {
 
   /**
-   * Constructs a new text tripal storage property type.
+   * Constructs a new datetime tripal storage property type.
    *
    * @param string entityType
    *   The entity type associated with this property type.
