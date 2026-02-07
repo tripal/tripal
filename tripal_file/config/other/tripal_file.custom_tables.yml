@@ -50,8 +50,6 @@ license:
             - name
         license_c2:
             - uri
-    'nulls not distinct':
-        license_c2: true
     indexes:
         license_idx1:
             - name
