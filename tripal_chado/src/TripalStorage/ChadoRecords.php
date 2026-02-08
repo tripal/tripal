@@ -1356,7 +1356,7 @@ class ChadoRecords {
         }
       }
       elseif ($info['type'] == 'character varying' or $info['type'] == 'character' or
-        $info['type'] == 'text') {
+        $info['type'] == 'varchar' or $info['type'] == 'text') {
         // Do nothing.
       }
       elseif ($info['type'] == 'double precision' or $info['type'] == 'real') {
@@ -1414,6 +1414,7 @@ class ChadoRecords {
         // If this is a string type column.
         if ($info['type'] == 'character varying' or
             $info['type'] == 'character' or
+            $info['type'] == 'varchar' or
             $info['type'] == 'text') {
           if (strlen($col_val) > $info['size']) {
             $bad_sizes[$col] = $info['size'];
@@ -1478,7 +1479,7 @@ class ChadoRecords {
           // other types, e.g. integer, just check for null.
           if (($table_def['fields'][$col]['not null'] ?? FALSE) == FALSE and !$col_val) {
             if (in_array($table_def['fields'][$col]['type'],
-                ['character', 'character varying', 'text'])) {
+                ['character', 'character varying', 'varchar', 'text'])) {
               $query->condition($query->orConditionGroup()
                 ->condition($col, '', '=')
                 ->isNull($col));

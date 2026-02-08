@@ -49,7 +49,7 @@ class ChadoStringTypeDefault extends ChadoFieldItemBase {
    *   Simple list of valid base column types for this field to manage.
    * @see ChadoFieldItemBase
    */
-  protected static $valid_base_column_types = ['character', 'character varying'];
+  protected static $valid_base_column_types = ['character', 'character varying', 'varchar'];
 
   /**
    * {@inheritdoc}
