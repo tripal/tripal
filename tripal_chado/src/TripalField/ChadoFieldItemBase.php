@@ -152,7 +152,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $base_tables[''] = '- Select -';
       $chado = \Drupal::service('tripal_chado.database');
       $schema = $chado->schema();
-      $tables = $schema->getTables(['type' => 'table', 'status' => 'base']);
+      $tables = $schema->getTables(['type' => 'table', 'status' => 'table']);
       foreach (array_keys($tables) as $table) {
         $base_tables[$table] = $table;
       }
