@@ -18,8 +18,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group TripalField
  * @group ChadoField
  */
-#[Group('TripalField')]
-#[Group('ChadoField')]
+#[Group('tripal-field')]
+#[Group('chado-field')]
 #[RunTestsInSeparateProcesses]
 class ChadoStockCollectionTypeCRUDTest extends ChadoTestKernelBase {
 
