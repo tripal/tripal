@@ -2,14 +2,17 @@
 
 namespace Drupal\tripal_chado\Services;
 
-use \Drupal\tripal_chado\Database\ChadoConnection;
-use \Drupal\tripal\Services\TripalLogger;
+use Drupal\Core\Extension\ModuleHandler;
+use Drupal\tripal\Services\TripalLogger;
+use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\TripalStorage\ChadoRecords;
 use Drupal\tripal_chado\Plugin\TripalStorage\ChadoStorage;
 
 /**
- * Provides debugging functionality for Chado data loading in fields extending
- * the ChadoFieldItemBase that use properties to automatically load the data.
+ * Provides debugging functionality for Chado data loading in fields.
+ *
+ * This provides debugging for fields that extend the ChadoFieldItemBase that
+ * use properties to automatically load the data.
  *
  * THIS SERVICE SHOULD ONLY BE CALLED BY CHADO STORAGE.
  *
@@ -36,10 +39,10 @@ class ChadoFieldDebugger {
   /**
    * The module handler class, used to check if devel module is enabled.
    */
-  public \Drupal\Core\Extension\ModuleHandler $module_handler;
+  public ModuleHandler $module_handler;
 
   /**
-   * The logger class to use to providing our debugging messages to the developer.
+   * The logger class which provides our debugging messages to the developer.
    */
   public TripalLogger $logger;
 
@@ -51,36 +54,36 @@ class ChadoFieldDebugger {
   public array $fields2debug = [];
 
   /**
-   * A simple flag to indicate if there are any fields to be debugged
-   * for performances sake.
+   * Flag indicates if there are fields to be debugged for performances sake.
    */
   public bool $has_fields2debug = FALSE;
 
   /**
-   * Store status so it only needs to be looked up once
+   * Store status so it only needs to be looked up once.
    *
-   * @var bool|NULL $develIsInstalled
+   * @var bool|null
    */
   protected bool|NULL $develIsInstalled = NULL;
 
   /**
-   * Object constructor for the Chado Field debugger
+   * Object constructor for the Chado Field debugger.
    *
-   * @param Drupal\tripal_chado\Database\ChadoConnection
+   * @param Drupal\tripal_chado\Database\ChadoConnection $chado_connection
    *   The chado connection used to query chado.
-   * @param Drupal\Core\Extension\ModuleHandler
+   * @param Drupal\Core\Extension\ModuleHandler $module_handler
    *   The drupal module handler service.
-   * @param Drupal\tripal\Services\TripalLogger
-   *   The logger class to use to providing our debugging messages to the developer.
+   * @param Drupal\tripal\Services\TripalLogger $logger
+   *   The logger class which provides our debugging messages to the developer.
    */
-  public function __construct(ChadoConnection $connection, \Drupal\Core\Extension\ModuleHandler $module_handler, TripalLogger $logger) {
-    $this->chado_connection = $connection;
+  public function __construct(ChadoConnection $chado_connection, ModuleHandler $module_handler, TripalLogger $logger) {
+    $this->chado_connection = $chado_connection;
     $this->module_handler = $module_handler;
     $this->logger = $logger;
   }
 
   /**
    * A wrapper for the devel module dpm() function.
+   *
    * If that module is not installed and enabled, we will
    * do slightly more primitive output with print_r statements.
    *
@@ -88,17 +91,20 @@ class ChadoFieldDebugger {
    *   The variable to print out, can be any type.
    * @param string $message
    *   An optional message to display with the variable.
+   *
    * @return void
+   *   No return value.
    */
-  protected function cfd_dpm(mixed $variable, string $message = '') {
+  protected function cfdDpm(mixed $variable, string $message = '') {
     // Devel module status only needs to be retrieved once, but rebuilding
     // cache will reset this if necessary if the module status changes.
     if (is_null($this->develIsInstalled)) {
       $this->develIsInstalled = $this->module_handler->moduleExists('devel');
     }
 
-    // Select the method to display the debugging information
+    // Select the method to display the debugging information.
     if ($this->develIsInstalled) {
+      // phpcs:ignore
       dpm($variable, $message);
     }
     else {
@@ -109,7 +115,7 @@ class ChadoFieldDebugger {
   }
 
   /**
-   * A way for ChadoStorage to tell this service which fields should be debugged.
+   * Lets ChadoStorage tell this service which fields should be debugged.
    */
   public function addFieldToDebugger(string $field_name) {
     $this->fields2debug[$field_name] = $field_name;
@@ -117,7 +123,8 @@ class ChadoFieldDebugger {
   }
 
   /**
-   * Prints out the values array in a readable manner for debuggin purposes.
+   * Prints out the values array in a readable manner for debugging purposes.
+   *
    * This is called by ChadoStorage::buildChadoRecords().
    */
   public function reportValues(array $values, string $message) {
@@ -126,9 +133,7 @@ class ChadoFieldDebugger {
       return;
     }
 
-    $debugging_fields = [];
     $all_fields = [];
-    $i = 0;
     foreach ($values as $field_name => $level1) {
 
       $all_fields[$field_name] = [];
@@ -141,13 +146,13 @@ class ChadoFieldDebugger {
       }
     }
 
-    $this->cfd_dpm($all_fields, $message);
+    $this->cfdDpm($all_fields, $message);
   }
 
   /**
    * Summarize the current state of chadostorage.
    *
-   * @param ChadoStorage $chadostorage
+   * @param \Drupal\tripal_chado\Plugin\TripalStorage\ChadoStorage $chadostorage
    *   The current chadostorage object for interrogation.
    * @param string $message
    *   A short message describing where this method was called from.
@@ -166,7 +171,7 @@ class ChadoFieldDebugger {
       $field_definition = $chadostorage->getFieldDefinition($field_name);
       $state[$field_name] = [
         'field name' => $field_name,
-        'field definition added' =>  is_object($field_definition),
+        'field definition added' => is_object($field_definition),
         'field settings' => (is_object($field_definition)) ? $field_definition->getSettings() : NULL,
         'number of properties' => count($field_properties),
         'properties' => [],
@@ -185,16 +190,17 @@ class ChadoFieldDebugger {
       }
     }
 
-    $this->cfd_dpm($state, $message);
+    $this->cfdDpm($state, $message);
   }
 
   /**
    * This will summarize the results of ChadoStorage::buildChadoRecords().
    *
    * @param array $records
-   *   This is an instance of the TripalStorage ChadoRecords class which contains
-   *   all the information of records to be inserted/modifiedin chado.
-   *   generated using the Drupal Query Builder in the ChadoStorage::*Values() methods.
+   *   This is an instance of the TripalStorage ChadoRecords class which
+   *   contains all the information of records to be inserted/modified in
+   *   chado. Generated using the Drupal Query Builder in the
+   *   ChadoStorage::*Values() methods.
    */
   public function summarizeBuiltRecords(ChadoRecords $records) {
 
@@ -202,12 +208,13 @@ class ChadoFieldDebugger {
       return;
     }
 
-    $this->cfd_dpm($records->getRecordsArray(), 'The array describing the record queries to be generated');
-    $this->cfd_dpm($records->getBaseTables(), 'The known primary keys for our base records');
+    $this->cfdDpm($records->getRecordsArray(), 'The array describing the record queries to be generated');
+    $this->cfdDpm($records->getBaseTables(), 'The known primary keys for our base records');
   }
 
   /**
    * This function will print out the query generated by the query builder.
+   *
    * It is expected that this function will be called right before
    * query->execute() is called in all the ChadoStorage::*ChadoRecord() methods.
    *
@@ -237,20 +244,21 @@ class ChadoFieldDebugger {
      *  - $updateQuery->arguments() only provides the conditional arguments,
      *    not those being updated (facepalm; see Drupal Issue #2005626)
      *
-    $quoted = [];
-    foreach ((array) $query->arguments() as $index => $val) {
-      $key = 'db_placeholder_' . $index;
-      $quoted[$key] = is_null($val) ? 'NULL' : $this->chado_connection->quote($val);
-    }
-    $sql = strtr($sql, $quoted);
+     * $quoted = [];
+     * foreach ((array) $query->arguments() as $index => $val) {
+     *   $key = 'db_placeholder_' . $index;
+     *   $quoted[$key] =
+     *     is_null($val) ? 'NULL' : $this->chado_connection->quote($val);
+     * }
+     * $sql = strtr($sql, $quoted);
     */
 
-    $this->cfd_dpm($sql, $message . ' (See Records for parameters)');
+    $this->cfdDpm($sql, $message . ' (See Records for parameters)');
 
   }
 
   /**
-   * Print some sort of header to make reading all the output easier ;-p
+   * Print some sort of header to make reading all the output easier ;-p.
    */
   public function printHeader(string $process_name) {
 
@@ -281,4 +289,5 @@ class ChadoFieldDebugger {
       [], ['drupal_set_message' => TRUE, 'logger' => FALSE]
     );
   }
+
 }
