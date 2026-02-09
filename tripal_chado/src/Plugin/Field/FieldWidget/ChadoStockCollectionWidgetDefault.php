@@ -68,7 +68,7 @@ class ChadoStockCollectionWidgetDefault extends ChadoWidgetBase {
     $options = [
       'base_table' => 'stockcollection',
       'column_name' => 'name',
-      'type_column' => 'type_id',
+      'type_column' => 'x',
       'property_table' => 'stockcollection',
     ];
     $select_element = $this->genericSelectElement('stockcollection_id', $stockcollection_id, $options);
