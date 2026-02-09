@@ -89,6 +89,7 @@ class ChadoStockCollectionDbTypeDefault extends ChadoFieldItemBase {
 
     // Object table properties.
     $value['db_name'] = '';
+    $value['db_url'] = '';
 
     return [$value];
   }

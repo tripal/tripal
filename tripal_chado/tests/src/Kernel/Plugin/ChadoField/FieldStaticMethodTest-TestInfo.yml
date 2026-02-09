@@ -886,6 +886,7 @@ scenarios:
         linker_id: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         link: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         db_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+        db_url: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
   -
       label: 'Stock through linking table'
       field_type: 'chado_stock_type_default'
