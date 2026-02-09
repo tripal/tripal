@@ -122,6 +122,7 @@ class ChadoStockCollectionDbTypeDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
     $object_pkey_col = self::getPrimaryKey($object_table, $schema);
     $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
+    $url_term = self::getColumnTermId($object_table, 'url', 'schema:url');
 
     // Linker table, when used, requires specifying the linker table and column.
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
@@ -215,11 +216,20 @@ class ChadoStockCollectionDbTypeDefault extends ChadoFieldItemBase {
     }
 
     // The object table, the destination table of the linker table.
+    // - Name column.
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, $field_id, 'db_name', $name_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';name',
       'as' => 'db_name',
+    ]);
+
+    // - URL column.
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, $field_id, 'db_url', $url_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';url',
+      'as' => 'db_url',
     ]);
 
     return $properties;

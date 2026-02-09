@@ -4,6 +4,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
@@ -42,6 +43,7 @@ class ChadoStockCollectionDbFormatterDefault extends ChadoFormatterBase {
       $values = [
         'entity_id' => $item->get('entity_id')->getString(),
         'name' => $item->get('db_name')->getString(),
+        'url' => $item->get('db_url')->getString(),
       ];
 
       // Substitute values in token string to generate displayed string.
@@ -51,7 +53,21 @@ class ChadoStockCollectionDbFormatterDefault extends ChadoFormatterBase {
       }
 
       // Create a clickable link to the corresponding entity when one exists.
-      $renderable_item = $lookup_manager->getRenderableItem($displayed_string, $values['entity_id']);
+      if ($values['entity_id'] > 0) {
+        $renderable_item = $lookup_manager->getRenderableItem($displayed_string, $values['entity_id']);
+      }
+      // Otherwise, check for a URL saved in chado and link to that.
+      elseif ($values['url']) {
+        $renderable_item = [
+          '#type' => 'link',
+          '#title' => $displayed_string,
+          '#url' => Url::fromUri($values['url']),
+        ];
+      }
+      // If neither exists, use the displayed string without a link.
+      else {
+        $renderable_item = ['#markup' => $displayed_string];
+      }
 
       $list[$delta] = $renderable_item;
     }
