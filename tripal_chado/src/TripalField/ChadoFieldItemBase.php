@@ -555,7 +555,10 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
     $table_schema_def = self::getChadoTableDef($table_name);
     foreach ($table_schema_def['fields'] as $field => $properties) {
-      if (!$column_types or in_array($properties['type'], $column_types)) {
+      // We use pgsql_type in preference, because for example a boolean
+      // will have pgsql_type=boolean but type=text.
+      $type = $properties['pgsql_type'] ?? $properties['type'];
+      if (!$column_types or in_array($type, $column_types)) {
         $table_columns[] = $field;
       }
     }
