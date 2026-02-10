@@ -47,7 +47,7 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
     // First run the drush command on our test chado schema with no changes.
     // We expect there to be no errors or warnings in our test chado.
     $this->drush('tripal-chado:trp-check-terms', [], ['chado_schema' => $this->testSchemaName]);
-    $command_output = $this->getOutputRaw();
+    $command_output = $this->getOutputRaw() . $this->getErrorOutputRaw();
     $this->assertStringContainsString('[OK] There are no errors', $command_output,
       "Ensure that the trp-check-terms command does not find any errors in the prepared test chado instance.");
     $this->assertStringContainsString('[OK] There are no warnings', $command_output,
@@ -68,7 +68,7 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
         'auto-expand' => TRUE,
         'auto-fix' => TRUE,
       ]);
-    $command_output = $this->getOutputRaw();
+    $command_output = $this->getOutputRaw() . $this->getErrorOutputRaw();
     // There should still not be any errors.
     $this->assertStringContainsString('[OK] There are no errors', $command_output,
       "Ensure that the trp-check-terms command does not find any errors in the prepared test chado instance.");

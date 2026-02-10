@@ -37,9 +37,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
   /**
    * The database connection to the test chado.
    *
-   * @var \Drupal\Core\Database\Connection
+   * @var Drupal\tripal_chado\Database\ChadoConnection
    */
-  protected ChadoConnection $connection;
+  protected ChadoConnection $chado_connection;
 
   /**
    * Annotations associated with the mock_plugin.
@@ -63,7 +63,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
 
     $this->installConfig('system');
 
-    $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+    $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
   }
 
   /**
@@ -94,11 +94,11 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
       $instance,
       "We did not have an object created when trying to create an ChadoBuddy instance.");
     $this->assertIsObject(
-      $instance->connection,
+      $instance->chado_connection,
       "The chado connection should have been set by the plugin manager but the value is NOT AN OBJECT."
     );
     $this->assertInstanceOf(
-      ChadoConnection::class, $instance->connection,
+      ChadoConnection::class, $instance->chado_connection,
       "The chado connection should have been set by the plugin manager but the value is NOT A CHADOCONNECTION OBJECT."
     );
   }
@@ -107,7 +107,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
    * Tests focused on basic getter/setters.
    *
    * Specifically, label(), description(), makeAlias(), unmakeAlias(),
-   * removeTablePrefix().
+   * removeTablePrefix(), getSchemaName(), setSchemaName().
    */
   public function testChadoBuddyGetterSetters() {
 
@@ -122,11 +122,8 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // Make protected methods accessible.
     $reflection = new \ReflectionClass($instance);
     $makeAlias = $reflection->getMethod('makeAlias');
-    $makeAlias->setAccessible(TRUE);
     $unmakeAlias = $reflection->getMethod('unmakeAlias');
-    $unmakeAlias->setAccessible(TRUE);
     $removeTablePrefix = $reflection->getMethod('removeTablePrefix');
-    $removeTablePrefix->setAccessible(TRUE);
 
     // Label.
     $label = $instance->label();
@@ -201,6 +198,28 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $expected_values = ['real_name_no_dot' => 'newton', 'name.fictional.indeed' => 'dumbledore'];
     $dereferenced_values = $removeTablePrefix->invoke($instance, $referenced_values);
     $this->assertEquals($expected_values, $dereferenced_values, 'Unexpected dereferenced values from removeTablePrefix()');
+
+    // Test schema getter/setter.
+    $current_schema = $instance->getSchemaName();
+    $this->assertStringContainsString('_test_chado_', $current_schema,
+      'Test chado schema starts with _test_chado_');
+    $instance->setSchemaName('valid_but_new');
+    $new_schema = $instance->getSchemaName();
+    $this->assertEquals('valid_but_new', $new_schema,
+      'Setting schema to a new name');
+    $instance->setSchemaName($current_schema);
+    $new_schema = $instance->getSchemaName();
+    $this->assertEquals($current_schema, $new_schema,
+      'Resetting schema back to default');
+    $exception_message = '';
+    try {
+      $instance->setSchemaName('0Invalid');
+    }
+    catch (\Exception $e) {
+      $exception_message = $e->getMessage();
+    }
+    $this->assertStringContainsString('Could not use the schema name', $exception_message,
+      "We didn't get the exception message we expected for an invalid schema name");
   }
 
   /**
@@ -221,13 +240,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // Make protected methods accessible.
     $reflection = new \ReflectionClass($instance);
     $getTableColumns = $reflection->getMethod('getTableColumns');
-    $getTableColumns->setAccessible(TRUE);
     $addTableToCache = $reflection->getMethod('addTableToCache');
-    $addTableToCache->setAccessible(TRUE);
     $getTableCache = $reflection->getMethod('getTableCache');
-    $getTableCache->setAccessible(TRUE);
     $makeUpsertConditions = $reflection->getMethod('makeUpsertConditions');
-    $makeUpsertConditions->setAccessible(TRUE);
 
     // CASE: getTableColumns() with no tables.
     $returned_columns = $getTableColumns->invoke($instance, []);
@@ -356,13 +371,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // Make protected methods accessible.
     $reflection = new \ReflectionClass($instance);
     $validateInput = $reflection->getMethod('validateInput');
-    $validateInput->setAccessible(TRUE);
     $subsetInput = $reflection->getMethod('subsetInput');
-    $subsetInput->setAccessible(TRUE);
     $dereferenceBuddyRecord = $reflection->getMethod('dereferenceBuddyRecord');
-    $dereferenceBuddyRecord->setAccessible(TRUE);
     $validateOutput = $reflection->getMethod('validateOutput');
-    $validateOutput->setAccessible(TRUE);
 
     // CASE: valid values passed to validateInput().
     $user_values = [
@@ -702,10 +713,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // Make protected methods accessible.
     $reflection = new \ReflectionClass($instance);
     $addConditions = $reflection->getMethod('addConditions');
-    $addConditions->setAccessible(TRUE);
 
     // CASE: valid values passed to addConditions().
-    $query = $this->connection->select('1:cv', 'cv');
+    $query = $this->chado_connection->select('1:cv', 'cv');
     $conditions = [
       'cv.name' => 'EDAM',
     ];
@@ -723,7 +733,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // a query object ;-p.
     // We don't bother to test this because it is a TypeError.
     // CASE: calling addConditions() with an empty array of conditions.
-    $query = $this->connection->select('1:cv', 'cv');
+    $query = $this->chado_connection->select('1:cv', 'cv');
     $conditions = [];
     $options = [];
     $exception_caught = FALSE;
@@ -737,7 +747,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
 
     // CASE: calling addConditions() with a single key string to be
     // case insensitive.
-    $query = $this->connection->select('1:dbxref', 'dbxref');
+    $query = $this->chado_connection->select('1:dbxref', 'dbxref');
     $conditions = [
       'db.name' => 'Edam',
       'dbxref.accession' => 'Ab000001',

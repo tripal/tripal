@@ -5,7 +5,9 @@
  */
 
 use Drupal\Core\Database\ConnectionNotDefinedException;
-use \Drupal\Core\Database\Database;
+use Drupal\Core\Database\Database;
+use Drupal\Core\Hook\Attribute\LegacyRequirementsHook;
+use Drupal\user\Entity\Role;
 
 /**
  * Implementation of hook_install().
@@ -123,6 +125,7 @@ function tripal_uninstall() {
 /**
  * Implements hook_requirements().
  */
+#[LegacyRequirementsHook]
 function tripal_requirements($phase) {
   $checks = [];
   // Make sure the current install does not use per-table prefixes.
@@ -1072,39 +1075,92 @@ function tripal_update_10403() {
 }
 
 /**
- * Add uuid column to tripal_entity and populate existing rows.
+ * Implements hook_update_10404().
+ *
+ * Grants view Tripal Content permission to anonymous user and
+ * authenticated user by default.
  */
 function tripal_update_10404() {
-  $schema = Database::getConnection()->schema();
-  if (!$schema->fieldExists('tripal_entity', 'uuid')) {
-    $schema->addField('tripal_entity', 'uuid', [
-      'type' => 'varchar',
-      'length' => 128,
-      'not null' => TRUE,
-      'default' => '',
-    ]);
+  // Load the anonymous role.
+  $anonymous_role = Role::load('anonymous');
+
+  // Load the authenticated role.
+  $authenticated_role = Role::load('authenticated');
+
+  // Load all Tripal entity types.
+  $entity_types = \Drupal::service('entity_type.manager')
+    ->getStorage('tripal_entity_type')
+    ->loadByProperties([]);
+
+  // Build the permissions to grant.
+  $permissions_to_grant = [];
+  foreach ($entity_types as $entity_type) {
+    $entity_id = $entity_type->id();
+    $permissions_to_grant[] = "view all $entity_id content";
   }
 
-  $uuid_service = \Drupal::service('uuid');
-  $result = Database::getConnection()->select('tripal_entity', 't')
-    ->fields('t', ['id'])
-    ->execute();
-  foreach ($result as $row) {
-    Database::getConnection()->update('tripal_entity')
-      ->fields(['uuid' => $uuid_service->generate()])
-      ->condition('id', $row->id)
-      ->execute();
+  // Grant the permissions to the anonymous and authenticated roles.
+  foreach ([$anonymous_role, $authenticated_role] as $role) {
+    if ($role) {
+      foreach ($permissions_to_grant as $permission) {
+        $role->grantPermission($permission);
+      }
+    $role->save();
+    }
   }
+}
 
-  // Update entity base field definitions.
-  $entity_type_manager = \Drupal::entityTypeManager();
-  $entity_type_manager->clearCachedDefinitions();
+/**
+ * Implements hook_update_10405().
+ *
+ * Checks old Tripal content permissions and grants the new dynamic permissions.
+ */
+function tripal_update_10405() {
+  $roles = Role::loadMultiple();
 
-  $entity_type_ids = [];
-  $change_summary = \Drupal::service('entity.definition_update_manager')->getChangeSummary();
-  foreach ($change_summary as $entity_type_id => $change_list) {
-    $entity_type = $entity_type_manager->getDefinition($entity_type_id);
-    \Drupal::entityDefinitionUpdateManager()->installEntityType($entity_type);
-    $entity_type_ids[] = $entity_type_id;
+  // Load all Tripal entity types.
+  $entity_types = \Drupal::service('entity_type.manager')
+    ->getStorage('tripal_entity_type')
+    ->loadByProperties([]);
+
+  foreach ($roles as $role) {
+
+    // Get current Tripal content entity permissions.
+    $curr_permissions = $role->getPermissions();
+
+    // Map old permissions to new dynamic permissions.
+    if (in_array('add tripal content entities', $curr_permissions)) {
+      foreach ($entity_types as $entity_type) {
+        $entity_id = $entity_type->id();
+
+        // Grant 'create' permission for each Tripal content entity type.
+        $role->grantPermission("create $entity_id content");
+      }
+    }
+    if (in_array('view tripal content entities', $curr_permissions)) {
+      foreach ($entity_types as $entity_type) {
+        $entity_id = $entity_type->id();
+
+        // Grant 'view all' permission for each Tripal content entity type.
+        $role->grantPermission("view all $entity_id content");
+      }
+    }
+    if (in_array('edit tripal content entities', $curr_permissions)) {
+      foreach ($entity_types as $entity_type) {
+        $entity_id = $entity_type->id();
+
+        // Grant 'edit any' permission for each Tripal content entity type.
+        $role->grantPermission("edit any $entity_id content");
+      }
+    }
+    if (in_array('delete tripal content entities', $curr_permissions)) {
+      foreach ($entity_types as $entity_type) {
+        $entity_id = $entity_type->id();
+
+        // Grant 'delete any' permission for each Tripal content entity type.
+        $role->grantPermission("delete any $entity_id content");
+      }
+    }
+    $role->save();
   }
 }

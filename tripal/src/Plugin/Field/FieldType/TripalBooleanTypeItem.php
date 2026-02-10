@@ -21,6 +21,11 @@ use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
 )]
 class TripalBooleanTypeItem extends TripalFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "tripal_boolean_type";
 
   /**
@@ -45,12 +50,12 @@ class TripalBooleanTypeItem extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    $values = [];
+    $value = [];
 
-    $random = new \Drupal\Component\Utility\Random();
-    $values['value'] = mt_rand(0, 1) ? TRUE : FALSE;
+    $value['record_id'] = 0;
+    $value['value'] = mt_rand(0, 1) ? TRUE : FALSE;
 
-    return $values;
+    return [$value];
   }
 
   /**
@@ -72,4 +77,5 @@ class TripalBooleanTypeItem extends TripalFieldItemBase {
       new BoolStoragePropertyType($entity_type_id, self::$id, "value", $term),
     ];
   }
+
 }
