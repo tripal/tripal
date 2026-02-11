@@ -50,6 +50,7 @@ class ChadoIntegerTypeDefault extends ChadoFieldItemBase {
     'smallint',
     'integer',
     'bigint',
+    'int',
     'serial',
   ];
 

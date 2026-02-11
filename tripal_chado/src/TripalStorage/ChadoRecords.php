@@ -1344,7 +1344,8 @@ class ChadoRecords {
       $info_type = $info['pgsql_type'] ?? $info['type'];
 
       if ($info_type == 'integer' or $info_type == 'bigint' or
-          $info_type == 'smallint' or $info_type == 'serial') {
+          $info_type == 'smallint' or $info_type == 'serial' or
+          $info_type == 'int') {
         if (!preg_match('/^\d+$/', $col_val)) {
           $bad_types[$col] = 'Integer';
         }
@@ -1359,10 +1360,11 @@ class ChadoRecords {
           $bad_types[$col] = 'Timestamp';
         }
       }
-      elseif ($info_type == 'character varying' or $info_type == 'character' or $info_type == 'text') {
+      elseif ($info_type == 'character varying' or $info_type == 'character' or
+        $info_type == 'varchar' or $info_type == 'char' or $info_type == 'text') {
         // Do nothing.
       }
-      elseif ($info_type == 'double precision' or $info_type == 'real') {
+      elseif ($info_type == 'double precision' or $info_type == 'real' or $info_type == 'float') {
         if (!is_numeric($col_val)) {
           $bad_types[$col] = 'Number';
         }
@@ -1421,6 +1423,8 @@ class ChadoRecords {
         // If this is a string type column.
         if ($info_type == 'character varying' or
             $info_type == 'character' or
+            $info_type == 'varchar' or
+            $info_type == 'char' or
             $info_type == 'text') {
           if (strlen($col_val) > $info['size']) {
             $bad_sizes[$col] = $info['size'];
@@ -1485,7 +1489,7 @@ class ChadoRecords {
           // other types, e.g. integer, just check for null.
           if (($table_def['fields'][$col]['not null'] ?? FALSE) == FALSE and !$col_val) {
             if (in_array($table_def['fields'][$col]['type'],
-                ['character', 'character varying', 'text'])) {
+                ['character', 'character varying', 'char', 'varchar', 'text'])) {
               $query->condition($query->orConditionGroup()
                 ->condition($col, '', '=')
                 ->isNull($col));
