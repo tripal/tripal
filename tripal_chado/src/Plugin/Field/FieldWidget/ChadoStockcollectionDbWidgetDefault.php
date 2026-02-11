@@ -9,17 +9,17 @@ use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
- * Plugin implementation of default Chado stock widget.
+ * Plugin implementation of 'chado_stockcollection_db_widget_default' widget.
  */
 #[TripalFieldWidget(
-  id: 'chado_stock_widget_default',
-  label: new TranslatableMarkup('Chado Stock Widget'),
-  description: new TranslatableMarkup('The default stock widget.'),
+  id: 'chado_stockcollection_db_widget_default',
+  label: new TranslatableMarkup('Chado Stock Collection DB Widget'),
+  description: new TranslatableMarkup('The stock collection database widget.'),
   field_types: [
-    'chado_stock_type_default',
+    'chado_stockcollection_db_type_default',
   ],
 )]
-class ChadoStockWidgetDefault extends ChadoWidgetBase {
+class ChadoStockcollectionDbWidgetDefault extends ChadoWidgetBase {
 
   /**
    * {@inheritdoc}
@@ -30,7 +30,7 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
     $field_definition = $items[$delta]->getFieldDefinition();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_column'] ?? 'stock_id';
+      ?? $storage_settings['base_column'] ?? 'db_id';
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
@@ -38,7 +38,7 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
     $link = $item_vals['link'] ?? 0;
-    $stock_id = $item_vals['stock_id'] ?? 0;
+    $db_id = $item_vals['db_id'] ?? 0;
 
     $elements = [];
     $elements['record_id'] = [
@@ -65,13 +65,14 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
     ];
 
     // Create a select element specific to this content type.
+    // Create a select element specific to this content type.
     $options = [
-      'base_table' => 'stock',
+      'base_table' => 'db',
       'column_name' => 'name',
-      'type_column' => 'type_id',
-      'property_table' => 'stock',
+      'type_column' => 'x',
+      'property_table' => 'db',
     ];
-    $select_element = $this->genericSelectElement('stock_id', $stock_id, $options);
+    $select_element = $this->genericSelectElement('db_id', $db_id, $options);
     $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
@@ -97,15 +98,19 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    $values = $this->genericSelectMassageFormValues('stock_id', $values);
-    return $this->massageLinkingFormValues('stock_id', $values, $form_state);
+
+    $values = $this->genericSelectMassageFormValues('db_id', $values);
+    return $this->massageLinkingFormValues('db_id', $values, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
   public static function defaultSettings() {
-    return self::defaultSelectSettings() + parent::defaultSettings();
+    $default_settings = self::defaultSelectSettings();
+    $default_settings['match_limit'] = 20;
+    $default_settings['widget_select_limit'] = 20;
+    return $default_settings + parent::defaultSettings();
   }
 
   /**
