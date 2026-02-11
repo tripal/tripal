@@ -4,37 +4,22 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * Plugin implementation of default Tripal stock formatter.
+ * Implementation of 'chado_stockcollection_db_formatter_default' formatter.
  */
 #[TripalFieldFormatter(
-  id: 'chado_stock_formatter_default',
-  label: new TranslatableMarkup('Chado stock formatter'),
-  description: new TranslatableMarkup('A chado stock formatter'),
+  id: 'chado_stockcollection_db_formatter_default',
+  label: new TranslatableMarkup('Chado Stock Collection DB Formatter'),
+  description: new TranslatableMarkup('Displays the specific database that a stock collection links to.'),
   field_types: [
-    'chado_stock_type_default',
-  ],
-  valid_tokens: [
-    '[name]',
-    '[uniquename]',
-    '[description]',
-    '[type]',
-    '[is_obsolete]',
-    '[database_name]',
-    '[database_accession]',
-    '[genus]',
-    '[species]',
-    '[infratype]',
-    '[infratype_abbrev]',
-    '[infraname]',
-    '[abbreviation]',
-    '[common_name]',
+    'chado_stockcollection_db_type_default',
   ],
 )]
-class ChadoStockFormatterDefault extends ChadoFormatterBase {
+class ChadoStockCollectionDbFormatterDefault extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}
@@ -57,23 +42,9 @@ class ChadoStockFormatterDefault extends ChadoFormatterBase {
     foreach ($items as $delta => $item) {
       $values = [
         'entity_id' => $item->get('entity_id')->getString(),
-        'name' => $item->get('stock_name')->getString(),
-        'uniquename' => $item->get('stock_uniquename')->getString(),
-        'description' => $item->get('stock_description')->getString(),
-        'is_obsolete' => $item->get('stock_is_obsolete')->getString(),
-        'type' => $item->get('stock_type')->getString(),
-        'database_name' => $item->get('stock_database_name')->getString(),
-        'database_accession' => $item->get('stock_database_accession')->getString(),
-        'genus' => $item->get('stock_genus')->getString(),
-        'species' => $item->get('stock_species')->getString(),
-        'infratype' => $item->get('stock_infraspecific_type')->getString(),
-        'infraname' => $item->get('stock_infraspecific_name')->getString(),
-        'abbreviation' => $item->get('stock_abbreviation')->getString(),
-        'common_name' => $item->get('stock_common_name')->getString(),
+        'name' => $item->get('db_name')->getString(),
+        'url' => $item->get('db_url')->getString(),
       ];
-
-      // Special case handling for abbreviation of infraspecific type.
-      $values['infratype_abbrev'] = chado_abbreviate_infraspecific_rank($values['infratype']);
 
       // Substitute values in token string to generate displayed string.
       $displayed_string = $token_string;
@@ -82,7 +53,21 @@ class ChadoStockFormatterDefault extends ChadoFormatterBase {
       }
 
       // Create a clickable link to the corresponding entity when one exists.
-      $renderable_item = $lookup_manager->getRenderableItem($displayed_string, $values['entity_id']);
+      if ($values['entity_id'] > 0) {
+        $renderable_item = $lookup_manager->getRenderableItem($displayed_string, $values['entity_id']);
+      }
+      // Otherwise, check for a URL saved in chado and link to that.
+      elseif ($values['url']) {
+        $renderable_item = [
+          '#type' => 'link',
+          '#title' => $displayed_string,
+          '#url' => Url::fromUri($values['url']),
+        ];
+      }
+      // If neither exists, use the displayed string without a link.
+      else {
+        $renderable_item = ['#markup' => $displayed_string];
+      }
 
       $list[$delta] = $renderable_item;
     }
