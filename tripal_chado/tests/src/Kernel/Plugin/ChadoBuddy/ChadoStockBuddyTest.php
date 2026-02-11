@@ -53,7 +53,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $this->assertIsArray($stock_buddy_records, 'We did not retrieve an array for a Stock record that does not exist');
     $this->assertEquals(0, count($stock_buddy_records), 'We did not retrieve an empty array for a Stock record that does not exist');
 
-    // TEST: Insert a stock record with name, uniquename, type_id and organism_id.
+    // TEST: Insert a stock record with name, uniquename, type_id, organism_id.
     // First create an organism using the ChadoOrganismBuddy.
     $simple_organism_values = [
       'organism.genus' => 'Tripalus',
@@ -107,6 +107,108 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $stock_id = $values['get']['stock.stock_id'];
     $this->assertTrue(is_numeric($stock_id), 'We did not retrieve an integer stock_id for the new stock "Stock2"');
 
+  }
+
+  /**
+   * Data Provider: Provide scenarios to test the insertStock() method.
+   *
+   * @return array
+   *   An array of test scenarios, each containing:
+   *   - values: An array of stock values to insert.
+   *   - options: An array of options to pass to insertStock().
+   *   - num_expected_records: The expected number of stock records to be
+   *     created.
+   */
+  public static function provideInsertStockScenarios() {
+    $scenarios = [];
+
+    // #0: Insert a stock with name, uniquename, type_id, organism_id and
+    // don't validate the foreign keys.
+    $scenarios[] = [
+      [
+        'stock.name' => 'Stock1',
+        'stock.uniquename' => 'stock1',
+        // Cvterm ID for 'accession'.
+        'stock.type_id' => '3',
+        'stock.organism_id' => 1,
+      ],
+      ['validate_foreign_keys' => FALSE],
+      1,
+    ];
+
+    // #1: Provide an organism and validate foreign keys.
+    $scenarios[] = [
+      [
+        'stock.name' => 'Stock2',
+        'stock.uniquename' => 'stock2',
+        // Cvterm ID for 'accession'.
+        'stock.type_id' => '3',
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+      ],
+      [],
+      1,
+    ];
+
+    return $scenarios;
+
+  }
+
+  /**
+  * Test method for insertStock().
+  *
+  * @param array $values
+  *   An array of stock values to insert.
+  * @param array $options
+  *   An array of options to pass to insertStock().
+  * @param int $num_expected_records
+  *   The expected number of stock records to be created.
+  *
+  * @dataProvider provideInsertStockScenarios
+  */
+  #[DataProvider('provideInsertStockScenarios')]
+  public function testInsertStock(array $values, array $options, int $num_expected_records) {
+
+    // Insert our organisms needed by our test scenarios.
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $organism_instance = $type->createInstance('chado_organism_buddy', []);
+    $organism_instance->insertOrganism([
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+      'organism.abbreviation' => 'Trp',
+    ]);
+    $organism_instance->insertOrganism([
+      'organism.genus' => 'Postgres',
+      'organism.species' => 'chadoii',
+      'organism.abbreviation' => 'Pst',
+    ]);
+
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $stock_instance = $type->createInstance('chado_stock_buddy', []);
+
+    // Insert the stock record.
+    $test_records['set'] = $stock_instance->insertStock($values, $options);
+
+    // Now try retrieving the stock records we just inserted.
+    $test_records['get'] = $stock_instance->getStock($values);
+
+    // Verify we retrieved the expected number of records.
+    $this->assertCount(
+      $num_expected_records,
+      $test_records['get'],
+      "Did not retrieve the expected number of stock records after inserting.",
+    );
+    // Verify the inserted and retrieved records match.
+    $results = $this->multiAssert(
+      'insertStock',
+      $test_records,
+      'stock',
+      'stock.stock_id',
+      'Stock inserted via insertStock() method',
+      36
+    );
+    $stock_id = $results['get']['stock.stock_id'];
+    $this->assertTrue(is_numeric($stock_id), 'We did not retrieve a numeric stock_id for the new stock inserted via insertStock() method');
   }
 
 }

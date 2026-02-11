@@ -260,18 +260,22 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
     $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
-    // @todo do we need to check if this stock already exists? Ie. does Chado
-    // ensure a unique constraint on stock?
-    /**
-     * // Skip the validate step since the values have already been checked.
-     * $options['skip_validate'] = TRUE;
-     * $existing_records = $this->getStock($values, $options);
-     * if (count($existing_records) > 0) {
-     * throw new ChadoBuddyException("ChadoBuddy insertStock error, a stock record already exists that matches the specified values:\n" . print_r($values, TRUE));
-     * }
-     */
+    // Check if this stock already exists. This is needed because Chado does
+    // not ensure a unique constraint when primary keys are nullable.
+    // Skip the validate step since the values have already been checked.
+    $options['skip_validate'] = TRUE;
+    $existing_records = $this->getStock($values, $options);
+    if (count($existing_records) > 0) {
+      throw new ChadoBuddyException("ChadoBuddy insertStock error, a stock record already exists that matches the specified values:\n" . print_r($values, TRUE));
+    }
+
     // Validate that organism exists.
     $values = $this->validateStockOrganism($values, $options);
+    // Validate that stock type exists.
+    $values = $this->validateStockType($values, $options);
+    // Validate that stock dbxref exists or create it if permitted.
+    $values = $this->validateStockDbxref($values, $options);
+
     // Insert the stock record.
     try {
       $query = $this->chado_connection->insert('1:stock');
@@ -443,7 +447,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
         if (!isset($this->organism_buddy)) {
           $this->organism_buddy = $this->buddy_manager->createInstance('chado_organism_buddy', []);
         }
-        $organism_records = $this->organism_buddy->getorganism($organism_values, $options);
+        $organism_records = $this->organism_buddy->getOrganism($organism_values, $options);
         // If a organism was retrieved, set stock.organism_id to the organism_id.
         if ($organism_records) {
           // Ensure that we didn't retrieve multiple possible organisms.
