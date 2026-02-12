@@ -104,6 +104,7 @@ use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
  *     "bundle" = "type",
  *     "uid" = "user_id",
  *     "status" = "status",
+ *     "uuid" = "uuid",
  *   },
  *   links = {
  *     "canonical" = "/bio_data/{tripal_entity}",
@@ -168,6 +169,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $values += [
       'uid' => \Drupal::currentUser()->id(),
     ];
+    
+    if (empty($values['uuid'])) {
+      $values['uuid'] = \Drupal::service('uuid')->generate();
+    }
   }
 
   /**
