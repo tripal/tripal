@@ -76,8 +76,6 @@ jobs:
           tags: 'drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}'
           dockerfile: 'tripaldocker/drupal.Dockerfile'
           registry: 'docker.io'
-          multiPlatform: true
-          platform: linux/amd64,linux/arm64,linux/arm/v7
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
           password: '${{ secrets.DOCKERHUB_PASSWORD }}'
           buildArgs: 'drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}'
@@ -91,8 +89,6 @@ jobs:
           tags: 'drupal${{ matrix.drupal-version }}'
           dockerfile: 'tripaldocker/drupal.Dockerfile'
           registry: 'docker.io'
-          multiPlatform: true
-          platform: linux/amd64,linux/arm64,linux/arm/v7
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
           password: '${{ secrets.DOCKERHUB_PASSWORD }}'
           buildArgs: 'drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}'
@@ -106,8 +102,6 @@ jobs:
           tags: 'latest'
           dockerfile: 'tripaldocker/drupal.Dockerfile'
           registry: 'docker.io'
-          multiPlatform: true
-          platform: linux/amd64,linux/arm64,linux/arm/v7
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
           password: '${{ secrets.DOCKERHUB_PASSWORD }}'
           buildArgs: 'drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}'
