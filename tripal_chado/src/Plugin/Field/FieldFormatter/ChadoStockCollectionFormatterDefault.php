@@ -11,37 +11,26 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  * Plugin implementation of default Tripal stock formatter.
  */
 #[TripalFieldFormatter(
-  id: 'chado_stock_formatter_default',
-  label: new TranslatableMarkup('Chado stock formatter'),
-  description: new TranslatableMarkup('A chado stock formatter'),
+  id: 'chado_stockcollection_formatter_default',
+  label: new TranslatableMarkup('Chado Stock Collection formatter'),
+  description: new TranslatableMarkup('A simple list of the collections the stock is part of.'),
   field_types: [
-    'chado_stock_type_default',
+    'chado_stockcollection_type_default',
   ],
   valid_tokens: [
     '[name]',
     '[uniquename]',
-    '[description]',
     '[type]',
-    '[is_obsolete]',
-    '[database_name]',
-    '[database_accession]',
-    '[genus]',
-    '[species]',
-    '[infratype]',
-    '[infratype_abbrev]',
-    '[infraname]',
-    '[abbreviation]',
-    '[common_name]',
   ],
 )]
-class ChadoStockFormatterDefault extends ChadoFormatterBase {
+class ChadoStockCollectionFormatterDefault extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
-    $settings['token_string'] = '[name]';
+    $settings['token_string'] = '[uniquename]: [name]';
     return $settings;
   }
 
@@ -57,23 +46,10 @@ class ChadoStockFormatterDefault extends ChadoFormatterBase {
     foreach ($items as $delta => $item) {
       $values = [
         'entity_id' => $item->get('entity_id')->getString(),
-        'name' => $item->get('stock_name')->getString(),
-        'uniquename' => $item->get('stock_uniquename')->getString(),
-        'description' => $item->get('stock_description')->getString(),
-        'is_obsolete' => $item->get('stock_is_obsolete')->getString(),
-        'type' => $item->get('stock_type')->getString(),
-        'database_name' => $item->get('stock_database_name')->getString(),
-        'database_accession' => $item->get('stock_database_accession')->getString(),
-        'genus' => $item->get('stock_genus')->getString(),
-        'species' => $item->get('stock_species')->getString(),
-        'infratype' => $item->get('stock_infraspecific_type')->getString(),
-        'infraname' => $item->get('stock_infraspecific_name')->getString(),
-        'abbreviation' => $item->get('stock_abbreviation')->getString(),
-        'common_name' => $item->get('stock_common_name')->getString(),
+        'name' => $item->get('stockcollection_name')->getString(),
+        'uniquename' => $item->get('stockcollection_uniquename')->getString(),
+        'type' => $item->get('stockcollection_type')->getString(),
       ];
-
-      // Special case handling for abbreviation of infraspecific type.
-      $values['infratype_abbrev'] = chado_abbreviate_infraspecific_rank($values['infratype']);
 
       // Substitute values in token string to generate displayed string.
       $displayed_string = $token_string;
