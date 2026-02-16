@@ -538,7 +538,7 @@ field.formatter.settings.*:
           mapping:
             organism:
               type: string
-            label: 'Organism'
+              label: 'Organism'
             color:
               type: string
               label: 'Color specification'
