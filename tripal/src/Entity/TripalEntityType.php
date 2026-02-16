@@ -6,6 +6,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\Core\Entity\Attribute\ConfigEntityType;
 use Drupal\Core\Entity\EntityViewBuilder;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\Access\TripalEntityAccessControlHandler;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\tripal\ListBuilders\TripalEntityTypeListBuilder;
 use Drupal\tripal\Form\TripalEntityTypeForm;
@@ -271,6 +272,14 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     // Save the rest of the entity using the parent implementation.
     // This is when the id is assigned.
     $return_status = parent::save();
+
+    // Grant 'view all {content_type} content' permission to anonymous
+    // and authenticated user.
+    if ($return_status == 1) {
+      foreach (['anonymous', 'authenticated'] as $role) {
+        TripalEntityAccessControlHandler::grantViewAllPermission($this, $role);
+      }
+    }
 
     return $return_status;
   }
@@ -718,37 +727,40 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       'required' => TRUE,
     ];
 
-    $instances = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->id);
-    foreach ($instances as $instance) {
+    // The id may not yet be defined during inital gui construction.
+    if ($this->id) {
+      $instances = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->id);
+      foreach ($instances as $instance) {
 
-      $use_field = TRUE;
-      $field_name = $instance->getName();
+        $use_field = TRUE;
+        $field_name = $instance->getName();
 
-      // Remove base fields.
-      if (in_array($field_name, ['id', 'type', 'uid', 'term_id', 'title', 'status', 'created', 'changed'])) {
-        continue;
-      }
+        // Remove base fields.
+        if (in_array($field_name, ['id', 'type', 'uid', 'term_id', 'title', 'status', 'created', 'changed'])) {
+          continue;
+        }
 
-      // If only required fields should be returned,
-      // skip this field if it's not required.
-      if (!$instance->isRequired() and $options['required only']) {
-        continue;
-      }
+        // If only required fields should be returned,
+        // skip this field if it's not required.
+        if (!$instance->isRequired() and $options['required only']) {
+          continue;
+        }
 
-      // Iterate through the TripalEntity fields and see if they have
-      // sub-elements, if so, add those as tokens too.
-      // @todo handle sub-elements once TripalField's are implemented.
-      // If we have no elements to add then just add the field as is.
-      if ($use_field) {
-        // Build the token from the field information.
-        $token = $field_name;
-        $tokens[$token] = [
-          'label' => $instance->getLabel(),
-          'description' => $instance->getDescription(),
-          'token' => $token,
-          'field_name' => $field_name,
-          'required' => $instance->isRequired(),
-        ];
+        // Iterate through the TripalEntity fields and see if they have
+        // sub-elements, if so, add those as tokens too.
+        // @todo handle sub-elements once TripalField's are implemented.
+        // If we have no elements to add then just add the field as is.
+        if ($use_field) {
+          // Build the token from the field information.
+          $token = $field_name;
+          $tokens[$token] = [
+            'label' => $instance->getLabel(),
+            'description' => $instance->getDescription(),
+            'token' => $token,
+            'field_name' => $field_name,
+            'required' => $instance->isRequired(),
+          ];
+        }
       }
     }
 

@@ -80,7 +80,7 @@ class TripalEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
           '_entity_list' => $entity_type_id,
           '_title' => "{$entity_type->getLabel()} list",
         ])
-        ->setRequirement('_permission', 'access tripal content overview+administer tripal content')
+        ->setRequirement('_permission', 'administer tripal content')
         ->setOption('_admin_route', TRUE);
 
       return $route;

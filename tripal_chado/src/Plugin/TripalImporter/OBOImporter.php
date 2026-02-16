@@ -1768,9 +1768,11 @@ class OBOImporter extends ChadoImporterBase {
           'is_relationshiptype' => $is_relationshiptype,
           'is_obsolete' => $is_obsolete,
         ]);
-        $success = $query->execute();
-        if (!$success) {
-          throw new \Exception('Could not insert the cvterm, "' . $name . '"');
+        try {
+          $query->execute();
+        }
+        catch (\Exception $e) {
+          $this->logger->error("Could not insert the cvterm \"$name\": " . $e->getMessage());
         }
         $cvterm = $this->getChadoCVtermByName($cv->cv_id, $name);
       }
@@ -1818,7 +1820,6 @@ class OBOImporter extends ChadoImporterBase {
     $query->fields('CVT');
     $query->condition('CVT.name', $name);
     $query->condition('CVT.cv_id', $cv->cv_id);
-    $query->condition('CVT.dbxref_id', $dbxref->dbxref_id);
     $results = $query->execute();
     while ($check_cvterm = $results->fetchObject()) {
 
@@ -1845,7 +1846,7 @@ class OBOImporter extends ChadoImporterBase {
       // first and no longer has its own entry.
       $check_stanza = $this->getCachedTermStanza($check_accession);
       if (!$check_stanza) {
-        $new_name = $check_cvterm->getValue('name') . ' (' . $check_accession . ')';
+        $new_name = $check_cvterm->name . ' (' . $check_accession . ')';
         $query = $chado->update('1:cvterm');
         $query->fields([
           'name' => $new_name,
@@ -1853,6 +1854,8 @@ class OBOImporter extends ChadoImporterBase {
         ]);
         $query->condition('cvterm_id', $check_cvterm->cvterm_id);
         $query->execute();
+        $this->logger->notice('Renamed conflicting cv term ":old_name" to ":new_name"',
+          [':old_name' => $check_cvterm->name, ':new_name' => $new_name]);
         return TRUE;
       }
       // Case 2:  The conflicting term is in the OBO file (ie. has a stanza) and

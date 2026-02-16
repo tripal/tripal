@@ -3199,7 +3199,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
 
       // Check if an alternate ID field is suggested, if so, then use
       // that for the name.
-      if (array_key_exists($this->alt_id_attr, $attrs)) {
+      if (isset($this->alt_id_attr) && array_key_exists($this->alt_id_attr, $attrs)) {
         $uniquename = $attrs[$this->alt_id_attr][0];
         $name = $uniquename;
       }

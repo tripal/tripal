@@ -6,3 +6,4 @@ services:
     arguments:
       - '%app.root%'
       - '@entity_type.manager'
+      - '@module_handler'
