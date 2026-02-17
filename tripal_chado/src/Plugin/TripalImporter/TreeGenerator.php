@@ -2,9 +2,13 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
+use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
+use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Tree Generator implementation of the TripalImporterBase.
@@ -26,7 +30,7 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
     ],
   ],
 )]
-class TreeGenerator extends ChadoImporterBase {
+class TreeGenerator extends ChadoImporterBase implements ContainerFactoryPluginInterface {
 
   /**
    * Holds the list of all organisms currently in Chado.
@@ -49,6 +53,63 @@ class TreeGenerator extends ChadoImporterBase {
    * CV term id for local:rank
    */
   protected $rank_cvterm_id = NULL;
+
+  /**
+   * Provide the organism buddy instance.
+   */
+  protected object $organism_buddy;
+
+  /**
+   * Implements ContainerFactoryPluginInterface->create().
+   *
+   * We are injecting an additional dependency here, the
+   * ChadoBuddyPluginManager.
+   *
+   * Since we have implemented the ContainerFactoryPluginInterface this static
+   * function will be called behind the scenes when a Plugin Manager uses
+   * createInstance(). Specifically this method is used to determine the
+   * parameters to pass to the constructor.
+   *
+   * @param Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container.
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   *
+   * @return static
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('tripal_chado.database'),
+      $container->get('tripal_chado.chado_buddy'),
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(
+    array $configuration,
+    string $plugin_id,
+    mixed $plugin_definition,
+    ChadoConnection $chado_connection,
+    ChadoBuddyPluginManager $buddy_manager,
+  ) {
+    parent::__construct(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $chado_connection
+    );
+
+    $this->organism_buddy = $buddy_manager->createInstance('chado_organism_buddy', []);
+  }
 
 
   /**
@@ -221,7 +282,7 @@ class TreeGenerator extends ChadoImporterBase {
       }
       elseif ($status == 3) {
         // Save a list of problematic organisms for a final warning message.
-        $message = 'id:' . $organism->organism_id . ' name:' . chado_get_organism_scientific_name($organism);
+        $message = 'id:' . $organism->organism_id . ' name:' . $this->organism_buddy->getOrganismScientificName($organism);
         $omitted_organisms[] = $message;
       }
     }
@@ -336,14 +397,14 @@ class TreeGenerator extends ChadoImporterBase {
         continue;
       }
 
-      $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
+      $sci_name = $this->organism_buddy->getOrganismScientificName($organism);
       $leaf_rank = 'species';
       if (property_exists($organism, 'type_id') and $organism->type_id and ($organism->type != 'no_rank')) {
         $leaf_rank = $organism->type;
       }
 
       // Now add in the leaf node, which is the organism.
-      $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
+      $sci_name = $this->organism_buddy->getOrganismScientificName($organism);
       $node = [
         'name' => $sci_name,
         'depth' => $depth,
@@ -553,7 +614,12 @@ class TreeGenerator extends ChadoImporterBase {
         return 2;
       }
 
-      $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
+      $sci_name = $this->organism_buddy->getOrganismScientificName(
+        [
+          'organism.genus' => $organism->genus,
+          'organism.species' => $organism->species,
+        ]
+      );
       // $this->logger->notice(' - Importing @sci_name', array('@sci_name' => $sci_name));
 
       // Generate a nested array structure that can be used for importing the tree.
