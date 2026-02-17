@@ -349,7 +349,14 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       if ((property_exists($organism, 'is_new')) and ($organism->is_new)) {
         continue;
       }
-      $sci_name = $this->organism_buddy->getOrganismScientificName($organism);
+
+      $organism_arr = [];
+      foreach (['genus', 'species', 'infraspecific_name', 'type_id'] as $key) {
+        if ($organism->$key) {
+          $organism_arr['organism.' . $key] = $organism->$key;
+        }
+      }
+      $sci_name = $this->organism_buddy->getOrganismScientificName($organism_arr);
 
       // If the organism already has a taxonomy ID, query to NCBI not needed.
       if ($organism->ncbitaxid) {
@@ -625,7 +632,13 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       // be different than what is stored in chado. To keep the site
       // consistent, use the name from chado for the tree.
       if ($organism) {
-        $chado_name = $this->organism_buddy->getOrganismScientificName($organism);
+        $organism_arr = [];
+        foreach (['genus', 'species', 'infraspecific_name', 'type_id'] as $key) {
+          if ($organism->$key) {
+            $organism_arr['organism.' . $key] = $organism->$key;
+          }
+        }
+        $chado_name = $this->organism_buddy->getOrganismScientificName($organism_arr);
         if ($chado_name != $sci_name) {
           $this->logger->warning("Substituting site taxon \"@chado_name\" for NCBI taxon \"@sci_name\","
                                . " taxid @taxid, organism_id @organism_id",
