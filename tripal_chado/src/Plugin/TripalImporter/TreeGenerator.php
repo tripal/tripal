@@ -613,13 +613,16 @@ class TreeGenerator extends ChadoImporterBase implements ContainerFactoryPluginI
           and !preg_grep('/:'.$root_taxon.'$/', $lineage_elements)) {
         return 2;
       }
+      
+      // Prepare organism buddy, organism array parameter.
+      $organism_node = [];
+      foreach (['genus', 'species', 'infraspecific_name', 'type_id'] as $fld) {
+        if (!empty($organism->{$fld})) {
+          $organism_node['organism.' . $fld] = $organism->{$fld}; 
+        }
+      }
 
-      $sci_name = $this->organism_buddy->getOrganismScientificName(
-        [
-          'organism.genus' => $organism->genus,
-          'organism.species' => $organism->species,
-        ]
-      );
+      $sci_name = $this->organism_buddy->getOrganismScientificName($organism_node);
       // $this->logger->notice(' - Importing @sci_name', array('@sci_name' => $sci_name));
 
       // Generate a nested array structure that can be used for importing the tree.
