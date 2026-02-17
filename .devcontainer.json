@@ -9,7 +9,7 @@
       "chadoschema": "teapot"
     }
   },
-  "initializeCommand": "docker pull tripalproject/tripaldocker-drupal:drupal11.x-dev-php8.4-pgsql18",
+  "initializeCommand": "docker pull tripalproject/tripaldocker-drupal:drupal11.x-dev-php8.4-pgsql18 --platform linux/amd64",
   "workspaceMount": "source=${localWorkspaceFolder},target=/var/www/drupal/web/modules/contrib/tripal,type=bind",
   "workspaceFolder": "/var/www/drupal/web/modules/contrib/tripal",
   "customizations": {
