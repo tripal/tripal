@@ -6,8 +6,8 @@ var treeOptions;
 var treeData;
 // Holds the mouseover tooltip.
 var tooltip;
-// "tree_container" is the div id specified in the Drupal field formatter.
-var container_id = "tree_container";
+// "phylogram-container" is the div id specified in the Drupal field formatter.
+var container_id = "phylogram-container";
 
 // This function receives the tree settings and tree data from Drupal.
 (function ($, drupalSettings) {

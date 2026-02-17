@@ -72,7 +72,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
 
       // Placeholder for the phylogram image.
       $elements[$delta]['phylogram'] = [
-        '#markup' => '<div id="tree_container"></div>',
+        '#markup' => '<div class="tree-container" id="phylogram-container"></div>',
       ];
 
       // Add the variables used by the javascript.
@@ -175,7 +175,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#suffix' => '</div>',
     ];
     $elements[$delta]['row']['toolbar'] = [
-      '#prefix' => '<div class="col-md-8 btn-toolbar" role="toolbar" id="toolbar">',
+      '#prefix' => '<div class="col-md-8 btn-toolbar" role="toolbar" id="phylogram-toolbar">',
       '#suffix' => '</div>',
     ];
 
