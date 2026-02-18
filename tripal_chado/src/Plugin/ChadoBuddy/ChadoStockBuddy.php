@@ -59,7 +59,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
   protected ChadoCvtermBuddy $cvterm_buddy;
 
   /**
-   * Used to store the valid tables for obtaining/inserting an organism record.
+   * Used to store the valid tables for obtaining/inserting a stock record.
    *
    * @var array
    */

@@ -150,6 +150,36 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
+    // #2: Provide a stock type cvterm and cv, and validate foreign keys.
+    $scenarios[] = [
+      [
+        'stock.name' => 'Stock3',
+        'stock.uniquename' => 'stock3',
+        // Cvterm ID for 'accession'.
+        'cvterm.name' => 'accession',
+        'cv.name' => 'germplasm_ontology',
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+      ],
+      [],
+      1,
+    ];
+
+    // #3: Provide a valid dbxref and db, and validate foreign keys.
+    $scenarios[] = [
+      [
+        'stock.name' => 'Stock4',
+        'stock.uniquename' => 'stock4',
+        'stock.type_id' => '3',
+        'db.name' => 'CO_010',
+        'dbxref.accession' => '0000044',
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+      ],
+      [],
+      1,
+    ];
+
     return $scenarios;
 
   }
