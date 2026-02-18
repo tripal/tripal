@@ -2,8 +2,12 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
+use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\Services\TripalFileRetriever;
+use Drupal\tripal\Services\TripalLogger;
+use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\Database\ChadoConnection;
@@ -86,8 +90,12 @@ class TreeGenerator extends ChadoImporterBase implements ContainerFactoryPluginI
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('tripal_chado.database'),
       $container->get('tripal_chado.chado_buddy'),
+      $container->get('tripal_chado.database'),
+      $container->get('messenger'),
+      $container->get('tripal.logger'),
+      $container->get('tripal.fileretriever'),
+      $container->get('tripal.backend_publish'),
     );
   }
 
@@ -96,17 +104,26 @@ class TreeGenerator extends ChadoImporterBase implements ContainerFactoryPluginI
    */
   public function __construct(
     array $configuration,
-    string $plugin_id,
-    mixed $plugin_definition,
-    ChadoConnection $chado_connection,
+    $plugin_id,
+    $plugin_definition,
     ChadoBuddyPluginManager $buddy_manager,
+    ChadoConnection $chado_connection,
+    Messenger $messenger,
+    TripalLogger $logger,
+    TripalFileRetriever $fileretriever,
+    TripalBackendPublishManager $publish_manager,
   ) {
     parent::__construct(
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $chado_connection
+      $chado_connection,
+      $messenger,
+      $logger,
+      $fileretriever,
+      $publish_manager,
     );
+    
 
     $this->organism_buddy = $buddy_manager->createInstance('chado_organism_buddy', []);
   }
