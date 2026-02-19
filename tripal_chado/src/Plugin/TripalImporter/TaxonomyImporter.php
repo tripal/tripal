@@ -513,7 +513,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       $cvterm_id = $query->execute()->fetchField();
 
       // Remove the rank from the infraspecific name.
-      $abbrev = chado_abbreviate_infraspecific_rank($rank);
+      $abbrev = $this->organism_buddy->abbreviateInfraspecificRank($rank);
       $infra = preg_replace("/$abbrev/", "", $full_infra);
       $infra = trim($infra);
 
