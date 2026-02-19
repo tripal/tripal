@@ -15,6 +15,7 @@ use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
+use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy;
 
 /**
  * Taxonomy Importer implementation of the TripalImporterBase.
@@ -67,8 +68,10 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
 
   /**
    * Provide the organism buddy instance.
+   *
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy
    */
-  protected object $organism_buddy;
+  protected ChadoOrganismBuddy $organism_buddy;
 
   /**
    * Options for file retrieval from NCBI.

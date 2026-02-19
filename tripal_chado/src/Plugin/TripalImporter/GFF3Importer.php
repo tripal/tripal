@@ -15,6 +15,7 @@ use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;
+use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy;
 
 /**
  * GFF3 Importer implementation of the TripalImporterBase.
@@ -68,8 +69,10 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
 
   /**
    * Provide the organism buddy instance.
+   *
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy
    */
-  protected object $organism_buddy;
+  protected ChadoOrganismBuddy $organism_buddy;
 
   /**
    * A handle to a temporary file for caching the GFF features. This allows for

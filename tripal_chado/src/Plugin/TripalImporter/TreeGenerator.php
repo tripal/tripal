@@ -13,6 +13,7 @@ use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy;
 
 /**
  * Tree Generator implementation of the TripalImporterBase.
@@ -60,8 +61,10 @@ class TreeGenerator extends ChadoImporterBase implements ContainerFactoryPluginI
 
   /**
    * Provide the organism buddy instance.
+   *
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy
    */
-  protected object $organism_buddy;
+  protected ChadoOrganismBuddy $organism_buddy;
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
@@ -123,8 +126,6 @@ class TreeGenerator extends ChadoImporterBase implements ContainerFactoryPluginI
       $fileretriever,
       $publish_manager,
     );
-    
-
     $this->organism_buddy = $buddy_manager->createInstance('chado_organism_buddy', []);
   }
 
@@ -626,16 +627,16 @@ class TreeGenerator extends ChadoImporterBase implements ContainerFactoryPluginI
       // If a root node taxon was specified, check for its
       // presence in the lineage. If absent, this organism will
       // not be included in the tree, which is indicated by status=2.
-      if ($root_taxon and !in_array($root_taxon, $lineage_elements) 
+      if ($root_taxon and !in_array($root_taxon, $lineage_elements)
           and !preg_grep('/:'.$root_taxon.'$/', $lineage_elements)) {
         return 2;
       }
-      
+
       // Prepare organism buddy, organism array parameter.
       $organism_param = [];
       foreach (['genus', 'species', 'infraspecific_name', 'type_id'] as $fld) {
         if (!empty($organism->{$fld})) {
-          $organism_param['organism.' . $fld] = $organism->{$fld}; 
+          $organism_param['organism.' . $fld] = $organism->{$fld};
         }
       }
 
