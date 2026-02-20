@@ -466,7 +466,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     if (!$organism) {
       // We do the lookup in two steps so that there is no error if
       // we don't retrieve an organism_id.
-      $organism_ids = $this->organism_buddy->getOrganismFromScientificName($sci_name, []);
+      $organism_ids = $this->organism_buddy->getOrganismFromScientificName($sci_name);
       if ($organism_ids) {
         $query = $this->connection->select('1:organism', 'o');
         $query->condition('o.organism_id', $organism_ids[0]->getValue('organism.organism_id'), '=');
