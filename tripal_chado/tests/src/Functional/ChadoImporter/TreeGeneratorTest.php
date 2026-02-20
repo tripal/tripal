@@ -18,7 +18,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[group('importer-phylotree')]
 #[Group('bio-phylogeny')]
 #[RunTestsInSeparateProcesses]
-#[IgnoreDeprecations]
 class TreeGeneratorTest extends ChadoTestBrowserBase {
 
   /**
