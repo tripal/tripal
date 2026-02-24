@@ -282,7 +282,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // so that when it is selected, the type table select can be populated with
     // candidate tables.
     $elements['storage_plugin_settings']['base_table']['#ajax'] = [
-      'callback' => [$this, 'storageSettingsFormTypeFKeyAjaxCallback'],
+      'callback' => [$this, 'storageSettingsFormTypeFkeyAjaxCallback'],
       'event' => 'change',
       'progress' => [
         'type' => 'throbber',
@@ -428,7 +428,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    * @param string $base_table
    *   The Chado base table being used for this field.
    */
-  protected function getTypeFKeys($base_table) {
+  protected function getTypeFkeys($base_table) {
     $type_fkeys = [];
 
     // On the initial presentation of the form, the base table
@@ -486,7 +486,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    */
-  public function storageSettingsFormTypeFKeyAjaxCallback($form, &$form_state) {
+  public function storageSettingsFormTypeFkeyAjaxCallback($form, &$form_state) {
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#edit-type_fkey', $form['settings']['storage_plugin_settings']['type_fkey']));
     return $response;
