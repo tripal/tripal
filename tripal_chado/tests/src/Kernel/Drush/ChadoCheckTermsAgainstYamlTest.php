@@ -105,8 +105,9 @@ class ChadoCheckTermsAgainstYamlTest extends ChadoTestKernelBase {
     $this->drush_command->chadoCheckTermsAreAsExpected([]);
     $this->assertStringContainsString('The --chado_schema argument is required', $this->getLogOutput(),
       'Expect argument error for missing argument');
-    $this->drush_command->chadoCheckTermsAreAsExpected(['chado_schema' => 'teapot']);
-    $this->assertStringContainsString('The specified chado schema "teapot" does not exist', $this->getLogOutput(),
+    $nonexist_name = $this->testSchemaName . 'x';
+    $this->drush_command->chadoCheckTermsAreAsExpected(['chado_schema' => $nonexist_name]);
+    $this->assertStringContainsString('The specified chado schema "' . $nonexist_name . '" does not exist', $this->getLogOutput(),
       'Expect argument error for nonexistent chado schema');
 
     // CASE: no errors.
