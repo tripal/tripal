@@ -569,7 +569,7 @@ class ChadoManageCommands extends DrushCommands {
           ['@schema_name' => $schema_name, '@list' => implode(', ', $all_mviews)]));
       }
       else {
-        $this->logger->notice($this->t('No materialized views exist in the "@schema_name" schema.',
+        $this->logger->error($this->t('No materialized views exist in the "@schema_name" schema.',
           ['@schema_name' => $schema_name]));
       }
       return;
