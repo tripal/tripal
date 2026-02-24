@@ -1,12 +1,16 @@
 <?php
 namespace Drupal\tripal_chado\Commands;
 
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
 
 /**
  * Drush commands
  */
 class ChadoManageCommands extends DrushCommands {
+
+use StringTranslationTrait;
 
   /**
    * Install the Chado schema.
@@ -345,6 +349,126 @@ class ChadoManageCommands extends DrushCommands {
     else {
       throw new \Exception("Unable to set the default schema to '"
           . $options['schema-name'] . "' - that schema does not exist.");
+    }
+  }
+
+  /**
+   * Populate one or more Chado materialized views.
+   *
+   * @param string|null $view
+   *   The name of a materialized view, required unless --all or --list is used.
+   * @param array $options
+   *   Options passed on the drush command line.
+   *
+   * @return void
+   *   No return value.
+   */
+  #[CLI\Command(name: 'tripal-chado:populate-mview', aliases: ['trp-pop-mview'])]
+  #[CLI\Argument(
+    name: 'view',
+    description: 'A comma-delimited list of one or more materialized views to populate. Required unless --all or --list is specified.',
+  )]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the chado schema.')]
+  #[CLI\Option(name: 'all', description: 'Populate all materialized views.')]
+  #[CLI\Option(name: 'list', description: 'List all materialized views, but do not populate them.')]
+  #[CLI\Option(name: 'time', description: 'Show elapsed time to populate a materialized view.')]
+  #[CLI\Usage(
+    name: 'drush tripal-chado:populate-mview db2cv_mview,cv_root_mview --schema-name="teacup"',
+    description: 'Populates the db2cv_mview and cv_root_mview materialized views in the chado schema named "teacup".',
+  )]
+  #[CLI\Usage(
+    name: 'drush trp-pop-mview --all --time',
+    description: 'Populates all materialized views in the default chado schema and shows elapsed time for each.',
+  )]
+  #[CLI\Usage(
+    name: 'drush trp-pop-mview --list',
+    description: 'Lists all existing materialized views in the default chado schema.',
+  )]
+  public function populateMview(
+    ?string $view = NULL,
+    array $options = [
+      'schema-name' => NULL,
+      'all' => FALSE,
+      'list' => FALSE,
+      'time' => FALSE,
+    ],
+  ): void {
+
+    // @todo These services will be injected in PR #2399
+    /** @var Drupal\tripal\TripalDBX\TripalDbx $tripal_dbx */
+    $tripal_dbx = \Drupal::service('tripal.dbx');
+    /** @var Drupal\Core\Config\ConfigFactory $config_factory */
+    $config_factory = \Drupal::service('config.factory');
+    /** @var Drupal\tripal_chado\Services\ChadoMviewsManager $mview_manager */
+    $mview_manager = \Drupal::service('tripal_chado.materialized_views');
+
+    // Get options or set default if not specified.
+    $schema_name = $options['schema-name'] ?? $config_factory->get('tripal_chado.settings')->get('default_schema');
+    $option_all = $options['all'] ?? FALSE;
+    $option_list = $options['list'] ?? FALSE;
+    $option_time = $options['time'] ?? FALSE;
+
+    $schema_exists = $tripal_dbx->schemaExists($schema_name);
+    if (!$schema_exists) {
+      $this->logger->error($this->t('The schema "@schema_name" does not exist.',
+        ['@schema_name' => $schema_name]));
+      return;
+    }
+
+    if (!$option_all && !$option_list && !$view) {
+      $this->logger->error($this->t('Provide a materialized view name or use --all or --list, or use --help for options.'));
+      return;
+    }
+
+    // List of all materialized views, key is numeric ID, value is name.
+    $all_mviews = $mview_manager->getTables($schema_name);
+    if ($option_list) {
+      if ($all_mviews) {
+        $this->logger->notice($this->t('The following materialized views exist in the "@schema_name" schema: @list.',
+          ['@schema_name' => $schema_name, '@list' => implode(', ', $all_mviews)]));
+      }
+      else {
+        $this->logger->notice($this->t('No materialized views exist in the "@schema_name" schema.',
+          ['@schema_name' => $schema_name]));
+      }
+      return;
+    }
+    if (!$all_mviews) {
+      $this->logger->error($this->t('No materialized views exist in the "@schema_name" schema.',
+        ['@schema_name' => $schema_name]));
+      return;
+    }
+
+    // List of views to populate as specified by the drush command.
+    $populate_list = [];
+    if ($view) {
+      $populate_list = explode(',', $view);
+    }
+    else {
+      $populate_list = $all_mviews;
+    }
+
+    // Populate the materialized views.
+    foreach ($populate_list as $view_name) {
+      $view_name = trim($view_name);
+      if ($view_name) {
+        if (in_array($view_name, $all_mviews)) {
+          $this->logger->notice($this->t('Populating "@view_name"',
+            ['@view_name' => $view_name]));
+          $start_time = microtime(TRUE);
+          $mview = $mview_manager->loadByName($view_name, $schema_name);
+          $mview->populate();
+          if ($option_time) {
+            $etime = sprintf('%0.6f', microtime(TRUE) - $start_time);
+            $this->logger->notice($this->t('Elapsed time @etime seconds.',
+              ['@etime' => $etime]));
+          }
+        }
+        else {
+          $this->logger->error($this->t('Materialized view "@view_name" does not exist. Use the --list option to list available views.',
+            ['@view_name' => $view_name]));
+        }
+      }
     }
   }
 
