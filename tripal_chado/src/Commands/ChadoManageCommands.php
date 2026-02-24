@@ -306,7 +306,7 @@ class ChadoManageCommands extends DrushCommands {
         ['@schema_name' => $schema_name]));
     }
     else {
-      $this->logger->notice($this->t('Failed to add the Chado schema "@schema_name" to Tripal.',
+      $this->logger->error($this->t('Failed to add the Chado schema "@schema_name" to Tripal.',
         ['@schema_name' => $schema_name]));
     }
   }
@@ -405,7 +405,7 @@ class ChadoManageCommands extends DrushCommands {
   )]
   #[CLI\Usage(
     name: 'drush trp-chado-publish organism --migration-file=tripal3_entity_mapping.tsv --lenient-migration --batch-size=500',
-    description: 'Publishes organism content from a migrated tripal 3 site where not every record had been published. Memory is limited so reduce the batch sise.',
+    description: 'Publishes organism content from a migrated tripal 3 site where not every record had been published. Memory is limited, so reduce the batch size.',
   )]
   public function publish(
     string $bundle,
