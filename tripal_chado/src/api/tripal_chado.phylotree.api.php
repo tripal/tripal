@@ -911,10 +911,14 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
           ['%name' => $tree['name'], '%organism_id' => $organism_id]);
       }
       else {
-        $n_not_associated++;
-        \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to'
-          . ' associate to an organism that matches %name',
-          ['%name' => $tree['name']]);
+        // Only warn for failed association on leaf nodes, internal ones
+        // will rarely be associated.
+        if ($tree['is_leaf']) {
+          $n_not_associated++;
+          \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to'
+            . ' associate to an organism that matches %name',
+            ['%name' => $tree['name']]);
+        }
       }
     }
 
