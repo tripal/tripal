@@ -240,11 +240,17 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *     necessary fields and want to create the dbxref for stock.dbxref_id when
    *     creating this stock, if it does not already exist.
    *     NOTE: This is NOT recommended. We suggest you import ontologies first.
-   *   - validate_foreign_keys - set to FALSE (default TRUE) if you specified
-   *     the necessary fields to insert a foreign key into the stock table,
-   *     but do not want this method to peform a lookup to validate the key
-   *     exists. This is ideal for performance if you already did an insert or
-   *     lookup on this key and want to pass the information through.
+   *   - validate_foreign_keys - specifies whether to validate foreign keys.
+   *     Default is TRUE for all foreign keys. If you specify a boolean value,
+   *     then that value is used for validating all potential foreign keys.
+   *     You can skip validation for specific foreign keys by passing an array
+   *     of foreign keys to skip validation for, and setting their values to
+   *     FALSE. For insertStock(), valid keys are:
+   *     - 'organism_id'
+   *     - 'cvterm_id'
+   *     - 'dbxref_id'
+   *     This is ideal for performance if you already did an insert or lookup on
+   *     the specified key(s) and just want to pass the information through.
    *
    * @return array
    *   The inserted ChadoBuddyRecord will be returned on success and an
@@ -312,12 +318,11 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *     necessary fields and want to create the dbxref for stock.dbxref_id when
    *     creating/updating this stock, if it does not already exist. This option
    *     is passed internally from insertStock() or updateStock().
-   *   - validate_foreign_keys - set to FALSE (default TRUE) if you specified
-   *     the necessary fields to insert a foreign key into the stock table,
-   *     but do not want this method to peform a lookup to validate the key
-   *     exists. This is ideal for performance if you already did an insert or
-   *     lookup on this key and want to pass the information through. This
-   *     option is passed internally from insertStock() or updateStock().
+   *   - validate_foreign_keys - This option is passed internally from
+   *     insertStock() or updateStock(). This method will check for the key
+   *     'dbxref_id' to determine whether to validate it.
+   *     @see ::insertStock()
+   *     @see ::updateStock()
    *
    * @return array
    *   If a dbxref_id was found or created for stock.dbxref_id, then the $values
@@ -332,6 +337,10 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *     values were provided.
    */
   protected function validateStockDbxref(array $values, array $options = []) {
+    // Parse our 'validate_foreign_keys' option if provided, defaulting to TRUE
+    // if it is not set for key 'dbxref_id'.
+    $validate_dbxref = $this->parseValidateForeignKeysOption($options, 'dbxref_id');
+
     // Check if we already have an stock.dbxref_id AND a dbxref.dbxref_id, and
     // ensure they match.
     if (array_key_exists('stock.dbxref_id', $values)) {
@@ -340,7 +349,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
           throw new ChadoBuddyException("ChadoBuddy validateStockDbxref error, stock.dbxref_id and dbxref.dbxref_id values were both provided but do not match:\n" . print_r($values, TRUE));
         }
       }
-      elseif ($options['validate_foreign_keys'] ?? TRUE) {
+      elseif ($validate_dbxref) {
         // If only stock.dbxref_id was provided and we want to validate it,
         // set dbxref.dbxref_id to match and unset stock.dbxref_id.
         $values['dbxref.dbxref_id'] = $values['stock.dbxref_id'];
@@ -348,7 +357,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
       }
     }
 
-    if ($options['validate_foreign_keys'] ?? TRUE) {
+    if ($validate_dbxref) {
       // Check for dbxref identifiers and use ChadoDbxrefBuddy to try and
       // validate or retrieve the dbxref_id.
       $dbxref_values = $this->subsetInput($values, ['db', 'dbxref'], ['strict' => FALSE]);
@@ -401,12 +410,11 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   @see ::updateStock()
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
-   *   - validate_foreign_keys - set to FALSE (default TRUE) if you specified
-   *     the necessary fields to insert a foreign key into the stock table,
-   *     but do not want this method to peform a lookup to validate the key
-   *     exists. This is ideal for performance if you already did an insert or
-   *     lookup on this key and want to pass the information through. This
-   *     option is passed internally from insertStock() or updateStock().
+   *   - validate_foreign_keys - This option is passed internally from
+   *     insertStock() or updateStock(). This method will check for the key
+   *     'organism_id' to determine whether to validate it.
+   *     @see ::insertStock()
+   *     @see ::updateStock()
    *
    * @return array
    *   If an organism_id was found for stock.organism_id, then the $values
@@ -422,6 +430,9 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *     were provided.
    */
   protected function validateStockOrganism(array $values, array $options = []) {
+    // Parse our 'validate_foreign_keys' option if provided, defaulting to TRUE
+    // if it is not set for key 'organism_id'.
+    $validate_organism = $this->parseValidateForeignKeysOption($options, 'organism_id');
     // Check if we already have an stock.organism_id AND a organism.organism_id,
     // and ensure they match.
     if (array_key_exists('stock.organism_id', $values)) {
@@ -430,7 +441,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
           throw new ChadoBuddyException("ChadoBuddy validateStockOrganism error, stock.organism_id and organism.organism_id values were both provided but do not match:\n" . print_r($values, TRUE));
         }
       }
-      elseif ($options['validate_foreign_keys'] ?? TRUE) {
+      elseif ($validate_organism) {
         // If only stock.organism_id was provided and we want to validate it,
         // set organism.organism_id to match and unset stock.organism_id.
         $values['organism.organism_id'] = $values['stock.organism_id'];
@@ -438,7 +449,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
       }
     }
 
-    if ($options['validate_foreign_keys'] ?? TRUE) {
+    if ($validate_organism) {
       // Check for organism identifiers and use ChadoOrganismBuddy to try and
       // validate or retrieve the organism_id.
       $organism_values = $this->subsetInput($values, ['organism'], ['strict' => FALSE]);
@@ -448,7 +459,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
           $this->organism_buddy = $this->buddy_manager->createInstance('chado_organism_buddy', []);
         }
         $organism_records = $this->organism_buddy->getOrganism($organism_values, $options);
-        // If a organism was retrieved, set stock.organism_id to the organism_id.
+        // If an organism was retrieved, set stock.organism_id.
         if ($organism_records) {
           // Ensure that we didn't retrieve multiple possible organisms.
           if (count($organism_records) > 1) {
@@ -483,12 +494,11 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   @see ::updateStock()
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
-   *   - validate_foreign_keys - set to FALSE (default TRUE) if you specified
-   *     the necessary fields to insert a foreign key into the stock table,
-   *     but do not want this method to peform a lookup to validate the key
-   *     exists. This is ideal for performance if you already did an insert or
-   *     lookup on this key and want to pass the information through. This
-   *     option is passed internally from insertStock() or updateStock().
+   *   - validate_foreign_keys - This option is passed internally from
+   *     insertStock() or updateStock(). This method will check for the key
+   *     'cvterm_id' to determine whether to validate it.
+   *     @see ::insertStock()
+   *     @see ::updateStock()
    *
    * @return array
    *   - If a type_id was found for stock.type_id, then the $values parameter
@@ -503,6 +513,10 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *     provided.
    */
   protected function validateStockType(array $values, array $options = []) {
+    // Parse our 'validate_foreign_keys' option if provided, defaulting to TRUE
+    // if it is not set for key 'cvterm_id'.
+    $validate_cvterm = $this->parseValidateForeignKeysOption($options, 'cvterm_id');
+
     // Check if we already have a stock.type_id AND a cvterm.cvterm_id, and
     // ensure they match.
     if (array_key_exists('stock.type_id', $values)) {
@@ -511,7 +525,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
           throw new ChadoBuddyException("ChadoBuddy validateStockType error, stock.type_id and cvterm.cvterm_id values were both provided but do not match:\n" . print_r($values, TRUE));
         }
       }
-      elseif ($options['validate_foreign_keys'] ?? TRUE) {
+      elseif ($validate_cvterm) {
         // If only stock.type_id was provided and we want to validate it, set
         // cvterm.cvterm_id to match and unset stock.type_id.
         $values['cvterm.cvterm_id'] = $values['stock.type_id'];
@@ -519,7 +533,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
       }
     }
 
-    if ($options['validate_foreign_keys'] ?? TRUE) {
+    if ($validate_cvterm) {
       // Check for cvterm identifiers and use ChadoCvtermBuddy to try and
       // validate or retrieve the type_id.
       $cvterm_values = $this->subsetInput($values, ['cvterm', 'cv'], ['strict' => FALSE]);
@@ -551,6 +565,58 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
     }
 
     return $values;
+  }
+
+  /**
+   * A helper method to parse the 'validate_foreign_keys' option.
+   *
+   * This method is used by insertStock() and updateStock() to determine whether
+   * to validate foreign keys for the stock record. If the option is not set,
+   * then we return the default value of TRUE. If the option is set, then we
+   * check if it's an array and look for the valid key to determine whether to
+   * validate foreign keys for that key. If the option is a boolean value, then
+   * we return that value regardless of the valid key since it applies to all
+   * keys.
+   *
+   * @param array $options
+   *   Associative array of options supplied to a ChadoBuddy stock method.
+   * @param string $valid_key
+   *   The key to look for in the 'validate_foreign_keys' option if it's an
+   *   array. This should be the column name of the PRIMARY KEY in the foreign
+   *   table that we want to validate against, without the table prefix.
+   *   For example, if we want to validate stock.type_id, then the valid key
+   *   would be 'cvterm_id' since that is the primary key column name in the
+   *   cvterm table.
+   *
+   * @return bool
+   *   TRUE if we should validate foreign keys for $valid_key, FALSE if we
+   *   should not validate foreign keys for $valid_key. If $valid_key is not in
+   *   the validate_foreign_keys array, then return the default value of TRUE.
+   *
+   * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   - if the 'validate_foreign_keys' option contains the $valid_key but it
+   *     does not have a boolean value.
+   */
+  private function parseValidateForeignKeysOption(array $options, string $valid_key) {
+    if (array_key_exists('validate_foreign_keys', $options)) {
+      $validate_foreign_keys = $options['validate_foreign_keys'];
+      // If the option is a boolean, return that value for all keys.
+      if (is_bool($validate_foreign_keys)) {
+        return $validate_foreign_keys;
+      }
+      // If the option is an array, look for the valid key in the array and
+      // return its value if it's a boolean.
+      elseif (is_array($validate_foreign_keys) && array_key_exists($valid_key, $validate_foreign_keys)) {
+        if (is_bool($validate_foreign_keys[$valid_key])) {
+          return $validate_foreign_keys[$valid_key];
+        }
+        else {
+          throw new ChadoBuddyException("ChadoBuddy parseValidateForeignKeysOption error, validate_foreign_keys option for key $valid_key must be a boolean value:\n" . print_r($options, TRUE));
+        }
+      }
+    }
+    // Otherwise, return the default value of TRUE.
+    return TRUE;
   }
 
 }

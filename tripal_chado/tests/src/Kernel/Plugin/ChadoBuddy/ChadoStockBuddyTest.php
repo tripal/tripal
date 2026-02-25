@@ -122,8 +122,8 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
   public static function provideInsertStockScenarios() {
     $scenarios = [];
 
-    // #0: Insert a stock with name, uniquename, type_id, organism_id and
-    // don't validate the foreign keys.
+    // #0: Insert a stock with name, uniquename, type_id, organism_id, dbxref_id
+    // and don't validate any foreign keys.
     $scenarios[] = [
       [
         'stock.name' => 'Stock1',
@@ -131,6 +131,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
         // Cvterm ID for 'accession'.
         'stock.type_id' => '3',
         'stock.organism_id' => 1,
+        'stock.dbxref_id' => 3,
       ],
       ['validate_foreign_keys' => FALSE],
       1,
@@ -150,7 +151,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
-    // #2: Provide a stock type cvterm and cv, and validate foreign keys.
+    // #2: Provide a valid stock type cvterm and cv, and validate foreign keys.
     $scenarios[] = [
       [
         'stock.name' => 'Stock3',
@@ -170,13 +171,32 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [
         'stock.name' => 'Stock4',
         'stock.uniquename' => 'stock4',
-        'stock.type_id' => '3',
+        'stock.type_id' => 3,
         'db.name' => 'CO_010',
         'dbxref.accession' => '0000044',
         'organism.genus' => 'Tripalus',
         'organism.species' => 'databasica',
       ],
       [],
+      1,
+    ];
+
+    // #4: Provide a valid dbxref.dbxref_id and skip validating foreign keys
+    // for dbxref_id only.
+    $scenarios[] = [
+      [
+        'stock.name' => 'Stock5',
+        'stock.uniquename' => 'stock5',
+        'stock.type_id' => 3,
+        'dbxref.dbxref_id' => 3,
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+      ],
+      [
+        'validate_foreign_keys' => [
+          'dbxref_id' => FALSE,
+        ],
+      ],
       1,
     ];
 
