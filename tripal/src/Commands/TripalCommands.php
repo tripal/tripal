@@ -103,12 +103,13 @@ class TripalCommands extends DrushCommands {
     array $options = [
       'username' => NULL,
       'job_id' => NULL,
-      'parallel' => 0,
-      'max_jobs' => -1,
-      'single' => 0,
+      'parallel' => NULL,
+      'max_jobs' => NULL,
+      'single' => NULL,
     ],
   ) {
-
+    // Define defaults here so that both drush and phpunit test
+    // environments have the same defaults.
     $parallel = $options['parallel'] ?? 0;
     $job_id = $options['job_id'] ?? NULL;
     $max_jobs = $options['max_jobs'] ?? -1;
@@ -152,12 +153,13 @@ class TripalCommands extends DrushCommands {
     array $options = [
       'username' => NULL,
       'job_id' => NULL,
-      'parallel' => 0,
-      'max_jobs' => -1,
-      'single' => 0,
+      'parallel' => NULL,
+      'max_jobs' => NULL,
+      'single' => NULL,
     ],
   ) {
-
+    // Define defaults here so that both drush and phpunit test
+    // environments have the same defaults.
     $parallel = $options['parallel'] ?? 0;
     $job_id = $options['job_id'] ?? NULL;
     $max_jobs = $options['max_jobs'] ?? -1;
