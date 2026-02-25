@@ -533,4 +533,56 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     }
   }
 
+  /**
+   * Parses the 'validate_foreign_keys' option given to some buddy methods.
+   *
+   * This method is used by some insert, update and upsert methods to determine
+   * whether to validate foreign keys for the record. If the option is not set,
+   * then we return the default value of TRUE. If the option is set, then we
+   * check if it's an array and look for the valid key to determine whether to
+   * validate foreign keys for that key. If the option is a boolean value, then
+   * we return that value regardless of the valid key since it applies to all
+   * keys.
+   *
+   * @param array $options
+   *   Associative array of options supplied to a ChadoBuddy method.
+   * @param string $valid_key
+   *   The key to look for in the 'validate_foreign_keys' option if it's an
+   *   array. This should be the column name of the PRIMARY KEY in the foreign
+   *   table that we want to validate against, without the table prefix.
+   *   For example, if we want to validate stock.type_id, then the valid key
+   *   would be 'cvterm_id' since that is the primary key column name in the
+   *   cvterm table.
+   *
+   * @return bool
+   *   TRUE if we should validate foreign keys for $valid_key, FALSE if we
+   *   should not validate foreign keys for $valid_key. If $valid_key is not in
+   *   the validate_foreign_keys array, then return the default value of TRUE.
+   *
+   * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   - if the 'validate_foreign_keys' option contains the $valid_key but it
+   *     does not have a boolean value.
+   */
+  protected function parseValidateForeignKeysOption(array $options, string $valid_key) {
+    if (array_key_exists('validate_foreign_keys', $options)) {
+      $validate_foreign_keys = $options['validate_foreign_keys'];
+      // If the option is a boolean, return that value for all keys.
+      if (is_bool($validate_foreign_keys)) {
+        return $validate_foreign_keys;
+      }
+      // If the option is an array, look for the valid key in the array and
+      // return its value if it's a boolean.
+      elseif (is_array($validate_foreign_keys) && array_key_exists($valid_key, $validate_foreign_keys)) {
+        if (is_bool($validate_foreign_keys[$valid_key])) {
+          return $validate_foreign_keys[$valid_key];
+        }
+        else {
+          throw new ChadoBuddyException("ChadoBuddy parseValidateForeignKeysOption error, validate_foreign_keys option for key $valid_key must be a boolean value:\n" . print_r($options, TRUE));
+        }
+      }
+    }
+    // Otherwise, return the default value of TRUE.
+    return TRUE;
+  }
+
 }

@@ -123,27 +123,27 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $scenarios = [];
 
     // #0: Insert a stock with name, uniquename, type_id, organism_id, dbxref_id
-    // and don't validate any foreign keys.
+    // and validate foreign keys.
     $scenarios[] = [
       [
         'stock.name' => 'Stock1',
         'stock.uniquename' => 'stock1',
         // Cvterm ID for 'accession'.
-        'stock.type_id' => '3',
+        'stock.type_id' => 3,
         'stock.organism_id' => 1,
         'stock.dbxref_id' => 3,
       ],
-      ['validate_foreign_keys' => FALSE],
+      [],
       1,
     ];
 
-    // #1: Provide an organism and validate foreign keys.
+    // #1: Provide a valid organism genus + species and validate foreign keys.
     $scenarios[] = [
       [
         'stock.name' => 'Stock2',
         'stock.uniquename' => 'stock2',
         // Cvterm ID for 'accession'.
-        'stock.type_id' => '3',
+        'stock.type_id' => 3,
         'organism.genus' => 'Tripalus',
         'organism.species' => 'databasica',
       ],
@@ -196,6 +196,58 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
         'validate_foreign_keys' => [
           'dbxref_id' => FALSE,
         ],
+      ],
+      1,
+    ];
+
+    // #5: Provide a valid organism_id and skip validating foreign keys for
+    // organism_id only.
+    $scenarios[] = [
+      [
+        'stock.name' => 'Stock6',
+        'stock.uniquename' => 'stock6',
+        'stock.type_id' => 3,
+        'organism.organism_id' => 1,
+      ],
+      [
+        'validate_foreign_keys' => [
+          'organism_id' => FALSE,
+        ],
+      ],
+      1,
+    ];
+
+    // #6: Provide a valid cvterm.cvterm_id for stock type and skip validating
+    // foreign keys for cvterm_id only.
+    $scenarios[] = [
+      [
+        'stock.name' => 'Stock7',
+        'stock.uniquename' => 'stock7',
+        'cvterm.cvterm_id' => 3,
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+      ],
+      [
+        'validate_foreign_keys' => [
+          'cvterm_id' => FALSE,
+        ],
+      ],
+      1,
+    ];
+
+    // #7: Provide info to create a dbxref record for the stock.
+    $scenarios[] = [
+      [
+        'stock.name' => 'Stock8',
+        'stock.uniquename' => 'stock8',
+        'stock.type_id' => 3,
+        'dbxref.accession' => 'newAccession',
+        'db.name' => 'local',
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+      ],
+      [
+        'create_dbxref' => TRUE,
       ],
       1,
     ];
