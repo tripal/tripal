@@ -456,8 +456,8 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       foreach ($fkey_list as $type_table) {
         $fk_def = self::getChadoForeignKeyDef($type_table, 'cvterm', $schema);
         if ($fk_def) {
-          foreach ($fk_def['columns'] as $column_name) {
-            $fkey = $type_table . self::$table_column_delimiter . $column_name;
+          foreach ($fk_def['columns'] as $left_column => $right_column) {
+            $fkey = $type_table . self::$table_column_delimiter . $left_column;
             $type_fkeys[$fkey] = $fkey;
           }
         }
@@ -472,6 +472,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
         $type_fkeys = ['' => '- Select table and column -'] + $type_fkeys;
       }
     }
+
     return $type_fkeys;
   }
 
