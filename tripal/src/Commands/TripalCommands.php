@@ -211,7 +211,7 @@ class TripalCommands extends DrushCommands {
       Note: fields will also be added automatically if the TripalField-Collection YAML file has the same id.',
   )]
   #[CLI\Usage(
-    name: 'drush trp-import-types --username=[USERNAME] --collection_id=genomic_chado',
+    name: 'drush trp-import-types --collection_id=genomic_chado',
     description: 'Runs a job importing the genomic content types focused on a Chado backend.',
   )]
   public function tripalImportContentTypes(array $options = ['collection_id' => NULL]) {
