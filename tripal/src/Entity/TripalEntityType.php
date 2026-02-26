@@ -4,6 +4,7 @@ namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\Core\Entity\Attribute\ConfigEntityType;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityViewBuilder;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\Access\TripalEntityAccessControlHandler;
@@ -311,6 +312,22 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     // Check that the TripalTerm exists with the ID Space and Accession
     // added to this type when it was created.
     // If not, then create the TripalTerm, TripalIDSpace and TripalVocabulary.
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+    // After a content type is deleted, all drupal fields are deleted,
+    // however we will still have published entity records in the
+    // "tripal_entity" table. To complete the deletion process, we
+    // now delete those records.
+    $drupal_connection = \Drupal::database();
+    foreach (array_keys($entities) as $bundle_id) {
+      $query = $drupal_connection->delete('tripal_entity');
+      $query->condition('type', $bundle_id, '=');
+      $query->execute();
+    }
   }
 
   /**
