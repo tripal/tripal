@@ -55,7 +55,15 @@ class TripalEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
 
       // Entity types with serial IDs can specify this in their route
       // requirements, improving the matching process.
-      if ($this->getEntityTypeIdKeyType($entity_type) === 'integer') {
+      // Note that getEntityTypeIdKeyType() is deprecated as of Drupal 11.4,
+      // but hasIntegerId() is not available before 11.4.
+      if (method_exists($entity_type, 'hasIntegerId')) {
+        $is_int = $entity_type->hasIntegerId();
+      }
+      else {
+        $is_int = $this->getEntityTypeIdKeyType($entity_type) === 'integer';
+      }
+      if ($is_int) {
         $route->setRequirement($entity_type_id, '\d+');
       }
       return $route;
