@@ -3686,7 +3686,7 @@ INSERT INTO chado.cvterm VALUES (25, 7, 'Annotation track', 'Annotation of one p
 INSERT INTO chado.cvterm VALUES (26, 7, 'Phylogenetic tree', 'The raw data (not just an image) from which a phylogenetic tree is directly generated or plotted, such as topology, lengths (in time or in expected amounts of variance) and a confidence interval for each length.', 26, 0, 0);
 INSERT INTO chado.cvterm VALUES (27, 7, 'Species tree', 'A phylogenetic tree that reflects phylogeny of the taxa from which the characters (used in calculating the tree) were sampled.', 27, 0, 0);
 INSERT INTO chado.cvterm VALUES (28, 7, 'Gene tree', 'A phylogenetic tree that is an estimate of the character''s phylogeny.', 28, 0, 0);
-INSERT INTO chado.cvterm VALUES (29, 7, 'Phylogenetic tree visualisation', 'A phylogenetic tree that is an estimate of the character''s phylogeny.', 29, 0, 0);
+INSERT INTO chado.cvterm VALUES (29, 7, 'Phylogenetic tree visualisation', 'Render or visualise a phylogenetic tree.', 29, 0, 0);
 INSERT INTO chado.cvterm VALUES (30, 7, 'Sequence visualisation', 'Visualise, format or render a molecular sequence or sequences such as a sequence alignment, possibly with sequence features or properties shown.', 30, 0, 0);
 INSERT INTO chado.cvterm VALUES (31, 7, 'genome assembly', '', 31, 0, 0);
 INSERT INTO chado.cvterm VALUES (32, 7, 'Genome annotation', '', 32, 0, 0);
