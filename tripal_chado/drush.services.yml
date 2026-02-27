@@ -4,8 +4,11 @@ services:
     arguments:
       - '@config.factory'
       - '@date.formatter'
+      - '@entity_type.manager'
       - '@tripal.backend_publish'
       - '@tripal.dbx'
+      - '@tripal.importer'
+      - '@tripal.pub_library'
       - '@tripal_chado.apply_migrations'
       - '@tripal_chado.database'
       - '@tripal_chado.installer'
