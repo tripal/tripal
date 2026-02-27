@@ -6,19 +6,21 @@ use Drupal\Core\Database\Connection;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoCustomTables\ChadoMview;
 
+/**
+ * Provides functions for working with materialized views in chado.
+ */
 class ChadoMviewsManager extends ChadoCustomTableManager {
-
 
   /**
    * Instantiates a new ChadoCustomTableManager object.
    *
-   * @param \Drupal\Core\Database\Connection
-   *  The database connection object.
-   * @param Drupal\tripal_chado\Database\ChadoConnection
+   * @param \Drupal\Core\Database\Connection $drupal_connection
+   *   The database connection object.
+   * @param Drupal\tripal_chado\Database\ChadoConnection $chado_connection
    *   The chado connection used to query chado.
    */
-  public function __construct(Connection $connection, ChadoConnection $chado_connection) {
-    $this->connection = $connection;
+  public function __construct(Connection $drupal_connection, ChadoConnection $chado_connection) {
+    $this->drupal_connection = $drupal_connection;
     $this->chado_connection = $chado_connection;
   }
 
@@ -36,6 +38,7 @@ class ChadoMviewsManager extends ChadoCustomTableManager {
    *   schema is specified then the default schema is used.
    *
    * @return \Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable
+   *   A chado custom table object for the newly created table.
    */
   public function create(string $table_name, ?string $chado_schema = NULL) {
     $mview = new ChadoMview($table_name, $chado_schema);
@@ -46,14 +49,13 @@ class ChadoMviewsManager extends ChadoCustomTableManager {
    * Loads a materialized view whose Id matches the one provided.
    *
    * @param int $id
-   *   The ID of the materialized view
+   *   The ID of the materialized view.
    *
    * @return \Drupal\tripal_chado\ChadoCustomTables\ChadoMview
    *   A ChadoMview object or NULL if not found.
    */
   public function loadById(int $id) {
-    $public = \Drupal::database();
-    $query = $public->select('tripal_mviews','tm');
+    $query = $this->drupal_connection->select('tripal_mviews', 'tm');
     $query->join('tripal_custom_tables', 'tct', 'tct.table_id = tm.table_id');
     $query->fields('tct', ['table_name']);
     $query->fields('tct', ['chado']);
@@ -99,8 +101,7 @@ class ChadoMviewsManager extends ChadoCustomTableManager {
    *   The id of the matching materialized view.
    */
   public function findByName(string $table_name, ?string $chado_schema = NULL) {
-    $public = \Drupal::database();
-    $query = $public->select('tripal_mviews','tm');
+    $query = $this->drupal_connection->select('tripal_mviews', 'tm');
     $query->fields('tm', ['mview_id']);
     $query->join('tripal_custom_tables', 'tct', 'tm.table_id = tct.table_id');
     $query->condition('tct.chado', $chado_schema);
@@ -116,14 +117,13 @@ class ChadoMviewsManager extends ChadoCustomTableManager {
    *   no schema is specified then the default schema is used.
    *
    * @return array
-   *  An associatve array of the materialized views with the key being the id
-   *  and the value the table name.
+   *   An associatve array of the materialized views with the key being the id
+   *   and the value the table name.
    */
   public function getTables(?string $chado_schema = NULL) {
     $tables = [];
 
-    $public = \Drupal::database();
-    $query = $public->select('tripal_mviews','tm');
+    $query = $this->drupal_connection->select('tripal_mviews', 'tm');
     $query->join('tripal_custom_tables', 'tct', 'tm.table_id = tct.table_id');
     $query->fields('tct', ['table_id', 'table_name']);
     $query->fields('tm', ['mview_id']);
@@ -135,4 +135,5 @@ class ChadoMviewsManager extends ChadoCustomTableManager {
     }
     return $tables;
   }
+
 }

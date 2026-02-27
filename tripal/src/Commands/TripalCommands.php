@@ -103,12 +103,13 @@ class TripalCommands extends DrushCommands {
     array $options = [
       'username' => NULL,
       'job_id' => NULL,
-      'parallel' => 0,
-      'max_jobs' => -1,
-      'single' => 0,
+      'parallel' => NULL,
+      'max_jobs' => NULL,
+      'single' => NULL,
     ],
   ) {
-
+    // Define defaults here so that both drush and phpunit test
+    // environments have the same defaults.
     $parallel = $options['parallel'] ?? 0;
     $job_id = $options['job_id'] ?? NULL;
     $max_jobs = $options['max_jobs'] ?? -1;
@@ -152,12 +153,13 @@ class TripalCommands extends DrushCommands {
     array $options = [
       'username' => NULL,
       'job_id' => NULL,
-      'parallel' => 0,
-      'max_jobs' => -1,
-      'single' => 0,
+      'parallel' => NULL,
+      'max_jobs' => NULL,
+      'single' => NULL,
     ],
   ) {
-
+    // Define defaults here so that both drush and phpunit test
+    // environments have the same defaults.
     $parallel = $options['parallel'] ?? 0;
     $job_id = $options['job_id'] ?? NULL;
     $max_jobs = $options['max_jobs'] ?? -1;
@@ -209,7 +211,7 @@ class TripalCommands extends DrushCommands {
       Note: fields will also be added automatically if the TripalField-Collection YAML file has the same id.',
   )]
   #[CLI\Usage(
-    name: 'drush trp-import-types --username=[USERNAME] --collection_id=genomic_chado',
+    name: 'drush trp-import-types --collection_id=genomic_chado',
     description: 'Runs a job importing the genomic content types focused on a Chado backend.',
   )]
   public function tripalImportContentTypes(array $options = ['collection_id' => NULL]) {

@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 4.x
+      - '4.x'
   schedule:
     - cron: '0 6 * * *'
 
@@ -14,7 +14,7 @@ permissions: read-all
 
 jobs:
   running-tests:
-    name: 'PHP 8.3 - Drupal 11.1.x-dev - PostgreSQL 18'
+    name: 'PHP 8.5 - Drupal 11.3.x-dev - PostgreSQL 18'
     runs-on: 'ubuntu-latest'
     steps:
       - name: 'Checkout Repository'
@@ -24,8 +24,8 @@ jobs:
         with:
           directory-name: 'tripal'
           modules: 'tripal, tripal_biodb, tripal_chado, tripal_layout'
-          php-version: '8.3'
-          drupal-version: '11.1.x-dev'
+          php-version: '8.5'
+          drupal-version: '11.3.x-dev'
           pgsql-version: '18'
           build-image: TRUE
           dockerfile: 'Dockerfile'

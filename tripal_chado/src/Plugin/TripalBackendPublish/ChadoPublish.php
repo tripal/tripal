@@ -287,8 +287,8 @@ class ChadoPublish extends TripalBackendPublishBase {
     // Only look up object table for linking fields.
     elseif (array_key_exists('linker_table', $storage_plugin_settings)
         or array_key_exists('linker_table_and_column', $storage_plugin_settings)) {
-      $linker_table = $storage_plugin_settings['linker_table'] ?? NULL;
-      $linker_column = $storage_plugin_settings['linker_fkey_column'] ?? NULL;
+      $linker_table = $storage_plugin_settings['linker_table'] ?? '';
+      $linker_column = $storage_plugin_settings['linker_fkey_column'] ?? '';
       if (!$linker_table) {
         // This unicode character is a right arrow.
         // @todo How to get this value from tripal_chado/src/TripalField/ChadoFieldItemBase.php:34 ?

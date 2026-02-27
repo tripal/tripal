@@ -99,10 +99,12 @@ class ChadoManageCommands extends DrushCommands {
   )]
   public function installChado(
     array $options = [
-      'schema-name' => 'chado',
-      'chado-version' => '1.3',
+      'schema-name' => NULL,
+      'chado-version' => NULL,
     ],
   ): void {
+    // Define defaults here so that both drush and phpunit test
+    // environments have the same defaults.
     $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
     $chado_version = $options['chado-version'] ?? 1.3;
 
@@ -140,10 +142,12 @@ class ChadoManageCommands extends DrushCommands {
   )]
   public function migrateChado(
     array $options = [
-      'schema-name' => 'chado',
-      'list' => 0,
+      'schema-name' => NULL,
+      'list' => NULL,
     ],
   ): void {
+    // Define defaults here so that both drush and phpunit test
+    // environments have the same defaults.
     $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
     $option_list = $options['list'] ?? 0;
     $option_yes = $options['yes'] ?? 0;
@@ -237,9 +241,11 @@ class ChadoManageCommands extends DrushCommands {
   )]
   public function dropChado(
     array $options = [
-      'schema-name' => 'chado',
+      'schema-name' => NULL,
     ],
   ): void {
+    // Define defaults here so that both drush and phpunit test
+    // environments have the same defaults.
     $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
 
     $this->remover->setParameters([
@@ -275,6 +281,8 @@ class ChadoManageCommands extends DrushCommands {
       'schema-name' => NULL,
     ],
   ): void {
+    // Define defaults here so that both drush and phpunit test
+    // environments have the same defaults.
     $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
 
     $this->logger->notice($this->t('Preparing Drupal ("public") + Chado ("@schema_name").',
@@ -314,9 +322,11 @@ class ChadoManageCommands extends DrushCommands {
   )]
   public function addToTripal(
     array $options = [
-      'schema-name' => 'chado',
+      'schema-name' => NULL,
     ],
   ): void {
+    // Define defaults here so that both drush and phpunit test
+    // environments have the same defaults.
     $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
 
     $this->logger->notice($this->t('Adding the Chado schema "@schema_name" to Tripal.',
@@ -333,7 +343,7 @@ class ChadoManageCommands extends DrushCommands {
         ['@schema_name' => $schema_name]));
     }
     else {
-      $this->logger->notice($this->t('Failed to add the Chado schema "@schema_name" to Tripal.',
+      $this->logger->error($this->t('Failed to add the Chado schema "@schema_name" to Tripal.',
         ['@schema_name' => $schema_name]));
     }
   }
@@ -360,7 +370,10 @@ class ChadoManageCommands extends DrushCommands {
       'schema-name' => NULL,
     ],
   ): void {
+    // Define defaults here so that both drush and phpunit test
+    // environments have the same defaults.
     $schema_name = $options['schema-name'] ?? NULL;
+
     if (!$schema_name) {
       $this->logger->error($this->t('The "schema-name" parameter is required.'));
       return;
@@ -432,19 +445,21 @@ class ChadoManageCommands extends DrushCommands {
   )]
   #[CLI\Usage(
     name: 'drush trp-chado-publish organism --migration-file=tripal3_entity_mapping.tsv --lenient-migration --batch-size=500',
-    description: 'Publishes organism content from a migrated tripal 3 site where not every record had been published. Memory is limited so reduce the batch sise.',
+    description: 'Publishes organism content from a migrated tripal 3 site where not every record had been published. Memory is limited, so reduce the batch size.',
   )]
   public function publish(
     string $bundle,
     array $options = [
       'schema-name' => NULL,
-      'datastore' => 'chado_storage',
-      'batch-size' => '1000',
-      'migration-file' => '',
-      'lenient-migration' => FALSE,
-      'republish' => FALSE,
+      'datastore' => NULL,
+      'batch-size' => NULL,
+      'migration-file' => NULL,
+      'lenient-migration' => NULL,
+      'republish' => NULL,
     ],
   ): void {
+    // Define defaults here so that both drush and phpunit test
+    // environments have the same defaults.
     $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
     $datastore = $options['datastore'] ?? 'chado_storage';
     $batch_size = $options['batch-size'] ?? '1000';
@@ -508,10 +523,12 @@ class ChadoManageCommands extends DrushCommands {
     string $bundle,
     array $options = [
       'schema-name' => NULL,
-      'datastore' => 'chado_storage',
-      'all' => FALSE,
+      'datastore' => NULL,
+      'all' => NULL,
     ],
   ): void {
+    // Define defaults here so that both drush and phpunit test
+    // environments have the same defaults.
     $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
     $datastore = $options['datastore'] ?? 'chado_storage';
     $option_all = $options['all'] ?? FALSE;
@@ -564,13 +581,14 @@ class ChadoManageCommands extends DrushCommands {
     ?string $view = NULL,
     array $options = [
       'schema-name' => NULL,
-      'all' => FALSE,
-      'list' => FALSE,
-      'time' => FALSE,
+      'all' => NULL,
+      'list' => NULL,
+      'time' => NULL,
     ],
   ): void {
 
-    // Get options or set default if not specified.
+    // Define defaults here so that both drush and phpunit test
+    // environments have the same defaults.
     $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
     $option_all = $options['all'] ?? FALSE;
     $option_list = $options['list'] ?? FALSE;
@@ -596,7 +614,7 @@ class ChadoManageCommands extends DrushCommands {
           ['@schema_name' => $schema_name, '@list' => implode(', ', $all_mviews)]));
       }
       else {
-        $this->logger->notice($this->t('No materialized views exist in the "@schema_name" schema.',
+        $this->logger->error($this->t('No materialized views exist in the "@schema_name" schema.',
           ['@schema_name' => $schema_name]));
       }
       return;
