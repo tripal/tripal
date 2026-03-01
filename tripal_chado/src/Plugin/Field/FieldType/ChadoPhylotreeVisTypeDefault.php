@@ -17,7 +17,7 @@ use Drupal\tripal_chado\Services\ChadoPhylotree;
   id: 'chado_phylotreevis_type_default',
   label: new TranslatableMarkup('Chado Phylogenetic Visualization Field Type'),
   description: new TranslatableMarkup('Visualization of a phylogenetic tree.'),
-  default_widget: '',
+  default_widget: 'chado_phylotreevis_widget_default',
   default_formatter: 'chado_phylotreevis_formatter_default',
   cardinality: 1,
 )]
@@ -105,10 +105,15 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
-      array $field_instances, array $options = []): array {
+  public static function discover(
+    TripalEntityType $bundle,
+    string $field_id,
+    array $field_types,
+    array $field_instances,
+    array $options = [],
+  ): array {
 
-    // Specific settings for this field
+    // Specific settings for this field.
     $options += [
       'id' => self::$id,
       'name' => self::generateFieldName($bundle, 'phylotreevis'),
@@ -120,7 +125,7 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
       'description' => 'Render or visualise a phylogenetic tree.',
     ];
 
-    // Call the parent discover() with this field's specific options
+    // Call the parent discover() with this field's specific options.
     $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
     return $field_list;
   }
