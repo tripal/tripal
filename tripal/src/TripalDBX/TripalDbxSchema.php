@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal\TripalDBX;
 
-use Drupal\Core\Database\DatabaseExceptionWrapper;
 use Drupal\Core\Database\SchemaObjectExistsException;
 use Drupal\pgsql\Driver\Database\pgsql\Schema as PgSchema;
 use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
@@ -1010,7 +1009,7 @@ EOD;
       ";
       $result = $this->connection->query(
           $sql_query,
-          [':schema' => $schema_name, ':table' => $table_name, ]
+          [':schema' => $schema_name, ':table' => $table_name]
       );
       $table_raw_definition = '';
       if ($result) {
