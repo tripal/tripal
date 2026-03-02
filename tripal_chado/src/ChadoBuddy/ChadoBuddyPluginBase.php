@@ -79,19 +79,22 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * @param string $table_name
    *   The table name to query.
    *
-   * @return array
-   *   The table schema.
+   * @return array|NULL
+   *   The table schema, or NULL if the table does not exist.
    */
-  public function getChadoTableDef(string $table_name): array {
-    $parameters = [
-      'format' => 'drupal',
-      'source' => [
-        'file',
-        'tripal',
-        'database',
-      ],
-    ];
-    $def = $this->chado_connection->schema()->getTableDef($table_name, $parameters);
+  public function getChadoTableDef(string $table_name): ?array {
+    $def = NULL;
+    if ($this->chado_connection->schema()->checkTableExists($table_name)) {
+      $parameters = [
+        'format' => 'drupal',
+        'source' => [
+          'file',
+          'tripal',
+          'database',
+        ],
+      ];
+      $def = $this->chado_connection->schema()->getTableDef($table_name, $parameters);
+    }
     return $def;
   }
 
