@@ -84,7 +84,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    */
   public function getChadoTableDef(string $table_name): ?array {
     $def = NULL;
-    if ($this->chado_connection->schema()->checkTableExists($table_name)) {
+    if ($this->chado_connection->schema()->tableExists($table_name)) {
       $parameters = [
         'format' => 'drupal',
         'source' => [
