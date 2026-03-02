@@ -7,6 +7,7 @@
 use Drupal\Core\Database\ConnectionNotDefinedException;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Hook\Attribute\LegacyRequirementsHook;
+use Drupal\user\Entity\Role;
 
 /**
  * Implementation of hook_install().
@@ -1070,5 +1071,96 @@ function tripal_update_10403() {
       'label' => t('Data Search'),
       'description' => t('The Data Search menu contains links to search tools for finding biological data.'),
     ])->save();
+  }
+}
+
+/**
+ * Implements hook_update_10404().
+ *
+ * Grants view Tripal Content permission to anonymous user and
+ * authenticated user by default.
+ */
+function tripal_update_10404() {
+  // Load the anonymous role.
+  $anonymous_role = Role::load('anonymous');
+
+  // Load the authenticated role.
+  $authenticated_role = Role::load('authenticated');
+
+  // Load all Tripal entity types.
+  $entity_types = \Drupal::service('entity_type.manager')
+    ->getStorage('tripal_entity_type')
+    ->loadByProperties([]);
+
+  // Build the permissions to grant.
+  $permissions_to_grant = [];
+  foreach ($entity_types as $entity_type) {
+    $entity_id = $entity_type->id();
+    $permissions_to_grant[] = "view all $entity_id content";
+  }
+
+  // Grant the permissions to the anonymous and authenticated roles.
+  foreach ([$anonymous_role, $authenticated_role] as $role) {
+    if ($role) {
+      foreach ($permissions_to_grant as $permission) {
+        $role->grantPermission($permission);
+      }
+    $role->save();
+    }
+  }
+}
+
+/**
+ * Implements hook_update_10405().
+ *
+ * Checks old Tripal content permissions and grants the new dynamic permissions.
+ */
+function tripal_update_10405() {
+  $roles = Role::loadMultiple();
+
+  // Load all Tripal entity types.
+  $entity_types = \Drupal::service('entity_type.manager')
+    ->getStorage('tripal_entity_type')
+    ->loadByProperties([]);
+
+  foreach ($roles as $role) {
+
+    // Get current Tripal content entity permissions.
+    $curr_permissions = $role->getPermissions();
+
+    // Map old permissions to new dynamic permissions.
+    if (in_array('add tripal content entities', $curr_permissions)) {
+      foreach ($entity_types as $entity_type) {
+        $entity_id = $entity_type->id();
+
+        // Grant 'create' permission for each Tripal content entity type.
+        $role->grantPermission("create $entity_id content");
+      }
+    }
+    if (in_array('view tripal content entities', $curr_permissions)) {
+      foreach ($entity_types as $entity_type) {
+        $entity_id = $entity_type->id();
+
+        // Grant 'view all' permission for each Tripal content entity type.
+        $role->grantPermission("view all $entity_id content");
+      }
+    }
+    if (in_array('edit tripal content entities', $curr_permissions)) {
+      foreach ($entity_types as $entity_type) {
+        $entity_id = $entity_type->id();
+
+        // Grant 'edit any' permission for each Tripal content entity type.
+        $role->grantPermission("edit any $entity_id content");
+      }
+    }
+    if (in_array('delete tripal content entities', $curr_permissions)) {
+      foreach ($entity_types as $entity_type) {
+        $entity_id = $entity_type->id();
+
+        // Grant 'delete any' permission for each Tripal content entity type.
+        $role->grantPermission("delete any $entity_id content");
+      }
+    }
+    $role->save();
   }
 }
