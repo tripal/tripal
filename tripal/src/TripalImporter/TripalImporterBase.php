@@ -332,13 +332,13 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    */
   public function createImportJob($run_args, $file_details = []) {
 
-    // global $user;
-    $user = User::load(\Drupal::currentUser()->id());
+    // Currently user is non-default only if run by drush.
+    $uid = $run_args['uid'] ?? \Drupal::currentUser()->id();
 
     try {
       // Build the values for the tripal_importer table insert.
       $values = [
-        'uid' => $user->get('uid')->value,
+        'uid' => $uid,
         'class' => $this->plugin_id,
         'submit_date' => time(),
       ];
@@ -453,12 +453,16 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   /**
    * Submits the importer for execution as a job.
    *
+   * @param int|null $uid
+   *   The ID of the user submitting the job.
+   *
    * @return int
    *   The ID of the newly submitted job.
    */
-  public function submitJob() {
-    $user = \Drupal::currentUser();
-    $uid = $user->id();
+  public function submitJob(?int $uid = NULL) {
+    if (!$uid) {
+      $uid = \Drupal::currentUser()->id();
+    }
 
     if (!$this->import_id) {
       throw new \Exception('Cannot submit an importer job without an import record. Please run createImportJob() first.');
