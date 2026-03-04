@@ -313,4 +313,163 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $this->assertTrue(is_numeric($stock_id), 'We did not retrieve a numeric stock_id for the new stock inserted via insertStock() method');
   }
 
+  /**
+   * Data Provider: Trigger exceptions in ChadoStockBuddy methods.
+   *
+   * @return array
+   *   An array of test scenarios, each containing:
+   *   - method_name: The ChadoStockBuddy method to call.
+   *   - method_input: The input array to give to the desired method. Depending
+   *     on the method, this can include an array of values for insert, array of
+   *     conditions for lookup, or both. It can also include an array of
+   *     options, though not required.
+   *   - expected_exception_message: The expected exception message.
+   */
+  public static function provideStockBuddyExceptionScenarios() {
+    $scenarios = [];
+
+    /*
+     * NOTE: Does not currently trigger the following cases:
+     * - ChadoBuddy getStock database error
+     */
+
+    // #0: insertStock() when a record with these values already exists.
+    $scenarios[] = [
+      'insertStock',
+      [
+        [
+          'stock.name' => 'ExistingStock',
+          'stock.uniquename' => 'existingstock',
+          'stock.type_id' => 3,
+          'dbxref.dbxref_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+      ],
+      "ChadoBuddy insertStock error, a stock record already exists that matches the specified values:",
+    ];
+
+    // #1: insertStock() with insufficient values.
+    $scenarios[] = [
+      'insertStock',
+      [
+        [
+          'stock.name' => 'LonesomeStock',
+        ],
+      ],
+      "ChadoBuddy insertStock database error ",
+    ];
+
+    // #2: insertStock() where stock.dbxref_id and dbxref.dbxref_id don't match.
+    $scenarios[] = [
+      'insertStock',
+      [
+        [
+          'stock.name' => 'StockWithMismatchDbxref',
+          'stock.uniquename' => 'stockwithmismatchdbxref',
+          'stock.type_id' => 3,
+          'stock.dbxref_id' => 1,
+          'dbxref.dbxref_id' => 2,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+      ],
+      "ChadoBuddy validateStockDbxref error, stock.dbxref_id and dbxref.dbxref_id values were both provided but do not match:",
+    ];
+
+    // #3: insertStock() with dbxref values that match more than one dbxref_id.
+    $scenarios[] = [
+      'insertStock',
+      [
+        [
+          'stock.name' => 'StockWithTwoDbxref',
+          'stock.uniquename' => 'stockwithtwodbxref',
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'dbxref.db_id' => 4,
+        ],
+      ],
+      "ChadoBuddy validateStockDbxref error, more than one record matched the values specified:",
+    ];
+
+    // #4: insertStock() where dbxref values are provided but could not find or
+    // create a matching dbxref record.
+    $scenarios[] = [
+      'insertStock',
+      [
+        [
+          'stock.name' => 'StockWithNoDbxref',
+          'stock.uniquename' => 'stockwithnodbxref',
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'dbxref.accession' => 'noSuchAccession',
+        ],
+      ],
+      "ChadoBuddy validateStockDbxref error, could not find or create a dbxref, but dbxref values were provided:",
+    ];
+    // Trigger exceptions in updateStock() and validateStockOrganism() using
+    // updateStock().
+
+    // Trigger exceptions in upsertStock() and validateStockType() using
+    // upsertStock().
+
+    return $scenarios;
+  }
+
+  /**
+   * Test method to trigger exceptions in ChadoStockBuddy class.
+   *
+   * @param string $method_name
+   *   The ChadoStockBuddy method to call.
+   * @param array $method_input
+   *   The input array to give to the desired method. Depending on the method,
+   *   this can include an array of values for insert, array of conditions for
+   *   lookup, or both. It can also include an array of options, though not
+   *   required.
+   * @param string $expected_exception_message
+   *   The expected exception message.
+   *
+   * @dataProvider provideStockBuddyExceptionScenarios
+   */
+  #[DataProvider('provideStockBuddyExceptionScenarios')]
+  public function testStockBuddyExceptions(string $method_name, array $method_input, string $expected_exception_message) {
+    // Insert an organism needed by our test scenarios.
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $organism_instance = $type->createInstance('chado_organism_buddy', []);
+    $organism_instance->insertOrganism([
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+      'organism.abbreviation' => 'Trp',
+    ]);
+
+    // Insert a stock record so that it already exists.
+    $stock_instance = $type->createInstance('chado_stock_buddy', []);
+    $stock_instance->insertStock([
+      'stock.name' => 'ExistingStock',
+      'stock.uniquename' => 'existingstock',
+      'stock.type_id' => 3,
+      'dbxref.dbxref_id' => 3,
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+    ]);
+
+    // Now call the method for this scenario.
+    $exception_caught = FALSE;
+    try {
+      $stock_instance->$method_name(...$method_input);
+    }
+    catch (\Exception $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, "Did not catch an expected exception when calling $method_name()");
+    $this->assertStringContainsString(
+      $expected_exception_message,
+      $exception_message,
+      "Did not receive expected exception message when calling $method_name()",
+    );
+  }
+
 }

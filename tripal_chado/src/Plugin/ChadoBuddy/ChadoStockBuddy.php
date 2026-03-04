@@ -426,7 +426,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   - stock.organism_id & organism.organism_id were both provided but don't
    *     match.
    *   - More than one organism match the provided organism values.
-   *   - Could not find an organsim for stock.organism_id but organism values
+   *   - Could not find an organism for stock.organism_id but organism values
    *     were provided.
    */
   protected function validateStockOrganism(array $values, array $options = []) {
