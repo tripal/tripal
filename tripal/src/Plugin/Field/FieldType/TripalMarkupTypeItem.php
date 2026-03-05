@@ -135,4 +135,18 @@ class TripalMarkupTypeItem extends TripalFieldItemBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getValue() {
+
+    // We do not base the value of this field on the field item, but instead on
+    // the field settings. This is already handled when checking if the field is
+    // empty, so lets use that logic here to determine if we have a value.
+    $is_empty = $this->isEmpty();
+    return [
+      'has_value' => !$is_empty,
+    ];
+  }
+
 }

@@ -30,14 +30,20 @@ class TripalMarkupWidget extends TripalWidgetBase {
     // The value is set int the field settings, so we need to get it from the
     // field definition, not the field item.
     $value = TripalMarkupTypeItem::getMarkupValue($items->getEntity(), $items->getFieldDefinition());
+    // Save whether this field has a value or not.
+    $elements['has_value'] = [
+      '#type' => 'value',
+      '#value' => !empty($value['value']),
+    ];
 
-    $element = [
+    // Now add the markup element to the form.
+    $elements['markup'] = [
       '#type' => 'processed_text',
       '#text' => $value['value'] ?? '',
       '#format' => $value['format'] ?? '',
     ];
 
-    return $element;
+    return $elements;
   }
 
 }
