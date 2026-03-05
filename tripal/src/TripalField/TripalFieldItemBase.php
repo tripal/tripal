@@ -14,7 +14,6 @@ use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
-use Drupal\tripal\TripalStorage\ComputedStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\tripal\Entity\TripalEntityType;
@@ -418,9 +417,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       elseif ($type instanceof BoolStoragePropertyType) {
         $properties[$type->getKey()] = DataDefinition::create("boolean");
       }
-      elseif ($type instanceof ComputedStoragePropertyType) {
-        $properties[$type->getKey()] = DataDefinition::create("string");
-      }
       else {
         throw new \RuntimeException('Unknown Tripal Property Type class "' . get_class($type) . '"');
       }
@@ -466,9 +462,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
           "pgsql_type" => "boolean",
         ];
         $schema["columns"][$type->getKey()] = $column;
-      }
-      elseif ($type instanceof ComputedStoragePropertyType) {
-        // We do not add a schema for this property type because it is computed.
       }
       else {
         throw new \RuntimeException('Unknown Tripal Property Type class "' . get_class($type) . '"');
