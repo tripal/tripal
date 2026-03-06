@@ -7,7 +7,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * Plugin implementation of default Tripal Phylotree Visualization formatter.
@@ -32,18 +31,54 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     // tripal_chado/tripal_chado.libraries.yml.
     $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.phylotree';
 
-    // Get the node colors as set by the administrator.
-    $color_settings = $this->getSetting('phylogram_colors');
-    $colors = [];
-    foreach ($color_settings as $details) {
-      if ($details['organism'] && $details['color']) {
-        // Extract the organism_id from the name.
-        $organism_id = preg_replace('/^.+\((\d+)\)$/', '\1', $details['organism']);
-        $colors[$organism_id] = $details['color'];
-      }
+    // Note that there will only be one item because cardinality = 1.
+    foreach ($items as $delta => $item) {
+      // Adds the toolbar to the render array.
+      $this->toolBarElements($elements, $delta);
+
+      // Adds the placeholder for the phylogram image.
+      $elements[$delta]['phylogram'] = [
+        '#markup' => '<div class="tree-container" id="phylogram-container"></div>',
+      ];
+
+      // Add the variables used by the javascript.
+      $elements['#attached']['drupalSettings']['treeData'] = $item->get('tree_data')->getString();
+      $elements['#attached']['drupalSettings']['treeOptions'] = $this->getFormatterOptions($item->get('tree_settings_value')->getString());
     }
 
-    // Contains all of the settings used for formatting the phylotree.
+    return $elements;
+  }
+
+  /**
+   * Provides tree formatting options.
+   *
+   * The content type can override the global defaults, and then an
+   * individual entity can further override the content type defaults.
+   * These per-entity settings are set in the widget and stored in a
+   * chado property.
+   *
+   * @param string $tree_settings_json
+   *   Formatting settings stored in a JSON string. These are set in
+   *   the widget and apply to just this entity.
+   *
+   * @return array
+   *   Options array ready to pass to the javascript.
+   */
+  protected function getFormatterOptions(string $tree_settings_json): array {
+
+    // We first get the formatting options that may be provided by the
+    // content type. The resulting array is passed to the javascript.
+    $color_settings = $this->getSetting('phylogram_colors');
+    $colors = [];
+    if ($color_settings) {
+      foreach ($color_settings as $details) {
+        if ($details['organism'] && $details['color']) {
+          // Extract the organism_id from the name.
+          $organism_id = preg_replace('/^.+\((\d+)\)$/', '\1', $details['organism']);
+          $colors[$organism_id] = $details['color'];
+        }
+      }
+    }
     $treeOptions = [
       'phylogram_layout' => $this->getSetting('phylogram_layout'),
       'font_size' => $this->getSetting('phylogram_font_size'),
@@ -57,85 +92,15 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       'org_colors' => $colors,
     ];
 
-    // Default options can be overridden by the settings property field.
-    $treeOptions = $this->overrideTreeOptions($items, $treeOptions);
-
-    // Will only be one item because cardinality = 1.
-    foreach ($items as $delta => $item) {
-      $values = [
-        'record_id' => $item->get('record_id')->getString(),
-        'tree_data' => $item->get('tree_data')->getString(),
-      ];
-
-      // Adds toolbar to render array.
-      $this->toolBarElements($elements, $delta);
-
-      // Placeholder for the phylogram image.
-      $elements[$delta]['phylogram'] = [
-        '#markup' => '<div class="tree-container" id="phylogram-container"></div>',
-      ];
-
-      // Add the variables used by the javascript.
-      $elements['#attached']['drupalSettings']['treeData'] = $values['tree_data'];
-      $elements['#attached']['drupalSettings']['treeOptions'] = $treeOptions;
-    }
-
-    return $elements;
-  }
-
-  /**
-   * Overrides tree options if present as a property.
-   *
-   * @param Drupal\Core\Field\FieldItemListInterface $items
-   *   Field items.
-   * @param array $treeOptions
-   *   Associative array of options controlling tree rendering.
-   *
-   * @return array
-   *   Updated options array.
-   */
-  protected function overrideTreeOptions(FieldItemListInterface $items, array $treeOptions): array {
-    $json = '';
-    $overrides = [];
-
-    // Get the current field's name e.g. speciestree_phylotreevis
-    // or phylotree_phylotreevis and construct the property name
-    // using this as a guide, e.g. speciestree_settings.
-    $field_machine_name = $items->getFieldDefinition()->getName();
-    $prefix = explode('_', $field_machine_name)[0];
-    $property_machine_name = $prefix . '_settings';
-
-    $parentEntity = $items->getParent()->getEntity();
-    if ($parentEntity->hasField($property_machine_name)) {
-      $record = $parentEntity->get($property_machine_name)->first();
-      if ($record) {
-        $json = $record->getValue()['value'];
-      }
-    }
-    if ($json) {
-      if (!preg_match('/^{/', $json)) {
-        $json = '{' . $json;
-      }
-      if (!preg_match('/}$/', $json)) {
-        $json = $json . '}';
-      }
-      // Native json_decode requires quoted keys, so use a yaml parser.
-      // @todo Could we somehow add a json validator to the property widget?
-      // Or could the phylotree widget validate an external field?
-      try {
-        $overrides = Yaml::parse($json);
-      }
-      catch (\Exception $e) {
-        // e.g. "Malformed inline YAML string"...
-        $id = $parentEntity->id();
-        \Drupal::logger('tripal')->error("Invalid visualization settings on entity $id: " . $e->getMessage());
-      }
-    }
-    if ($overrides) {
-      foreach ($overrides as $key => $value) {
+    // Formatting options can be overridden for an individual entity
+    // as may be set in the widget.
+    $tree_settings = json_decode($tree_settings_json, TRUE);
+    if ($tree_settings) {
+      foreach ($tree_settings as $key => $value) {
         $treeOptions[$key] = $value;
       }
     }
+
     return $treeOptions;
   }
 
