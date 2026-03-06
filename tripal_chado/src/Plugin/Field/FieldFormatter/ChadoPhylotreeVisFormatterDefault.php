@@ -127,7 +127,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
    * Adds form elements for the toolbar above the phylotree.
    *
    * @param array &$elements
-   *   Render array to have elements added
+   *   Render array to have elements added.
    * @param int $delta
    *   Delta, but cardinality is 1, so will always be zero.
    *
@@ -221,19 +221,19 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       ],
       '#value' => '<i class="fa fa-fw fa-sort"></i>',
     ];
-// @todo make this work.
-//    $elements[$delta]['row']['toolbar']['save_image'] = [
-//      '#suffix' => '</div>',
-//      '#type' => 'html_tag',
-//      '#tag' => 'button',
-//      '#attributes' => [
-//        'class' => 'btn btn-light btn-sm',
-//        'id' => 'save_image',
-//        'title' => 'Save image',
-//      ],
-//      '#value' => '<i class="fa fa-fw fa-picture-o"></i>',
-//    ];
-
+    // @todo make this work.
+    // .  $elements[$delta]['row']['toolbar']['save_image'] = [
+    // .    '#suffix' => '</div>',
+    // .    '#type' => 'html_tag',
+    // .    '#tag' => 'button',
+    // .    '#attributes' => [
+    // .      'class' => 'btn btn-light btn-sm',
+    // .      'id' => 'save_image',
+    // .      'title' => 'Save image',
+    // .    ],
+    // .    '#value' => '<i class="fa fa-fw fa-picture-o"></i>',
+    // .  ];
+    //
     // Group 2.
     $elements[$delta]['row']['toolbar']['linear'] = [
       '#prefix' => '<div class="btn-group" role="group">',
@@ -367,8 +367,8 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     $colors = $this->removeEmptyColors($colors);
     $form['phylogram_colors_info']['desc'] = [
       '#type' => 'item',
-      '#title' => t('Node Colors by Organism'),
-      '#markup' => t('If the trees are associated with features (e.g. proteins)
+      '#title' => $this->t('Node Colors by Organism'),
+      '#markup' => $this->t('If the trees are associated with features (e.g. proteins)
         then the nodes can be color-coded by their organism. This helps the user
         visualize which nodes belong to each organism. Please enter the
         name of the organism and its corresponding color in Hex format
@@ -379,13 +379,14 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     $form['phylogram_colors'] = [
       '#element_validate' => [[$this, 'settingsFormValidateColors']],
     ];
-    // Iterate through the number of organism colors and add a field for each one.
+    // Iterate through the number of organism colors and add a field for
+    // each one.
     for ($i = 0; $i < count($colors) + 1; $i++) {
       // Wrapper is used so both fields can be styled onto one the same line.
       $form['phylogram_colors'][$i]['organism'] = [
         '#prefix' => '<div class="chado-phylotreevis-settings-field-wrapper form-item">',
         '#type' => 'textfield',
-        '#description' => t('Organism'),
+        '#description' => $this->t('Organism'),
         '#default_value' => $colors[$i]['organism'] ?? '',
         '#autocomplete_route_name' => 'tripal_chado.organism_autocomplete',
         '#autocomplete_route_parameters' => ['match_limit' => 10],
@@ -393,7 +394,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       ];
       $form['phylogram_colors'][$i]['color'] = [
         '#type' => 'textfield',
-        '#description' => t('Color'),
+        '#description' => $this->t('Color'),
         '#default_value' => $colors[$i]['color'] ?? '',
         '#size' => 10,
         '#suffix' => '</div>',
@@ -426,7 +427,6 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
    * {@inheritdoc}
    */
   public function settingsSummary() {
-    $scales = [1 => 'Linear', 2 => 'Log'];
     $summary = parent::settingsSummary();
     $summary[] = $this->t('Layout: @phylogram_layout',
                           ['@phylogram_layout' => ($this->getSetting('phylogram_layout') ?? 'linear')]);
