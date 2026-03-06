@@ -5,10 +5,11 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
+use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
+use Drupal\tripal_chado\Services\ChadoPhylotree;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-use Drupal\tripal_chado\Services\ChadoPhylotree;
 
 /**
  * Plugin implementation of the 'phylotreevisualization' field type for Chado.
@@ -31,13 +32,20 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
   public static $id = "chado_phylotreevis_type_default";
 
   /**
+   * The CV term used to store the formatting settings.
+   *
+   * @var string
+   */
+  public static $settings_term = 'NCIT:C85439';
+
+  /**
    * {@inheritdoc}
    */
   public static function defaultStorageSettings() {
-    $settings = parent::defaultStorageSettings();
-    $settings['storage_plugin_settings']['base_table'] = 'phylotree';
-    $settings['storage_plugin_settings']['base_column'] = 'phylotree_id';
-    return $settings;
+    $storage_settings = parent::defaultStorageSettings();
+    $storage_settings['storage_plugin_settings']['base_table'] = 'phylotree';
+    $storage_settings['storage_plugin_settings']['base_column'] = 'phylotree_id';
+    return $storage_settings;
   }
 
   /**
@@ -48,6 +56,7 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
     // CV Term is 'EDAM:Phylogenetic tree rendering'.
     $field_settings['termIdSpace'] = 'operation';
     $field_settings['termAccession'] = '0567';
+    $field_settings['settings_term'] = 'Graphics Visualization (NCIT:C85439)';
     return $field_settings;
   }
 
@@ -56,11 +65,18 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
    */
   public static function tripalTypes($field_definition) {
 
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'] ?? 'phylotree';
     $base_pkey_col = $storage_settings['base_column'] ?? 'phylotree_id';
+    $prop_table = $base_table . 'prop';
+    $prop_pkey_col = self::getPrimaryKey($prop_table, $schema);
+    $prop_fk_col = self::getChadoForeignKeyColumn($prop_table, $base_table, $schema);
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $tree_vis_term = 'operation:0567';
+    // This matches how ChadoPropertyTypeDefault generates aliases.
+    $prop_alias = $prop_table . '_' . preg_replace('/[^a-z0-9]+/', '', strtolower(self::$settings_term));
 
     $properties = [];
 
@@ -80,8 +96,62 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
       'function' => 'getTreeNewick',
     ]);
 
-    return $properties;
+    // The remaining field properties link to the chado property holding
+    // visualization settings.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'tree_settings_id', self::$record_id_term, [
+      'action' => 'store_pkey',
+      'drupal_store' => TRUE,
+      'path' => $base_table . '.' . $base_pkey_col . '>' . $prop_alias . '.' . $prop_pkey_col,
+      'table_alias_mapping' => [$prop_alias => $prop_table],
+    ]);
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'tree_settings_prop_fkey', self::$record_id_term, [
+      'action' => 'store_link',
+      'path' => $base_table . '.' . $base_pkey_col . '>' . $prop_alias . '.' . $prop_fk_col,
+      'table_alias_mapping' => [$prop_alias => $prop_table],
+    ]);
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'tree_settings_type_id', 'schema:additionalType', [
+      'action' => 'store',
+      'path' => $base_table . '.' . $base_pkey_col . '>' . $prop_alias . '.' . $prop_fk_col . ';type_id',
+      'table_alias_mapping' => [$prop_alias => $prop_table],
+    ]);
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'tree_settings_value', 'NCIT:C25712', [
+      'action' => 'store',
+      'path' => $base_table . '.' . $base_pkey_col . '>' . $prop_alias . '.' . $prop_fk_col . ';value',
+      'table_alias_mapping' => [$prop_alias => $prop_table],
+      'delete_if_empty' => TRUE,
+    ]);
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'tree_settings_rank', 'OBCS:0000117', [
+      'action' => 'store',
+      'path' => $base_table . '.' . $base_pkey_col . '>' . $prop_alias . '.' . $prop_fk_col . ';rank',
+      'table_alias_mapping' => [$prop_alias => $prop_table],
+    ]);
 
+    return $properties;
+  }
+
+  /**
+   * We need to set the type_id property value to match the cvterm_id.
+   *
+   * This ensures only the correct property with the correct type_id is
+   * used to store the tree visualization settings.
+   * To do this we'll override the tripalValuesTemplate() and give the
+   * `type_id` property a specific fixed value.
+   *
+   * {@inheritDoc}
+   *
+   * @see \Drupal\tripal\TripalField\TripalFieldItemBase::tripalValuesTemplate()
+   */
+  public function tripalValuesTemplate($field_definition, $default_value = NULL) {
+    $prop_values = parent::tripalValuesTemplate($field_definition, $default_value);
+    $cv_autocomplete = new ChadoCVTermAutocompleteController();
+    $settings_term = $this->getSetting('settings_term');
+    $settings_cvterm_id = $cv_autocomplete->getCVtermId($settings_term);
+    foreach ($prop_values as $index => $prop_value) {
+      if ($prop_value->getKey() == 'tree_settings_type_id') {
+        $prop_values[$index]->setValue($settings_cvterm_id);
+      }
+    }
+    return $prop_values;
   }
 
   /**
@@ -103,6 +173,7 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
   public static function discover(
