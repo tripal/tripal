@@ -8,7 +8,6 @@ tripal_chado.chado_table:
 tripal_chado.phylotree:
   css:
     component:
-#      'css/tripal_phylogeny.css': {}
       'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css': { type: 'external', minified: true }
       'https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css': { type: 'external' }
       'css/phylotree.css': {}
@@ -20,8 +19,6 @@ tripal_chado.phylotree:
     'https://d3js.org/d3.v6.min.js': { type: 'external', minified: true }
     'https://phylotree.hyphy.org/dist/phylotree.js': { type: 'external' }
     'js/phylotree.js': {}
-#    'js/phylogram.js': {}
-#    'js/tripal_phylogeny.js': {}
   dependencies:
     - 'core/drupal'
     - 'core/once'
