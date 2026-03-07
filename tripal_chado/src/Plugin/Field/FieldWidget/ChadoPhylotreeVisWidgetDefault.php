@@ -115,6 +115,15 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['root_node_size'] ?? '',
     ];
 
+    $elements['root_node_color'] = [
+      '#type' => 'color',
+      '#title' => $this->t('Root Node Color'),
+      '#description' => $this->t('Specify the color of the root node. If white is specified, the content type default (@color) will be used.',
+         ['@color' => $bundle_settings['phylogram_root_node_color']]),
+      '#required' => FALSE,
+      '#default_value' => $formatter_settings['root_node_color'] ?? '#ffffff',
+    ];
+
     $elements['interior_node_size'] = [
       '#type' => 'select',
       '#options' => $this->getSelectOptions(0, 12, $bundle_settings['phylogram_interior_node_size'] ?? 4),
@@ -122,6 +131,14 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#description' => $this->t('Specify the diameter of internal nodes, between 0 and 12.'),
       '#required' => FALSE,
       '#default_value' => $formatter_settings['interior_node_size'] ?? '',
+    ];
+    $elements['interior_node_color'] = [
+      '#type' => 'color',
+      '#title' => $this->t('Internal Node Color'),
+      '#description' => $this->t('Specify the color of the internal nodes. If white is specified, the content type default (@color) will be used.',
+         ['@color' => $bundle_settings['phylogram_interior_node_color']]),
+      '#required' => FALSE,
+      '#default_value' => $formatter_settings['interior_node_color'] ?? '#ffffff',
     ];
 
     $elements['leaf_node_size'] = [
@@ -131,6 +148,15 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#description' => $this->t('Specify the diameter of leaf nodes, between 0 and 12.'),
       '#required' => FALSE,
       '#default_value' => $formatter_settings['leaf_node_size'] ?? '',
+    ];
+
+    $elements['leaf_node_color'] = [
+      '#type' => 'color',
+      '#title' => $this->t('Leaf Node Color'),
+      '#description' => $this->t('Specify the color of the leaf nodes. If white is specified, the content type default (@color) will be used.',
+         ['@color' => $bundle_settings['phylogram_leaf_node_color']]),
+      '#required' => FALSE,
+      '#default_value' => $formatter_settings['leaf_node_color'] ?? '#ffffff',
     ];
 
     return $elements;
@@ -209,7 +235,11 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
         // Don't include if just a null string. This allows the
         // global content type default to be used instead.
         if (strlen($values[0][$key])) {
-          $settings[$key] = $values[0][$key];
+          // For colors, don't include if pure white, this indicates
+          // to use the global content type default.
+          if (strtolower($values[0][$key]) != '#ffffff') {
+            $settings[$key] = $values[0][$key];
+          }
         }
         unset($values[0][$key]);
       }
