@@ -382,7 +382,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     for ($i = 0; $i < count($colors) + 1; $i++) {
       // Wrapper is used so both fields can be styled onto the same line.
       $form['phylogram_colors'][$i]['organism'] = [
-        '#prefix' => '<div class="chado-phylotreevis-settings-field-wrapper form-item">',
+        '#prefix' => '<div class="chado-phylotreevis-formatter-settings-field-wrapper form-item">',
         '#type' => 'textfield',
         '#description' => $this->t('Organism'),
         '#default_value' => $colors[$i]['organism'] ?? '',

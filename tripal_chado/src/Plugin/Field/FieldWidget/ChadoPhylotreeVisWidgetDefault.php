@@ -28,9 +28,10 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
     $elements = [];
-    $elements['placeholder'] = [
-      '#markup' => '<p>Placeholder for settings</p>',
-    ];
+
+    // Attaches the css for the settings form as defined in
+    // tripal_chado/tripal_chado.libraries.yml.
+    $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoPhylotreeVisWidgetSettings';
 
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
@@ -71,7 +72,6 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
 #  "phylogram_colors" => []
 
     // Build the form.
-    $elements = [];
     $elements['record_id'] = [
       '#type' => 'value',
       '#value' => $record_id,
@@ -192,6 +192,41 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['leaf_node_color'] ?? '#ffffff',
     ];
 
+    $colors = $formatter_settings['colors'] ?? [];
+    $colors = $this->removeEmptyColors($colors);
+    $elements['colors_info']['desc'] = [
+      '#type' => 'item',
+      '#title' => $this->t('Node Colors by Organism'),
+      '#markup' => $this->t('If the trees are associated with features (e.g. proteins)
+        then the nodes can be color-coded by their organism. This helps the user
+        visualize which nodes belong to each organism. Please enter the
+        name of the organism and specify its color. Organisms that are not given a
+        color will the leaf node color as set above.'),
+    ];
+    $elements['colors'] = [
+      '#element_validate' => [[$this, 'settingsFormValidateOrganism']],
+    ];
+    // Iterate through the number of organism colors and add a field for
+    // each one.
+    for ($i = 0; $i < count($colors) + 1; $i++) {
+      // Wrapper is used so both fields can be styled onto the same line.
+      $elements['colors'][$i]['organism'] = [
+        '#prefix' => '<div class="chado-phylotreevis-widget-settings-field-wrapper form-item">',
+        '#type' => 'textfield',
+        '#description' => $this->t('Organism'),
+        '#default_value' => $colors[$i]['organism'] ?? '',
+        '#autocomplete_route_name' => 'tripal_chado.organism_autocomplete',
+        '#autocomplete_route_parameters' => ['match_limit' => 10],
+        '#size' => 20,
+      ];
+      $elements['colors'][$i]['color'] = [
+        '#type' => 'color',
+        '#description' => $this->t('Color'),
+        '#default_value' => $colors[$i]['color'] ?? '#808080',
+        '#suffix' => '</div>',
+      ];
+    }
+
     return $elements;
   }
 
@@ -221,6 +256,25 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     $summary[] = $this->t("Json(temp): @json", ['@json' => $json_settings]);
 
     return $summary;
+  }
+
+  /**
+   * Removes empty or incomplete color array elements.
+   *
+   * @param array $colors
+   *   Array of associative arrays with 'organism' and 'color' keys.
+   *
+   * @return array
+   *   The updated array with empty elements removed.
+   */
+  protected function removeEmptyColors(array $colors): array {
+    $updated_colors = [];
+    foreach ($colors as $config) {
+      if ($config['organism'] && $config['color']) {
+        $updated_colors[] = $config;
+      }
+    }
+    return $updated_colors;
   }
 
   /**
