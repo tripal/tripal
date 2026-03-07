@@ -266,6 +266,9 @@ tripal.tripalfield_collection.*:
                      type: string
                      label: "Term Accession"
                      nullable: false
+                   formatterSettingsTerm:
+                     type: string
+                     label: 'Term used for storage of formatter settings'
                    token_string:
                      type: string
                      label: "Token string for field display"
@@ -290,6 +293,9 @@ tripal.tripalfield_collection.*:
                      type: string
                      label: "Term Accession"
                      nullable: false
+                   formatterSettingsTerm:
+                     type: string
+                     label: 'Term used for storage of formatter settings'
                    max_length:
                      type: integer
                      label: "The maximum size of the field vlaue."

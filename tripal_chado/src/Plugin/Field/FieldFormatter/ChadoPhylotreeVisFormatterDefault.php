@@ -43,7 +43,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
 
       // Add the variables used by the javascript.
       $elements['#attached']['drupalSettings']['treeData'] = $item->get('tree_data')->getString();
-      $elements['#attached']['drupalSettings']['treeOptions'] = $this->getFormatterOptions($item->get('tree_settings_value')->getString());
+      $elements['#attached']['drupalSettings']['treeOptions'] = $this->getFormatterOptions($item->get('formatter_settings_value')->getString());
     }
 
     return $elements;
@@ -57,14 +57,14 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
    * These per-entity settings are set in the widget and stored in a
    * chado property.
    *
-   * @param string $tree_settings_json
+   * @param string $formatter_settings_json
    *   Formatting settings stored in a JSON string. These are set in
    *   the widget and apply to just this entity.
    *
    * @return array
    *   Options array ready to pass to the javascript.
    */
-  protected function getFormatterOptions(string $tree_settings_json): array {
+  protected function getFormatterOptions(string $formatter_settings_json): array {
 
     // We first get the formatting options that may be provided by the
     // content type. The resulting array is passed to the javascript.
@@ -92,11 +92,11 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       'org_colors' => $colors,
     ];
 
-    // Formatting options can be overridden for an individual entity
-    // as may be set in the widget.
-    $tree_settings = json_decode($tree_settings_json, TRUE);
-    if ($tree_settings) {
-      foreach ($tree_settings as $key => $value) {
+    // Formatting options can be overridden for an individual entity.
+    // These are set in the widget.
+    $formatter_settings = json_decode($formatter_settings_json, TRUE);
+    if ($formatter_settings) {
+      foreach ($formatter_settings as $key => $value) {
         $treeOptions[$key] = $value;
       }
     }

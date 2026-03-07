@@ -416,7 +416,7 @@ fields:
         settings:
             termIdSpace: 'operation'
             termAccession: '0567'
-            settings_term: 'Graphics Visualization (NCIT:C85439)'
+            formatterSettingsTerm: 'NCIT:C85439'
         display:
           view:
             default:

@@ -7,7 +7,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
-use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
@@ -37,26 +36,28 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     $field_definition = $items[$delta]->getFieldDefinition();
     $field_settings = $field_definition->getSettings();
     $field_name = $field_definition->get('field_name');
-    $settings_term = $field_settings['settings_term'];
-    $cv_autocomplete = new ChadoCVTermAutocompleteController();
-    $settings_cvterm_id = $cv_autocomplete->getCVtermId($settings_term);
+    $formatterSettingsTerm = $field_settings['formatterSettingsTerm'];
+    $term_parts = explode(':', $formatterSettingsTerm, 2);
+    $cvterm_instance = \Drupal::service('tripal_chado.chado_buddy')->createInstance('chado_cvterm_buddy', []);
+    $cvterm_records = $cvterm_instance->getCvterm(['db.name' => $term_parts[0], 'dbxref.accession' => $term_parts[1]]);
+    $settings_cvterm_id = $cvterm_records[0]->getValue('cvterm.cvterm_id');
 
     // Get the default values.
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $tree_data = $item_vals['tree_data'] ?? '';
-    $prop_id = $item_vals['tree_settings_id'] ?? 0;
-    $linker_id = $item_vals['tree_settings_prop_fkey'] ?? 0;
-    $json_settings = $item_vals['tree_settings_value'] ?? '';
-    $tree_settings = json_decode($json_settings, TRUE);
+    $prop_id = $item_vals['formatter_settings_id'] ?? 0;
+    $linker_id = $item_vals['formatter_settings_prop_fkey'] ?? 0;
+    $json_settings = $item_vals['formatter_settings_value'] ?? '';
+    $formatter_settings = json_decode($json_settings, TRUE);
     $settings_rank = 0;
 
-    // Get the formatter settings (for display only).
+    // Get the bundle level formatter settings (used for display only).
     $entity_type = $field_definition->get('entity_type');
     $bundle = $field_definition->get('bundle');
     $display = \Drupal::service('entity_display.repository')->getViewDisplay($entity_type, $bundle);
     $formatter = $display->getComponent($field_name);
-    $formatter_settings = $formatter['settings'];
+    $bundle_settings = $formatter['settings'];
 #array:10 [▼
 #  "phylogram_layout" => "linear"
 #  "phylogram_font_size" => "12"
@@ -79,11 +80,11 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#value' => $tree_data,
     ];
-    $elements['tree_settings_id'] = [
+    $elements['formatter_settings_id'] = [
       '#type' => 'value',
       '#value' => $prop_id,
     ];
-    $elements['tree_settings_prop_fkey'] = [
+    $elements['formatter_settings_prop_fkey'] = [
       '#type' => 'value',
       '#value' => $linker_id,
     ];
@@ -92,44 +93,44 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#value' => $field_name,
     ];
-    $elements['tree_settings_value'] = [
+    $elements['formatter_settings_value'] = [
       '#type' => 'value',
       '#value' => $json_settings,
     ];
-    $elements['tree_settings_type_id'] = [
+    $elements['formatter_settings_type_id'] = [
       '#type' => 'value',
       '#value' => $settings_cvterm_id,
     ];
-    $elements['tree_settings_rank'] = [
+    $elements['formatter_settings_rank'] = [
       '#type' => 'value',
       '#value' => $settings_rank,
     ];
 
     $elements['root_node_size'] = [
       '#type' => 'select',
-      '#options' => $this->getSelectOptions(0, 12, $formatter_settings['phylogram_root_node_size'] ?? 3),
+      '#options' => $this->getSelectOptions(0, 12, $bundle_settings['phylogram_root_node_size'] ?? 3),
       '#title' => $this->t('Root Node Size'),
       '#description' => $this->t('Specify the diameter of the root node, between 0 and 12.'),
       '#required' => FALSE,
-      '#default_value' => $tree_settings['root_node_size'] ?? '',
+      '#default_value' => $formatter_settings['root_node_size'] ?? '',
     ];
 
-    $elements['internal_node_size'] = [
+    $elements['interior_node_size'] = [
       '#type' => 'select',
-      '#options' => $this->getSelectOptions(0, 12, $formatter_settings['phylogram_interior_node_size'] ?? 4),
+      '#options' => $this->getSelectOptions(0, 12, $bundle_settings['phylogram_interior_node_size'] ?? 4),
       '#title' => $this->t('Internal Node Size'),
       '#description' => $this->t('Specify the diameter of internal nodes, between 0 and 12.'),
       '#required' => FALSE,
-      '#default_value' => $tree_settings['internal_node_size'] ?? '',
+      '#default_value' => $formatter_settings['interior_node_size'] ?? '',
     ];
 
     $elements['leaf_node_size'] = [
       '#type' => 'select',
-      '#options' => $this->getSelectOptions(0, 12, $formatter_settings['phylogram_leaf_node_size'] ?? 6),
+      '#options' => $this->getSelectOptions(0, 12, $bundle_settings['phylogram_leaf_node_size'] ?? 6),
       '#title' => $this->t('Leaf Node Size'),
       '#description' => $this->t('Specify the diameter of leaf nodes, between 0 and 12.'),
       '#required' => FALSE,
-      '#default_value' => $tree_settings['leaf_node_size'] ?? '',
+      '#default_value' => $formatter_settings['leaf_node_size'] ?? '',
     ];
 
     return $elements;
@@ -140,7 +141,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
    */
   public static function defaultSettings() {
     return [
-      'tree_settings' => '',
+      'formatter_settings' => '',
     ] + parent::defaultSettings();
   }
 
@@ -156,8 +157,8 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
   public function settingsSummary() {
     $summary = [];
 
-    $json_settings = $this->getSetting('tree_settings_value') ?? '';
-    $tree_settings = json_decode($json_settings, TRUE);
+    $json_settings = $this->getSetting('formatter_settings_value') ?? '';
+    $formatter_settings = json_decode($json_settings, TRUE);
     $summary[] = $this->t("Json(temp): @json", ['@json' => $json_settings]);
 
     return $summary;
@@ -191,9 +192,16 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     // into a single json string. Delta is hardcoded as zero because
     // this field is always cardinality 1.
     $keys = [
+      'layout',
+      'font_size',
+      'skip_ticks',
       'root_node_size',
-      'internal_node_size',
+      'root_node_color',
+      'interior_node_size',
+      'interior_node_color',
       'leaf_node_size',
+      'leaf_node_color',
+      'colors',
     ];
     $settings = [];
     foreach ($keys as $key) {
@@ -207,8 +215,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       }
     }
     // In JSON, an empty array is represented by a pair of square brackets, [].
-    $values[0]['tree_settings_value'] = json_encode($settings);
-
+    $values[0]['formatter_settings_value'] = json_encode($settings);
     return $values;
   }
 
