@@ -320,11 +320,11 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#description' => $this->t('Please specify a size for the root node. If set to zero, the node will not appear.'),
       '#default_value' => $this->getSetting('phylogram_root_node_size'),
       '#min' => 0,
-      '#max' => 30,
+      '#max' => 12,
       '#required' => FALSE,
     ];
     $form['phylogram_root_node_color'] = [
-      '#type' => 'textfield',
+      '#type' => 'color',
       '#title' => $this->t('Root Node Color'),
       '#description' => $this->t('Please specify a color for the root node.'),
       '#default_value' => $this->getSetting('phylogram_root_node_color'),
@@ -336,11 +336,11 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#description' => $this->t('Please specify a size for interior nodes. If set to zero, the node will not appear.'),
       '#default_value' => $this->getSetting('phylogram_interior_node_size'),
       '#min' => 0,
-      '#max' => 30,
+      '#max' => 12,
       '#required' => FALSE,
     ];
     $form['phylogram_interior_node_color'] = [
-      '#type' => 'textfield',
+      '#type' => 'color',
       '#title' => $this->t('Interior Node Color'),
       '#description' => $this->t('Please specify a color for interior nodes.'),
       '#default_value' => $this->getSetting('phylogram_interior_node_color'),
@@ -352,11 +352,11 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#description' => $this->t('Please specify a size for the terminal nodes. If set to zero, the node will not appear.'),
       '#default_value' => $this->getSetting('phylogram_leaf_node_size'),
       '#min' => 0,
-      '#max' => 30,
+      '#max' => 12,
       '#required' => FALSE,
     ];
     $form['phylogram_leaf_node_color'] = [
-      '#type' => 'textfield',
+      '#type' => 'color',
       '#title' => $this->t('Leaf Node Color'),
       '#description' => $this->t('Please specify a color for the terminal nodes.'),
       '#default_value' => $this->getSetting('phylogram_leaf_node_color'),
@@ -371,13 +371,11 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#markup' => $this->t('If the trees are associated with features (e.g. proteins)
         then the nodes can be color-coded by their organism. This helps the user
         visualize which nodes belong to each organism. Please enter the
-        name of the organism and its corresponding color in Hex format
-        (e.g. #FF0000 or #F00) or a valid color name (e.g. Crimson or
-        DarkGreen). Organisms that are not given a color will the leaf node
-        color as set above.'),
+        name of the organism and specify its color. Organisms that are not given a
+        color will the leaf node color as set above.'),
     ];
     $form['phylogram_colors'] = [
-      '#element_validate' => [[$this, 'settingsFormValidateColors']],
+      '#element_validate' => [[$this, 'settingsFormValidateOrganism']],
     ];
     // Iterate through the number of organism colors and add a field for
     // each one.
@@ -393,10 +391,9 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
         '#size' => 20,
       ];
       $form['phylogram_colors'][$i]['color'] = [
-        '#type' => 'textfield',
+        '#type' => 'color',
         '#description' => $this->t('Color'),
-        '#default_value' => $colors[$i]['color'] ?? '',
-        '#size' => 10,
+        '#default_value' => $colors[$i]['color'] ?? '#808080',
         '#suffix' => '</div>',
       ];
     }
@@ -466,7 +463,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state of the (entire) form.
    */
-  public function settingsFormValidateColors(array $form, FormStateInterface $form_state) {
+  public function settingsFormValidateOrganism(array $form, FormStateInterface $form_state) {
     // ID for this field is "chado_phylotreevis_formatter_default".
     $plugin_definition = $this->getPluginDefinition();
     $id = $plugin_definition['id'];
@@ -482,19 +479,10 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
         $phylogram_colors = $field_settings['settings_edit_form']['settings']['phylogram_colors'] ?? [];
         foreach ($phylogram_colors as $delta => $config) {
           // Ignore blank entries.
-          if ($config['organism'] || $config['color']) {
+          if ($config['organism']) {
             if (!preg_match('/\(\d+\)/', $config['organism'])) {
               $form_state->setErrorByName($field_parents . "][$delta][organism",
                   $this->t('Organism must include numeric record ID inside parentheses, please let the autocomplete add this value'));
-            }
-            // Only hex color codes are validated, others are assumed to be
-            // color names, e.g. Blue.
-            if (preg_match('/^#/', $config['color'])) {
-              if (!(preg_match('/^#[0-9A-Fa-f]{3}$/', $config['color'])
-                  || preg_match('/^#[0-9A-Fa-f]{6}$/', $config['color']))) {
-                $form_state->setErrorByName($field_parents . "][$delta][color",
-                    $this->t('Hex color codes must be of the format #000000 or #000'));
-              }
             }
           }
         }
