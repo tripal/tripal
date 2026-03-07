@@ -106,6 +106,39 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#value' => $settings_rank,
     ];
 
+    $elements['phylogram_layout'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Phylogram Layout'),
+      '#description' => $this->t('Please specify how the phylogram should be presented, Linear or Radial.'),
+      '#options' => [
+        'linear' => $this->t('Linear'),
+        'radial' => $this->t('Radial'),
+      ],
+      '#default_value' => $formatter_settings['phylogram_layout'] ?? 'linear',
+    ];
+
+    $default = $bundle_settings['phylogram_skip_ticks'] ? $this->t('Hide') : $this->t('Display');
+    $elements['skip_ticks'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Display of Tick Marks'),
+      '#description' => $this->t('Controls display of a scale bar with tick marks.'),
+      '#options' => [
+        '' => $this->t('Use content type default (@default)', ['@default' => $default]),
+        '0' => $this->t('Display scale bar'),
+        '1' => $this->t('Hide scale bar'),
+      ],
+      '#default_value' => $formatter_settings['skip_ticks'] ?? '',
+    ];
+
+    $elements['font_size'] = [
+      '#type' => 'select',
+      '#options' => $this->getSelectOptions(4, 12, $bundle_settings['phylogram_font_size'] ?? 3),
+      '#title' => $this->t('Font Size'),
+      '#description' => $this->t('Specify the font size to use to display the phylogram, valid values are from 4 to 12.'),
+      '#required' => FALSE,
+      '#default_value' => $formatter_settings['root_node_size'] ?? '',
+    ];
+
     $elements['root_node_size'] = [
       '#type' => 'select',
       '#options' => $this->getSelectOptions(0, 12, $bundle_settings['phylogram_root_node_size'] ?? 3),
@@ -202,7 +235,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
    */
   protected function getSelectOptions(int $min, int $max, int $default) {
     $options = [];
-    $options[''] = "- Use Content Type Default ($default) -";
+    $options[''] = $this->t('Use Content Type Default (@default)', ['@default' => $default]);
     for ($i = $min; $i <= $max; $i++) {
       $options[$i] = $i;
     }
@@ -218,7 +251,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     // into a single json string. Delta is hardcoded as zero because
     // this field is always cardinality 1.
     $keys = [
-      'layout',
+      'phylogram_layout',
       'font_size',
       'skip_ticks',
       'root_node_size',
