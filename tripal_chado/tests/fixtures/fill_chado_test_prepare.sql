@@ -6845,7 +6845,7 @@ INSERT INTO chado.cvterm VALUES (3183, 8, 'germplasm', 'Germplasm is the living 
 INSERT INTO chado.cvterm VALUES (3184, 8, 'cultivar', 'A cultivated plant variety selected and given a name because it has desirable characteristics that distinguish it from otherwise similar plants of the same species.', 3491, 0, 0);
 INSERT INTO chado.cvterm VALUES (3185, 12, 'collection of specimens', 'A material entity that has two or more specimens as its parts.', 3492, 0, 0);
 INSERT INTO chado.cvterm VALUES (3186, 33, 'progeny', '', 3493, 0, 0);
-INSERT INTO chado.cvterm VALUES (3187, 19, 'Graphics Visualization', '', 3494, 0, 0);
+INSERT INTO chado.cvterm VALUES (3187, 19, 'Graphics Visualization', 'Computer methods for creating images, diagrams or animations.', 3494, 0, 0);
 INSERT INTO chado.contact VALUES (1, NULL, 'null', 'null');
 INSERT INTO chado.pub VALUES (1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'null', 'null', 1, false, NULL, NULL);
 INSERT INTO chado.chadoprop VALUES (1, 2, '1.3', 0);
