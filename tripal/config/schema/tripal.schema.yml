@@ -128,6 +128,9 @@ field.field.tripal_entity.*.*:
         termAccession:
           type: string
           label: 'Term Accession'
+        formatterSettingsTerm:
+          type: string
+          label: 'Term used for storage of formatter settings'
         debug:
           type: boolean
           label: 'Flag to Enable field debugging'
@@ -293,9 +296,6 @@ tripal.tripalfield_collection.*:
                      type: string
                      label: "Term Accession"
                      nullable: false
-                   formatterSettingsTerm:
-                     type: string
-                     label: 'Term used for storage of formatter settings'
                    max_length:
                      type: integer
                      label: "The maximum size of the field vlaue."
