@@ -2,6 +2,9 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
+use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
@@ -26,12 +29,6 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-
-    $elements = [];
-
-    // Attaches the css for the settings form as defined in
-    // tripal_chado/tripal_chado.libraries.yml.
-    $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoPhylotreeVisWidgetSettings';
 
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
@@ -59,19 +56,14 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     $display = \Drupal::service('entity_display.repository')->getViewDisplay($entity_type, $bundle);
     $formatter = $display->getComponent($field_name);
     $bundle_settings = $formatter['settings'];
-#array:10 [▼
-#  "phylogram_layout" => "linear"
-#  "phylogram_font_size" => "12"
-#  "phylogram_skip_ticks" => 1
-#  "phylogram_root_node_size" => 3
-#  "phylogram_root_node_color" => "#404040"
-#  "phylogram_interior_node_size" => 4
-#  "phylogram_interior_node_color" => "#808080"
-#  "phylogram_leaf_node_size" => 6
-#  "phylogram_leaf_node_color" => "#40A040"
-#  "phylogram_colors" => []
 
     // Build the form.
+    $elements = $element;//@todo
+
+    // Attaches the css for the settings form as defined in
+    // tripal_chado/tripal_chado.libraries.yml.
+    $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoPhylotreeVisWidgetSettings';
+
     $elements['record_id'] = [
       '#type' => 'value',
       '#value' => $record_id,
@@ -192,8 +184,24 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['leaf_node_color'] ?? '#ffffff',
     ];
 
+    // Removes any color items without an organism.
     $colors = $formatter_settings['colors'] ?? [];
     $colors = $this->removeEmptyColors($colors);
+
+    // The "Add another item" button passes through an incremented value
+    // through the following form_state variable.
+    $color_rows = $form_state->getValue('color_rows');
+    if (is_null($color_rows)) {
+      $color_rows = count($colors) + 1;
+    }
+
+    // This element passes through the current number of color rows for the
+    // "Add another item" button.
+    $elements['color_rows'] = [
+      '#type' => 'value',
+      '#value' => $color_rows,
+    ];
+
     $elements['colors_info']['desc'] = [
       '#type' => 'item',
       '#title' => $this->t('Node Colors by Organism'),
@@ -204,11 +212,14 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
         color will the leaf node color as set above.'),
     ];
     $elements['colors'] = [
-      '#element_validate' => [[$this, 'settingsFormValidateOrganism']],
+#@todo      '#element_validate' => [[$this, 'settingsFormValidateOrganism']],
+      '#prefix' => '<div id="edit-colors">',
+      '#suffix' => '</div>',
     ];
+
     // Iterate through the number of organism colors and add a field for
     // each one.
-    for ($i = 0; $i < count($colors) + 1; $i++) {
+    for ($i = 0; $i < $color_rows; $i++) {
       // Wrapper is used so both fields can be styled onto the same line.
       $elements['colors'][$i]['organism'] = [
         '#prefix' => '<div class="chado-phylotreevis-widget-settings-field-wrapper form-item">',
@@ -227,7 +238,45 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       ];
     }
 
+    $elements['actions']['add_row'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Add another item'),
+      '#ajax' => [
+        'callback' => [static::class, 'addRowCallback'],
+        'event' => 'click',
+        'wrapper' => 'colors',
+#        'method' => 'replace', // Replace the entire table wrapper content
+        'effect' => 'fade',
+      ],
+      '#attributes' => [
+        'field_name' => $field_name,
+        'delta' => $delta,
+      ],
+      '#submit' => [[static::class, 'incrementRows']],
+      '#limit_validation_errors' => [[$field_name, '0', 'color_rows']],
+    ];
     return $elements;
+  }
+
+  /**
+   * Increment number of color settings fields.
+   *
+   * This submit function passes back an incremented number of
+   * rows for color settings by passing it through the form_state
+   * as the variable 'color_rows'.
+   *
+   * @param array &$form
+   *   The form array.
+   * @param Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   *
+   */
+  public static function incrementRows(array &$form, FormStateInterface $form_state) {
+    $triggering_element = $form_state->getTriggeringElement();
+    $machine_name = $triggering_element['#attributes']['field_name'];
+    $color_rows = ($form_state->getValue([$machine_name, '0', 'color_rows']) ?? 0);
+    $form_state->setValue('color_rows', $color_rows + 1);
+    $form_state->setRebuild(TRUE);
   }
 
   /**
@@ -253,6 +302,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
 
     $json_settings = $this->getSetting('formatter_settings_value') ?? '';
     $formatter_settings = json_decode($json_settings, TRUE);
+//@todo
     $summary[] = $this->t("Json(temp): @json", ['@json' => $json_settings]);
 
     return $summary;
@@ -278,7 +328,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
   }
 
   /**
-   * Builds a list for selecting an integer.
+   * Builds a select list array for selecting an integer value.
    *
    * @param int $min
    *   The minimum allowed value.
@@ -317,23 +367,55 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       'colors',
     ];
     $settings = [];
+    $delta = 0;
     foreach ($keys as $key) {
-      if (array_key_exists($key, $values[0])) {
-        // Don't include if just a null string. This allows the
-        // global content type default to be used instead.
-        if (strlen($values[0][$key])) {
-          // For colors, don't include if pure white, this indicates
-          // to use the global content type default.
-          if (strtolower($values[0][$key]) != '#ffffff') {
-            $settings[$key] = $values[0][$key];
+      if (array_key_exists($key, $values[$delta])) {
+        // Key 'colors' is an array, all others are scalars.
+        if (is_array($values[$delta][$key])) {
+          foreach ($values[$delta][$key] as $index => $color) {
+            // Skip if no organism specified (i.e. blank row).
+            if ($color['organism']) {
+              $settings[$key][$index] = $color;
+            }
           }
         }
-        unset($values[0][$key]);
+        else {
+          // Don't include if just a null string. This allows the
+          // global content type default to be used instead.
+          if (strlen($values[$delta][$key])) {
+            // For colors, don't include if pure white. We use white to
+            // indicate to use the global content type default.
+            if (strtolower($values[$delta][$key]) != '#ffffff') {
+              $settings[$key] = $values[$delta][$key];
+            }
+          }
+        }
+        unset($values[$delta][$key]);
       }
     }
-    // In JSON, an empty array is represented by a pair of square brackets, [].
-    $values[0]['formatter_settings_value'] = json_encode($settings);
+    $values[$delta]['formatter_settings_value'] = json_encode($settings);
     return $values;
+  }
+
+  /**
+   * Ajax callback to add a row for organism colors.
+   *
+   * @param array $form
+   *   The form array.
+   * @param Drupal\Core\Form\FormStateInterface &$form_state
+   *   The form state object.
+   */
+  public static function addRowCallback($form, &$form_state) {
+
+    // Extract the field's machine name and delta from the triggering element.
+    $triggering_element = $form_state->getTriggeringElement();
+    $machine_name = $triggering_element['#attributes']['field_name'];
+    $delta = $triggering_element['#attributes']['delta'];
+
+    $response = new AjaxResponse();
+    $color_table = $form[$machine_name]['widget'][$delta]['colors'];
+    $response->addCommand(new ReplaceCommand('#edit-colors', $color_table));
+    return $response;
   }
 
 }
