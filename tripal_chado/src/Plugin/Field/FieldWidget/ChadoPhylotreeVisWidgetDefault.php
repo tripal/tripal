@@ -2,12 +2,10 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
-use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
@@ -58,48 +56,45 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     $formatter = $display->getComponent($field_name);
     $bundle_settings = $formatter['settings'];
 
-    // Build the form.
-    $elements = $element;//@todo
-
     // Attaches the css for the settings form as defined in
     // tripal_chado/tripal_chado.libraries.yml.
-    $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoPhylotreeVisWidgetSettings';
+    $element['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoPhylotreeVisWidgetSettings';
 
-    $elements['record_id'] = [
+    $element['record_id'] = [
       '#type' => 'value',
       '#value' => $record_id,
     ];
-    $elements['tree_data'] = [
+    $element['tree_data'] = [
       '#type' => 'value',
       '#value' => $tree_data,
     ];
-    $elements['formatter_settings_id'] = [
+    $element['formatter_settings_id'] = [
       '#type' => 'value',
       '#value' => $prop_id,
     ];
-    $elements['formatter_settings_prop_fkey'] = [
+    $element['formatter_settings_prop_fkey'] = [
       '#type' => 'value',
       '#value' => $linker_id,
     ];
     // Pass the field machine name through the form for massageFormValues().
-    $elements['field_name'] = [
+    $element['field_name'] = [
       '#type' => 'value',
       '#value' => $field_name,
     ];
-    $elements['formatter_settings_value'] = [
+    $element['formatter_settings_value'] = [
       '#type' => 'value',
       '#value' => $json_settings,
     ];
-    $elements['formatter_settings_type_id'] = [
+    $element['formatter_settings_type_id'] = [
       '#type' => 'value',
       '#value' => $settings_cvterm_id,
     ];
-    $elements['formatter_settings_rank'] = [
+    $element['formatter_settings_rank'] = [
       '#type' => 'value',
       '#value' => $settings_rank,
     ];
 
-    $elements['phylogram_layout'] = [
+    $element['phylogram_layout'] = [
       '#type' => 'select',
       '#title' => $this->t('Phylogram Layout'),
       '#description' => $this->t('Please specify how the phylogram should be presented, Linear or Radial.'),
@@ -111,7 +106,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     ];
 
     $default = $bundle_settings['phylogram_skip_ticks'] ? $this->t('Hide') : $this->t('Display');
-    $elements['skip_ticks'] = [
+    $element['skip_ticks'] = [
       '#type' => 'select',
       '#title' => $this->t('Display of Tick Marks'),
       '#description' => $this->t('Controls display of a scale bar with tick marks.'),
@@ -123,7 +118,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['skip_ticks'] ?? '',
     ];
 
-    $elements['font_size'] = [
+    $element['font_size'] = [
       '#type' => 'select',
       '#options' => $this->getSelectOptions(4, 12, $bundle_settings['phylogram_font_size'] ?? 3),
       '#title' => $this->t('Font Size'),
@@ -132,7 +127,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['root_node_size'] ?? '',
     ];
 
-    $elements['root_node_size'] = [
+    $element['root_node_size'] = [
       '#type' => 'select',
       '#options' => $this->getSelectOptions(0, 12, $bundle_settings['phylogram_root_node_size'] ?? 3),
       '#title' => $this->t('Root Node Size'),
@@ -141,7 +136,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['root_node_size'] ?? '',
     ];
 
-    $elements['root_node_color'] = [
+    $element['root_node_color'] = [
       '#type' => 'color',
       '#title' => $this->t('Root Node Color'),
       '#description' => $this->t('Specify the color of the root node. If white is specified, the content type default (@color) will be used.',
@@ -150,7 +145,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['root_node_color'] ?? '#ffffff',
     ];
 
-    $elements['interior_node_size'] = [
+    $element['interior_node_size'] = [
       '#type' => 'select',
       '#options' => $this->getSelectOptions(0, 12, $bundle_settings['phylogram_interior_node_size'] ?? 4),
       '#title' => $this->t('Internal Node Size'),
@@ -158,7 +153,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#required' => FALSE,
       '#default_value' => $formatter_settings['interior_node_size'] ?? '',
     ];
-    $elements['interior_node_color'] = [
+    $element['interior_node_color'] = [
       '#type' => 'color',
       '#title' => $this->t('Internal Node Color'),
       '#description' => $this->t('Specify the color of the internal nodes. If white is specified, the content type default (@color) will be used.',
@@ -167,7 +162,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['interior_node_color'] ?? '#ffffff',
     ];
 
-    $elements['leaf_node_size'] = [
+    $element['leaf_node_size'] = [
       '#type' => 'select',
       '#options' => $this->getSelectOptions(0, 12, $bundle_settings['phylogram_leaf_node_size'] ?? 6),
       '#title' => $this->t('Leaf Node Size'),
@@ -176,7 +171,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['leaf_node_size'] ?? '',
     ];
 
-    $elements['leaf_node_color'] = [
+    $element['leaf_node_color'] = [
       '#type' => 'color',
       '#title' => $this->t('Leaf Node Color'),
       '#description' => $this->t('Specify the color of the leaf nodes. If white is specified, the content type default (@color) will be used.',
@@ -198,12 +193,12 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
 
     // This element passes through the current number of color rows for the
     // "Add another item" button.
-    $elements['color_rows'] = [
+    $element['color_rows'] = [
       '#type' => 'value',
       '#value' => $color_rows,
     ];
 
-    $elements['org_colors_info']['desc'] = [
+    $element['org_colors_info']['desc'] = [
       '#type' => 'item',
       '#title' => $this->t('Node Colors by Organism'),
       '#markup' => $this->t('If the trees are associated with features (e.g. proteins)
@@ -212,7 +207,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
         name of the organism and specify its color. Organisms that are not given a
         color will the leaf node color as set above.'),
     ];
-    $elements['org_colors'] = [
+    $element['org_colors'] = [
       '#prefix' => '<div id="edit-org-colors">',
       '#suffix' => '</div>',
     ];
@@ -221,7 +216,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     // each one.
     for ($i = 0; $i < $color_rows; $i++) {
       // Wrapper is used so both fields can be styled onto the same line.
-      $elements['org_colors'][$i]['organism'] = [
+      $element['org_colors'][$i]['organism'] = [
         '#prefix' => '<div class="chado-phylotreevis-widget-settings-field-wrapper form-item">',
         '#type' => 'textfield',
         '#description' => $this->t('Organism'),
@@ -231,7 +226,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
         '#size' => 20,
         '#element_validate' => [[$this, 'validateOrganism']],
       ];
-      $elements['org_colors'][$i]['color'] = [
+      $element['org_colors'][$i]['color'] = [
         '#type' => 'color',
         '#description' => $this->t('Color'),
         '#default_value' => $org_colors[$i]['color'] ?? '#808080',
@@ -239,7 +234,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       ];
     }
 
-    $elements['actions']['add_row'] = [
+    $element['actions']['add_row'] = [
       '#type' => 'submit',
       '#value' => $this->t('Add another item'),
       '#ajax' => [
@@ -255,7 +250,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#submit' => [[static::class, 'incrementRows']],
       '#limit_validation_errors' => [[$field_name, '0', 'color_rows']],
     ];
-    return $elements;
+    return $element;
   }
 
   /**
@@ -269,7 +264,6 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
    *   The form array.
    * @param Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
-   *
    */
   public static function incrementRows(array &$form, FormStateInterface $form_state) {
     $triggering_element = $form_state->getTriggeringElement();
@@ -292,9 +286,9 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
    * Form element validation handler for organism colors.
    *
    * @param array $element
-   *   The form element being validated
+   *   The form element being validated.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state of the (entire) configuration form
+   *   The form state object.
    */
   public function validateOrganism($element, FormStateInterface $form_state) {
     $element_parents = $element['#parents'];
