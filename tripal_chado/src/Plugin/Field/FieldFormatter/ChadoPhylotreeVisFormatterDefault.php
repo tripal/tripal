@@ -97,7 +97,18 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     $formatter_settings = json_decode($formatter_settings_json, TRUE);
     if ($formatter_settings) {
       foreach ($formatter_settings as $key => $value) {
-        $treeOptions[$key] = $value;
+        if (is_array($value)) {
+          // org_colors is an array. Combine with or override the
+          // existing content type defaults.
+          foreach ($value as $colordef) {
+            // Extract the organism_id from the name.
+            $organism_id = preg_replace('/^.+\((\d+)\)$/', '\1', $colordef['organism']);
+            $treeOptions[$key][$organism_id] = $colordef['color'];
+          }
+        }
+        else {
+          $treeOptions[$key] = $value;
+        }
       }
     }
 
