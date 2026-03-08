@@ -274,15 +274,6 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    return [
-      'formatter_settings' => '',
-    ] + parent::defaultSettings();
-  }
-
-  /**
    * Form element validation handler for organism colors.
    *
    * @param array $element
