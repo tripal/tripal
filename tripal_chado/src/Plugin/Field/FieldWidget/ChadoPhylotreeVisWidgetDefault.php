@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
+use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
@@ -185,14 +186,14 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     ];
 
     // Removes any color items without an organism.
-    $colors = $formatter_settings['colors'] ?? [];
-    $colors = $this->removeEmptyColors($colors);
+    $org_colors = $formatter_settings['org_colors'] ?? [];
+    $org_colors = $this->removeEmptyColors($org_colors);
 
     // The "Add another item" button passes through an incremented value
     // through the following form_state variable.
     $color_rows = $form_state->getValue('color_rows');
     if (is_null($color_rows)) {
-      $color_rows = count($colors) + 1;
+      $color_rows = count($org_colors) + 1;
     }
 
     // This element passes through the current number of color rows for the
@@ -202,7 +203,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#value' => $color_rows,
     ];
 
-    $elements['colors_info']['desc'] = [
+    $elements['org_colors_info']['desc'] = [
       '#type' => 'item',
       '#title' => $this->t('Node Colors by Organism'),
       '#markup' => $this->t('If the trees are associated with features (e.g. proteins)
@@ -211,9 +212,8 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
         name of the organism and specify its color. Organisms that are not given a
         color will the leaf node color as set above.'),
     ];
-    $elements['colors'] = [
-#@todo      '#element_validate' => [[$this, 'settingsFormValidateOrganism']],
-      '#prefix' => '<div id="edit-colors">',
+    $elements['org_colors'] = [
+      '#prefix' => '<div id="edit-org-colors">',
       '#suffix' => '</div>',
     ];
 
@@ -221,19 +221,20 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     // each one.
     for ($i = 0; $i < $color_rows; $i++) {
       // Wrapper is used so both fields can be styled onto the same line.
-      $elements['colors'][$i]['organism'] = [
+      $elements['org_colors'][$i]['organism'] = [
         '#prefix' => '<div class="chado-phylotreevis-widget-settings-field-wrapper form-item">',
         '#type' => 'textfield',
         '#description' => $this->t('Organism'),
-        '#default_value' => $colors[$i]['organism'] ?? '',
+        '#default_value' => $org_colors[$i]['organism'] ?? '',
         '#autocomplete_route_name' => 'tripal_chado.organism_autocomplete',
         '#autocomplete_route_parameters' => ['match_limit' => 10],
         '#size' => 20,
+        '#element_validate' => [[$this, 'validateOrganism']],
       ];
-      $elements['colors'][$i]['color'] = [
+      $elements['org_colors'][$i]['color'] = [
         '#type' => 'color',
         '#description' => $this->t('Color'),
-        '#default_value' => $colors[$i]['color'] ?? '#808080',
+        '#default_value' => $org_colors[$i]['color'] ?? '#808080',
         '#suffix' => '</div>',
       ];
     }
@@ -244,8 +245,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#ajax' => [
         'callback' => [static::class, 'addRowCallback'],
         'event' => 'click',
-        'wrapper' => 'colors',
-#        'method' => 'replace', // Replace the entire table wrapper content
+        'wrapper' => 'org_colors',
         'effect' => 'fade',
       ],
       '#attributes' => [
@@ -289,23 +289,24 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Form element validation handler for organism colors.
+   *
+   * @param array $element
+   *   The form element being validated
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) configuration form
    */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary() {
-    $summary = [];
-
-    $json_settings = $this->getSetting('formatter_settings_value') ?? '';
-    $formatter_settings = json_decode($json_settings, TRUE);
-//@todo
-    $summary[] = $this->t("Json(temp): @json", ['@json' => $json_settings]);
-
-    return $summary;
+  public function validateOrganism($element, FormStateInterface $form_state) {
+    $element_parents = $element['#parents'];
+    $element_value = $element['#value'];
+    if ($element_value != '') {
+      $organism_autocomplete = new ChadoOrganismAutocompleteController();
+      $organism_id = $organism_autocomplete->getPkeyId($element_value);
+      if (!$organism_id) {
+        $form_state->setErrorByName(implode('][', $element_parents),
+          $this->t('Organism must include numeric record ID inside parentheses, please let the autocomplete add this value'));
+      }
+    }
   }
 
   /**
@@ -364,13 +365,13 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       'interior_node_color',
       'leaf_node_size',
       'leaf_node_color',
-      'colors',
+      'org_colors',
     ];
     $settings = [];
     $delta = 0;
     foreach ($keys as $key) {
       if (array_key_exists($key, $values[$delta])) {
-        // Key 'colors' is an array, all others are scalars.
+        // Key 'org_colors' is an array, all others are scalars.
         if (is_array($values[$delta][$key])) {
           foreach ($values[$delta][$key] as $index => $color) {
             // Skip if no organism specified (i.e. blank row).
@@ -383,7 +384,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
           // Don't include if just a null string. This allows the
           // global content type default to be used instead.
           if (strlen($values[$delta][$key])) {
-            // For colors, don't include if pure white. We use white to
+            // For org_colors, don't include if pure white. We use white to
             // indicate to use the global content type default.
             if (strtolower($values[$delta][$key]) != '#ffffff') {
               $settings[$key] = $values[$delta][$key];
@@ -413,8 +414,8 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     $delta = $triggering_element['#attributes']['delta'];
 
     $response = new AjaxResponse();
-    $color_table = $form[$machine_name]['widget'][$delta]['colors'];
-    $response->addCommand(new ReplaceCommand('#edit-colors', $color_table));
+    $color_table = $form[$machine_name]['widget'][$delta]['org_colors'];
+    $response->addCommand(new ReplaceCommand('#edit-org-colors', $color_table));
     return $response;
   }
 
