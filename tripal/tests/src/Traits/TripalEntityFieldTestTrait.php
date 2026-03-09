@@ -412,6 +412,7 @@ trait TripalEntityFieldTestTrait {
       'field_storage' => $values['fieldStorage'],
       'bundle' => $values['bundle_name'],
       'required' => TRUE,
+      'settings' => $values['settings'],
     ]);
     $fieldConfig
       ->save();
