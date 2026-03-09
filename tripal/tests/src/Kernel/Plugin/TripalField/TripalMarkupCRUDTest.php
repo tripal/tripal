@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel\Plugin\ChadoField\FieldType;
+namespace Drupal\Tests\tripal\Kernel\Plugin\TripalField;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
