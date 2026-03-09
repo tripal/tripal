@@ -18,7 +18,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  */
 #[Group('tripal-field')]
 #[RunTestsInSeparateProcesses]
-class TripalMarkupCRUDTest extends TripalTestKernelBase {
+class TripalMarkupTest extends TripalTestKernelBase {
 
   use TripalEntityFieldTestTrait;
 
@@ -51,7 +51,7 @@ class TripalMarkupCRUDTest extends TripalTestKernelBase {
    *
    * @var string
    */
-  protected string $yaml_info_file = __DIR__ . '/TripalMarkupCRUD-TestInfo.yml';
+  protected string $yaml_info_file = __DIR__ . '/TripalMarkup-TestInfo.yml';
 
   /**
    * Describes the environment to setup for this test.
@@ -208,6 +208,75 @@ class TripalMarkupCRUDTest extends TripalTestKernelBase {
     $this->assertArrayHasKey(0, $sample_value, "The sample value generated did not have the expected 0 key for our " . $current_scenario['label'] . " scenario.");
     $this->assertArrayHasKey('has_value', $sample_value[0], "The sample value generated did not have the expected 'has_value' key for our " . $current_scenario['label'] . " scenario.");
     $this->assertIsBool($sample_value[0]['has_value'], "The 'has_value' key in the sample value generated was not a boolean as expected for our " . $current_scenario['label'] . " scenario.");
+  }
+
+  /**
+   * Tests the field through TripalEntity->save().
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
+   */
+  #[DataProvider('provideScenarios')]
+  public function testWidgetForm(int $current_scenario_key, string $current_scenario_label) {
+    $field_name = 'field_instructions';
+
+    // Retrieve the correct scenario.
+    $current_scenario = $this->scenarios[$current_scenario_key];
+    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+
+    // Setup an empty Tripal entity form to interact with (test defaults).
+    $form_stuff = $this->setupTripalEntityAddForm($this->bundle_name);
+    $form = $form_stuff[1];
+    // Retrieve the widget form for the field we are testing.
+    $widget_form_element = $form[$field_name]['widget'][0];
+
+    // @debug print_r($widget_form_element);
+    // Confirm there are the form elements I expect.
+    foreach ($current_scenario['widget'] as $expected_element) {
+      $this->assertArrayHasKey($expected_element['key'], $widget_form_element, "The widget form element did not have the expected key for our " . $current_scenario['label'] . " scenario.");
+      $element_key = $expected_element['key'];
+      foreach ($expected_element as $property_key => $expected_value) {
+        if ($property_key !== 'key') {
+          $this->assertEquals($expected_value, $widget_form_element[$element_key][$property_key], "The $element_key [ $property_key ] widget form element did not match the value we expected for our " . $current_scenario['label'] . " scenario.");
+        }
+      }
+    }
+  }
+
+  /**
+   * Tests TripalMarkupTypeItem::fieldSettingsForm().
+   */
+  #[DataProvider('provideScenarios')]
+  public function testFieldSettingsForm(int $current_scenario_key, string $current_scenario_label) {
+
+    // Retrieve the correct scenario.
+    $current_scenario = $this->scenarios[$current_scenario_key];
+    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+
+    // Create the entity with that value set because we need an entity to get
+    // this form.
+    $entity = TripalEntity::create([
+      'title' => $this->randomString(),
+      'type' => $this->bundle_name,
+    ] + $current_scenario['create']['user_input']);
+    $entity->save();
+
+    // Retrieve the field settings form.
+    $field_type_plugin = $entity->get('field_instructions')->first();
+    $form = [];
+    $form_state = $this->getMockBuilder('Drupal\Core\Form\FormStateInterface')->getMock();
+    $elements = $field_type_plugin->fieldSettingsForm($form, $form_state);
+
+    // Confirm the markup element I expect is there.
+    // @debug print_r($elements);
+    $this->assertArrayHasKey('markup', $elements, "The field settings form did not have the expected 'markup' key for our field settings form test.");
+    $this->assertEquals('text_format', $elements['markup']['#type'], "The 'markup' element in the field settings form did not have the expected '#type'.");
+    $this->assertEquals('basic_html', $elements['markup']['#format'], "The 'markup' element in the field settings form did not have the expected '#format'.");
+
   }
 
 }

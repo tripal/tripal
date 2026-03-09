@@ -66,3 +66,11 @@ scenarios:
       expected_markup:
         value: '<p>This is my markup text.</p><p><em><strong>Beep</strong></em></p><p><em><strong>Beep</strong></em></p><p><em><strong>Boop</strong></em></p>'
         format: 'basic_html'
+    widget:
+    - key: 'has_value'
+      '#type': 'value'
+      '#value': 1
+    - key: 'markup'
+      '#type': 'processed_text'
+      '#text': '<p>This is my markup text.</p><p><em><strong>Beep</strong></em></p><p><em><strong>Beep</strong></em></p><p><em><strong>Boop</strong></em></p>'
+      '#format': 'basic_html'
