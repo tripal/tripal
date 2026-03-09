@@ -376,6 +376,7 @@ trait TripalEntityFieldTestTrait {
     $values['formatter_id'] = $values['formatter_id'] ?? 'default_tripal_string_type_formatter';
     $values['widget_id'] = $values['widget_id'] ?? 'default_tripal_string_type_widget';
     $values['field_type'] = $values['field_type'] ?? 'tripal_string_type';
+    $values['settings'] = $values['settings'] ?? [];
     // -- Bundle
     if (array_key_exists('bundle', $values)) {
       $bundle = $values['bundle'];
