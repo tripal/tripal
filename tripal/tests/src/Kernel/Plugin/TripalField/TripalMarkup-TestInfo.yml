@@ -74,3 +74,7 @@ scenarios:
       '#type': 'processed_text'
       '#text': '<p>This is my markup text.</p><p><em><strong>Beep</strong></em></p><p><em><strong>Beep</strong></em></p><p><em><strong>Boop</strong></em></p>'
       '#format': 'basic_html'
+    formatter:
+      '#type': 'processed_text'
+      '#text': '<p>This is my markup text.</p><p><em><strong>Beep</strong></em></p><p><em><strong>Beep</strong></em></p><p><em><strong>Boop</strong></em></p>'
+      '#format': 'basic_html'

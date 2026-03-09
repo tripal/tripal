@@ -211,7 +211,7 @@ class TripalMarkupTest extends TripalTestKernelBase {
   }
 
   /**
-   * Tests the field through TripalEntity->save().
+   * Tests the field widget.
    *
    * @param int $current_scenario_key
    *   The key of the scenario in the YAML.
@@ -249,6 +249,13 @@ class TripalMarkupTest extends TripalTestKernelBase {
 
   /**
    * Tests TripalMarkupTypeItem::fieldSettingsForm().
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
    */
   #[DataProvider('provideScenarios')]
   public function testFieldSettingsForm(int $current_scenario_key, string $current_scenario_label) {
@@ -277,6 +284,40 @@ class TripalMarkupTest extends TripalTestKernelBase {
     $this->assertEquals('text_format', $elements['markup']['#type'], "The 'markup' element in the field settings form did not have the expected '#type'.");
     $this->assertEquals('basic_html', $elements['markup']['#format'], "The 'markup' element in the field settings form did not have the expected '#format'.");
 
+  }
+
+  /**
+   * Tests the formatter.
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
+   */
+  #[DataProvider('provideScenarios')]
+  public function testFormatter(int $current_scenario_key, string $current_scenario_label) {
+
+    // Retrieve the correct scenario.
+    $current_scenario = $this->scenarios[$current_scenario_key];
+    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+
+    // Create the entity with that value set because we need an entity
+    // in order to render it ;-p.
+    $entity = TripalEntity::create([
+      'title' => $this->randomString(),
+      'type' => $this->bundle_name,
+    ] + $current_scenario['create']['user_input']);
+    $entity->save();
+
+    // Render the field and confirm the output is what we expect.
+    $rendered = $entity->field_instructions->view();
+    $this->assertIsArray($rendered, "The rendered field was not an array as expected for our " . $current_scenario['label'] . " scenario.");
+    foreach ($current_scenario['formatter'] as $expected_key => $expected_value) {
+      $this->assertArrayHasKey($expected_key, $rendered, "The rendered field did not have the expected key for our " . $current_scenario['label'] . " scenario.");
+      $this->assertEquals($expected_value, $rendered[$expected_key], "The $expected_key element in the rendered field did not match the value we expected for our " . $current_scenario['label'] . " scenario.");
+    }
   }
 
 }
