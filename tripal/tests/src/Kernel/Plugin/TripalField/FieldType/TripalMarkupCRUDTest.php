@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal\Kernel\Plugin\ChadoField\FieldType;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
+use Drupal\tripal\Plugin\Field\FieldType\TripalMarkupTypeItem;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
@@ -174,11 +175,15 @@ class TripalMarkupCRUDTest extends TripalTestKernelBase {
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
     $status = $entity->save();
     $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
+    $markup_value = TripalMarkupTypeItem::getMarkupValue($entity, $entity->getFieldDefinition('field_instructions'));
+    $this->assertEquals($current_scenario['create']['expected_markup'], $markup_value, "The value returned by getMarkupValue() right after create did not match the expected value for our " . $current_scenario['label'] . " scenario.");
 
     // @debug print_r($entity->toArray());
     // 2. Load the entity we just created so we can check the values.
     $created_entity = TripalEntity::load($entity->id());
     $this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, $current_scenario['label'] . ' CREATE ');
+    $markup_value = TripalMarkupTypeItem::getMarkupValue($created_entity, $created_entity->getFieldDefinition('field_instructions'));
+    $this->assertEquals($current_scenario['create']['expected_markup'], $markup_value, "The value returned by getMarkupValue() when loading the created entity did not match the expected value for our " . $current_scenario['label'] . " scenario.");
 
     // 3. Make changes and then save again.
     foreach ($current_scenario['edit']['user_input'] as $field_name => $new_values) {
@@ -187,11 +192,22 @@ class TripalMarkupCRUDTest extends TripalTestKernelBase {
     // @debug print_r($created_entity->toArray());
     $status = $created_entity->save();
     $this->assertEquals(SAVED_UPDATED, $status, "We expected to have updated the existing entity for our " . $current_scenario['label'] . " scenario.");
+    $markup_value = TripalMarkupTypeItem::getMarkupValue($created_entity, $created_entity->getFieldDefinition('field_instructions'));
+    $this->assertEquals($current_scenario['edit']['expected_markup'], $markup_value, "The value returned by getMarkupValue() when saving the edited entity did not match the expected value for our " . $current_scenario['label'] . " scenario.");
 
     // 4. Load the entity we just updated so we can check the values.
     $updated_entity = TripalEntity::load($created_entity->id());
     // @debug print_r($updated_entity->toArray());
     $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, $current_scenario['label'] . ' EDIT ');
+    $markup_value = TripalMarkupTypeItem::getMarkupValue($updated_entity, $updated_entity->getFieldDefinition('field_instructions'));
+    $this->assertEquals($current_scenario['edit']['expected_markup'], $markup_value, "The value returned by getMarkupValue() when loading the updated entity did not match the expected value for our " . $current_scenario['label'] . " scenario.");
+
+    // 5. Lets also check that we can generate a sample value without error.
+    $sample_value = TripalMarkupTypeItem::generateSampleValue($created_entity->getFieldDefinition('field_instructions'));
+    $this->assertIsArray($sample_value, "The sample value generated was not an array as expected for our " . $current_scenario['label'] . " scenario.");
+    $this->assertArrayHasKey(0, $sample_value, "The sample value generated did not have the expected 0 key for our " . $current_scenario['label'] . " scenario.");
+    $this->assertArrayHasKey('has_value', $sample_value[0], "The sample value generated did not have the expected 'has_value' key for our " . $current_scenario['label'] . " scenario.");
+    $this->assertIsBool($sample_value[0]['has_value'], "The 'has_value' key in the sample value generated was not a boolean as expected for our " . $current_scenario['label'] . " scenario.");
   }
 
 }

@@ -17,8 +17,6 @@ system-under-test:
       termIdSpace: 'schema'
       termAccession: 'WebPageElement'
       settings:
-        termIdSpace: 'schema'
-        termAccession: 'WebPageElement'
         debug: false
         markup:
           value: '<p>This is my markup text.</p><p><em><strong>Beep</strong></em></p><p><em><strong>Beep</strong></em></p><p><em><strong>Boop</strong></em></p>'
@@ -34,8 +32,6 @@ system-under-test:
       termIdSpace: 'schema'
       termAccession: 'name'
       settings:
-        termIdSpace: 'schema'
-        termAccession: 'name'
         debug: false
         max_length: 255
         storage_plugin_id: 'drupal_sql_storage'
@@ -53,6 +49,9 @@ scenarios:
           - has_value: true
         project_name:
           - value: 'Euismod Gilvus Letalis'
+      expected_markup:
+        value: '<p>This is my markup text.</p><p><em><strong>Beep</strong></em></p><p><em><strong>Beep</strong></em></p><p><em><strong>Boop</strong></em></p>'
+        format: 'basic_html'
     edit:
       user_input:
         field_instructions:
@@ -64,3 +63,6 @@ scenarios:
           - has_value: true
         project_name:
           - value: 'Pertineo Quia Utrum'
+      expected_markup:
+        value: '<p>This is my markup text.</p><p><em><strong>Beep</strong></em></p><p><em><strong>Beep</strong></em></p><p><em><strong>Boop</strong></em></p>'
+        format: 'basic_html'
