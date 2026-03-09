@@ -1,44 +1,44 @@
 system-under-test:
-  chado_version: 1.3.3.013
+  chado_version: '1.3.3.013'
   bundle:
-    label: Project
-    termIdSpace: NCIT
-    termAccession: C47885
-    id: project
+    label: 'Project'
+    termIdSpace: 'NCIT'
+    termAccession: 'C47885'
+    id: 'project'
     settings:
-      chado_base_table: project
+      chado_base_table: 'project'
   fields:
-    - name: field_instructions
-      type: tripal_markup
-      type_class: Drupal\tripal\Plugin\Field\FieldType\TripalMarkupTypeItem
+    - name: 'field_instructions'
+      type: 'tripal_markup'
+      type_class: 'Drupal\tripal\Plugin\Field\FieldType\TripalMarkupTypeItem'
       cardinality: 1
-      widget: tripal_markup_widget
-      formatter: tripal_markup_formatter
-      termIdSpace: schema
-      termAccession: WebPageElement
+      widget: 'tripal_markup_widget'
+      formatter: 'tripal_markup_formatter'
+      termIdSpace: 'schema'
+      termAccession: 'WebPageElement'
       settings:
-        termIdSpace: schema
-        termAccession: WebPageElement
+        termIdSpace: 'schema'
+        termAccession: 'WebPageElement'
         debug: false
         markup:
           value: '<p>This is my markup text.</p><p><em><strong>Beep</strong></em></p><p><em><strong>Beep</strong></em></p><p><em><strong>Boop</strong></em></p>'
-          format: basic_html
-        storage_plugin_id: drupal_sql_storage
+          format: 'basic_html'
+        storage_plugin_id: 'drupal_sql_storage'
         storage_plugin_settings: {  }
-    - name: project_name
-      type: tripal_string_type
-      type_class: Drupal\tripal\Plugin\Field\FieldType\TripalStringTypeItem
+    - name: 'project_name'
+      type: 'tripal_string_type'
+      type_class: 'Drupal\tripal\Plugin\Field\FieldType\TripalStringTypeItem'
       cardinality: 1
-      widget: default_tripal_string_type_widget
-      formatter: default_tripal_string_type_formatter
-      termIdSpace: schema
-      termAccession: name
+      widget: 'default_tripal_string_type_widget'
+      formatter: 'default_tripal_string_type_formatter'
+      termIdSpace: 'schema'
+      termAccession: 'name'
       settings:
-        termIdSpace: schema
-        termAccession: name
+        termIdSpace: 'schema'
+        termAccession: 'name'
         debug: false
         max_length: 255
-        storage_plugin_id: drupal_sql_storage
+        storage_plugin_id: 'drupal_sql_storage'
 scenarios:
   - label: 'When markup is set'
     description: 'Creates a page using only default values for each field.'
