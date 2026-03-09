@@ -913,7 +913,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
       else {
         // Only warn for failed association on leaf nodes, internal ones
         // will rarely be associated.
-        if ($tree['is_leaf']) {
+        if ($tree['is_leaf'] ?? FALSE) {
           $n_not_associated++;
           \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to'
             . ' associate to an organism that matches %name',
