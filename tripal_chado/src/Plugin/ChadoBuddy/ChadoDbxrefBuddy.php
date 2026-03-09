@@ -622,8 +622,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     // Get the primary key of the base table.
     $base_pkey_col = $options['pkey'] ?? NULL;
     if (!$base_pkey_col) {
-      $schema = $this->chado_connection->schema();
-      $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+      $base_table_def = $this->getChadoTableDef($base_table);
       $base_pkey_col = $base_table_def['primary key'];
     }
 

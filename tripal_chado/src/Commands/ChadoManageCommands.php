@@ -4,9 +4,12 @@ namespace Drupal\tripal_chado\Commands;
 
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Datetime\DateFormatter;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\tripal\TripalDBX\TripalDbx;
+use Drupal\tripal\TripalImporter\PluginManagers\TripalImporterManager;
+use Drupal\tripal\TripalPubLibrary\PluginManagers\TripalPubLibraryManager;
 use Drupal\tripal_chado\Task\ChadoApplyMigrations;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Task\ChadoInstaller;
@@ -40,8 +43,11 @@ class ChadoManageCommands extends DrushCommands {
   public function __construct(
     protected ConfigFactory $config_factory,
     protected DateFormatter $date_formatter,
+    protected EntityTypeManagerInterface $entityTypeManager,
     protected TripalBackendPublishManager $publish_manager,
     protected TripalDbx $tripaldbx,
+    protected TripalImporterManager $importer_manager,
+    protected TripalPubLibraryManager $pub_library_manager,
     protected ChadoApplyMigrations $migrator,
     protected ChadoConnection $chado_connection,
     protected ChadoInstaller $installer,
@@ -52,6 +58,27 @@ class ChadoManageCommands extends DrushCommands {
   ) {
     // Parent currently doesn't do anything here.
     parent::__construct();
+  }
+
+  /**
+   * Looks up a user ID from a user name.
+   *
+   * @param string $username
+   *   The name of a Drupal user.
+   *
+   * @return int
+   *   The corresponding user ID, or zero if user name is not a valid account.
+   */
+  protected function lookupUserId(string $username): int {
+    $uid = 0;
+    $users = $this->entityTypeManager
+      ->getStorage('user')
+      ->loadByProperties(['name' => $username]);
+    $user = $users ? reset($users) : FALSE;
+    if ($user) {
+      $uid = $user->id();
+    }
+    return $uid;
   }
 
   /**
@@ -628,6 +655,293 @@ class ChadoManageCommands extends DrushCommands {
             ['@view_name' => $view_name]));
         }
       }
+    }
+  }
+
+  /**
+   * Imports publications.
+   */
+  #[CLI\Command(name: 'tripal-chado:import-pub', aliases: ['trp-import-pub'])]
+  #[CLI\Option(name: 'username', description: 'Required, the name of the user for whom the import is associated.')]
+  #[CLI\Option(name: 'name', description: 'The name of an existing publication search query.')]
+  #[CLI\Option(name: 'id', description: 'The ID number(s) of one or more existing publication search query, comma-delimited.')]
+  #[CLI\Option(name: 'pmid', description: 'The PubMed ID(s) of one or more publications to import, comma-delimited.')]
+  #[CLI\Option(name: 'schema-name', description: 'The name of the chado schema to use')]
+  #[CLI\Option(name: 'api-key', description: 'pmid only: Optional NCBI API key for faster requests.')]
+  #[CLI\Option(name: 'create-contact', description: 'pmid only: Set to 1 to create contact records for authors (default: 0).')]
+  #[CLI\Usage(
+    name: 'drush trp-import-pub --name="Query Name" --username=[USERNAME]',
+    description: 'Performs the search and imports publications from the search query with the name "Query Name".',
+  )]
+  #[CLI\Usage(
+    name: 'drush trp-import-pub --id=1 --username=[USERNAME]',
+    description: 'Performs the search and imports publications from the search query with the record ID of 1 in the tripal_pub_library_query table.',
+  )]
+  #[CLI\Usage(
+    name: 'drush trp-import-pub --pmid=12345678 --username=[USERNAME]',
+    description: 'Imports a single publication with PMID 12345678',
+  )]
+  #[CLI\Usage(
+    name: 'drush trp-import-pub --pmid=12345678 --create-contact=1 --api-key=[API_KEY] --username=[USERNAME]',
+    description: 'Imports publication with contact creation and API key for faster processing.',
+  )]
+  public function tripalImportPublication(
+    $options = [
+      'username' => NULL,
+      'name' => NULL,
+      'id' => NULL,
+      'pmid' => NULL,
+      'schema-name' => 'chado',
+      'api-key' => NULL,
+      'create-contact' => 0,
+    ],
+  ) {
+
+    $username = $options['username'] ?? NULL;
+    $name = $options['name'] ?? NULL;
+    $id = $options['id'] ?? NULL;
+    $pmid = $options['pmid'] ?? NULL;
+    $chado_schema_name = $options['schema-name'] ?? 'chado';
+    $api_key = $options['api-key'] ?? '';
+    $create_contact = $options['create-contact'] ?? 0;
+
+    if (!$name && !$id && !$pmid) {
+      $this->logger->error($this->t('Either the --name, --id, or --pmid argument is required.'));
+      return;
+    }
+
+    if (!$username) {
+      $this->logger->error($this->t('The --username argument is required.'));
+      return;
+    }
+    $uid = $this->lookupUserId($username);
+    if (!$uid) {
+      $this->logger->error($this->t('The specified username "@username" does not exist.',
+        ['@username' => $username]));
+      return;
+    }
+
+    if ($name) {
+      $this->tripalImportPublicationByName($name, $chado_schema_name, $uid);
+    }
+    if ($id) {
+      $this->tripalImportPublicationById($id, $chado_schema_name, $uid);
+    }
+    if ($pmid) {
+      $this->tripalImportPublicationByPmid($pmid, $chado_schema_name, $uid, $api_key, $create_contact);
+    }
+  }
+
+  /**
+   * Import publications into chado by pub search query name.
+   *
+   * @param string $name
+   *   The name of an existing publication search query.
+   *   Note that there is no unique constraint on name, so if more than one
+   *   pub search query has the exact same name, we will import them all.
+   * @param string $chado_schema_name
+   *   The name of the chado schema to use (defaults to "chado").
+   * @param int $uid
+   *   The ID of the user for whom the import is associated.
+   *
+   * @return void
+   *   No return value.
+   */
+  protected function tripalImportPublicationByName(string $name, string $chado_schema_name, int $uid): void {
+    $all_queries = $this->pub_library_manager->getSearchQueries();
+    if (!$all_queries) {
+      $this->logger->error($this->t('No pub search queries have been created on this site'));
+      return;
+    }
+    $query_ids = [];
+    foreach ($all_queries as $query) {
+      if ($query->name == $name) {
+        $query_ids[] = $query->pub_library_query_id;
+      }
+    }
+    if (count($query_ids) == 0) {
+      $this->logger->error($this->t('No pub search query matches the supplied name "@name"',
+        ['@name' => $name]));
+      return;
+    }
+    $this->tripalImportPublicationById(implode(',', $query_ids), $chado_schema_name, $uid);
+  }
+
+  /**
+   * Import publications into chado by pub search query ID.
+   *
+   * @param string $id
+   *   Primary key (int) of the query in the tripal_pub_library_query table.
+   *   Multiple id values can be specified if comma-delimited.
+   * @param string $chado_schema_name
+   *   The name of the chado schema to use (defaults to "chado").
+   * @param int $uid
+   *   The ID of the user for whom the import is associated.
+   *
+   * @return void
+   *   No return value.
+   */
+  protected function tripalImportPublicationById(string $id, string $chado_schema_name, int $uid): void {
+    $importer = $this->importer_manager->createInstance('pub_search_query_loader');
+    $valid_queries = [];
+    $ids = explode(',', $id);
+    foreach ($ids as $id) {
+      $id = trim($id);
+      if ($id) {
+        // Validate that each ID is numeric.
+        if (!preg_match('/^[0-9]+$/', $id)) {
+          $this->logger->error($this->t('An ID must be an integer value. Invalid value supplied was "@id"',
+            ['@id' => $id]));
+          return;
+        }
+        else {
+          $query = $this->pub_library_manager->getSearchQuery($id);
+          if ($query) {
+            $disabled = $query->disabled;
+            if ($disabled != 0) {
+              $this->logger->error($this->t('Pub search query "@id" is marked as disabled',
+                ['@id' => $id]));
+              return;
+            }
+            else {
+              $valid_queries[$id] = $query;
+            }
+          }
+          else {
+            $this->logger->error($this->t('No pub search query matches the supplied ID "@id"',
+              ['@id' => $id]));
+            return;
+          }
+        }
+      }
+    }
+    // This could happen if only a comma was entered.
+    if (!$valid_queries) {
+      $this->logger->error($this->t('No valid search queries were supplied.'));
+      return;
+    }
+
+    foreach ($valid_queries as $id => $query) {
+      // Set up the importer arguments.
+      $criteria = unserialize($query->criteria, ['allowed_classes' => FALSE]);
+      $importer_args = [
+        'run_args' => [
+          'criteria' => $criteria,
+          'schema_name' => $chado_schema_name,
+          'uid' => $uid,
+          'return_citations' => TRUE,
+        ],
+      ];
+      $importer->setArguments($importer_args);
+      $citations = $importer->run();
+
+      // Show the citation for each imported publication.
+      $this->listCitations($citations);
+    }
+  }
+
+  /**
+   * Import publication(s) into chado by pubmed ID.
+   *
+   * @param string $pmid
+   *   The PubMed ID of one or more publications to import.
+   *   Multiple id values can be specified if comma-delimited.
+   * @param string $chado_schema_name
+   *   The name of the chado schema to use (defaults to "chado").
+   * @param int $uid
+   *   The ID of the user for whom the import is associated.
+   * @param string $api_key
+   *   Optional NCBI API key for faster requests.
+   * @param int $create_contact
+   *   Set to 1 to create contact records for authors (default: 0).
+   *
+   * @return void
+   *   No return value.
+   */
+  protected function tripalImportPublicationByPmid(string $pmid, string $chado_schema_name, int $uid, string $api_key, int $create_contact): void {
+    // Use the importer manager to create the PubSearchQueryImporter instance.
+    $importer = $this->importer_manager->createInstance('pub_search_query_loader');
+
+    // Set up criteria using pmid value(s).
+    $pmids = explode(',', $pmid);
+    $criteria = [];
+    foreach ($pmids as $index => $id) {
+      $id = trim($id);
+      if ($id) {
+        // Validate that each PMID is numeric.
+        if (!preg_match('/^[0-9]+$/', $id)) {
+          $this->logger->error($this->t('A PMID must be an integer value. Invalid value supplied was "@id"',
+            ['@id' => $id]));
+          return;
+        }
+        // Criteria array is expected to start at 1.
+        $criteria[$index + 1] = [
+          'search_terms' => $id,
+          'scope' => 'id',
+          'is_phrase' => 0,
+          'operation' => $criteria ? 'OR' : '',
+        ];
+      }
+    }
+
+    // This could happen if only a comma was entered.
+    if (!$criteria) {
+      $this->logger->error($this->t('No valid PMID values were supplied.'));
+      return;
+    }
+
+    // Set up the importer arguments.
+    $importer_args = [
+      'run_args' => [
+        'criteria' => [
+          'plugin_id' => 'tripal_pub_library_PMID',
+          'remote_db' => 'PMID',
+          'num_criteria' => count($criteria),
+          'count' => count($criteria),
+          'page' => 0,
+          'do_contact' => $create_contact ? 1 : 0,
+          'disabled' => 0,
+          'criteria' => $criteria,
+        ],
+        'schema_name' => $chado_schema_name,
+        'uid' => $uid,
+        'return_citations' => TRUE,
+      ],
+    ];
+
+    $importer->setArguments($importer_args);
+    $citations = $importer->run();
+
+    // Show the citation for each imported publication.
+    $this->listCitations($citations);
+  }
+
+  /**
+   * Display citations of imported publications.
+   *
+   * For quotation marks use guillemets «» because standard quotes ' or " get
+   * converted by t() to HTML entities &#039; or &quot;.
+   *
+   * @param array $citations
+   *   Citations of imported publications, could be an empty array.
+   *
+   * @return void
+   *   No return value, output is to screen.
+   */
+  protected function listCitations(array $citations): void {
+    if (count($citations) == 1) {
+      $this->logger->notice($this->t('Imported «@cit»',
+        ['@cit' => $citations[0]]));
+    }
+    elseif (count($citations) > 1) {
+      // The citation list is included inside the logger message to make
+      // sure output is in desired order.
+      $list = '';
+      foreach ($citations as $index => $citation) {
+        $list .= "\n" . ($index + 1) . ': «' . $citation . '»';
+      }
+      $this->logger->notice($this->t('Imported @n publications: @list',
+        ['@n' => count($citations), '@list' => $list]));
     }
   }
 
