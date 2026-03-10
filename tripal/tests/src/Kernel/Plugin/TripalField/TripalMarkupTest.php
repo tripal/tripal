@@ -37,7 +37,15 @@ class TripalMarkupTest extends TripalTestKernelBase {
    *
    * @var array
    */
-  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'datetime', 'tripal'];
+  protected static $modules = [
+    'system',
+    'user',
+    'path',
+    'path_alias',
+    'field',
+    'datetime',
+    'tripal',
+  ];
 
   /**
    * The test drupal connection. It is also set in the container.

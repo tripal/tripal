@@ -27,7 +27,7 @@ class TripalMarkupWidget extends TripalWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
-    // The value is set int the field settings, so we need to get it from the
+    // The value is set to int in the field settings, so we need to get it from the
     // field definition, not the field item.
     $value = TripalMarkupTypeItem::getMarkupValue($items->getEntity(), $items->getFieldDefinition());
     // Save whether this field has a value or not.
