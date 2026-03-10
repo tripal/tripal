@@ -64,6 +64,8 @@ class TripalMarkupTest extends TripalTestKernelBase {
   /**
    * Describes the environment to setup for this test.
    *
+   * Note: This is defined in the YAML file and then set in the setUp() method.
+   *
    * @var array
    *   An array with the following keys:
    *   - bundle: an array defining the tripal entity type to create.
@@ -74,12 +76,16 @@ class TripalMarkupTest extends TripalTestKernelBase {
   /**
    * The TripalEntityType id of the bundle being used in this test.
    *
+   * Note: This is defined in the YAML file and then set in the setUp() method.
+   *
    * @var string
    */
   protected string $bundle_name;
 
   /**
    * Describes the scenarios to test.
+   *
+   * Note: This is defined in the YAML file and then set in the setUp() method.
    *
    * This will be used in combination with the data provider. It can't be
    * accessed directly in the dataProvider due to the way that PHPUnit is
@@ -216,6 +222,18 @@ class TripalMarkupTest extends TripalTestKernelBase {
     $this->assertArrayHasKey(0, $sample_value, "The sample value generated did not have the expected 0 key for our " . $current_scenario['label'] . " scenario.");
     $this->assertArrayHasKey('has_value', $sample_value[0], "The sample value generated did not have the expected 'has_value' key for our " . $current_scenario['label'] . " scenario.");
     $this->assertIsBool($sample_value[0]['has_value'], "The 'has_value' key in the sample value generated was not a boolean as expected for our " . $current_scenario['label'] . " scenario.");
+
+    // 6. Finally, lets check that the entity can be deleted without effecting
+    // the field settings.
+    $updated_entity->delete();
+    $this->assertNull(TripalEntity::load($updated_entity->id()), "The entity was not deleted as expected for our " . $current_scenario['label'] . " scenario.");
+    // Use the entity manager to get the field settings.
+    $field_definitions = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->bundle_name);
+    if (isset($field_definitions['field_instructions'])) {
+      $field_definition = $field_definitions['field_instructions'];
+      $markup_settings = $field_definition->getSetting('markup');
+      $this->assertEquals($current_scenario['edit']['expected_markup'], $markup_settings, "The markup settings did not match the expected value for our " . $current_scenario['label'] . " scenario after deleting an entity.");
+    }
   }
 
   /**
