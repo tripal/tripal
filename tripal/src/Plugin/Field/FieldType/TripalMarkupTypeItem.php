@@ -21,7 +21,7 @@ use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
   label: new TranslatableMarkup('Tripal Markup'),
   description: new TranslatableMarkup('Adds static markup (e.g. instructions) to the form or view display.'),
   default_widget: 'tripal_markup_widget',
-  default_formatter: 'tripal_markup_formatter',
+  default_formatter: NULL,
   cardinality: 1,
 )]
 class TripalMarkupTypeItem extends TripalFieldItemBase {
@@ -45,8 +45,8 @@ class TripalMarkupTypeItem extends TripalFieldItemBase {
     $settings['termAccession'] = 'WebPageElement';
 
     $settings['markup'] = [
-      'value'  => '',
-      'format' => '',
+      'value'  => NULL,
+      'format' => NULL,
     ];
 
     return $settings;
@@ -73,7 +73,7 @@ class TripalMarkupTypeItem extends TripalFieldItemBase {
       '#type' => 'text_format',
       '#title' => $this->t('Markup'),
       '#default_value' => $settings['markup']['value'] ?? '',
-      '#format' => !empty($settings['markup']['format']) ? $settings['markup']['format'] : filter_default_format(),
+      '#format' => $settings['markup']['format'] ?? filter_default_format(),
       '#required' => TRUE,
       '#rows' => 15,
     ];
