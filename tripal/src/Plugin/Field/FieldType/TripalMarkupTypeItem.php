@@ -21,7 +21,7 @@ use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
   label: new TranslatableMarkup('Tripal Markup'),
   description: new TranslatableMarkup('Adds static markup (e.g. instructions) to the form or view display.'),
   default_widget: 'tripal_markup_widget',
-  default_formatter: NULL,
+  default_formatter: 'tripal_markup_formatter',
   cardinality: 1,
 )]
 class TripalMarkupTypeItem extends TripalFieldItemBase {
