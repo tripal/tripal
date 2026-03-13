@@ -928,6 +928,21 @@ vocabularies:
             -   id: 'schema:ItemPage'
                 name: 'ItemPage'
                 description: 'A page devoted to a single item, such as a particular product or hotel.'
+            -   id: 'schema:WebPageElement'
+                name: 'WebPageElement'
+                description: 'A web page element, like a table or an image.'
+
+    -   name: 'owl'
+        label: 'Extends the RDF vocabulary to provide structural information for the semantic web.'
+        url: 'https://www.w3.org/TR/owl-ref/'
+        idSpaces:
+            -   name: 'owl'
+                description: 'Extends the RDF vocabulary to provide structural information for the semantic web.'
+                urlPrefix: "https://www.w3.org/TR/owl-ref/#{accession}-def"
+        terms:
+            -   id: 'owl:hasValue'
+                name: 'hasValue'
+                description: 'An OWL property that applies a value restriction class to an individual.'
 
     -   name: 'sep'
         label: 'A structured controlled vocabulary for the annotation of sample processing and separation techniques in scientific experiments.'
