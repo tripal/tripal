@@ -10,3 +10,4 @@ dependencies:
   - 'drupal:views'
   - 'drupal:file'
   - 'drupal:path'
+  - 'drupal:navigation_extra_tools'

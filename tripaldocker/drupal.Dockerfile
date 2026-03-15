@@ -4,7 +4,7 @@ FROM php:${phpversion}-apache-bookworm
 ARG phpversion='8.3'
 ARG drupalversion='11.2.x-dev'
 ARG postgresqlversion='18'
-ARG modules='devel devel_php field_group field_group_table'
+ARG modules='devel devel_php field_group field_group_table navigation_extra_tools'
 ARG chadoschema='chado'
 ARG installchado=TRUE
 ARG phpuploadsize=8M
@@ -177,7 +177,7 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 ## Use composer to install Drupal.
 WORKDIR /var/www
 ARG requiredcomposerpackages="drupal/core:${drupalversion} drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit drupal/field_group drupal/field_group_table"
-ARG composerpackages="drupal/devel drupal/devel_php drupal/gin_toolbar drupal/gin"
+ARG composerpackages="drupal/devel drupal/devel_php drupal/gin_toolbar drupal/gin drupal/navigation_extra_tools"
 RUN composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal \
   && cd drupal \
   && composer config --no-plugins allow-plugins.composer/installers true \
