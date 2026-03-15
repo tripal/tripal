@@ -69,21 +69,6 @@ class TripalThemeHooks {
   }
 
   /**
-   * Implements hook_preprocess_HOOK().
-   *
-   * Adds css library including the tripal icon.
-   *
-   * @param array &$variables
-   *   An associative array containing menu configuration.
-   */
-  #[Hook('preprocess_menu')]
-  public function preprocessMenu(array &$variables): void {
-    if ($variables['menu_name'] == 'admin') {
-      $variables['#attached']['library'][] = 'tripal/tripal-toolbar';
-    }
-  }
-
-  /**
    * Prepares variables for Tripal Entity Type templates.
    *
    * Default template: tripal_entity_type.html.twig.
