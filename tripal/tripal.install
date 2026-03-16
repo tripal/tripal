@@ -1164,14 +1164,3 @@ function tripal_update_10405() {
     $role->save();
   }
 }
-
-/**
- * Enables the navigation_extra_tools module.
- */
-function tripal_update_10406() {
-  $module_installer = \Drupal::service('module_installer');
-  $module_handler = \Drupal::service('module_handler');
-  if (!$module_handler->moduleExists('navigation_extra_tools')) {
-    $module_installer->install(['navigation_extra_tools']);
-  }
-}
