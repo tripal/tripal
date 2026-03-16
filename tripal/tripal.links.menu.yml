@@ -42,8 +42,8 @@ tripal.admin:
   parent: 'system.admin'
   options:
     icon:
-      pack_id: tripal
-      icon_id: tripal-menu-icon
+      pack_id: 'tripal'
+      icon_id: 'tripal-menu-icon'
 
 # -- Tripal Registration link.
 tripal.admin_register:
