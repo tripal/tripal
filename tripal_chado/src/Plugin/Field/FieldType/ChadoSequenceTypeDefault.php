@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
@@ -24,6 +25,11 @@ use Drupal\tripal\Entity\TripalEntityType;
 )]
 class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "chado_sequence_type_default";
 
   /**
@@ -65,6 +71,20 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $value = [];
+
+    $value['record_id'] = 0;
+    $value['residues'] = 'ACCCGCATTCCGGCGCTG';
+    $value['seqlen'] = 18;
+    $value['md5checksum'] = md5('ACCCGCATTCCGGCGCTG');
+
+    return [$value];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
@@ -76,23 +96,24 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
     // Return the properties for this field.
     $properties = [];
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
-        'action' => 'store_id',
-        'drupal_store' => TRUE,
-        'path' => 'feature.feature_id',
+      'action' => 'store_id',
+      'drupal_store' => TRUE,
+      'path' => 'feature.feature_id',
     ]);
-    $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'residues', $residues_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'residues', $residues_term, [
       'action' => 'store',
       'path' => 'feature.residues',
     ]);
 
-    $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
       'action' => 'store',
       'path' => 'feature.seqlen',
     ]);
 
-    // Hard-coded as the length of MD5Checksum supported by the chado feature.md5checksum column.
+    // Hard-coded as the length of MD5Checksum supported by the
+    // chado feature.md5checksum column.
     $md5checksum_len = 32;
-    $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5checksum_len, [
+    $properties[] = new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5checksum_len, [
       'action' => 'store',
       'path' => 'feature.md5checksum',
     ]);
@@ -102,6 +123,7 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
@@ -109,7 +131,7 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
 
     // Get the base table for the content type.
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-    // This is a "specialty" field for a single content type
+    // This is a "specialty" field for a single content type.
     if ($base_table == 'feature') {
       $compatible = TRUE;
     }
@@ -118,12 +140,18 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
-      array $field_instances, array $options = []): array {
+  public static function discover(
+    TripalEntityType $bundle,
+    string $field_id,
+    array $field_types,
+    array $field_instances,
+    array $options = [],
+  ): array {
 
-    // Specific settings for this field
+    // Specific settings for this field.
     $options += [
       'id' => self::$id,
       'base_table' => 'feature',
@@ -134,7 +162,7 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
       'description' => 'One or more molecular sequences, possibly with associated annotation.',
     ];
 
-    // Call the parent discover() with this field's specific options
+    // Call the parent discover() with this field's specific options.
     $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
     return $field_list;
   }

@@ -1,0 +1,21 @@
+system-under-test:
+  comment: 'no specialized testing environment needed'
+scenarios:
+  - label: 'Unaltered call to TripalLayout Rebuild service'
+    expected_modules:
+      - 'tripal'
+      - 'tripal_chado'
+      - 'tripal_layout'
+    expected_config_entities:
+      - module: 'tripal_layout'
+        type: 'tripal_layout_default_view'
+        name: 'general_view'
+        class: 'Drupal\tripal_layout\Entity\TripalLayoutDefaultView'
+      - module: 'tripal_layout'
+        type: 'tripal_layout_default_view'
+        name: 'genomic_view'
+        class: 'Drupal\tripal_layout\Entity\TripalLayoutDefaultView'
+      - module: 'tripal_layout'
+        type: 'tripal_layout_default_form'
+        name: 'general_form'
+        class: 'Drupal\tripal_layout\Entity\TripalLayoutDefaultForm'

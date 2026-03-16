@@ -140,8 +140,7 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
    */
   #[DataProvider('provideScenarios')]
   public function testTripalEntitySaveTitleUrlBasic(int $current_scenario_key, string $current_scenario_label) {
-    $current_scenario = $this->scenarios[$current_scenario_key];
-    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+    $current_scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
 
     // 1. Create the entity with that value set.
     $submitted_title = $this->randomString();

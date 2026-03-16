@@ -138,6 +138,7 @@ class ChadoRenamer extends ChadoTaskBase {
       $old_schema = $this->outputSchemas[0];
       $new_schema = $this->outputSchemas[1];
       $old_schema_name = $old_schema->getSchemaName();
+      $default_schema_name = $this->getDefaultSchema();
       $old_schema->schema()->renameSchema($new_schema->getSchemaName());
 
       $this->state->set(static::STATE_KEY_DATA_PREFIX . $this->id, ['progress' => 0.5]);
@@ -158,6 +159,11 @@ class ChadoRenamer extends ChadoTaskBase {
 
       // Cleanup state API.
       $this->state->delete(static::STATE_KEY_DATA_PREFIX . $this->id);
+
+      // If the schema that was renamed was default, update default.
+      if ($old_schema_name == $default_schema_name) {
+        $this->setDefaultSchema($new_schema->getSchemaName());
+      }
     }
     catch (\Exception $e) {
       $this->logger->error($e->getMessage());
@@ -204,6 +210,32 @@ class ChadoRenamer extends ChadoTaskBase {
       $status = 'Schema renamed.';
     }
     return $status;
+  }
+
+  /**
+   * Sets default Chado schema.
+   *
+   * @param string $schema_name
+   *   The schema name that will be used as default Chado schema. It should
+   *   correspond to an existing Chado instance integrated in Tripal.
+   */
+  protected function setDefaultSchema(string $schema_name) {
+    // Edit current config.
+    $config = \Drupal::service('config.factory')
+      ->getEditable('tripal_chado.settings');
+    $config->set('default_schema', $schema_name)->save();
+  }
+
+  /**
+   * Gets default Chado schema name.
+   *
+   * @return string
+   *   The name of the default Chado schema.
+   */
+  protected function getDefaultSchema(): string {
+    $config = \Drupal::service('config.factory')
+      ->get('tripal_chado.settings');
+    return $config->get('default_schema');
   }
 
 }

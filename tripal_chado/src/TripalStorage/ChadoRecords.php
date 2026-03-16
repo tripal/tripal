@@ -1265,7 +1265,8 @@ class ChadoRecords {
       return;
     }
     $fkeys = $table_def['foreign keys'];
-    foreach ($fkeys as $fk_table => $info) {
+    foreach ($fkeys as $info) {
+      $fk_table = $info['table'];
       foreach ($info['columns'] as $lcol => $rcol) {
 
         $lcol_aliases = $this->getColumnFieldAliases($base_table, $base_table, $delta, $lcol);
@@ -1338,27 +1339,32 @@ class ChadoRecords {
         continue;
       }
 
-      if ($info['type'] == 'integer' or $info['type'] == 'bigint' or
-          $info['type'] == 'smallint' or $info['type'] == 'serial') {
+      // We use pgsql_type in preference, because for example a boolean
+      // will have pgsql_type=boolean but type=text.
+      $info_type = $info['pgsql_type'] ?? $info['type'];
+
+      if ($info_type == 'integer' or $info_type == 'bigint' or
+          $info_type == 'smallint' or $info_type == 'serial' or
+          $info_type == 'int') {
         if (!preg_match('/^\d+$/', $col_val)) {
           $bad_types[$col] = 'Integer';
         }
       }
-      elseif ($info['type'] == 'boolean') {
+      elseif ($info_type == 'boolean') {
         if (!is_bool($col_val) and !preg_match('/^[01]$/', $col_val)) {
           $bad_types[$col] = 'Boolean';
         }
       }
-      elseif ($info['type'] == 'timestamp without time zone' or $info['type'] == 'date') {
+      elseif ($info_type == 'timestamp without time zone' or $info_type == 'date') {
         if (!is_int($col_val)) {
           $bad_types[$col] = 'Timestamp';
         }
       }
-      elseif ($info['type'] == 'character varying' or $info['type'] == 'character' or
-        $info['type'] == 'text') {
+      elseif ($info_type == 'character varying' or $info_type == 'character' or
+        $info_type == 'varchar' or $info_type == 'char' or $info_type == 'text') {
         // Do nothing.
       }
-      elseif ($info['type'] == 'double precision' or $info['type'] == 'real') {
+      elseif ($info_type == 'double precision' or $info_type == 'real' or $info_type == 'float') {
         if (!is_numeric($col_val)) {
           $bad_types[$col] = 'Number';
         }
@@ -1410,10 +1416,16 @@ class ChadoRecords {
       // If the column has a size then check it.
       if (array_key_exists('size', $info)) {
 
+        // We use pgsql_type in preference, because for example a boolean
+        // will have pgsql_type=boolean but type=text.
+        $info_type = $info['pgsql_type'] ?? $info['type'];
+
         // If this is a string type column.
-        if ($info['type'] == 'character varying' or
-            $info['type'] == 'character' or
-            $info['type'] == 'text') {
+        if ($info_type == 'character varying' or
+            $info_type == 'character' or
+            $info_type == 'varchar' or
+            $info_type == 'char' or
+            $info_type == 'text') {
           if (strlen($col_val) > $info['size']) {
             $bad_sizes[$col] = $info['size'];
           }
@@ -1477,7 +1489,7 @@ class ChadoRecords {
           // other types, e.g. integer, just check for null.
           if (($table_def['fields'][$col]['not null'] ?? FALSE) == FALSE and !$col_val) {
             if (in_array($table_def['fields'][$col]['type'],
-                ['character', 'character varying', 'text'])) {
+                ['character', 'character varying', 'char', 'varchar', 'text'])) {
               $query->condition($query->orConditionGroup()
                 ->condition($col, '', '=')
                 ->isNull($col));

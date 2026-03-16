@@ -3,13 +3,13 @@
 namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
-use Drupal\tripal_chado\Database\ChadoConnection;
-use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
-use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
+use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
+use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the chado property buddy.
@@ -20,6 +20,13 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
   description: new TranslatableMarkup('Provides helper methods for managing property tables.'),
 )]
 class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
+
+  /**
+   * A Database query interface for querying Chado using Tripal DBX.
+   *
+   * @var \Drupal\tripal_chado\Database\ChadoConnection
+   */
+  public ChadoConnection $chado_connection;
 
   /**
    * Used to store the manager so we can access the Cvterm buddy.
@@ -74,10 +81,10 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    ChadoConnection $connection,
+    ChadoConnection $chado_connection,
     ChadoBuddyPluginManager $buddy_manager,
   ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $chado_connection);
     $this->buddy_manager = $buddy_manager;
   }
 
@@ -151,7 +158,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
 
-    $query = $this->connection->select('1:' . $property_table, $property_table);
+    $query = $this->chado_connection->select('1:' . $property_table, $property_table);
     $query->leftJoin('1:' . $base_table, $base_table, $base_table . '.' . $fkey . ' = ' . $property_table . '.' . $fkey);
     $query->leftJoin('1:cvterm', 'cvterm', 'cvterm.cvterm_id = ' . $property_table . '.type_id');
     $query->leftJoin('1:cv', 'cv', 'cv.cv_id = cvterm.cv_id');
@@ -175,7 +182,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
       $new_record = new ChadoBuddyRecord();
-      $new_record->setSchemaName($this->connection->getSchemaName());
+      $new_record->setSchemaName($this->chado_connection->getSchemaName());
       $new_record->setBaseTable($base_table);
       foreach ($values as $key => $value) {
         $new_record->setValue($this->unmakeAlias($key), $value);
@@ -280,7 +287,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     }
 
     // Insert the property record.
-    $query = $this->connection->insert('1:' . $property_table);
+    $query = $this->chado_connection->insert('1:' . $property_table);
     $property_values = $this->subsetInput($values, [$property_table]);
     $fields = $this->removeTablePrefix($property_values);
     // The $record_id parameter is required for insert.
@@ -384,7 +391,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       throw new ChadoBuddyException("ChadoBuddy updateProperty error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
     }
 
-    $query = $this->connection->update('1:' . $property_table);
+    $query = $this->chado_connection->update('1:' . $property_table);
     // We can now reduce conditions to just the property table primary key.
     $query->condition("$property_table.$pkey", $existing_records[0]->getValue("$property_table.$pkey"), '=');
     $property_values = $this->subsetInput($values, [$property_table]);
@@ -573,7 +580,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
         throw new ChadoBuddyException('ChadoBuddy deleteProperty cannot delete '
           . count($pkey_ids) . ' records, max_delete is set to ' . $max_delete);
       }
-      $query = $this->connection->delete('1:' . $property_table);
+      $query = $this->chado_connection->delete('1:' . $property_table);
       $query->condition($pkey, $pkey_ids, 'IN');
       try {
         $query->execute();

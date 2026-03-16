@@ -59,7 +59,7 @@ class TripalStorageManager extends DefaultPluginManager {
    */
   public function datastoreExists($plugin_id) {
     $definitions = $this->getDefinitions();
-    if (array_key_exists($plugin_id, $definitions)) {
+    if (isset($plugin_id) && array_key_exists($plugin_id, $definitions)) {
       return TRUE;
     }
     else {

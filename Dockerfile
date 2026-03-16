@@ -1,7 +1,8 @@
 ARG phpversion='8.3'
 ARG drupalversion='11.2.x-dev'
 ARG postgresqlversion='18'
-FROM tripalproject/tripaldocker-drupal:drupal${drupalversion}-php${phpversion}-pgsql${postgresqlversion}
+ARG buildplatform='linux/amd64'
+FROM --platform=${buildplatform} tripalproject/tripaldocker-drupal:drupal${drupalversion}-php${phpversion}-pgsql${postgresqlversion}
 
 ## Redefine the core args so that they are within the build scope.
 ARG phpversion='8.3'
@@ -36,14 +37,8 @@ RUN service apache2 start \
   && rm -rf /tripal_app \
   && allmodules="${tripalmodules} ${modules}" \
   && vendor/bin/drush en ${allmodules} -y \
-  && if $(dpkg --compare-versions "${drupalversion}" "le" "10.9"); then \
-     mv web/modules/contrib/tripal/phpunit.xml web/modules/contrib/tripal/phpunit.11.xml \
-     && mv web/modules/contrib/tripal/phpunit.9.6.xml web/modules/contrib/tripal/phpunit.xml; \
-     elif $(dpkg --compare-versions "${drupalversion}" "le" "11.1.x-dev"); then \
-     mv web/modules/contrib/tripal/phpunit.xml web/modules/contrib/tripal/phpunit.11.xml \
-     && mv web/modules/contrib/tripal/phpunit.10.xml web/modules/contrib/tripal/phpunit.xml; \
-  fi \
-  && service apache2 stop \
+  && rm web/modules/contrib/tripal/phpunit.xml \
+  && bash web/modules/contrib/tripal/set_phpunit_config.sh \
   && service postgresql stop
 
 RUN service apache2 start \
@@ -63,7 +58,7 @@ RUN service apache2 start \
 RUN service apache2 start \
   && service postgresql start \
   && if [ "$installchado" = "TRUE" ]; then \
-  vendor/bin/drush trp-import-types --collection_id=general_chado --username=drupaladmin; \
+  vendor/bin/drush trp-import-types --collection_id=general_chado; \
   fi \
   && curl https://qlty.sh | sh || true \
   && service apache2 stop \

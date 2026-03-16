@@ -12,11 +12,11 @@ use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
  * Plugin implementation of default Tripal integer type widget.
  */
 #[TripalFieldWidget(
-  id: 'default_tripal_boolean_type_widget',
-  label: new TranslatableMarkup('Tripal Boolean Widget'),
-  description: new TranslatableMarkup('The default boolean type widget.'),
+  id: 'default_tripal_integer_type_widget',
+  label: new TranslatableMarkup('Tripal Integer Widget'),
+  description: new TranslatableMarkup('The default integer type widget.'),
   field_types: [
-    'tripal_boolean_type',
+    'tripal_integer_type',
   ],
 )]
 class TripalIntegerTypeWidget extends TripalWidgetBase {

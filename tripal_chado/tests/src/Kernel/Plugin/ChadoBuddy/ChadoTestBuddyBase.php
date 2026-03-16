@@ -27,9 +27,9 @@ abstract class ChadoTestBuddyBase extends ChadoTestKernelBase {
   /**
    * The database connection to the test chado.
    *
-   * @var \Drupal\Core\Database\Connection
+   * @var Drupal\tripal_chado\Database\ChadoConnection
    */
-  protected ChadoConnection $connection;
+  protected ChadoConnection $chado_connection;
 
   /**
    * Performs a set of basic assertions for a chado buddy function.

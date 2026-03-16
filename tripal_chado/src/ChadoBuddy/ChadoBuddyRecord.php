@@ -152,4 +152,29 @@ class ChadoBuddyRecord {
     return $this->values[$key] ?? NULL;
   }
 
+  /**
+   * Compares two ChadoBuddyRecords.
+   *
+   * BOTH ChadoBuddyRecords must be from the same base table.
+   *
+   * @param ChadoBuddyRecord $a
+   *   The first record to be compared.
+   * @param ChadoBuddyRecord $b
+   *   The second record to be compared.
+   * @param string $value_key
+   *   The key to use with getValue() to compare record $a and $b.
+   *
+   * @return int
+   *   Uses the same return value approach as strcmp for the ChadoBuddyRecord
+   *   value indicated by $value_key. Specifically,
+   *   - negative integer if the value from $a is less than that from $b
+   *   - positive integer if the value from $a is greater than that from $b
+   *   - 0 if they are equal.
+   */
+  public static function compareTo(ChadoBuddyRecord $a, ChadoBuddyRecord $b, string $value_key) {
+    $a_value = $a->getValue($value_key);
+    $b_value = $b->getValue($value_key);
+    return strcmp($a_value, $b_value);
+  }
+
 }

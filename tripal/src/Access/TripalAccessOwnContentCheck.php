@@ -8,12 +8,14 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Routing\Access\AccessInterface;
 
 /**
+ * Access control for Tripal Data Collections.
+ *
  * Checks that users have access to only their own content
  * given a user account and a permission to check if it's their content.
  * Permission is only granted if it's the users content and they have
  * the passed in permission.
  *
- * Note: This can only be used on paths with the {user} slug
+ * Note: This can only be used on paths with the {user} slug.
  */
 class TripalAccessOwnContentCheck implements AccessInterface {
 
@@ -28,11 +30,13 @@ class TripalAccessOwnContentCheck implements AccessInterface {
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
+   *
+   * @see tripal.routing.yml
+   * @see _tripal_own_content_access_check
    */
   public function access(UserInterface $user, AccountInterface $account) {
 
-
-    // First check that the account requesting access matches the user in the path.
+    // Check that the account requesting access matches the user in the path.
     $slug_uid = $user->id();
     $requesting_uid = $account->id();
     if ($slug_uid === $requesting_uid) {
@@ -40,7 +44,6 @@ class TripalAccessOwnContentCheck implements AccessInterface {
     }
 
     return AccessResult::forbidden();
-    // return ($account->hasPermission('administer tripal') && $this->someOtherCustomCondition()) ? AccessResult::allowed() : AccessResult::forbidden();
-
   }
+
 }
