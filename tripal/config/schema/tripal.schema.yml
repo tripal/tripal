@@ -136,6 +136,14 @@ field.field.tripal_entity.*.*:
           type: string
           label: "A fixed value for the field that cannot be changed."
           nullable: true
+        markup:
+          type: mapping
+          label: 'Static markup to be rendered'
+          mapping:
+            value:
+              type: string
+            format:
+              type: string
 
 ## For TripalEntityTypeCollection functionality
 ## focused on using YML files to describe TripalEntityTypes

@@ -74,6 +74,31 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
+   * Get a table definition from the chado schema.
+   *
+   * @param string $table_name
+   *   The table name to query.
+   *
+   * @return array|NULL
+   *   The table schema, or NULL if the table does not exist.
+   */
+  public function getChadoTableDef(string $table_name): ?array {
+    $def = NULL;
+    if ($this->chado_connection->schema()->tableExists($table_name)) {
+      $parameters = [
+        'format' => 'drupal',
+        'source' => [
+          'file',
+          'tripal',
+          'database',
+        ],
+      ];
+      $def = $this->chado_connection->schema()->getTableDef($table_name, $parameters);
+    }
+    return $def;
+  }
+
+  /**
    * Returns the currently active chado schema name.
    *
    * @return string
@@ -240,8 +265,8 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    */
   protected function addTableToCache(string $chado_table, array &$cached_tables): void {
     $cached_tables[$chado_table] = [];
-    $table_schema = $this->chado_connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
-    if (!array_key_exists('fields', $table_schema)) {
+    $table_schema = $this->getChadoTableDef($chado_table);
+    if (!($table_schema['fields'] ?? FALSE)) {
       // Two levels up.
       $calling_function = debug_backtrace()[2]['function'];
       throw new ChadoBuddyException("ChadoBuddy $calling_function error, invalid table \"$chado_table\" passed to getTableColumns()");
@@ -251,7 +276,10 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     $in_unique_constraint = [];
     if (array_key_exists('unique keys', $table_schema)) {
       foreach ($table_schema['unique keys'] as $constraint_columns) {
-        foreach (explode(', ', $constraint_columns) as $column) {
+        if (is_string($constraint_columns)) {
+          $constraint_columns = explode(', ', $constraint_columns);
+        }
+        foreach ($constraint_columns as $column) {
           $in_unique_constraint[$column] = TRUE;
         }
       }
