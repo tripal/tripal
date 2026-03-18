@@ -304,6 +304,118 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
   }
 
   /**
+   * Updates an existing stock record.
+   *
+   * NOTE: Creation of an organism record is NOT supported. Please use the
+   *   ChadoOrganismBuddy to create the organism for your stock if necessary.
+   * NOTE: Creation of a cvterm record is NOT supported. Please use the
+   *   ChadoCvtermBuddy to create the cvterm for stock.type_id if necessary.
+   *
+   * @param array $values
+   *   An associative array that describes the values to be updated for a
+   *   record in the chado.stock table. Valid keys include:
+   *     - stock.dbxref_id
+   *     - stock.organism_id
+   *     - stock.name
+   *     - stock.uniquename
+   *     - stock.description
+   *     - stock.type_id
+   *     - stock.is_obsolete
+   *     - organism.genus
+   *     - organism.species
+   *     - organism.infraspecific_name
+   *     - organism.common_name
+   *     - an organism ChadoBuddyRecord can be used in place of or in addition
+   *       to other keys.
+   *   The following terms are valid where it pertains to stock.type_id only:
+   *     - cvterm.name
+   *     - cvterm.is_obsolete
+   *     - cv.name
+   *     - a cvterm ChadoBuddyRecord can be used in place of or in addition to
+   *       other keys.
+   *   The following terms are valid where it pertains to stock.dbxref_id only:
+   *     - dbxref.accession
+   *     - db.name
+   *     - a dbxref ChadoBuddyRecord can be used in place of or in addition to
+   *       other keys.
+   * @param array $conditions
+   *   An associative array of the conditions to find the record to update.
+   *   The same keys are supported as those indicated for $values.
+   * @param array $options
+   *   (Optional) Associative array of options with these supported keys:
+   *   - create_dbxref - set to TRUE (default FALSE) if you specified the
+   *     necessary fields and want to create the dbxref for stock.dbxref_id when
+   *     creating this stock, if it does not already exist.
+   *     NOTE: This is NOT recommended. We suggest you import ontologies first.
+   *   - validate_foreign_keys - specifies whether to validate foreign keys.
+   *     Default is TRUE for all foreign keys. If you specify a boolean value,
+   *     then that value is used for validating all potential foreign keys.
+   *     You can skip validation for specific foreign keys by passing an array
+   *     of foreign keys to skip validation for, and setting their values to
+   *     FALSE. For updateStock(), valid keys are:
+   *     - 'organism_id'
+   *     - 'cvterm_id'
+   *     - 'dbxref_id'
+   *     This is ideal for performance if you already did an insert or lookup on
+   *     the specified key(s) and just want to pass the information through.
+   *
+   * @return bool|ChadoBuddyRecord
+   *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
+   *   returned if no record was found to update.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered.
+   */
+  public function updateStock(array $values, array $conditions, array $options = []) {
+    $valid_columns = $this->getTableColumns($this->valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
+    $this->validateInput($values, $valid_columns);
+    $this->validateInput($conditions, $valid_columns);
+
+    $existing_records = $this->getStock($conditions, $options);
+    if (count($existing_records) < 1) {
+      return FALSE;
+    }
+    elseif (count($existing_records) > 1) {
+      throw new ChadoBuddyException("ChadoBuddy updateStock error, more than one stock record matches the specified conditions:\n" . print_r($conditions, TRUE));
+    }
+
+    // Validate that organism exists.
+    $values = $this->validateStockOrganism($values, $options);
+    // Validate that stock type exists.
+    $values = $this->validateStockType($values, $options);
+    // Validate that stock dbxref exists or create it if permitted.
+    $values = $this->validateStockDbxref($values, $options);
+
+    // Update query will only be based on the stock_id, which we get from the
+    // retrieved record.
+    $stock_id = $existing_records[0]->getValue('stock.stock_id');
+    // We do not support changing the stock_id.
+    if (array_key_exists('stock.stock_id', $values)) {
+      unset($values['stock.stock_id']);
+    }
+
+    $query = $this->chado_connection->update('1:stock');
+    $query->condition('stock_id', $stock_id, '=');
+    // Create a subset of the passed $values for just the stock table.
+    $stock_values = $this->subsetInput($values, ['stock']);
+    $query->fields($this->removeTablePrefix($stock_values));
+    try {
+      $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy updateStock database error ' . $e->getMessage());
+    }
+    $updated_records = $this->getStock(['stock.stock_id' => $stock_id], $options);
+
+    // Validate that exactly one record was obtained.
+    $this->validateOutput($updated_records, $values);
+
+    return $updated_records[0];
+  }
+
+  /**
    * A helper method to validate stock dbxref when inserting/updating a stock.
    *
    * @param array $values
