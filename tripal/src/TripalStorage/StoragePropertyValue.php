@@ -2,10 +2,14 @@
 
 namespace Drupal\tripal\TripalStorage;
 
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+
 /**
  * Defines the Tripal storage property value.
  */
 class StoragePropertyValue extends StoragePropertyBase {
+
+  use DependencySerializationTrait;
 
   /**
    * Constructs a new tripal storage property value.
@@ -48,7 +52,12 @@ class StoragePropertyValue extends StoragePropertyBase {
    *   The value.
    */
   public function getValue() {
-    return $this->value;
+    if (is_null($this->value)) {
+      return $this->default_value;
+    }
+    else {
+      return $this->value;
+    }
   }
 
   /**
@@ -62,16 +71,6 @@ class StoragePropertyValue extends StoragePropertyBase {
   }
 
   /**
-   * Returns the default value of this storage property value.
-   *
-   * @return mixed
-   *   The default value.
-   */
-  public function getDefaultValue() {
-    return $this->default_value;
-  }
-
-  /**
    * Sets the default value of this storage property value to the given value.
    *
    * @param mixed $default_value
@@ -79,6 +78,16 @@ class StoragePropertyValue extends StoragePropertyBase {
    */
   public function setDefaultValue($default_value) {
     $this->default_value = $default_value;
+  }
+
+  /**
+   * Gets the default value of this storage property value.
+   *
+   * @return mixed
+   *   The value to use as the default value.
+   */
+  public function getDefaultValue() {
+    return $this->default_value;
   }
 
   /**

@@ -183,6 +183,19 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $propertyType->setRequired(TRUE);
     $retrieved = $propertyType->getRequired();
     $this->assertTrue($retrieved, "We were not able to retrieve the required setting we just set.");
+
+    // --default value.
+    $exception_caught = FALSE;
+    $exception_message = 'NO EXCEPTION THROWN';
+    try {
+      $propertyType->getDefaultValue();
+    }
+    catch (\Exception $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, "We should get an exception thrown when trying to get the default value of a generic storage property type.");
+    $this->assertStringContainsStringIgnoringCase('getDefaultValue() was not implemented', $exception_message, "We expect to be told this method was not implemented but should be.");
   }
 
   /**
@@ -210,6 +223,8 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
+    $default = $propertyType->getDefaultValue();
+    $this->assertFalse($default, "We expect the default value to be FALSE for the boolean property type.");
 
     // DateTimeStoragePropertyType.
     $type = 'DateTimeStoragePropertyType';
@@ -218,6 +233,8 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
+    $default = $propertyType->getDefaultValue();
+    $this->assertEquals('', $default, "We expect the default value to be an empty string for the datetime property type.");
 
     // IntStoragePropertyType.
     $type = 'IntStoragePropertyType';
@@ -226,6 +243,8 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
+    $default = $propertyType->getDefaultValue();
+    $this->assertEquals(0, $default, "We expect the default value to be 0 for the int property type.");
 
     // RealStoragePropertyType.
     $type = 'RealStoragePropertyType';
@@ -234,6 +253,8 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
+    $default = $propertyType->getDefaultValue();
+    $this->assertEquals(0, $default, "We expect the default value to be 0 for the real/float property type.");
 
     // TextStoragePropertyType.
     $type = 'TextStoragePropertyType';
@@ -242,6 +263,8 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
+    $default = $propertyType->getDefaultValue();
+    $this->assertEquals('', $default, "We expect the default value to be an empty string for the text property type.");
 
     // VarCharStoragePropertyType.
     $type = 'VarCharStoragePropertyType';
@@ -250,6 +273,8 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
+    $default = $propertyType->getDefaultValue();
+    $this->assertEquals('', $default, "We expect the default value to be an empty string for the varchar property type.");
   }
 
   /**

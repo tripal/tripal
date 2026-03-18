@@ -28,10 +28,17 @@ class TripalEntityHooks {
     // Iterate through the entities provided.
     foreach ($entities as &$entity) {
 
-      // @todo it would be great to skip the entity entirely if it is
-      // fully cached in Drupal.
+      // Ensure that the TripalStorage backends are setup.
+      // @debug print "\n\nIN tripalEntityStorageLoad()!!!\n\n";
+      // Now that we have the entity created, lets initialize TripalStorage
+      // for all of the fields so it can be cached locally.
+      $entity->registerAllTripalFields();
+
+      // @debug print "\nWe now have " . count($entity->tripal_storages) . " TripalStorage backends setup in LOAD.\n";
+      $tripal_storages = $entity->tripal_storages;
+
       // Create a values array appropriate for `loadValues()`
-      [$values, $tripal_storages] = TripalEntity::getValuesArray($entity, TRUE);
+      $values = TripalEntity::getValuesArray($entity);
 
       // Only do the following if there are any values to load.
       if (!empty($values)) {

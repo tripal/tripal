@@ -121,7 +121,26 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
       ->execute();
 
     // Setup the environment.
-    $this->setupEntityFieldTestEnvironment($this->system_under_test);
+    $this->setupEntityFieldTestEnvironment();
+
+    // Create the default TripalTerm used in some fields.
+    $terms = [
+      'schema:ItemPage',
+      'schema:additionalType',
+    ];
+    foreach ($terms as $term_string) {
+      [$id_space_name, $accession] = explode(':', $term_string);
+      $values = [
+        'id_space_name' => $id_space_name,
+        'term' => [
+          'accession' => $accession,
+        ],
+      ];
+      $this->createTripalTerm($values, 'tripal_default_id_space', 'tripal_default_vocabulary');
+    }
+
+    // Now actually create the bundle and attach the fields.
+    $this->setupEntityFieldSystemUnderTest($this->system_under_test);
   }
 
   /**
@@ -203,6 +222,62 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
     $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['edit']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+  }
+
+  /**
+   * Tests TripalEntity::isEmptyFieldItem() via saveValuesArray().
+   */
+  public function testIsEmptyFieldItem() {
+
+    $this->markTestIncomplete('Not currently removing all empty properties. Revisit before PR #2281 is ready for review.');
+
+    // Create an entity with no values for testing.
+    $current_scenario = $this->scenarios[0];
+    $submitted_title = $this->randomString();
+    $entity = TripalEntity::create([
+      'title' => $submitted_title,
+      'type' => $this->bundle_name,
+    ] + $current_scenario['create']['user_input']);
+    $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our empty fields scenario.");
+    $entity->save();
+    $entity = TripalEntity::load($entity->id());
+
+    // Add a number of different types of empty values.
+    // - not empty.
+    $entity->set('project_name', ['record_id' => 1, 'value' => 'GARY']);
+    // - delta 0 empty since value is empty.
+    $entity->set('metaphysical_props', ['record_id' => 1, 'value' => '']);
+    $entity->set('gemologist', [
+      // Delta 0 empty since the contact_id is empty.
+      [
+        'record_id' => 1,
+        'linker_id' => 0,
+        'link' => 1,
+        'contact_id' => 0,
+      ],
+      // Not empty.
+      [
+        'record_id' => 1,
+        'linker_id' => 0,
+        'link' => 1,
+        'contact_id' => 2,
+      ],
+      // Delta 2 empty since all values are null.
+      [
+        'record_id' => NULL,
+        'linker_id' => NULL,
+        'link' => NULL,
+        'contact_id' => NULL,
+      ],
+    ]);
+
+    // Now we want to save the entity and make sure the correct items are
+    // removed and that save occurs without error.
+    $entity->save();
+    $observed_field_values = $entity->getFieldValues();
+    $this->assertCount(1, $observed_field_values['gemologist'], "There should only be one gemologist value after save as the other 2 were empty and should have been removed.");
+    $this->assertCount(0, $observed_field_values['metaphysical_props'], "The only metaphysical_props value was empty and should have been removed.");
+    $this->assertCount(1, $observed_field_values['project_name'], "The project_name value should have remained untouched as it was not empty.");
   }
 
 }

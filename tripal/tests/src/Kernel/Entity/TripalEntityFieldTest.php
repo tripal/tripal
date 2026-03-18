@@ -143,16 +143,21 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
     $current_scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
 
     // 1. Create the entity with that value set.
+    // @debug print "\nCREATE\n";
     $submitted_title = $this->randomString();
     $entity = TripalEntity::create([
       'title' => $submitted_title,
       'type' => $this->bundle_name,
     ] + $current_scenario['create']['user_input']);
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
+    $this->assertEmpty($entity->checkEntityTripalStorageCache(), "We did not expect any TripalStorage backends to have been retrieved from cache when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    // @debug print "\nCREATE SAVE\n";
     $status = $entity->save();
     $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
+    $this->assertNotEmpty($entity->checkEntityTripalStorageCache(), "TripalStorage backends should have been retrieved from cache when POPULATING TOKENS while CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
 
     // 2. Load the entity we just created so we can check the values.
+    // @debug print "\nLOAD\n";
     $created_entity = TripalEntity::load($entity->id());
     $this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, '"' . $current_scenario['label'] . '" being created. ');
     // -- Title.
@@ -163,16 +168,20 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
     $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['create']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertNotEmpty($entity->checkEntityTripalStorageCache(), "TripalStorage backends should have been retrieved from cache when LOADING the entity for the '" . $current_scenario['label'] . "' scenario.");
 
     // 3. Make changes and then save again.
+    // @debug print "\nUPDATE\n";
     foreach ($current_scenario['edit']['user_input'] as $field_name => $new_values) {
       $created_entity->set($field_name, $new_values);
     }
     // @debug print_r($created_entity->toArray());
     $status = $created_entity->save();
     $this->assertEquals(SAVED_UPDATED, $status, "We expected to have updated the existing entity for our " . $current_scenario['label'] . " scenario.");
+    $this->assertNotEmpty($entity->checkEntityTripalStorageCache(), "TripalStorage backends should have been retrieved from cache when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
 
     // 4. Load the entity we just updated so we can check the values.
+    // @debug print "\nLOAD UPDATED\n";
     $updated_entity = TripalEntity::load($created_entity->id());
     // @debug print_r($updated_entity->toArray());
     $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, '"' . $current_scenario['label'] . '" being updated. ');
@@ -184,6 +193,7 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
     $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['edit']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertNotEmpty($entity->checkEntityTripalStorageCache(), "TripalStorage backends should have been retrieved from cache when LOADING the UPDATED entity for the '" . $current_scenario['label'] . "' scenario.");
   }
 
 }

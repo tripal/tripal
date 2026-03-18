@@ -28,6 +28,16 @@ system-under-test:
     cardinality: 1
     settings:
       storage_plugin_id: 'drupal_sql_storage'
+  - name: 'missingstorage'
+    type: 'tripal_text_type'
+    type_class: 'Drupal\tripal\Plugin\Field\FieldType\TripalTextTypeItem'
+    widget: 'default_tripal_text_type_widget'
+    formatter: 'default_tripal_text_type_formatter'
+    termIdSpace: 'META'
+    termAccession: 'properties'
+    cardinality: 1
+    settings:
+      storage_plugin_id: ''
 scenarios:
   - label: 'Use format for title + URL'
     description: 'Create a page where every field has one value and the title/path are left empty.'
