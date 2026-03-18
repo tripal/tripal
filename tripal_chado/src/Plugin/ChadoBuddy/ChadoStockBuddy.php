@@ -345,7 +345,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   (Optional) Associative array of options with these supported keys:
    *   - create_dbxref - set to TRUE (default FALSE) if you specified the
    *     necessary fields and want to create the dbxref for stock.dbxref_id when
-   *     creating this stock, if it does not already exist.
+   *     updating this stock, if it does not already exist.
    *     NOTE: This is NOT recommended. We suggest you import ontologies first.
    *   - validate_foreign_keys - specifies whether to validate foreign keys.
    *     Default is TRUE for all foreign keys. If you specify a boolean value,

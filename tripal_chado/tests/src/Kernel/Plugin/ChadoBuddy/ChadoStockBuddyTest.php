@@ -279,11 +279,6 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'organism.species' => 'databasica',
       'organism.abbreviation' => 'Trp',
     ]);
-    $organism_instance->insertOrganism([
-      'organism.genus' => 'Postgres',
-      'organism.species' => 'chadoii',
-      'organism.abbreviation' => 'Pst',
-    ]);
 
     $type = \Drupal::service('tripal_chado.chado_buddy');
     $stock_instance = $type->createInstance('chado_stock_buddy', []);
@@ -311,6 +306,202 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     );
     $stock_id = $results['get']['stock.stock_id'];
     $this->assertTrue(is_numeric($stock_id), 'We did not retrieve a numeric stock_id for the new stock inserted via insertStock() method');
+  }
+
+  /**
+   * Data Provider: Provide scenarios to test the updateStock() method.
+   *
+   * @return array
+   *   An array of test scenarios, each containing:
+   *   - values: An array of stock values to update.
+   *   - conditions: An array of conditions to find the stock record to update.
+   *   - options: An array of options to pass to updateStock().
+   *   - num_expected_records: The expected number of stock records to be
+   *     created.
+   */
+  public static function provideUpdateStockScenarios() {
+    $scenarios = [];
+
+    // #0: Update an existing stock's name.
+    $scenarios[] = [
+      [
+        'stock.name' => 'Better Stock Name',
+      ],
+      [
+        'stock.uniquename' => 'stock1',
+        // Cvterm ID for 'accession'.
+        'stock.type_id' => 3,
+        'stock.organism_id' => 1,
+      ],
+      [],
+      1,
+    ];
+
+    // #1: Update an existing stock to a different organism and validate foreign
+    // keys.
+    $scenarios[] = [
+      [
+        'organism.genus' => 'Postgres',
+        'organism.species' => 'chadoii',
+      ],
+      [
+        'stock.name' => 'Stock1',
+        'stock.uniquename' => 'stock1',
+        // Cvterm ID for 'accession'.
+        'stock.type_id' => 3,
+      ],
+      [],
+      1,
+    ];
+
+    // #2: Update an existing stock to a different organism and skip validating
+    // foreign keys.
+    $scenarios[] = [
+      [
+        'organism.organism_id' => 2,
+      ],
+      [
+        'stock.name' => 'Stock1',
+        'stock.uniquename' => 'stock1',
+        // Cvterm ID for 'accession'.
+        'stock.type_id' => 3,
+      ],
+      [
+        'validate_foreign_keys' => [
+          'organism_id' => FALSE,
+        ],
+      ],
+      1,
+    ];
+
+    // #3: Update an existing stock with a valid dbxref and db.
+    $scenarios[] = [
+      [
+        'db.name' => 'CO_010',
+        'dbxref.accession' => '0000044',
+      ],
+      [
+        'stock.name' => 'Stock1',
+        'stock.uniquename' => 'stock1',
+        'stock.type_id' => 3,
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+      ],
+      [],
+      1,
+    ];
+
+    // #4: Update an existing stock with a valid dbxref.dbxref_id and skip
+    // validating foreign keys for dbxref_id only.
+    $scenarios[] = [
+      [
+        'dbxref.dbxref_id' => 3,
+      ],
+      [
+        'stock.name' => 'Stock1',
+        'stock.uniquename' => 'stock1',
+        'stock.type_id' => 3,
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+      ],
+      [
+        'validate_foreign_keys' => [
+          'dbxref_id' => FALSE,
+        ],
+      ],
+      1,
+    ];
+
+    // #5: Provide info to create a dbxref record for an existing stock.
+    $scenarios[] = [
+      [
+        'dbxref.accession' => 'newAccession',
+        'db.name' => 'local',
+      ],
+      [
+        'stock.name' => 'Stock1',
+        'stock.uniquename' => 'stock1',
+        'stock.type_id' => 3,
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+      ],
+      [
+        'create_dbxref' => TRUE,
+      ],
+      1,
+    ];
+
+    return $scenarios;
+
+  }
+
+  /**
+  * Test method for updateStock().
+  *
+  * @param array $values
+  *   An array of stock values to update.
+  * @param array $conditions
+  *   An array of conditions to find the stock record to update.
+  * @param array $options
+  *   An array of options to pass to updateStock().
+  * @param int $num_expected_records
+  *   The expected number of stock records to be created.
+  *
+  * @dataProvider provideUpdateStockScenarios
+  */
+  #[DataProvider('provideUpdateStockScenarios')]
+  public function testUpdateStock(array $values, array $conditions, array $options, int $num_expected_records) {
+
+    // Insert our organisms needed by our test scenarios.
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $organism_instance = $type->createInstance('chado_organism_buddy', []);
+    $organism_instance->insertOrganism([
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+      'organism.abbreviation' => 'Trp',
+    ]);
+    $organism_instance->insertOrganism([
+      'organism.genus' => 'Postgres',
+      'organism.species' => 'chadoii',
+      'organism.abbreviation' => 'Pst',
+    ]);
+
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $stock_instance = $type->createInstance('chado_stock_buddy', []);
+
+    // Insert a test stock record.
+    $stock_instance->insertStock([
+      'stock.name' => 'Stock1',
+      'stock.uniquename' => 'stock1',
+      // Cvterm ID for 'accession'.
+      'stock.type_id' => 3,
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+    ]);
+
+    // Update the stock record.
+    $test_records['set'] = $stock_instance->updateStock($values, $conditions, $options);
+
+    // Now try retrieving the stock record we just updated.
+    $test_records['get'] = $stock_instance->getStock(['stock.stock_id' => 1]);
+
+    // Verify we retrieved the expected number of records.
+    $this->assertCount(
+      $num_expected_records,
+      $test_records['get'],
+      "Did not retrieve the expected number of stock records after updating.",
+    );
+    // Verify the updated and retrieved records match.
+    $results = $this->multiAssert(
+      'updateStock',
+      $test_records,
+      'stock',
+      'stock.stock_id',
+      'Stock updated via updateStock() method',
+      36
+    );
+    $stock_id = $results['get']['stock.stock_id'];
+    $this->assertTrue(is_numeric($stock_id), 'We did not retrieve a numeric stock_id for the new stock updated via updateStock() method');
   }
 
   /**
@@ -411,10 +602,8 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     ];
     // Trigger exceptions in updateStock() and validateStockOrganism() using
     // updateStock().
-
     // Trigger exceptions in upsertStock() and validateStockType() using
     // upsertStock().
-
     return $scenarios;
   }
 
