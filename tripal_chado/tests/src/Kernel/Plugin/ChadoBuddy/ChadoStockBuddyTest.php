@@ -431,6 +431,18 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
+    // #6: Attempt to update a non-existing stock.
+    $scenarios[] = [
+      [
+        'stock.name' => 'NonExistingStock',
+      ],
+      [
+        'stock.uniquename' => 'nonexistingstock',
+      ],
+      [],
+      0,
+    ];
+
     return $scenarios;
 
   }
@@ -483,7 +495,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $test_records['set'] = $stock_instance->updateStock($values, $conditions, $options);
 
     // Now try retrieving the stock record we just updated.
-    $test_records['get'] = $stock_instance->getStock(['stock.stock_id' => 1]);
+    $test_records['get'] = $stock_instance->getStock($values + $conditions);
 
     // Verify we retrieved the expected number of records.
     $this->assertCount(
@@ -491,17 +503,20 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       $test_records['get'],
       "Did not retrieve the expected number of stock records after updating.",
     );
-    // Verify the updated and retrieved records match.
-    $results = $this->multiAssert(
-      'updateStock',
-      $test_records,
-      'stock',
-      'stock.stock_id',
-      'Stock updated via updateStock() method',
-      36
-    );
-    $stock_id = $results['get']['stock.stock_id'];
-    $this->assertTrue(is_numeric($stock_id), 'We did not retrieve a numeric stock_id for the new stock updated via updateStock() method');
+
+    if ($num_expected_records > 0) {
+      // Verify the updated and retrieved records match.
+      $results = $this->multiAssert(
+        'updateStock',
+        $test_records,
+        'stock',
+        'stock.stock_id',
+        'Stock updated via updateStock() method',
+        36
+      );
+      $stock_id = $results['get']['stock.stock_id'];
+      $this->assertTrue(is_numeric($stock_id), 'We did not retrieve a numeric stock_id for the new stock updated via updateStock() method');
+    }
   }
 
   /**
@@ -600,8 +615,114 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       ],
       "ChadoBuddy validateStockDbxref error, could not find or create a dbxref, but dbxref values were provided:",
     ];
-    // Trigger exceptions in updateStock() and validateStockOrganism() using
-    // updateStock().
+
+    // #5: updateStock() with conditions that match more than one stock record.
+    $scenarios[] = [
+      'updateStock',
+      [
+        [
+          'stock.name' => 'UpdatedStockName',
+        ],
+        [
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+      ],
+      "ChadoBuddy updateStock error, more than one stock record matches the specified conditions:",
+    ];
+
+    // #6: updateStock() with values to update an existing stock's stock_id.
+    $scenarios[] = [
+      'updateStock',
+      [
+        [
+          'stock.stock_id' => 999,
+        ],
+        [
+          'stock.uniquename' => 'existingstock',
+          // Cvterm ID for 'accession'.
+          'stock.type_id' => 3,
+          'stock.organism_id' => 1,
+        ],
+      ],
+      "ChadoBuddy updateStock error, no valid values were specified for tables: stock",
+    ];
+
+    // #7: updateStock() with a dbxref_id that does not exist and set options
+    // to skip validation of foreign keys.
+    $scenarios[] = [
+      'updateStock',
+      [
+        [
+          'stock.dbxref_id' => 999999,
+        ],
+        [
+          'stock.uniquename' => 'existingstock',
+          // Cvterm ID for 'accession'.
+          'stock.type_id' => 3,
+          'stock.organism_id' => 1,
+        ],
+        [
+          'validate_foreign_keys' => [
+            'dbxref_id' => FALSE,
+          ],
+        ],
+      ],
+      "ChadoBuddy updateStock database error",
+    ];
+
+    // #8: updateStock() where stock.organism_id and organism.organism_id don't
+    // match.
+    $scenarios[] = [
+      'updateStock',
+      [
+        [
+          'stock.organism_id' => 1,
+          'organism.organism_id' => 2,
+        ],
+        [
+          'stock.uniquename' => 'existingstock',
+          'stock.type_id' => 3,
+        ],
+      ],
+      "ChadoBuddy validateStockOrganism error, stock.organism_id and organism.organism_id values were both provided but do not match:",
+    ];
+
+    // #9: updateStock() with organism values that match more than one
+    // organism_id.
+    $scenarios[] = [
+      'updateStock',
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.abbreviation' => 'Trp',
+        ],
+        [
+          'stock.uniquename' => 'existingstock',
+          'stock.type_id' => 3,
+        ],
+      ],
+      "ChadoBuddy validateStockOrganism error, more than one record matched the values specified:",
+    ];
+
+    // #10: updateStock() where organism values are provided but could not find
+    // or create a matching organism record.
+    $scenarios[] = [
+      'updateStock',
+      [
+        [
+          'organism.genus' => 'NoSuchGenus',
+          'organism.species' => 'NoSuchSpecies',
+        ],
+        [
+          'stock.uniquename' => 'existingstock',
+          'stock.type_id' => 3,
+        ],
+      ],
+      "ChadoBuddy validateStockOrganism error, could not find or create a organism, but organism values were provided:",
+    ];
+
     // Trigger exceptions in upsertStock() and validateStockType() using
     // upsertStock().
     return $scenarios;
@@ -624,7 +745,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    */
   #[DataProvider('provideStockBuddyExceptionScenarios')]
   public function testStockBuddyExceptions(string $method_name, array $method_input, string $expected_exception_message) {
-    // Insert an organism needed by our test scenarios.
+    // Insert organisms needed by our test scenarios.
     $type = \Drupal::service('tripal_chado.chado_buddy');
     $organism_instance = $type->createInstance('chado_organism_buddy', []);
     $organism_instance->insertOrganism([
@@ -632,14 +753,26 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'organism.species' => 'databasica',
       'organism.abbreviation' => 'Trp',
     ]);
+    $organism_instance->insertOrganism([
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'chadoii',
+      'organism.abbreviation' => 'Trp',
+    ]);
 
-    // Insert a stock record so that it already exists.
+    // Insert stock records so that they already exist.
     $stock_instance = $type->createInstance('chado_stock_buddy', []);
     $stock_instance->insertStock([
       'stock.name' => 'ExistingStock',
       'stock.uniquename' => 'existingstock',
       'stock.type_id' => 3,
       'dbxref.dbxref_id' => 3,
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+    ]);
+    $stock_instance->insertStock([
+      'stock.name' => 'BonusStock',
+      'stock.uniquename' => 'bonusstock',
+      'stock.type_id' => 3,
       'organism.genus' => 'Tripalus',
       'organism.species' => 'databasica',
     ]);
