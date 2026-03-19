@@ -28,6 +28,9 @@ class TripalEntityHooks {
     // Iterate through the entities provided.
     foreach ($entities as &$entity) {
 
+      // Ensure that the Tripal Fields are registered for this entity.
+      $entity->registerAllTripalFields();
+
       // @todo it would be great to skip the entity entirely if it is
       // fully cached in Drupal.
       // Create a values array appropriate for `loadValues()`
