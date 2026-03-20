@@ -34,3 +34,67 @@ function tripal_ws_page_attachments(array &$attachments) {
     ];
   }
 }
+
+/**
+ * Implements hook_jsonapi_response_alter().
+ * 
+ * Alter the JSON response. Do it here!
+ * @todo Maybe move this out of the .module file.
+ */
+function tripal_ws_jsonapi_response_alter(array &$jsonapi_response, \Symfony\Component\HttpFoundation\Response $response) {
+  // Modify the JSON API response here
+
+  // Get Tripal details. @todo don't do this is no Tripal content 
+  // is in the response.
+  $configs = \Drupal::configFactory()->listAll('tripal.content_type.');
+  $prefix = 'tripal.content_type.';
+  $tripal_content_type_machine_names = [];
+  foreach ($configs as $key => $config_name) {
+    // Contents: analysis, contact, dna_library, ...
+    $tripal_content_type_machine_names[] = substr($config_name, strlen($prefix));
+  }
+
+  // Detect tripal_entity content being loaded.
+  $uri_parts = explode('/', trim($_SERVER["REQUEST_URI"], '/'));
+  // print_r($uri_parts);
+
+
+  // At the main response page. We should modify Tripal content to have terms.
+  // print_r($jsonapi_response);
+  // echo "<pre>";
+  // print_r($jsonapi_response['links']);
+  // echo "</pre>";
+  // echo "<br>";
+  if (count($uri_parts) == 1 && $uri_parts[0] == 'jsonapi') {
+    foreach ($tripal_content_type_machine_names as $tripal_machine_name) {
+      // if (array_key_exists($tripal_machine_name, $jsonapi_response['links'])) {
+      if (array_key_exists($tripal_machine_name, $jsonapi_response['links'])) {
+        $jsonapi_response['links']['tripal_entity--organism']['@context'] = 'organism';
+        $link_name = 'tripal_entity--' . $tripal_machine_name;
+        // echo $link_name;
+        $jsonapi_response['links']['tripal_entity--'.$tripal_machine_name]['@context'] = 'something';
+
+      }
+    }
+  }
+  // echo "<pre>";
+  // print_r($jsonapi_response);  s
+  // echo "</pre>";
+  
+  if (in_array('tripal_entity', $uri_parts)) {
+    
+    // print_r($tripal_content_type_machine_names);
+    // Detected a Tripal Entity path, let's get some LD going!
+    $jsonapi_response['seantest'] = 'homestar'; // Just a canary test. DELETE ME! \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+    // What content type are we dealing with?
+
+    $jsonapi_response['links']['tripal_entity--organism']['@context'] = 'organism';
+
+    // Load necessary Tripal classes to get data.
+
+  }
+  
+
+  // Testing syntax
+  // @todo remove me.
+}

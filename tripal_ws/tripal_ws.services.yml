@@ -3,3 +3,10 @@ services:
     class: 'Drupal\tripal_ws\EventSubscriber\LinkHeaderSubscriber'
     tags:
       - { name: 'event_subscriber' }
+  tripal_ws.response_subscriber:
+    class: Drupal\tripal_ws\EventSubscriber\ResponseSubscriber
+    arguments: [ '@module_handler' ]
+    tags:
+      - { name: event_subscriber }
+    calls:
+      - [ setRouteMatch, [ '@current_route_match' ] ]
