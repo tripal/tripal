@@ -261,16 +261,312 @@ class TripalChadoHooks {
   /**
    * Implements hook_views_data().
    *
-   * This allows us to create Drupal views for the db, cv, dbxref,
-   * and cvterm tables.
-   *
-   * We include a relationship so that we can make the double-hop
-   * from cvterm, through dbxref, to the db table.
    */
   #[Hook('views_data')]
   public function viewsData() {
     $data = [];
+    $this->viewsDataCustomTables($data);
+    $this->viewsDataTripalMviews($data);
+    $this->viewsDataTermTables($data);
+    return $data;
+  }
 
+  /**
+   * Describes the tripal_custom_tables table for Drupal views.
+   *
+   * @param array &$data
+   *   Description to pass to hook_views_data.
+   */
+  protected function viewsDataCustomTables(&$data) {
+    $data['tripal_custom_tables'] = [];
+    $data['tripal_custom_tables']['table'] = [];
+    $data['tripal_custom_tables']['table']['group'] = $this->t('Chado Custom Tables');
+    $data['tripal_custom_tables']['table']['provider'] = 'tripal';
+    $data['tripal_custom_tables']['table']['base'] = [
+      'field' => 'table_id',
+      'title' => $this->t('Tripal Custom Tables'),
+      'help' => $this->t('Provides information about custom tables in Chado.'),
+      'weight' => 10,
+    ];
+    $data['tripal_custom_tables']['table']['join'] = [
+      'tripal_mviews' => [
+        'left_field' => 'table_id',
+        'field' => 'table_id',
+      ],
+    ];
+    $data['tripal_custom_tables']['table']['join']['tripal_mviews'] = [
+      'left_table' => 'tripal_mviews',
+      'left_field' => 'table_id',
+      'field' => 'table_id',
+    ];
+
+    // Table ID.
+    $data['tripal_custom_tables']['table_id'] = [
+      'title' => $this->t('Table ID'),
+      'help' => $this->t('The custom table primary key.'),
+      'field' => [
+        'id' => 'numeric',
+      ],
+      'filter' => [
+        'id' => 'numeric',
+      ],
+      'sort' => [
+        'id' => 'standard',
+      ],
+      'argument' => [
+        'id' => 'numeric',
+      ],
+      'relationship' => [
+        'id' => 'standard',
+        'base' => 'tripal_mviews',
+        'base field' => 'table_id',
+        'label' => $this->t('Materialized Views.'),
+      ],
+    ];
+
+    // Table Name.
+    $data['tripal_custom_tables']['table_name'] = [
+      'title' => $this->t('Table Name'),
+      'help' => $this->t('The name of the table.'),
+      'field' => [
+        'id' => 'standard',
+      ],
+      'sort' => [
+        'id' => 'standard',
+      ],
+      'filter' => [
+        'id' => 'string',
+      ],
+      'argument' => [
+        'id' => 'string',
+      ],
+    ];
+
+    $data['tripal_custom_tables']['locked'] = [
+      'title' => $this->t('Locked'),
+      'help' => $this->t('Indicates if the table is locked from end-users.'),
+      'field' => [
+        'id' => 'boolean',
+      ],
+      'sort' => [
+        'id' => 'standard',
+      ],
+      'filter' => [
+        'id' => 'string',
+      ],
+      'argument' => [
+        'id' => 'string',
+      ],
+    ];
+
+    $data['tripal_custom_tables']['chado'] = [
+      'title' => $this->t('Chado Schema'),
+      'help' => $this->t('The Chado schema in which the table is present.'),
+      'field' => [
+        'id' => 'standard',
+      ],
+      'sort' => [
+        'id' => 'standard',
+      ],
+      'filter' => [
+        'id' => 'string',
+      ],
+      'argument' => [
+        'id' => 'string',
+      ],
+    ];
+
+    $data['tripal_custom_tables']['edit_link'] = [
+      'title' => $this->t('Edit Table'),
+      'help' => $this->t('Clickable link to edit a custom table'),
+      'field' => [
+        'id' => 'chado_custom_tables_edit_link',
+      ],
+    ];
+
+    $data['tripal_custom_tables']['delete_link'] = [
+      'title' => $this->t('Delete Table'),
+      'help' => $this->t('Clickable link to delete a custom table'),
+      'field' => [
+        'id' => 'chado_custom_tables_delete_link',
+      ],
+    ];
+  }
+
+  /**
+   * Describes the tripal_mviews table for Drupal views.
+   *
+   * @param array &$data
+   *   Description to pass to hook_views_data.
+   */
+  protected function viewsDataTripalMviews(&$data) {
+    $data['tripal_mviews'] = [];
+    $data['tripal_mviews']['table'] = [];
+    $data['tripal_mviews']['table']['group'] = $this->t('Chado Materialized Views');
+    $data['tripal_mviews']['table']['provider'] = 'tripal';
+    $data['tripal_mviews']['table']['base'] = [
+      'field' => 'mview_id',
+      'title' => $this->t('Tripal Materialized views'),
+      'help' => $this->t('Provides information about materialized views in Chado.'),
+      'weight' => 10,
+    ];
+
+    // Mview ID.
+    $data['tripal_mviews']['mview_id'] = [
+      'title' => $this->t('Materialized View ID'),
+      'help' => $this->t('The materialized view primary key.'),
+      'field' => [
+        'id' => 'numeric',
+      ],
+      'filter' => [
+        'id' => 'numeric',
+      ],
+      'sort' => [
+        'id' => 'standard',
+      ],
+      'argument' => [
+        'id' => 'numeric',
+      ],
+    ];
+
+    // Table ID.
+    $data['tripal_mviews']['table_id'] = [
+      'title' => $this->t('Custom Table ID'),
+      'help' => $this->t('The custom table foreign key.'),
+      'field' => [
+        'id' => 'numeric',
+      ],
+      'filter' => [
+        'id' => 'numeric',
+      ],
+      'sort' => [
+        'id' => 'standard',
+      ],
+      'argument' => [
+        'id' => 'numeric',
+      ],
+    ];
+
+    // Table Name.
+    $data['tripal_mviews']['name'] = [
+      'title' => $this->t('Table Name'),
+      'help' => $this->t('The name of the materialized view table.'),
+      'field' => [
+        'id' => 'standard',
+      ],
+      'sort' => [
+        'id' => 'standard',
+      ],
+      'filter' => [
+        'id' => 'string',
+      ],
+      'argument' => [
+        'id' => 'string',
+      ],
+    ];
+
+    // SQL Query.
+    $data['tripal_mviews']['query'] = [
+      'title' => $this->t('SQL Query'),
+      'help' => $this->t('The SQL query used to populate the view.'),
+      'field' => [
+        'id' => 'standard',
+      ],
+      'sort' => [
+        'id' => 'standard',
+      ],
+      'filter' => [
+        'id' => 'string',
+      ],
+      'argument' => [
+        'id' => 'string',
+      ],
+    ];
+
+    // Status.
+    $data['tripal_mviews']['status'] = [
+      'title' => $this->t('Status'),
+      'help' => $this->t('The status of the most recent population of the view.'),
+      'field' => [
+        'id' => 'standard',
+      ],
+      'sort' => [
+        'id' => 'standard',
+      ],
+      'filter' => [
+        'id' => 'string',
+      ],
+      'argument' => [
+        'id' => 'string',
+      ],
+    ];
+
+    // Comment.
+    $data['tripal_mviews']['comment'] = [
+      'title' => $this->t('Description'),
+      'help' => $this->t('A descption of this view.'),
+      'field' => [
+        'id' => 'standard',
+      ],
+      'sort' => [
+        'id' => 'standard',
+      ],
+      'filter' => [
+        'id' => 'string',
+      ],
+      'argument' => [
+        'id' => 'string',
+      ],
+    ];
+
+    // Last update.
+    $data['tripal_mviews']['last_update'] = [
+      'title' => $this->t('Last Update'),
+      'help' => $this->t('A descption of this view.'),
+      'field' => [
+        'id' => 'date',
+      ],
+      'sort' => [
+        'id' => 'date',
+      ],
+      'filter' => [
+        'id' => 'date',
+      ],
+    ];
+
+    $data['tripal_mviews']['mview_edit_link'] = [
+      'title' => $this->t('Edit Materialized View'),
+      'help' => $this->t('Clickable link to edit a materialized view'),
+      'field' => [
+        'id' => 'chado_mviews_edit_link',
+      ],
+    ];
+    $data['tripal_mviews']['mview_populate_link'] = [
+      'title' => $this->t('Populate Materialized View'),
+      'help' => $this->t('Clickable link to populate a materialized view'),
+      'field' => [
+        'id' => 'chado_mviews_populate_link',
+      ],
+    ];
+    $data['tripal_mviews']['mview_delete_link'] = [
+      'title' => $this->t('Delete Materialized View'),
+      'help' => $this->t('Clickable link to delete a materialied view'),
+      'field' => [
+        'id' => 'chado_mviews_delete_link',
+      ],
+    ];
+  }
+
+  /**
+   * Describes the db, cv, dbxref, and cvterm tables for Drupal views.
+   *
+   * We include a relationship so that we can make the double-hop
+   * from cvterm, through dbxref, to the db table.
+   *
+   * @param array &$data
+   *   Description to pass to hook_views_data.
+   */
+  protected function viewsDataTermTables(&$data) {
     // The chado db table.
     $data['db']['table']['group'] = $this->t('External Databases');
     $data['db']['table']['base'] = [
@@ -456,8 +752,6 @@ class TripalChadoHooks {
         'relationship field' => 'dbxref_id',
       ],
     ];
-
-    return $data;
   }
 
 }
