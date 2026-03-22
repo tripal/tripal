@@ -258,4 +258,206 @@ class TripalChadoHooks {
       = $ttfc_mapping;
   }
 
+  /**
+   * Implements hook_views_data().
+   *
+   * This allows us to create Drupal views for the db, cv, dbxref,
+   * and cvterm tables.
+   *
+   * We include a relationship so that we can make the double-hop
+   * from cvterm, through dbxref, to the db table.
+   */
+  #[Hook('views_data')]
+  public function viewsData() {
+    $data = [];
+
+    // The chado db table.
+    $data['db']['table']['group'] = $this->t('External Databases');
+    $data['db']['table']['base'] = [
+      'field' => 'db_id',
+      'title' => $this->t('Chado table: db'),
+      'help' => $this->t('External Databases'),
+    ];
+    $data['db']['table']['join']['dbxref'] = [
+      'left_field' => 'db_id',
+      'field' => 'db_id',
+    ];
+    $data['db']['db_id'] = [
+      'title' => $this->t('Primary key'),
+      'help' => $this->t('The primary key value associated with this row'),
+      'sort' => ['id' => 'standard'],
+      'field' => ['id' => 'standard'],
+      'filter' => ['id' => 'numeric'],
+    ];
+    $data['db']['name'] = [
+      'title' => $this->t('Database Name'),
+      'help' => $this->t('The name of the external database'),
+      'sort' => ['id' => 'standard'],
+      'field' => ['id' => 'standard'],
+      'filter' => ['id' => 'string'],
+    ];
+    $data['db']['description'] = [
+      'title' => $this->t('Database Description'),
+      'help' => $this->t('A short description of the external database'),
+      'sort' => ['id' => 'standard'],
+      'field' => ['id' => 'standard'],
+      'filter' => ['id' => 'string'],
+    ];
+    $data['db']['urlprefix'] = [
+      'title' => $this->t('URL Prefix'),
+      'help' => $this->t('URL prefix to allow linking to accessions within the external database'),
+      'sort' => ['id' => 'standard'],
+      'field' => ['id' => 'standard'],
+      'filter' => ['id' => 'string'],
+    ];
+    $data['db']['url'] = [
+      'title' => $this->t('URL'),
+      'help' => $this->t('URL linking to primary reference of the external database'),
+      'sort' => ['id' => 'standard'],
+      'field' => ['id' => 'standard'],
+      'filter' => ['id' => 'string'],
+    ];
+
+    // The chado cv table.
+    $data['cv']['table']['group'] = $this->t('Controlled Vocabularies');
+    $data['cv']['table']['base'] = [
+      'field' => 'cv_id',
+      'title' => $this->t('Chado table: cv'),
+      'help' => $this->t('Controlled vocabularies'),
+    ];
+    $data['cv']['table']['join']['cvterm'] = [
+      'left_field' => 'cv_id',
+      'field' => 'cv_id',
+    ];
+    $data['cv']['cv_id'] = [
+      'title' => $this->t('Primary key'),
+      'help' => $this->t('The primary key value associated with this row'),
+      'field' => ['id' => 'standard'],
+      'sort' => ['id' => 'standard'],
+      'filter' => ['id' => 'numeric'],
+    ];
+    $data['cv']['name'] = [
+      'title' => $this->t('Controlled Vocabulary Name'),
+      'help' => $this->t('The name of the controlled vocabulary'),
+      'sort' => ['id' => 'standard'],
+      'field' => ['id' => 'standard'],
+      'filter' => ['id' => 'string'],
+    ];
+    $data['cv']['definition'] = [
+      'title' => $this->t('Controlled vocabulary definition'),
+      'help' => $this->t('A short description of the controlled vocabulary'),
+      'sort' => ['id' => 'standard'],
+      'field' => ['id' => 'standard'],
+      'filter' => ['id' => 'string'],
+    ];
+
+    // The chado dbxref table.
+    $data['dbxref']['table']['group'] = $this->t('Database cross-reference');
+    $data['dbxref']['table']['base'] = [
+      'field' => 'dbxref_id',
+      'title' => $this->t('Chado table: dbxref'),
+      'help' => $this->t('Database cross-reference'),
+    ];
+    $data['dbxref']['table']['join']['cvterm'] = [
+      'left_field' => 'dbxref_id',
+      'field' => 'dbxref_id',
+    ];
+    $data['dbxref']['dbxref_id'] = [
+      'title' => $this->t('Primary key'),
+      'help' => $this->t('The primary key value associated with this row'),
+      'field' => ['id' => 'standard'],
+      'sort' => ['id' => 'standard'],
+      'filter' => ['id' => 'numeric'],
+    ];
+    $data['dbxref']['db_id'] = [
+      'title' => $this->t('External database ID'),
+      'help' => $this->t('The external database that this accession references'),
+      'field' => ['id' => 'standard'],
+      'sort' => ['id' => 'standard'],
+      'filter' => ['id' => 'numeric'],
+    ];
+    $data['dbxref']['accession'] = [
+      'title' => $this->t('Accession'),
+      'help' => $this->t('The accession identifier within the external database'),
+      'sort' => ['id' => 'standard'],
+      'field' => ['id' => 'standard'],
+      'filter' => ['id' => 'string'],
+    ];
+    $data['dbxref']['version'] = [
+      'title' => $this->t('Version'),
+      'help' => $this->t('The version of this database cross-reference, if applicable'),
+      'sort' => ['id' => 'standard'],
+      'field' => ['id' => 'standard'],
+      'filter' => ['id' => 'string'],
+    ];
+
+    // The chado cvterm table.
+    $data['cvterm']['table']['group'] = $this->t('Controlled Vocabulary Terms');
+    $data['cvterm']['table']['base'] = [
+      'field' => 'cvterm_id',
+      'title' => $this->t('Chado table: cvterm'),
+      'help' => $this->t('Controlled vocabulary terms'),
+    ];
+    $data['cvterm']['table']['join']['dbxref'] = [
+      'left_field' => 'dbxref_id',
+      'field' => 'dbxref_id',
+    ];
+    $data['cvterm']['cvterm_id'] = [
+      'title' => $this->t('Primary key'),
+      'help' => $this->t('The primary key value associated with this row'),
+      'field' => ['id' => 'standard'],
+      'sort' => ['id' => 'standard'],
+      'filter' => ['id' => 'numeric'],
+    ];
+    $data['cvterm']['name'] = [
+      'title' => $this->t('Controlled Vocabulary Term Name'),
+      'help' => $this->t('The name of the controlled vocabulary term'),
+      'sort' => ['id' => 'standard'],
+      'field' => ['id' => 'standard'],
+      'filter' => ['id' => 'string'],
+    ];
+    $data['cvterm']['definition'] = [
+      'title' => $this->t('Controlled vocabulary term definition'),
+      'help' => $this->t('The definition of the controlled vocabulary term'),
+      'sort' => ['id' => 'standard'],
+      'field' => ['id' => 'standard'],
+      'filter' => ['id' => 'string'],
+    ];
+    $data['cvterm']['dbxref_id'] = [
+      'title' => $this->t('Database cross-reference'),
+      'help' => $this->t('A reference to an external database and accession'),
+      'field' => ['id' => 'standard'],
+      'sort' => ['id' => 'standard'],
+      'filter' => ['id' => 'numeric'],
+    ];
+    $data['cvterm']['is_obsolete'] = [
+      'title' => $this->t('Is obsolete'),
+      'help' => $this->t('Indicates if this term is obsolete'),
+      'field' => ['id' => 'standard'],
+      'sort' => ['id' => 'standard'],
+      'filter' => ['id' => 'numeric'],
+    ];
+    $data['cvterm']['is_relationshiptype'] = [
+      'title' => $this->t('Is relationship type'),
+      'help' => $this->t('Indicates if this term describes a relationship'),
+      'field' => ['id' => 'standard'],
+      'sort' => ['id' => 'standard'],
+      'filter' => ['id' => 'numeric'],
+    ];
+
+    // Relationship from cvterm, through dbxref, to db table.
+    $data['cvterm']['db_id'] = [
+      'title' => $this->t('External Database'),
+      'help' => $this->t('Relationship through the dbxref table to the db table'),
+      'relationship' => [
+        'base' => 'db',
+        'base field' => 'db_id',
+        'id' => 'standard',
+        'relationship field' => 'dbxref_id',
+      ],
+    ];
+
+    return $data;
+  }
+
 }
