@@ -50,6 +50,11 @@ class TripalHooks {
    *
    * This hook is provided by the Gin Admin theme and we use it to provide
    * the specialized Tripal toolbar in their specialized top menu bar.
+   *
+   * @todo this will eventually be removed.
+   * The Drupal core Toolbar module is being deprecated in favor of the new
+   * Navigation module. The Gin admin theme will only support the new
+   * Navigation module moving forward.
    */
   #[Hook('toolbar')]
   public function toolbar() {

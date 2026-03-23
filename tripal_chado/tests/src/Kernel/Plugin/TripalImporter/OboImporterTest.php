@@ -109,9 +109,14 @@ class OboImporterTest extends ChadoTestKernelBase {
 
     // Create a mocked logger to access error messages from the Tripal logger.
     $mock_logger = $this->getMockBuilder(TripalLogger::class)
-      ->onlyMethods(['warning'])
+      ->onlyMethods(['warning', 'error'])
       ->getMock();
     $mock_logger->method('warning')
+      ->willReturnCallback(function ($message, $context, $options) {
+        $this->mock_messages[] = str_replace(array_keys($context), $context, $message);
+        return NULL;
+      });
+    $mock_logger->method('error')
       ->willReturnCallback(function ($message, $context, $options) {
         $this->mock_messages[] = str_replace(array_keys($context), $context, $message);
         return NULL;
@@ -277,7 +282,20 @@ class OboImporterTest extends ChadoTestKernelBase {
     }
 
     // Run the importer.
-    $obo_importer->run();
+    try {
+      $obo_importer->run();
+    }
+    catch(\Exception $e) {
+      // If we get a specific message due to the EBI OLS external database
+      // being down, then mark this test as skipped.
+      foreach ($this->mock_messages as $message) {
+        if (preg_match('/Cannot find the ontology via an EBI OLS lookup/', $message)) {
+          $this->markTestSkipped();
+        }
+      }
+      // For anything else, rethrow the exception so we see the problem.
+      throw $e;
+    }
 
     // Test that any expected warning was generated.
     if (array_key_exists('expect_message', $current_scenario)) {
