@@ -103,6 +103,22 @@ tripal_chado.chado_mviews:
     _permission: 'manage chado materialized views'
 
 
+tripal_chado.chado_cvterm_form:
+  path: 'admin/tripal/storage/chado/cvterm/{cvterm_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoCvtermForm'
+    _title: 'Edit a Chado Controlled Vocabulary term'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_cvterm_delete_form:
+  path: 'admin/tripal/storage/chado/cvterm_delete/{cvterm_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoCvtermDeleteForm'
+    _title: 'Delete a Chado Controlled Vocabulary term'
+  requirements:
+    _permission: 'administer tripal'
+
 entity.chado_term_mapping.collection:
   path: 'admin/tripal/storage/chado/terms'
   defaults:
