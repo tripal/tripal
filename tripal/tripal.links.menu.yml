@@ -40,6 +40,10 @@ tripal.admin:
   title: 'Tripal'
   description: 'The core administrative menu for Tripal. This menu listing provides tools to manage the behavior or Tripal and its various modules and extensions.'
   parent: 'system.admin'
+  options:
+    icon:
+      pack_id: 'tripal'
+      icon_id: 'tripal-menu-icon'
 
 # -- Tripal Registration link.
 tripal.admin_register:
@@ -151,13 +155,14 @@ entity.tripal_entity_settings:
   route_name: 'entity.tripal_entity_settings'
   weight: 40
 
+#@todo This route is not yet implemented.
 # -- Configuration for Tripal Field Widgets.
-entity.tripal_widget_settings:
-  title: 'Tripal Global Widget Settings'
-  parent: 'tripal.config'
-  description: 'Manage global settings for field widgets.'
-  route_name: 'entity.tripal_widget_settings'
-  weight: 50
+#entity.tripal_widget_settings:
+#  title: 'Tripal Global Widget Settings'
+#  parent: 'tripal.config'
+#  description: 'Manage global settings for field widgets.'
+#  route_name: 'entity.tripal_widget_settings'
+#  weight: 50
 
 # -- Root link for Tripal extension listing.
 tripal.extension:
@@ -203,9 +208,10 @@ tripal.data_loaders.publication_loaders:
   parent: 'tripal.data_loaders'
   weight: 10
 
-tripal.data_loaders.publication_loaders.import_publication_file:
-  route_name: 'tripal.data_loaders.publication_loaders.import_publication_file'
-  title: 'Import Publication File (NOT IMPLEMENTED)'
-  description: 'Use this form if you need to upload a publication file to be imported into the database'
-  parent: 'tripal.data_loaders.publication_loaders'
-  weight: 60
+#@todo This route is not yet implemented.
+#tripal.data_loaders.publication_loaders.import_publication_file:
+#  route_name: 'tripal.data_loaders.publication_loaders.import_publication_file'
+#  title: 'Import Publication File (NOT IMPLEMENTED)'
+#  description: 'Use this form if you need to upload a publication file to be imported into the database'
+#  parent: 'tripal.data_loaders.publication_loaders'
+#  weight: 60
