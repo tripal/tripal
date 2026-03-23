@@ -40,6 +40,10 @@ tripal.admin:
   title: 'Tripal'
   description: 'The core administrative menu for Tripal. This menu listing provides tools to manage the behavior or Tripal and its various modules and extensions.'
   parent: 'system.admin'
+  options:
+    icon:
+      pack_id: 'tripal'
+      icon_id: 'tripal-menu-icon'
 
 # -- Tripal Registration link.
 tripal.admin_register:
