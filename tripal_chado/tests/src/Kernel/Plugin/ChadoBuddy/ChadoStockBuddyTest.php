@@ -723,8 +723,19 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy validateStockOrganism error, could not find or create a organism, but organism values were provided:",
     ];
 
-    // Trigger exceptions in upsertStock() and validateStockType() using
-    // upsertStock().
+    // #11: upsertStock() with conditions that match more than one stock record.
+    $scenarios[] = [
+      'upsertStock',
+      [
+        [
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+      ],
+      "ChadoBuddy upsertStock error, more than one stock record matches the specified values:",
+    ];
+
     return $scenarios;
   }
 

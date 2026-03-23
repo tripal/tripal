@@ -416,6 +416,89 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
   }
 
   /**
+   * Insert a stock if it doesn't yet exist OR update it if it does.
+   *
+   * NOTE: Creation of an organism record is NOT supported. Please use the
+   *   ChadoOrganismBuddy to create the organism for your stock if necessary.
+   * NOTE: Creation of a cvterm record is NOT supported. Please use the
+   *   ChadoCvtermBuddy to create the cvterm for stock.type_id if necessary.
+   *
+   * @param array $values
+   *   An associative array that describes the values to be updated for a
+   *   record in the chado.stock table. Valid keys include:
+   *     - stock.dbxref_id
+   *     - stock.organism_id
+   *     - stock.name
+   *     - stock.uniquename
+   *     - stock.description
+   *     - stock.type_id
+   *     - stock.is_obsolete
+   *     - organism.genus
+   *     - organism.species
+   *     - organism.infraspecific_name
+   *     - organism.common_name
+   *     - an organism ChadoBuddyRecord can be used in place of or in addition
+   *       to other keys.
+   *   The following terms are valid where it pertains to stock.type_id only:
+   *     - cvterm.name
+   *     - cvterm.is_obsolete
+   *     - cv.name
+   *     - a cvterm ChadoBuddyRecord can be used in place of or in addition to
+   *       other keys.
+   *   The following terms are valid where it pertains to stock.dbxref_id only:
+   *     - dbxref.accession
+   *     - db.name
+   *     - a dbxref ChadoBuddyRecord can be used in place of or in addition to
+   *       other keys.
+   * @param array $options
+   *   (Optional) Associative array of options with these supported keys:
+   *   - create_dbxref - set to TRUE (default FALSE) if you specified the
+   *     necessary fields and want to create the dbxref for stock.dbxref_id when
+   *     updating this stock, if it does not already exist.
+   *     NOTE: This is NOT recommended. We suggest you import ontologies first.
+   *   - validate_foreign_keys - specifies whether to validate foreign keys.
+   *     Default is TRUE for all foreign keys. If you specify a boolean value,
+   *     then that value is used for validating all potential foreign keys.
+   *     You can skip validation for specific foreign keys by passing an array
+   *     of foreign keys to skip validation for, and setting their values to
+   *     FALSE. For updateStock(), valid keys are:
+   *     - 'organism_id'
+   *     - 'cvterm_id'
+   *     - 'dbxref_id'
+   *     This is ideal for performance if you already did an insert or lookup on
+   *     the specified key(s) and just want to pass the information through.
+   *
+   * @return \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord
+   *   The inserted/updated ChadoBuddyRecord will be returned on success.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered.
+   */
+  public function upsertStock(array $values, array $options = []) {
+    $valid_columns = $this->getTableColumns($this->valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
+    $this->validateInput($values, $valid_columns);
+
+    // For upsert, the query conditions are a subset consisting of
+    // only the columns that are part of a unique constraint:
+    // organism_id + uniquename + type_id.
+    $key_columns = $this->getTableColumns($this->valid_tables, 'unique');
+    $conditions = $this->makeUpsertConditions($values, $key_columns);
+
+    $existing_records = $this->getStock($conditions, $options);
+    if (count($existing_records) > 0) {
+      if (count($existing_records) > 1) {
+        throw new ChadoBuddyException("ChadoBuddy upsertStock error, more than one stock record matches the specified values:\n" . print_r($values, TRUE));
+      }
+      $new_record = $this->updateStock($values, $conditions, $options);
+    }
+    else {
+      $new_record = $this->insertStock($values, $options);
+    }
+    return $new_record;
+  }
+
+  /**
    * A helper method to validate stock dbxref when inserting/updating a stock.
    *
    * @param array $values
