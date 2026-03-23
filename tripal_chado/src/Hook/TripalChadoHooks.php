@@ -687,6 +687,19 @@ class TripalChadoHooks {
       'filter' => ['id' => 'string'],
     ];
 
+    // Relationship from cvterm, through dbxref, to db table.
+    $data['dbxref']['rel'] = [
+      'title' => $this->t('External Database'),
+      'help' => $this->t('Relationship through the dbxref table to the db table'),
+      'relationship' => [
+        'base' => 'db',
+        'base field' => 'db_id',
+        'field' => 'db_id',
+        'id' => 'standard',
+        'label' => 'dbxref to db relationship',
+      ],
+    ];
+
     // The chado cvterm table.
     $data['cvterm']['table']['group'] = $this->t('Controlled Vocabulary Terms');
     $data['cvterm']['table']['base'] = [
@@ -741,15 +754,18 @@ class TripalChadoHooks {
       'filter' => ['id' => 'numeric'],
     ];
 
-    // Relationship from cvterm, through dbxref, to db table.
-    $data['cvterm']['db_id'] = [
-      'title' => $this->t('External Database'),
-      'help' => $this->t('Relationship through the dbxref table to the db table'),
-      'relationship' => [
-        'base' => 'db',
-        'base field' => 'db_id',
-        'id' => 'standard',
-        'relationship field' => 'dbxref_id',
+    $data['cvterm']['cvterm_edit_link'] = [
+      'title' => $this->t('Edit Vocabulary Term'),
+      'help' => $this->t('Clickable link to edit a controlled vocabulary term'),
+      'field' => [
+        'id' => 'chado_cvterm_edit_link',
+      ],
+    ];
+    $data['cvterm']['cvterm_delete_link'] = [
+      'title' => $this->t('Delete Vocabulary Term'),
+      'help' => $this->t('Clickable link to delete a controlled vocabulary term'),
+      'field' => [
+        'id' => 'chado_cvterm_delete_link',
       ],
     ];
   }
