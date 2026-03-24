@@ -305,24 +305,32 @@ class OboImporterTest extends ChadoTestKernelBase {
       // database being down, then mark this test as skipped.
       $skip_triggered = [];
       foreach ($this->mock_messages as $message) {
-        $matched = FALSE;
+        // For each expected external message...
         foreach ($this->message_actions as $pattern => $action) {
+          // If it's in our list with an action of skip
+          // then we indicate the test should be skipped.
           if (preg_match($pattern, $message)) {
+            // Note: an action of normal will simply be ignored
+            // since it would fall into an 'else' here.
             if ($action == 'skip') {
               $skip_triggered[] = $message;
             }
-            $matched = TRUE;
+          }
+          // If it doesn't match our pattern then we want to
+          // immediately rethrow the exception!
+          else {
+            throw $e;
           }
         }
-        $this->assertTrue($matched, 'An exception caused an error: '
-          . $e->getMessage() . ' and the unexpected logger message was: ' . $message);
       }
+      // If any of the known external error messages were caught
+      // then we want to skip here.
       if ($skip_triggered) {
         $this->markTestSkipped("We received only known external error messages and chose to ignore them. Specifically:\n"
           . implode("\n", $skip_triggered));
       }
+      // If the exception did not create a logger message, rethrow.
       else {
-        // If the exception did not create a logger message, rethrow.
         throw $e;
       }
     }
