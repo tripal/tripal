@@ -321,8 +321,7 @@ class OboImporterTest extends ChadoTestKernelBase {
         }
         if (!$matched_any) {
           // If it doesn't match any of our pattern then it is a new
-          // unanticipated error and we want to immediately rethrow
-          // the exception!
+          // unanticipated error and we want to immediately fail.
           $this->fail('Unanticipated error: ' . $message);
         }
       }
@@ -332,9 +331,9 @@ class OboImporterTest extends ChadoTestKernelBase {
         $this->markTestSkipped("We received only known external error messages and chose to ignore them. Specifically:\n"
           . implode("\n", $skip_triggered));
       }
-      // If the exception did not create a logger message, rethrow.
+      // If the exception did not create a logger message, fail now.
       else {
-        throw $e;
+        $this->fail('Unanticipated exception: ' . $e->getMessage());
       }
     }
 
