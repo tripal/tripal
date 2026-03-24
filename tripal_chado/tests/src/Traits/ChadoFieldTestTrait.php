@@ -237,6 +237,7 @@ trait ChadoFieldTestTrait {
           'field_type' => $field_details['type'],
           'widget_id' => $field_details['widget'],
           'formatter_id' => $field_details['formatter'],
+          'required' => $field_details['required'] ?? TRUE,
           'cardinality' => $field_details['cardinality'] ?? 1,
           'settings' => $field_details['settings'],
         ],

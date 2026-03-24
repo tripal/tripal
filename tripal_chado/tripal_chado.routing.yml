@@ -104,6 +104,14 @@ tripal_chado.chado_mviews:
 
 
 tripal_chado.chado_cvterm_form:
+  path: 'admin/tripal/storage/chado/cvterm'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoCvtermForm'
+    _title: 'Add a Chado Controlled Vocabulary term'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_cvterm_form_edit:
   path: 'admin/tripal/storage/chado/cvterm/{cvterm_id}'
   defaults:
     _form: '\Drupal\tripal_chado\Form\ChadoCvtermForm'
