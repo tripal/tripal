@@ -3,8 +3,6 @@ status: true
 dependencies:
   config:
     - system.menu.admin
-    - user.role.administrator
-    - user.role.content_editor
   module:
     - tripal_chado
     - user
@@ -24,6 +22,55 @@ display:
     display_options:
       title: 'Chado Controlled Vocabulary Terms'
       fields:
+        cvterm_id:
+          id: cvterm_id
+          table: cvterm
+          field: cvterm_id
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: standard
+          label: 'cvterm_id (pkey)'
+          exclude: true
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
         name:
           id: name
           table: cv
@@ -175,7 +222,7 @@ display:
           id: name_2
           table: db
           field: name
-          relationship: db_id
+          relationship: rel
           group_type: group
           admin_label: ''
           plugin_id: standard
@@ -367,6 +414,104 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
+        cvterm_edit_link:
+          id: cvterm_edit_link
+          table: cvterm
+          field: cvterm_edit_link
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: chado_cvterm_edit_link
+          label: 'Edit Vocabulary Term'
+          exclude: true
+          alter:
+            alter_text: true
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: false
+        cvterm_delete_link:
+          id: cvterm_delete_link
+          table: cvterm
+          field: cvterm_delete_link
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: chado_cvterm_delete_link
+          label: 'Delete Vocabulary Term'
+          exclude: true
+          alter:
+            alter_text: true
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: false
         dropbutton:
           id: dropbutton
           table: views
@@ -418,6 +563,8 @@ display:
           hide_alter_empty: true
           destination: true
           fields:
+            cvterm_edit_link: cvterm_edit_link
+            cvterm_delete_link: cvterm_delete_link
             name: '0'
             name_1: '0'
             definition: '0'
@@ -426,7 +573,7 @@ display:
             is_relationshiptype: '0'
             is_obsolete: '0'
       pager:
-        type: mini
+        type: full
         options:
           offset: 0
           pagination_heading_level: h4
@@ -436,6 +583,8 @@ display:
           tags:
             next: ››
             previous: ‹‹
+            first: '« First'
+            last: 'Last »'
           expose:
             items_per_page: false
             items_per_page_label: 'Items per page'
@@ -444,6 +593,7 @@ display:
             items_per_page_options_all_label: '- All -'
             offset: false
             offset_label: Offset
+          quantity: 9
       exposed_form:
         type: basic
         options:
@@ -455,11 +605,9 @@ display:
           sort_asc_label: Asc
           sort_desc_label: Desc
       access:
-        type: role
+        type: perm
         options:
-          role:
-            content_editor: content_editor
-            administrator: administrator
+          perm: 'administer tripal content'
       cache:
         type: tag
         options: {  }
@@ -571,7 +719,7 @@ display:
           exposed: true
           expose:
             operator_id: definition_op
-            label: 'Controlled vocabulary term definition'
+            label: 'Controlled Vocabulary Term Definition'
             description: ''
             use_operator: false
             operator: definition_op
@@ -600,7 +748,7 @@ display:
           id: name_2
           table: db
           field: name
-          relationship: db_id
+          relationship: rel
           group_type: group
           admin_label: ''
           plugin_id: string
@@ -625,28 +773,16 @@ display:
             placeholder: ''
           is_grouped: false
           group_info:
-            label: 'Database Name'
+            label: ''
             description: ''
-            identifier: name_2
+            identifier: ''
             optional: true
             widget: select
             multiple: false
             remember: false
             default_group: All
             default_group_multiple: {  }
-            group_items:
-              1:
-                title: ''
-                operator: contains
-                value: ''
-              2:
-                title: ''
-                operator: contains
-                value: ''
-              3:
-                title: ''
-                operator: contains
-                value: ''
+            group_items: {  }
         accession:
           id: accession
           table: dbxref
@@ -697,15 +833,26 @@ display:
           row_class: ''
           default_row_class: true
           columns:
+            cvterm_id: cvterm_id
             name: name
             name_1: name_1
             definition: definition
-            name_2: name_2
             accession: accession
             is_relationshiptype: is_relationshiptype
             is_obsolete: is_obsolete
+            cvterm_edit_link: cvterm_edit_link
+            cvterm_delete_link: cvterm_delete_link
+            dropbutton: dropbutton
+            name_2: name_2
           default: name_1
           info:
+            cvterm_id:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
             name:
               sortable: true
               default_sort_order: asc
@@ -721,13 +868,6 @@ display:
               empty_column: false
               responsive: ''
             definition:
-              sortable: true
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            name_2:
               sortable: true
               default_sort_order: asc
               align: ''
@@ -755,6 +895,34 @@ display:
               separator: ''
               empty_column: false
               responsive: ''
+            cvterm_edit_link:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            cvterm_delete_link:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            dropbutton:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            name_2:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
           override: true
           sticky: false
           summary: ''
@@ -773,16 +941,27 @@ display:
           replica: false
           query_tags: {  }
       relationships:
-        db_id:
-          id: db_id
-          table: cvterm
-          field: db_id
+        rel:
+          id: rel
+          table: dbxref
+          field: rel
           relationship: none
           group_type: group
-          admin_label: 'relationship through dbxref to db table'
+          admin_label: 'dbxref to db relationship'
           plugin_id: standard
           required: false
-      header: {  }
+      header:
+        area_text_custom:
+          id: area_text_custom
+          table: views
+          field: area_text_custom
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: text_custom
+          empty: false
+          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/cvterm\">Add a new vocabulary \r\nterm</a>\r\n<p>The following table lists the controlled vocabulary terms managed by Tripal in various chado schema.</p>"
+          tokenize: false
       footer: {  }
       display_extenders: {  }
     cache_metadata:
@@ -791,7 +970,7 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-        - user.roles
+        - user.permissions
       tags: {  }
   page_1:
     id: page_1
@@ -816,5 +995,5 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-        - user.roles
+        - user.permissions
       tags: {  }

@@ -4,30 +4,31 @@ namespace Drupal\tripal_chado\Form;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
+use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy;
+use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoDbxrefBuddy;
 use Drupal\views\Views;
 
+/**
+ * This class provides a form for adding or editing a chado CV term.
+ */
 class ChadoCvtermForm extends FormBase {
-
-  use StringTranslationTrait;
 
   /**
    * Provide the dbxref buddy instance.
    */
-  protected object $dbxref_buddy;
+  protected ChadoDbxrefBuddy $dbxref_buddy;
 
   /**
    * Provide the cvterm buddy instance.
    */
-  protected object $cvterm_buddy;
+  protected ChadoCvtermBuddy $cvterm_buddy;
 
   /**
    * {@inheritdoc}
@@ -56,7 +57,6 @@ class ChadoCvtermForm extends FormBase {
     return 'chado_cvterm_form';
   }
 
-
   /**
    * A form to Create or Edit a controlled vocabulary term.
    *
@@ -64,13 +64,11 @@ class ChadoCvtermForm extends FormBase {
    *   The form array definition.
    * @param Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
-   * @param int|null
+   * @param int|null $cvterm_id
    *   If editing, the cvterm primary key.
    *   If adding a new term, this will be null.
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?int $cvterm_id = null) {
-
-    $chado = \Drupal::service('tripal_chado.database');
+  public function buildForm(array $form, FormStateInterface $form_state, ?int $cvterm_id = NULL) {
 
     // If editing, get existing values.
     $action = 'add';
@@ -79,7 +77,7 @@ class ChadoCvtermForm extends FormBase {
       $action = 'edit';
       $cvterm_records = $this->cvterm_buddy->getCvterm(['cvterm.cvterm_id' => $cvterm_id]);
       if (!$cvterm_records) {
-        throw new \Exception ("Invalid cvterm_id \"$cvterm_id\" passed to chado_cvterm_form");
+        throw new \Exception("Invalid cvterm_id \"$cvterm_id\" passed to chado_cvterm_form");
       }
       $cvterm_record = reset($cvterm_records);
     }
@@ -106,7 +104,7 @@ class ChadoCvtermForm extends FormBase {
       $default_cvterm_is_obsolete = $cvterm_record->getValue('cvterm.is_obsolete');
     }
 
-    // Build the form
+    // Build the form.
     $form['action'] = [
       '#type' => 'value',
       '#value' => $action,
@@ -120,7 +118,7 @@ class ChadoCvtermForm extends FormBase {
     $form['cv_name'] = [
       '#disabled' => ($action == 'edit'),
       '#type' => 'textfield',
-      '#title' => $this->t('Controlled Vocabulary Name'),
+      '#title' => $this->t('Controlled Vocabulary (Ontology) Name'),
       '#description' => $this->t('Please select an existing controlled vocabulary'),
       '#required' => TRUE,
       '#default_value' => $default_cv_name,
@@ -183,7 +181,7 @@ class ChadoCvtermForm extends FormBase {
       '#disabled' => ($action == 'edit'),
       '#type' => 'textfield',
       '#title' => $this->t('External Database Name'),
-      '#description' => $this->t('Please select an existing external database'),
+      '#description' => $this->t('All terms must be assocated with a database. If there is no database for this term (e.g. it is a custom term specific to this site) then select the database \'null\' or consider creating a database specific for your site and use that anytime you would like to add terms.'),
       '#required' => TRUE,
       '#default_value' => $default_db_name,
       '#maxlength' => 255,
@@ -202,7 +200,7 @@ class ChadoCvtermForm extends FormBase {
       '#disabled' => ($action == 'edit'),
       '#type' => 'textfield',
       '#title' => $this->t('External Database Accession'),
-      '#description' => $this->t('Please enter the accession used by the external database'),
+      '#description' => $this->t('If this term has an existing accession (unique identifier) in the database please enter that here. If the accession is numeric with a database prefix (e.g. GO:003023), please enter just the numeric value. The database prefix will be appended whenever the term is displayed. If you do not have a numeric value consider entering the term name as the accession.'),
       '#required' => TRUE,
       '#default_value' => $default_dbxref_accession,
     ];
@@ -231,14 +229,13 @@ class ChadoCvtermForm extends FormBase {
     if ($action == 'add') {
       $value = $this->t('Add');
     }
-
     $form['submit'] = [
       '#type' => 'submit',
       '#value' => $value,
     ];
 
     $form['cancel'] = [
-      '#markup' => Link::fromTextAndUrl('Cancel', Url::fromUserInput('/admin/tripal/storage/chado/cvterm'))->toString(),
+      '#markup' => Link::fromTextAndUrl('Cancel', Url::fromUserInput('/admin/tripal/loaders/chado_vocabs/chado_cvterms'))->toString(),
     ];
 
     return $form;
@@ -249,11 +246,11 @@ class ChadoCvtermForm extends FormBase {
    *
    * @param array &$form
    *   The form array definition.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   * @param Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $autocomplete = new ChadoGenericAutocompleteController;
+    $autocomplete = new ChadoGenericAutocompleteController();
     $values = $form_state->getValues();
 
     // The action will be either 'edit' or 'add'.
@@ -263,14 +260,16 @@ class ChadoCvtermForm extends FormBase {
     $cv_id = $autocomplete->getPkeyId($values['cv_name']);
     $records = $this->cvterm_buddy->getCv(['cv.cv_id' => $cv_id]);
     if (!$records) {
-      $form_state->setErrorByName('cv_name', 'The specified controlled vocabulary does not exist. Make sure it includes the internal ID value in parentheses.');
+      $form_state->setErrorByName('cv_name',
+        'The specified controlled vocabulary does not exist. Make sure it includes the internal ID value in parentheses.');
     }
 
     // Validate that the db exists.
     $db_id = $autocomplete->getPkeyId($values['db_name']);
     $records = $this->dbxref_buddy->getDb(['db.db_id' => $db_id]);
     if (!$records) {
-      $form_state->setErrorByName('db_name', 'The specified external database does not exist. Make sure it includes the internal ID value in parentheses.');
+      $form_state->setErrorByName('db_name',
+        'The specified external database does not exist. Make sure it includes the internal ID value in parentheses.');
     }
 
     // The dbxref accession can already exist only when editing.
@@ -281,7 +280,8 @@ class ChadoCvtermForm extends FormBase {
         'dbxref.version' => $values['dbxref_version'],
       ]);
       if ($records) {
-        $form_state->setErrorByName('dbxref_accession', 'The specified accession and version already exists for this database. It cannot be used for more than one term.');
+        $form_state->setErrorByName('dbxref_accession',
+          'The specified accession and version already exists for this database. It cannot be used for more than one term.');
       }
     }
 
@@ -293,16 +293,22 @@ class ChadoCvtermForm extends FormBase {
         'cvterm.is_obsolete' => $values['cvterm_is_obsolete'],
       ]);
       if ($records) {
-        $form_state->setErrorByName('cvterm_name', 'The specified vocabulary term and value of "Is Obsolete" already exists for this vocabulary.');
+        $form_state->setErrorByName('cvterm_name',
+          'The specified vocabulary term and value of "Is Obsolete" already exists for this vocabulary.');
       }
     }
   }
 
   /**
    * Submit the Create/Edit Custom table form.
+   *
+   * @param array &$form
+   *   The form array definition.
+   * @param Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $autocomplete = new ChadoGenericAutocompleteController;
+    $autocomplete = new ChadoGenericAutocompleteController();
     $values = $form_state->getValues();
 
     // The action will be either 'edit' or 'add'.
@@ -329,18 +335,18 @@ class ChadoCvtermForm extends FormBase {
           'dbxref.description' => $values['dbxref_description'],
         ];
         $this->cvterm_buddy->insertCvterm($buddy_values, []);
-        $this->messenger()->addMessage($this->t('The vocabulary term "@name" has been added.', ['@name' => $values['cvterm_name']]), 'status');
+        $this->messenger()->addStatus($this->t('The vocabulary term "@name" has been added.', ['@name' => $values['cvterm_name']]));
       }
       else {
         $buddy_conditions = [
           'cvterm.cvterm_id' => $cvterm_id,
         ];
         $this->cvterm_buddy->updateCvterm($buddy_values, $buddy_conditions, []);
-        $this->messenger()->addMessage($this->t('The vocabulary term "@name" has been updated.', ['@name' => $values['cvterm_name']]), 'status');
+        $this->messenger()->addStatus($this->t('The vocabulary term "@name" has been updated.', ['@name' => $values['cvterm_name']]));
       }
     }
     catch (ChadoBuddyException $e) {
-      $this->messenger()->addMessage($this->t('An unexpected error occurred: @error', ['@error' => $e->getMessage()]));
+      $this->messenger()->addError($this->t('An unexpected error occurred: @error', ['@error' => $e->getMessage()]));
     }
 
     // Views caching can prevent seeing edits we just made.
