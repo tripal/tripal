@@ -100,11 +100,14 @@ class OboImporterTest extends ChadoTestKernelBase {
    *
    * @var array
    *   A list of error messages encountered when the external
-   *   web site is down or not functioning normally.
+   *   web site is down or not functioning normally are tagged
+   *   with 'skip', messages normally encountered are tagged
+   *   with 'normal'.
    */
-  protected array $known_external_messages = [
-    '/Cannot find the ontology via an EBI OLS lookup/',
-    '/Service Temporarily Unavailable/',
+  protected array $message_actions = [
+    '/a lookup will be performed with the EBI Ontology Lookup Service/' => 'normal',
+    '/Cannot find the ontology via an EBI OLS lookup/' => 'skip',
+    '/Service Temporarily Unavailable/' => 'skip',
   ];
 
   /**
@@ -300,20 +303,28 @@ class OboImporterTest extends ChadoTestKernelBase {
     catch(\Exception $e) {
       // If we get a specific known message due to the EBI OLS external
       // database being down, then mark this test as skipped.
-      $skip_reasons = [];
+      $skip_triggered = [];
       foreach ($this->mock_messages as $message) {
-        foreach ($this->known_external_messages as $pattern) {
+        $matched = FALSE;
+        foreach ($this->message_actions as $pattern => $action) {
           if (preg_match($pattern, $message)) {
-            $skip_reasons[$message] = 1;
+            if ($action == 'skip') {
+              $skip_triggered[] = $message;
+            }
+            $matched = TRUE;
           }
         }
+        $this->assertTrue($matched, 'An exception caused an error: '
+          . $e->getMessage() . ' and the unexpected logger message was: ' . $message);
       }
-      if ($skip_reasons) {
+      if ($skip_triggered) {
         $this->markTestSkipped("We received only known external error messages and chose to ignore them. Specifically:\n"
-          . implode("\n", array_keys($skip_reasons)));
+          . implode("\n", $skip_triggered));
       }
-      // For anything else, rethrow the exception so we see the problem.
-      throw $e;
+      else {
+        // If the exception did not create a logger message, rethrow.
+        throw $e;
+      }
     }
 
     // Test that any expected warning was generated.
