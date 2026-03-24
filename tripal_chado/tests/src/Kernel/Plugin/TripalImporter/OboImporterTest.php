@@ -300,12 +300,17 @@ class OboImporterTest extends ChadoTestKernelBase {
     catch(\Exception $e) {
       // If we get a specific known message due to the EBI OLS external
       // database being down, then mark this test as skipped.
+      $skip_reasons = [];
       foreach ($this->mock_messages as $message) {
         foreach ($this->known_external_messages as $pattern) {
           if (preg_match($pattern, $message)) {
-            $this->markTestSkipped();
+            $skip_reasons[$message] = 1;
           }
         }
+      }
+      if ($skip_reasons) {
+        $this->markTestSkipped("We received only known external error messages and chose to ignore them. Specifically:\n"
+          . implode("\n", array_keys($skip_reasons)));
       }
       // For anything else, rethrow the exception so we see the problem.
       throw $e;
