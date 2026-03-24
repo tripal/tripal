@@ -96,6 +96,18 @@ class OboImporterTest extends ChadoTestKernelBase {
   protected array $scenarios;
 
   /**
+   * Messages encountered when EBI OLS is down or broken.
+   *
+   * @var array
+   *   A list of error messages encountered when the external
+   *   web site is down or not functioning normally.
+   */
+  protected array $known_external_messages = [
+    '/Cannot find the ontology via an EBI OLS lookup/',
+    '/Service Temporarily Unavailable/',
+  ];
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -286,11 +298,13 @@ class OboImporterTest extends ChadoTestKernelBase {
       $obo_importer->run();
     }
     catch(\Exception $e) {
-      // If we get a specific message due to the EBI OLS external database
-      // being down, then mark this test as skipped.
+      // If we get a specific known message due to the EBI OLS external
+      // database being down, then mark this test as skipped.
       foreach ($this->mock_messages as $message) {
-        if (preg_match('/Cannot find the ontology via an EBI OLS lookup/', $message)) {
-          $this->markTestSkipped();
+        foreach ($this->known_external_messages as $pattern) {
+          if (preg_match($pattern, $message)) {
+            $this->markTestSkipped();
+          }
         }
       }
       // For anything else, rethrow the exception so we see the problem.
