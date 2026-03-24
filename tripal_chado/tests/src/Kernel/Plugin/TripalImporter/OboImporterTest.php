@@ -306,21 +306,24 @@ class OboImporterTest extends ChadoTestKernelBase {
       $skip_triggered = [];
       foreach ($this->mock_messages as $message) {
         // For each expected external message...
+        $matched_any = FALSE;
         foreach ($this->message_actions as $pattern => $action) {
           // If it's in our list with an action of skip
           // then we indicate the test should be skipped.
           if (preg_match($pattern, $message)) {
+            $matched_any = TRUE;
             // Note: an action of normal will simply be ignored
             // since it would fall into an 'else' here.
             if ($action == 'skip') {
               $skip_triggered[] = $message;
             }
           }
-          // If it doesn't match our pattern then we want to
-          // immediately rethrow the exception!
-          else {
-            throw $e;
-          }
+        }
+        if (!$matched_any) {
+          // If it doesn't match any of our pattern then it is a new
+          // unanticipated error and we want to immediately rethrow
+          // the exception!
+          $this->fail('Unanticipated error: ' . $message);
         }
       }
       // If any of the known external error messages were caught
