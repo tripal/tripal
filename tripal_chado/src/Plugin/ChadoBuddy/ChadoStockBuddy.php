@@ -482,9 +482,13 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
     // For upsert, the query conditions are a subset consisting of
     // only the columns that are part of a unique constraint:
     // organism_id + uniquename + type_id.
-    $key_columns = $this->getTableColumns($this->valid_tables, 'unique');
+    // However, tables cv, cvterm, db, and dbxref are also included in the valid
+    // tables since they apply to the type_id column, but it should be possible
+    // to add a dbxref_id to an existing stock if we want to.
+    // So, we will exclude all db and dbxref columns from the conditions since
+    // stock.dbxref_id is not part of the unique constaint.
+    $key_columns = $this->getTableColumns(['cv', 'cvterm', 'organism', 'stock'], 'unique');
     $conditions = $this->makeUpsertConditions($values, $key_columns);
-
     $existing_records = $this->getStock($conditions, $options);
     if (count($existing_records) > 0) {
       if (count($existing_records) > 1) {

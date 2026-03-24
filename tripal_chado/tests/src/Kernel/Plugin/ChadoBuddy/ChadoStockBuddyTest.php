@@ -37,6 +37,15 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
 
   /**
    * Tests the various methods of the ChadoStockBuddy.
+   *
+   * These tests are designed for coverage of the following methods:
+   * - getStock()
+   * - upsertStock()
+   * Other methods are tested more exhaustively in their own test methods below.
+   * - getStock() is used frequently within the other test methods to verify the
+   *   results of insert and update.
+   * - upsertStock() does not need its own test method since it calls
+   *   insertStock() and updateStock().
    */
   public function testStockMethods() {
     $type = \Drupal::service('tripal_chado.chado_buddy');
@@ -71,10 +80,10 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'stock.organism_id' => $organism_id,
     ];
     $test_records = [];
-    $test_records['set'] = $stock_instance->insertStock($stock1_values);
+    $test_records['set'] = $stock_instance->upsertStock($stock1_values);
     $test_records['get'] = $stock_instance->getStock($stock1_values);
     $values = $this->multiAssert(
-      'insertStock',
+      'upsertStock',
       $test_records,
       'stock',
       'stock.stock_id',
@@ -82,30 +91,33 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       36
     );
     $stock_id = $values['get']['stock.stock_id'];
-    $this->assertTrue(is_numeric($stock_id), 'We did not retrieve an integer stock_id for the new stock "Stock1"');
+    $this->assertTrue(is_numeric($stock_id), 'We did not retrieve an integer stock_id for stock "Stock1" which should have been inserted by upsertStock().');
 
-    // TEST: Insert a stock record with name, uniquename, type_id, and the
-    // previously inserted organism values.
-    $stock2_values = [
-      'stock.name' => 'Stock2',
-      'stock.uniquename' => 'stock2',
-      // Cvterm ID for 'accession'.
+    // TEST: Update an existing stock record to add a dbxref to it.
+    $update_stock_values = [
+      'stock.uniquename' => 'stock1',
       'stock.type_id' => '3',
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+      'dbxref.accession' => 'newAccession',
+      'db.name' => 'local',
     ];
-    $stock_organism_values = $stock2_values + $simple_organism_values;
+    $options = [
+      'create_dbxref' => TRUE,
+    ];
     $test_records = [];
-    $test_records['set'] = $stock_instance->insertStock($stock_organism_values);
-    $test_records['get'] = $stock_instance->getStock($stock_organism_values);
+    $test_records['set'] = $stock_instance->upsertStock($update_stock_values, $options);
+    $test_records['get'] = $stock_instance->getStock($update_stock_values);
     $values = $this->multiAssert(
-      'insertStock',
+      'upsertStock',
       $test_records,
       'stock',
       'stock.stock_id',
-      'Stock "Stock2"',
+      'Stock "Stock1" updated with new dbxref',
       36
     );
     $stock_id = $values['get']['stock.stock_id'];
-    $this->assertTrue(is_numeric($stock_id), 'We did not retrieve an integer stock_id for the new stock "Stock2"');
+    $this->assertTrue(is_numeric($stock_id), 'We did not retrieve an integer stock_id for stock "Stock1" which should have been updated by upsertStock().');
 
   }
 
