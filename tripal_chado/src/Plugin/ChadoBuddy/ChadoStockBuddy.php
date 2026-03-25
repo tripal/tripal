@@ -769,4 +769,126 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
     return $values;
   }
 
+  /**
+   * Add a record to a stock linking table.
+   *
+   * For example, to the project_stock or stockcollection_stock table.
+   *
+   * @param string $base_table
+   *   The base table for which the stock should be associated. For example, to
+   *   associate a stock with a project, the base_table=project and stock_id is
+   *   added to the project_stock table.
+   * @param int $record_id
+   *   The primary key of the base_table to associate the stock with.
+   * @param \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord $stock
+   *   A stock object returned by any of the *Stock() methods in this service.
+   * @param array $options
+   *   (Optional) Associative array of options with these supported keys:
+   *   - pkey (string): The name of the primary key column in the base table.
+   *     Looking up the primary key for the base table is costly. If it is
+   *     known, then pass it in using this option for better performance.
+   *   - pub_id (string): The name of the column linking to the publication.
+   *   - is_current (string): The name of the column indicating whether
+   *     the linked dbxref is the current official dbxref for the linked stock.
+   *   - is_not (string): The name of the column indicating if the cvterm
+   *     association is a NOT association.
+   *   - rank (string): The name of the column indicating the rank.
+   *   - cvterm_type_id (string): The name of the column indicating the type of
+   *     cvterm association being made via foreign key to cvterm.cvterm_id.
+   *   - lookup_columns (bool): Whether to look up any additional columns that
+   *     are not specified in the options. FALSE will disable looking up any
+   *     additional columns, which may cause the insert to fail if any NOT NULL
+   *     columns are not specified. Default TRUE.
+   *
+   *   While the column name options above are optional, they will incur a
+   *   slight performance hit if not included due to needing to look them up
+   *   via the schema. See the table below for which columns apply to which
+   *   linking tables so you know which ones to include.
+   *
+   *   phpcs:disable
+   *   Chado 1.3 defines these columns in the various linking tables:
+   *   | table                 | pub_id    | is_current  | is_not      | rank        | cvterm_type_id |
+   *   +-----------------------+-----------+-------------+-------------+-------------+----------------+
+   *   | project_stock         | -absent   | -absent     | -absent     | -absent     | -absent        |
+   *   | stockcollection_stock | -absent   | -absent     | -absent     | -absent     | -absent        |
+   *   | nd_experiment_stock   | -absent   | -absent     | -absent     | -absent     | not null       |
+   *   | stock_cvterm          | not null  | -absent     | has default | has default | -absent        |
+   *   | stock_dbxref          | -absent   | has default | -absent     | -absent     | -absent        |
+   *   | stock_feature         | -absent   | -absent     | -absent     | has default | not null       |
+   *   | stock_featuremap      | -absent   | -absent     | -absent     | -absent     | not null       |
+   *   | stock_genotype        | -absent   | -absent     | -absent     | -absent     | -absent        |
+   *   | stock_library         | -absent   | -absent     | -absent     | -absent     | -absent        |
+   *   | stock_pub             | -absent   | -absent     | -absent     | -absent     | -absent        |
+   *   | stockprop             | -absent   | -absent     | -absent     | has default | not null       |
+   *   phpcs:enable
+   *
+   * @return bool
+   *   Returns TRUE if successful.
+   *   Both the stock and the chado record indicated by $record_id
+   *   MUST ALREADY EXIST.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   - If an invalid base_table is provided.
+   *   - If an error is encountered during insert.
+   */
+  public function associateStock(string $base_table, int $record_id, ChadoBuddyRecord $stock, array $options = []) {
+    $possible_linking_tables = [
+      'project' => 'project_stock',
+      'stockcollection' => 'stockcollection_stock',
+      'nd_experiment' => 'nd_experiment_stock',
+      'cvterm' => 'stock_cvterm',
+      'dbxref' => 'stock_dbxref',
+      'feature' => 'stock_feature',
+      'featuremap' => 'stock_featuremap',
+      'genotype' => 'stock_genotype',
+      'library' => 'stock_library',
+      'pub' => 'stock_pub',
+      'stock' => 'stockprop',
+    ];
+
+    $linking_table = $possible_linking_tables[$base_table] ?? NULL;
+    if (!$linking_table) {
+      throw new ChadoBuddyException("ChadoBuddy associateStock error, invalid base_table provided: $base_table. Valid options are: " . implode(', ', array_keys($possible_linking_tables)));
+    }
+
+    // Get the primary key of the base table.
+    $base_pkey_col = $options['pkey'] ?? NULL;
+    if (!$base_pkey_col) {
+      $base_table_def = $this->getChadoTableDef($base_table);
+      $base_pkey_col = $base_table_def['primary key'];
+    }
+    try {
+      // Verify that this exact record does not already exist.
+      $query = $this->chado_connection->select('1:' . $linking_table, 'L');
+      $query->condition('L.stock_id', $stock->getValue('stock.stock_id'), '=');
+      $query->condition('L.' . $base_pkey_col, $record_id, '=');
+      $query->fields('L');
+      $count = $query->countQuery()->execute()->fetchField();
+
+      // If count is not zero, the record already exists, so skip insert.
+      if (!$count) {
+        $fields = [
+          'stock_id' => $stock->getValue('stock.stock_id'),
+          $base_pkey_col => $record_id,
+        ];
+
+        // Add in any of the other columns for the linking table.
+        $options = $this->addLinkingColumns($linking_table, $options);
+        foreach ($options as $key => $value) {
+          if (($key != 'pkey') and ($key != 'lookup_columns')) {
+            $fields[$key] = $value;
+          }
+        }
+        $query = $this->chado_connection->insert('1:' . $linking_table);
+        $query->fields($fields);
+        $query->execute();
+      }
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy associateCvterm database error ' . $e->getMessage());
+    }
+
+    return TRUE;
+  }
+
 }
