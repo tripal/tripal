@@ -356,6 +356,14 @@ tripal.tripalfield_collection.*:
                                type: string
                                label: 'Hide value'
                                nullable: true
+                             phylogram_width:
+                               type: integer
+                               label: 'Width of the rendered phylogram'
+                               nullable: true
+                             phylogram_height:
+                               type: integer
+                               label: 'Height of the rendered phylogram'
+                               nullable: true
                              phylogram_scale:
                                type: string
                                label: 'Scaling transformation for the X-axis of a phylogenetic tree'
@@ -500,6 +508,14 @@ field.formatter.settings.*:
     hide_value:
       type: string
       label: 'Hide value'
+      nullable: true
+    phylogram_width:
+      type: integer
+      label: 'Width of the rendered phylogram'
+      nullable: true
+    phylogram_height:
+      type: integer
+      label: 'Height of the rendered phylogram'
       nullable: true
     phylogram_scale:
       type: string

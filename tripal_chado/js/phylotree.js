@@ -1,4 +1,4 @@
-// Adapted from https://github.com/veg/phylotree.js
+// Adapted for Tripal from https://github.com/veg/phylotree.js
 // which is licensed under the MIT License.
 
 // Global variables containing data passed from Drupal.
@@ -349,6 +349,20 @@ $(document).ready(function() {
     radial = true;
   }
 
+  // Image size overrides.
+  phylogram_width = 0;
+  left_right_spacing = 'fixed-step';
+  if (treeOptions.phylogram_width > 0) {
+    phylogram_width = treeOptions.phylogram_width;
+    left_right_spacing = 'fit-to-size';
+  }
+  phylogram_height = 0;
+  top_bottom_spacing = 'fixed-step';
+  if (treeOptions.phylogram_height > 0) {
+    phylogram_height = treeOptions.phylogram_height;
+    top_bottom_spacing = 'fit-to-size';
+  }
+
   // Controls font size in the rendered tree.
   // phylotree.js doesn't seem to allow values greater than 12.
   var font_size = 12;
@@ -363,6 +377,10 @@ $(document).ready(function() {
 
   tree.render({
     "container": "#" + container_id,
+    "width": phylogram_width,
+    "left-right-spacing": left_right_spacing,
+    "height": phylogram_height,
+    "top-bottom-spacing": top_bottom_spacing,
     "show-scale": show_scale,
     "is-radial": radial,
     // This must be true in order to have leaf node circles.

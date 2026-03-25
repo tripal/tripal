@@ -101,6 +101,24 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#open' => TRUE,
     ];
 
+    $element['settings']['phylogram_width'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Phylogram Width'),
+      '#description' => $this->t('Use zero for default width, or enter a preferred width here.'),
+      '#min' => 0,
+      '#max' => 4000,
+      '#default_value' => $formatter_settings['phylogram_width'] ?? '0',
+    ];
+
+    $element['settings']['phylogram_height'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Phylogram Height'),
+      '#description' => $this->t('Use zero for default height, or enter a preferred height here.'),
+      '#min' => 0,
+      '#max' => 4000,
+      '#default_value' => $formatter_settings['phylogram_height'] ?? '0',
+    ];
+
     $element['settings']['phylogram_layout'] = [
       '#type' => 'select',
       '#title' => $this->t('Phylogram Layout'),
@@ -348,6 +366,8 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     // into a single json string. Delta is hardcoded as zero because
     // this field is always cardinality 1.
     $keys = [
+      'phylogram_width',
+      'phylogram_height',
       'phylogram_layout',
       'font_size',
       'skip_ticks',

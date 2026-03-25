@@ -80,6 +80,8 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       }
     }
     $treeOptions = [
+      'phylogram_width' => $this->getSetting('phylogram_width'),
+      'phylogram_height' => $this->getSetting('phylogram_height'),
       'phylogram_layout' => $this->getSetting('phylogram_layout'),
       'font_size' => $this->getSetting('phylogram_font_size'),
       'skip_ticks' => $this->getSetting('phylogram_skip_ticks'),
@@ -120,6 +122,8 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
+    $settings['phylogram_width'] = 0;
+    $settings['phylogram_height'] = 0;
     // Valid options are 'linear' or 'radial'.
     $settings['phylogram_layout'] = 'linear';
     $settings['phylogram_font_size'] = 12;
@@ -303,6 +307,9 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     // tripal_chado/tripal_chado.libraries.yml.
     $form['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoPhylotreeVisFormatterSettings';
 
+    // We are not exposing the width and height settings here, because
+    // they are very dependent on the tree itself. They will only be
+    // exposed as a widget setting.
     $form['phylogram_layout'] = [
       '#type' => 'select',
       '#title' => $this->t('Phylogram Layout'),
