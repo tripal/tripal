@@ -94,7 +94,14 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#value' => $settings_rank,
     ];
 
-    $element['phylogram_layout'] = [
+    $element['settings'] = [
+      '#type' => 'details',
+      '#title' => $this->fieldDefinition->getLabel(),
+      '#description' => $this->t('These settings control how this particular tree will be displayed.'),
+      '#open' => TRUE,
+    ];
+
+    $element['settings']['phylogram_layout'] = [
       '#type' => 'select',
       '#title' => $this->t('Phylogram Layout'),
       '#description' => $this->t('Please specify how the phylogram should be presented, Linear or Radial.'),
@@ -106,7 +113,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     ];
 
     $default = $bundle_settings['phylogram_skip_ticks'] ? $this->t('Hide') : $this->t('Display');
-    $element['skip_ticks'] = [
+    $element['settings']['skip_ticks'] = [
       '#type' => 'select',
       '#title' => $this->t('Display of Tick Marks'),
       '#description' => $this->t('Controls display of a scale bar with tick marks.'),
@@ -118,7 +125,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['skip_ticks'] ?? '',
     ];
 
-    $element['font_size'] = [
+    $element['settings']['font_size'] = [
       '#type' => 'select',
       '#options' => $this->getSelectOptions(4, 12, $bundle_settings['phylogram_font_size'] ?? 3),
       '#title' => $this->t('Font Size'),
@@ -127,7 +134,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['root_node_size'] ?? '',
     ];
 
-    $element['root_node_size'] = [
+    $element['settings']['root_node_size'] = [
       '#type' => 'select',
       '#options' => $this->getSelectOptions(0, 12, $bundle_settings['phylogram_root_node_size'] ?? 3),
       '#title' => $this->t('Root Node Size'),
@@ -136,7 +143,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['root_node_size'] ?? '',
     ];
 
-    $element['root_node_color'] = [
+    $element['settings']['root_node_color'] = [
       '#type' => 'color',
       '#title' => $this->t('Root Node Color'),
       '#description' => $this->t('Specify the color of the root node. If white is specified, the content type default (@color) will be used.',
@@ -145,7 +152,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['root_node_color'] ?? '#ffffff',
     ];
 
-    $element['interior_node_size'] = [
+    $element['settings']['interior_node_size'] = [
       '#type' => 'select',
       '#options' => $this->getSelectOptions(0, 12, $bundle_settings['phylogram_interior_node_size'] ?? 4),
       '#title' => $this->t('Internal Node Size'),
@@ -153,7 +160,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#required' => FALSE,
       '#default_value' => $formatter_settings['interior_node_size'] ?? '',
     ];
-    $element['interior_node_color'] = [
+    $element['settings']['interior_node_color'] = [
       '#type' => 'color',
       '#title' => $this->t('Internal Node Color'),
       '#description' => $this->t('Specify the color of the internal nodes. If white is specified, the content type default (@color) will be used.',
@@ -162,7 +169,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['interior_node_color'] ?? '#ffffff',
     ];
 
-    $element['leaf_node_size'] = [
+    $element['settings']['leaf_node_size'] = [
       '#type' => 'select',
       '#options' => $this->getSelectOptions(0, 12, $bundle_settings['phylogram_leaf_node_size'] ?? 6),
       '#title' => $this->t('Leaf Node Size'),
@@ -171,7 +178,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $formatter_settings['leaf_node_size'] ?? '',
     ];
 
-    $element['leaf_node_color'] = [
+    $element['settings']['leaf_node_color'] = [
       '#type' => 'color',
       '#title' => $this->t('Leaf Node Color'),
       '#description' => $this->t('Specify the color of the leaf nodes. If white is specified, the content type default (@color) will be used.',
@@ -193,12 +200,12 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
 
     // This element passes through the current number of color rows for the
     // "Add another item" button.
-    $element['color_rows'] = [
+    $element['settings']['color_rows'] = [
       '#type' => 'value',
       '#value' => $color_rows,
     ];
 
-    $element['org_colors_info']['desc'] = [
+    $element['settings']['org_colors_info']['desc'] = [
       '#type' => 'item',
       '#title' => $this->t('Node Colors by Organism'),
       '#markup' => $this->t('If the trees are associated with features (e.g. proteins)
@@ -207,7 +214,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
         name of the organism and specify its color. Organisms that are not given a
         color will the leaf node color as set above.'),
     ];
-    $element['org_colors'] = [
+    $element['settings']['org_colors'] = [
       '#prefix' => '<div id="edit-org-colors">',
       '#suffix' => '</div>',
     ];
@@ -216,7 +223,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     // each one.
     for ($i = 0; $i < $color_rows; $i++) {
       // Wrapper is used so both fields can be styled onto the same line.
-      $element['org_colors'][$i]['organism'] = [
+      $element['settings']['org_colors'][$i]['organism'] = [
         '#prefix' => '<div class="chado-phylotreevis-widget-settings-field-wrapper form-item">',
         '#type' => 'textfield',
         '#description' => $this->t('Organism'),
@@ -226,7 +233,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
         '#size' => 20,
         '#element_validate' => [[$this, 'validateOrganism']],
       ];
-      $element['org_colors'][$i]['color'] = [
+      $element['settings']['org_colors'][$i]['color'] = [
         '#type' => 'color',
         '#description' => $this->t('Color'),
         '#default_value' => $org_colors[$i]['color'] ?? '#808080',
@@ -234,7 +241,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       ];
     }
 
-    $element['actions']['add_row'] = [
+    $element['settings']['actions']['add_row'] = [
       '#type' => 'submit',
       '#value' => $this->t('Add another item'),
       '#ajax' => [
@@ -355,10 +362,10 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     $settings = [];
     $delta = 0;
     foreach ($keys as $key) {
-      if (array_key_exists($key, $values[$delta])) {
+      if (array_key_exists($key, $values[$delta]['settings'])) {
         // Key 'org_colors' is an array, all others are scalars.
-        if (is_array($values[$delta][$key])) {
-          foreach ($values[$delta][$key] as $index => $color) {
+        if (is_array($values[$delta]['settings'][$key])) {
+          foreach ($values[$delta]['settings'][$key] as $index => $color) {
             // Skip if no organism specified (i.e. blank row).
             if ($color['organism']) {
               $settings[$key][$index] = $color;
@@ -368,17 +375,17 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
         else {
           // Don't include if just a null string. This allows the
           // global content type default to be used instead.
-          if (strlen($values[$delta][$key])) {
+          if (strlen($values[$delta]['settings'][$key])) {
             // For org_colors, don't include if pure white. We use white to
             // indicate to use the global content type default.
-            if (strtolower($values[$delta][$key]) != '#ffffff') {
-              $settings[$key] = $values[$delta][$key];
+            if (strtolower($values[$delta]['settings'][$key]) != '#ffffff') {
+              $settings[$key] = $values[$delta]['settings'][$key];
             }
           }
         }
-        unset($values[$delta][$key]);
       }
     }
+    unset($values[$delta]['settings']);
     $values[$delta]['formatter_settings_value'] = json_encode($settings);
     return $values;
   }
