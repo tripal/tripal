@@ -534,6 +534,107 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
   }
 
   /**
+   * Data Provider: Provides test scenarios for testAssociateStock()
+   *
+   * @return array
+   *   An array of test scenarios, each containing:
+   *   - base_table: A string of the base table for which the stock should be
+   *     associated.
+   *   - linking_table: A string of the linking table that is used to create the
+   *     relationship between the stock record and base table.
+   *   - options: An array of options to pass to associateStock().
+   */
+  public static function provideAssociateStockScenarios() {
+    $scenarios = [];
+
+    // #0: Associate with the project table
+    $scenarios[] = [
+      'project',
+      'project_stock',
+      [],
+    ];
+
+    return $scenarios;
+  }
+
+  /**
+   * Test method for associateStock()
+   *
+   * @param string $base_table
+   *   A string indicating the base table which the stock should be associated.
+   * @param string $linking_table
+   *   A string indicating the linking table that is used to create the
+   *   relationship between the stock record and base table.
+   * @param array $options
+   *   An array of options to pass to associateStock().
+   *
+   * @dataProvider provideAssociateStockScenarios
+  */
+  #[DataProvider('provideAssociateStockScenarios')]
+  public function testAssociateStock(string $base_table, string $linking_table, array $options) {
+
+    // Insert an organism needed for our chado stock buddy record.
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $organism_instance = $type->createInstance('chado_organism_buddy', []);
+    $organism_instance->insertOrganism([
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+      'organism.abbreviation' => 'Trp',
+    ]);
+
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $stock_instance = $type->createInstance('chado_stock_buddy', []);
+
+    // Insert a test stock record.
+    $test_chado_stock_record = $stock_instance->insertStock([
+      'stock.name' => 'Stock1',
+      'stock.uniquename' => 'stock1',
+      // Cvterm ID for 'accession'.
+      'stock.type_id' => 3,
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+    ]);
+
+    // Insert a record into our base table for testing.
+    $base_table_query = $this->chado_connection->insert('1:' . $base_table)
+      ->fields(['name' => 'test_record'])
+      ->execute();
+    $expected_result = TRUE;
+    $result = $stock_instance->associateStock($base_table, 1, $test_chado_stock_record, $options);
+    $this->assertIsBool($result, "We did not retrieve a boolean when associating a stock with the base table \"$base_table\"");
+    $this->assertEquals($expected_result, $result, "We did not retrieve the expected result when associating a stock with the base table \"$base_table\"");
+
+    // Lookup the associated record in its linking table.
+    $linking_table_query = $this->chado_connection->select('1:' . $linking_table, 'lt')
+      ->fields('lt', ['stock_id'])
+      ->execute();
+    $results = $linking_table_query->fetchAll();
+    $this->assertIsArray($results, "We should have been able to select from the \"$linking_table\" table");
+    $this->assertCount(1, $results, "There should only be a single \"$linking_table\" record inserted");
+    $expected_stock_id = $test_chado_stock_record->getValue('stock.stock_id');
+    $retrieved_stock_id = $results[0]->stock_id;
+    $this->assertEquals($expected_stock_id, $retrieved_stock_id,
+      "We did not get the stock_id from \"$linking_table\" that should have been set by associateStock()");
+
+    // Repeat the same association, it should not create a new one.
+    $expected_result = TRUE;
+    $result = $stock_instance->associateStock($base_table, 1, $test_chado_stock_record, $options);
+    $this->assertIsBool($result, "We did not retrieve a boolean when associating a stock with the base table \"$base_table\"");
+    $this->assertEquals($expected_result, $result, "We did not retrieve the expected result when associating a stock with the base table \"$base_table\"");
+    $linking_table_query = $this->chado_connection->select('1:' . $linking_table, 'lt')
+      ->fields('lt', ['stock_id'])
+      ->execute();
+    $results = $linking_table_query->fetchAll();
+    $this->assertIsArray($results, "We should have been able to select from the \"$linking_table\" table");
+    $this->assertCount(1, $results, "There should only be a single \"$linking_table\" record.");
+    $expected_stock_id = $test_chado_stock_record->getValue('stock.stock_id');
+    $retrieved_stock_id = $results[0]->stock_id;
+    $this->assertEquals($expected_stock_id, $retrieved_stock_id,
+      "We did not get the stock_id from \"$linking_table\" that was previously associated using associateStock()");
+
+  }
+
+  /**
    * Data Provider: Trigger exceptions in ChadoStockBuddy methods.
    *
    * @return array

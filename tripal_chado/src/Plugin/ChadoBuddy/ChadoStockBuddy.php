@@ -241,7 +241,9 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   (Optional) Associative array of options with these supported keys:
    *   - create_dbxref - set to TRUE (default FALSE) if you specified the
    *     necessary fields and want to create the dbxref for stock.dbxref_id when
-   *     creating this stock, if it does not already exist.
+   *     creating this stock, if it does not already exist. To add more than one
+   *     stock_dbxref record for an existing stock, you will need to use
+   *     ::associateStock() to link this stock using the stock_dbxref table.
    *     NOTE: This is NOT recommended. We suggest you import ontologies first.
    *   - validate_foreign_keys - specifies whether to validate foreign keys.
    *     Default is TRUE for all foreign keys. If you specify a boolean value,
@@ -348,7 +350,9 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   (Optional) Associative array of options with these supported keys:
    *   - create_dbxref - set to TRUE (default FALSE) if you specified the
    *     necessary fields and want to create the dbxref for stock.dbxref_id when
-   *     updating this stock, if it does not already exist.
+   *     updating this stock, if it does not already exist. To add more than one
+   *     stock_dbxref record for an existing stock, you will need to use
+   *     ::associateStock() to link this stock using the stock_dbxref table.
    *     NOTE: This is NOT recommended. We suggest you import ontologies first.
    *   - validate_foreign_keys - specifies whether to validate foreign keys.
    *     Default is TRUE for all foreign keys. If you specify a boolean value,
@@ -457,7 +461,9 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   (Optional) Associative array of options with these supported keys:
    *   - create_dbxref - set to TRUE (default FALSE) if you specified the
    *     necessary fields and want to create the dbxref for stock.dbxref_id when
-   *     updating this stock, if it does not already exist.
+   *     updating this stock, if it does not already exist. To add more than one
+   *     stock_dbxref record for an existing stock, you will need to use
+   *     ::associateStock() to link this stock using the stock_dbxref table.
    *     NOTE: This is NOT recommended. We suggest you import ontologies first.
    *   - validate_foreign_keys - specifies whether to validate foreign keys.
    *     Default is TRUE for all foreign keys. If you specify a boolean value,
