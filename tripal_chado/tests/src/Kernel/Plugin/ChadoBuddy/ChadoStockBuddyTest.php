@@ -362,7 +362,9 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
         // Cvterm ID for 'accession'.
         'stock.type_id' => 3,
       ],
-      [],
+      [
+        'validate_foreign_keys' => TRUE,
+      ],
       1,
     ];
 
@@ -732,7 +734,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
           'stock.type_id' => 3,
         ],
       ],
-      "ChadoBuddy validateStockOrganism error, could not find or create a organism, but organism values were provided:",
+      "ChadoBuddy validateStockOrganism error, could not find an organism, but organism values were provided:",
     ];
 
     // #11: upsertStock() with conditions that match more than one stock record.
@@ -746,6 +748,71 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
         ],
       ],
       "ChadoBuddy upsertStock error, more than one stock record matches the specified values:",
+    ];
+
+    // #12: upsertStock() where stock.type_id and cvterm.cvterm_id don't match.
+    $scenarios[] = [
+      'upsertStock',
+      [
+        [
+          'stock.type_id' => 3,
+          'cvterm.cvterm_id' => 4,
+          'stock.uniquename' => 'existingstock',
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+      ],
+      "ChadoBuddy validateStockType error, stock.type_id and cvterm.cvterm_id values were both provided but do not match:",
+    ];
+
+    // #13: upsertStock() with cvterm values that match more than one cvterm_id.
+    $scenarios[] = [
+      'upsertStock',
+      [
+        [
+          'stock.uniquename' => 'existingstock',
+          'cv.name' => 'germplasm_ontology',
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+      ],
+      "ChadoBuddy validateStockType error, more than one record matched the values specified:",
+    ];
+
+    // #14: upsertStock() where cvterm values are provided but could not find
+    // or create a matching cvterm record.
+    $scenarios[] = [
+      'upsertStock',
+      [
+        [
+          'stock.uniquename' => 'existingstock',
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'cvterm.name' => 'notacvterm',
+          'cv.name' => 'germplasm_ontology',
+        ],
+      ],
+      "ChadoBuddy validateStockType error, could not find a cvterm, but cvterm values were provided:",
+    ];
+
+    // #15: Trigger a parseValidateForeignKeysOption error by providing a non-
+    // boolean value.
+    $scenarios[] = [
+      'upsertStock',
+      [
+        [
+          'stock.uniquename' => 'existingstock',
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'stock.type_id' => 3,
+        ],
+        [
+          'validate_foreign_keys' => [
+            'cvterm_id' => 'notaboolean',
+          ],
+        ],
+      ],
+      "ChadoBuddy parseValidateForeignKeysOption error, validate_foreign_keys option for key cvterm_id must be a boolean value:",
     ];
 
     return $scenarios;

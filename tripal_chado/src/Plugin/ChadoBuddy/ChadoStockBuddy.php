@@ -669,7 +669,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
         // If an organism could not be found, yet organism values were provided,
         // throw an exception.
         else {
-          throw new ChadoBuddyException("ChadoBuddy validateStockOrganism error, could not find or create a organism, but organism values were provided:\n" . print_r($organism_values, TRUE));
+          throw new ChadoBuddyException("ChadoBuddy validateStockOrganism error, could not find an organism, but organism values were provided:\n" . print_r($organism_values, TRUE));
         }
       }
     }
