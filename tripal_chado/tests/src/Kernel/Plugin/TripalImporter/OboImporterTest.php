@@ -96,6 +96,21 @@ class OboImporterTest extends ChadoTestKernelBase {
   protected array $scenarios;
 
   /**
+   * Messages encountered when EBI OLS is down or broken.
+   *
+   * @var array
+   *   A list of error messages encountered when the external
+   *   web site is down or not functioning normally are tagged
+   *   with 'skip', messages normally encountered are tagged
+   *   with 'normal'.
+   */
+  protected array $message_actions = [
+    '/a lookup will be performed with the EBI Ontology Lookup Service/' => 'normal',
+    '/Cannot find the ontology via an EBI OLS lookup/' => 'skip',
+    '/Service Temporarily Unavailable/' => 'skip',
+  ];
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -286,15 +301,40 @@ class OboImporterTest extends ChadoTestKernelBase {
       $obo_importer->run();
     }
     catch(\Exception $e) {
-      // If we get a specific message due to the EBI OLS external database
-      // being down, then mark this test as skipped.
+      // If we get a specific known message due to the EBI OLS external
+      // database being down, then mark this test as skipped.
+      $skip_triggered = [];
       foreach ($this->mock_messages as $message) {
-        if (preg_match('/Cannot find the ontology via an EBI OLS lookup/', $message)) {
-          $this->markTestSkipped();
+        // For each expected external message...
+        $matched_any = FALSE;
+        foreach ($this->message_actions as $pattern => $action) {
+          // If it's in our list with an action of skip
+          // then we indicate the test should be skipped.
+          if (preg_match($pattern, $message)) {
+            $matched_any = TRUE;
+            // Note: an action of normal will simply be ignored
+            // since it would fall into an 'else' here.
+            if ($action == 'skip') {
+              $skip_triggered[] = $message;
+            }
+          }
+        }
+        if (!$matched_any) {
+          // If it doesn't match any of our pattern then it is a new
+          // unanticipated error and we want to immediately fail.
+          $this->fail('Unanticipated error: ' . $message);
         }
       }
-      // For anything else, rethrow the exception so we see the problem.
-      throw $e;
+      // If any of the known external error messages were caught
+      // then we want to skip here.
+      if ($skip_triggered) {
+        $this->markTestSkipped("We received only known external error messages and chose to ignore them. Specifically:\n"
+          . implode("\n", $skip_triggered));
+      }
+      // If the exception did not create a logger message, fail now.
+      else {
+        $this->fail('Unanticipated exception: ' . $e->getMessage());
+      }
     }
 
     // Test that any expected warning was generated.
