@@ -144,8 +144,11 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *       other keys.
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
-   *     - 'case_insensitive' - a single key, or an array of keys
-   *       to query case insensitively.
+   *   - 'case_insensitive' - a single key, or an array of keys
+   *     to query case insensitively.
+   *   - 'skip_validate' - if TRUE, skips the input validation step. This option
+   *     is used internally by other methods that have already validated input.
+   *     Default is FALSE.
    *
    * @return array
    *   An array of ChadoBuddyRecord objects. More specifically,
