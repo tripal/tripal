@@ -1134,6 +1134,118 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   }
 
   /**
+   * Delete a controlled vocabulary term.
+   *
+   * We provide an option to also delete the dbxref.
+   *
+   * @param array $conditions
+   *   An associative array of the conditions to find the record to delete:
+   *     - cv.cv_id
+   *     - cv.name
+   *     - cv.definition
+   *     - cvterm.cvterm_id
+   *     - cvterm.cv_id
+   *     - cvterm.name
+   *     - cvterm.definition
+   *     - cvterm.is_obsolete
+   *     - cvterm.is_relationshiptype
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id
+   *     - dbxref.description
+   *     - dbxref.accession
+   *     - dbxref.version
+   *     - db.db_id
+   *     - db.name
+   *     - db.description
+   *     - db.urlprefix
+   *     - db.url
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *     - cascade
+   *       If TRUE, then delete even if there are foreign keys in use.
+   *       If ON DELETE CASCADE is defined for the foreign key, then
+   *       those records will also be deleted. If not, an exception will
+   *       be thrown.
+   *       Default is FALSE, and in this case, if any such referencing
+   *       records exist, the delete will be skipped and this function
+   *       will return FALSE.
+   *     - drop_dbxref
+   *       If TRUE, then delete the dbxref record used by the term.
+   *       Default is FALSE.
+   *
+   * @return bool|NULL
+   *   Returns TRUE if the cvterm was deleted.
+   *   Returns FALSE if the cvterm was not deleted.
+   *   Returns NULL if the cvterm did not exist.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered. This is most likely that another table
+   *   is referencing this CV.
+   */
+  public function deleteCvterm(array $conditions, array $options = []): ?bool {
+    $valid_tables = ['cvterm', 'cv', 'dbxref'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
+    $this->validateInput($conditions, $valid_columns);
+    $existing_records = $this->getCvterm($conditions, $options);
+    if (count($existing_records) > 0) {
+      if (count($existing_records) > 1) {
+        throw new ChadoBuddyException("ChadoBuddy deleteCvterm error, more than one record matched the specified values\n" . print_r($values, TRUE));
+      }
+      $cvterm_id = $existing_records[0]->getValue('cvterm.cvterm_id');
+      $dbxref_id = $existing_records[0]->getValue('dbxref.dbxref_id');
+
+      // Determine if there are referencing records.
+      $table_def = $this->chado_connection->schema()->getTableDef('cv', ['source' => 'database', 'format' => 'default']);
+      // Format is [referencing_table =>
+      // [cvterm column (cvterm_id) => referencing_table column], ].
+      $foreign_keys = $table_def['referenced_by'] ?? [];
+      $total_references = 0;
+      foreach ($foreign_keys as $referencing_table => $keydef) {
+        foreach ($keydef as $pkey => $refkey) {
+          $query = $this->chado_connection->select('1:' . $referencing_table);
+          $query->condition($refkey, $cvterm_id, '=');
+          $n = $query->countQuery()->execute()->fetchField();
+          $total_references += $n;
+        }
+      }
+
+      // If there are referencing records and cascade is not set, do nothing.
+      if ($total_references && !($options['cascade'] ?? FALSE)) {
+        return FALSE;
+      }
+      else {
+        try {
+          // Perform the record deletion. This might fail if
+          // a foreign key is not defined as ON DELETE CASCADE.
+          $query = $this->chado_connection->delete('1:cvterm');
+          $query->condition('cvterm_id', $cvterm_id, '=');
+          $query->execute();
+        }
+        catch (\Exception $e) {
+          throw new ChadoBuddyException('ChadoBuddy deleteCvterm database error deleting cvterm: ' . $e->getMessage());
+        }
+        // If drop_dbxref is set, delete the dbxref.
+        if ($options['drop_dbxref'] ?? FALSE) {
+          try {
+            $query = $this->chado_connection->delete('1:dbxref');
+            $query->condition('dbxref_id', $dbxref_id, '=');
+            $query->execute();
+          }
+          catch (\Exception $e) {
+            throw new ChadoBuddyException('ChadoBuddy deleteCvterm database error deleting dbxref: ' . $e->getMessage());
+          }
+        }
+        return TRUE;
+      }
+    }
+    else {
+      return NULL;
+    }
+  }
+
+  /**
    * Adds not NULL columns to options.
    *
    * If there are additional not NULL columns in the linking table,

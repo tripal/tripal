@@ -443,6 +443,46 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $this->assertEquals(7, $values['get']['cvtermsynonym.type_id'],
       'We did not update the type_id for the upserted Cvterm with synonym "syn006"');
 
+    // TEST: we can delete a cvterm.
+    $records = $instance->getCvterm(['cvterm.name' => 'newCvterm002']);
+    $this->assertNotEmpty($records, 'Failed getting cvterm created earlier');
+    $cvterm_id = $records[0]->getValue('cvterm.cvterm_id');
+    $dbxref_id = $records[0]->getValue('dbxref.dbxref_id');
+    $result = $instance->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id]);
+    $this->assertTrue($result, "We did not delete a Cvterm using its pkey");
+    $n = $this->chado_connection->select('1:cvterm')
+      ->condition('cvterm_id', $cvterm_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The cvterm was not deleted in the database");
+    $n = $this->chado_connection->select('1:dbxref')
+      ->condition('dbxref_id', $dbxref_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(1, $n, "The dbxref was incorrectly deleted in the database");
+
+    // TEST: we can delete a cvterm and its dbxref.
+    $records = $instance->getCvterm(['cvterm.name' => 'newCvterm003']);
+    $this->assertNotEmpty($records, 'Failed getting cvterm created earlier');
+    $cvterm_id = $records[0]->getValue('cvterm.cvterm_id');
+    $dbxref_id = $records[0]->getValue('dbxref.dbxref_id');
+    $result = $instance->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id], ['drop_dbxref' => TRUE]);
+    $this->assertTrue($result, "We did not delete a Cvterm using its pkey");
+    $n = $this->chado_connection->select('1:cvterm')
+      ->condition('cvterm_id', $cvterm_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The cvterm was not deleted in the database");
+    $n = $this->chado_connection->select('1:dbxref')
+      ->condition('dbxref_id', $dbxref_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The dbxref was incorrectly retained in the database");
+
     // TEST: we can delete a cv even if it is in use by a cvterm.
     // Do this last as we are also destroying any cvterms because
     // the foreign key has ON DELETE CASCADE set.
