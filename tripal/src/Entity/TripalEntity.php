@@ -559,6 +559,43 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Retrieve the primary key for this content in the backend storage.
+   *
+   * ASSUMPTION: We assume that the primary key for the backend storage is
+   * stored in a `record_id` property present in every required field for a
+   * given TripalStorage backend.
+   *
+   * @param string $tsid
+   *   The TripalStorage plugin id for the backend of interest.
+   *
+   * @return mixed
+   *   The primary key for this content in the backend storage, or NULL either
+   *   there are no values set for this entity or if it cannot be found.
+   */
+  public function getBackendRecordId(string $tsid): mixed {
+    $backend_record_id = NULL;
+
+    // First only look at fields for this TripalStorage backend.
+    if (array_key_exists($tsid, $this->tripalstorage_fields)) {
+
+      // Now filter to those that are required.
+      $required_fields = array_keys($this->tripalstorage_fields[$tsid], TRUE, TRUE);
+
+      // Finally we find the first field that has a value and use its
+      // record_id as the backend record id.
+      foreach ($required_fields as $field_name) {
+        if ($this->hasField($field_name) and !$this->get($field_name)->isEmpty()) {
+          $first_item = $this->get($field_name)->first();
+          $backend_record_id = $first_item->get('record_id')->getValue();
+          break;
+        }
+      }
+    }
+
+    return $backend_record_id;
+  }
+
+  /**
    * Stores token replacement values for the current entity.
    *
    * @param array $extra_values
