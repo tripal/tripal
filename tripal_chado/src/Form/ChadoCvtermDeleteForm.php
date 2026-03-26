@@ -11,6 +11,7 @@ use Drupal\Core\Url;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy;
+use Drupal\views\Views;
 
 /**
  * This class provides a form for confirming deletion of a chado CV term.
@@ -78,8 +79,10 @@ class ChadoCvtermDeleteForm extends FormBase {
         [$this->t('Vocabulary:'), $cvterm_record->getValue('cv.name')],
         [$this->t('Term name:'), $cvterm_record->getValue('cvterm.name')],
         [$this->t('Term definition:'), $cvterm_record->getValue('cvterm.definition')],
+        [$this->t('Term Internal ID:'), $cvterm_record->getValue('cvterm.cvterm_id')],
         [$this->t('Database:'), $cvterm_record->getValue('db.name')],
         [$this->t('Accession:'), $cvterm_record->getValue('dbxref.accession')],
+        [$this->t('Dbxref Internal ID:'), $cvterm_record->getValue('dbxref.dbxref_id')],
       ],
     ];
     $form['drop_dbxref'] = [
@@ -115,11 +118,20 @@ class ChadoCvtermDeleteForm extends FormBase {
     $drop_dbxref = $form_state->getValue('drop_dbxref');
     try {
       $this->cvterm_buddy->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id], ['drop_dbxref' => $drop_dbxref]);
-      $this->messenger()->addStatus($this->t('The term has been deleted'));
+      if ($drop_dbxref) {
+        $this->messenger()->addStatus($this->t('The term and dbxref have been deleted'));
+      }
+      else {
+        $this->messenger()->addStatus($this->t('The term has been deleted'));
+      }
     }
     catch (ChadoBuddyException $e) {
       $this->messenger()->addError($this->t('Unable to delete the term: @error', ['@error' => $e->getMessage()]));
     }
+
+    // Views caching can cause deleted term to persist in the view.
+    $view = Views::getView('tripal_cv_admin_cvterms');
+    $view->storage->invalidateCaches();
 
     // @todo This redirect loses any filters we may have applied.
     $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/loaders/chado_vocabs/chado_cvterms')->toString());
