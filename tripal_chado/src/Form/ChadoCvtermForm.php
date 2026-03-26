@@ -67,8 +67,11 @@ class ChadoCvtermForm extends FormBase {
    * @param int|null $cvterm_id
    *   If editing, the cvterm primary key.
    *   If adding a new term, this will be null.
+   *
+   * @return array
+   *   Render array containing elements for the form.
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?int $cvterm_id = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?int $cvterm_id = NULL): array {
 
     // If editing, get existing values.
     $action = 'add';

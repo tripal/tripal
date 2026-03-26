@@ -82,6 +82,12 @@ class ChadoCvtermDeleteForm extends FormBase {
         [$this->t('Accession:'), $cvterm_record->getValue('dbxref.accession')],
       ],
     ];
+    $form['drop_dbxref'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Delete dbxref'),
+      '#description' => $this->t('If checked, also delete the database cross reference record associated with this term.'),
+      '#default_value' => 1,
+    ];
     $form['sure'] = [
       '#markup' => $this->t('<p><strong>Are you sure you want to delete this term?</strong></p>'),
     ];
@@ -106,8 +112,9 @@ class ChadoCvtermDeleteForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $cvterm_id = $form_state->getValue('cvterm_id');
+    $drop_dbxref = $form_state->getValue('drop_dbxref');
     try {
-      //@todo not implemented Issue #2448: $this->cvterm_buddy->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id]);
+      $this->cvterm_buddy->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id], ['drop_dbxref' => $drop_dbxref]);
       $this->messenger()->addStatus($this->t('The term has been deleted'));
     }
     catch (ChadoBuddyException $e) {
