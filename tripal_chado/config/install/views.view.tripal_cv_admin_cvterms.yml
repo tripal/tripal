@@ -3,6 +3,8 @@ status: true
 dependencies:
   config:
     - system.menu.admin
+    - user.role.administrator
+    - user.role.content_editor
   module:
     - tripal_chado
     - user
@@ -22,55 +24,6 @@ display:
     display_options:
       title: 'Chado Controlled Vocabulary Terms'
       fields:
-        cvterm_id:
-          id: cvterm_id
-          table: cvterm
-          field: cvterm_id
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: standard
-          label: 'cvterm_id (pkey)'
-          exclude: true
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: false
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
         name:
           id: name
           table: cv
@@ -222,7 +175,7 @@ display:
           id: name_2
           table: db
           field: name
-          relationship: rel
+          relationship: db_id
           group_type: group
           admin_label: ''
           plugin_id: standard
@@ -414,6 +367,7 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
+<<<<<<< HEAD
         cvterm_edit_link:
           id: cvterm_edit_link
           table: cvterm
@@ -512,6 +466,8 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: false
+=======
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
         dropbutton:
           id: dropbutton
           table: views
@@ -563,8 +519,11 @@ display:
           hide_alter_empty: true
           destination: true
           fields:
+<<<<<<< HEAD
             cvterm_edit_link: cvterm_edit_link
             cvterm_delete_link: cvterm_delete_link
+=======
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
             name: '0'
             name_1: '0'
             definition: '0'
@@ -573,7 +532,11 @@ display:
             is_relationshiptype: '0'
             is_obsolete: '0'
       pager:
+<<<<<<< HEAD
         type: full
+=======
+        type: mini
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
         options:
           offset: 0
           pagination_heading_level: h4
@@ -583,8 +546,11 @@ display:
           tags:
             next: ››
             previous: ‹‹
+<<<<<<< HEAD
             first: '« First'
             last: 'Last »'
+=======
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
           expose:
             items_per_page: false
             items_per_page_label: 'Items per page'
@@ -593,7 +559,10 @@ display:
             items_per_page_options_all_label: '- All -'
             offset: false
             offset_label: Offset
+<<<<<<< HEAD
           quantity: 9
+=======
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
       exposed_form:
         type: basic
         options:
@@ -605,9 +574,17 @@ display:
           sort_asc_label: Asc
           sort_desc_label: Desc
       access:
+<<<<<<< HEAD
         type: perm
         options:
           perm: 'administer tripal content'
+=======
+        type: role
+        options:
+          role:
+            content_editor: content_editor
+            administrator: administrator
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
       cache:
         type: tag
         options: {  }
@@ -719,7 +696,11 @@ display:
           exposed: true
           expose:
             operator_id: definition_op
+<<<<<<< HEAD
             label: 'Controlled Vocabulary Term Definition'
+=======
+            label: 'Controlled vocabulary term definition'
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
             description: ''
             use_operator: false
             operator: definition_op
@@ -748,7 +729,11 @@ display:
           id: name_2
           table: db
           field: name
+<<<<<<< HEAD
           relationship: rel
+=======
+          relationship: db_id
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
           group_type: group
           admin_label: ''
           plugin_id: string
@@ -773,16 +758,38 @@ display:
             placeholder: ''
           is_grouped: false
           group_info:
+<<<<<<< HEAD
             label: ''
             description: ''
             identifier: ''
+=======
+            label: 'Database Name'
+            description: ''
+            identifier: name_2
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
             optional: true
             widget: select
             multiple: false
             remember: false
             default_group: All
             default_group_multiple: {  }
+<<<<<<< HEAD
             group_items: {  }
+=======
+            group_items:
+              1:
+                title: ''
+                operator: contains
+                value: ''
+              2:
+                title: ''
+                operator: contains
+                value: ''
+              3:
+                title: ''
+                operator: contains
+                value: ''
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
         accession:
           id: accession
           table: dbxref
@@ -833,6 +840,7 @@ display:
           row_class: ''
           default_row_class: true
           columns:
+<<<<<<< HEAD
             cvterm_id: cvterm_id
             name: name
             name_1: name_1
@@ -853,6 +861,17 @@ display:
               separator: ''
               empty_column: false
               responsive: ''
+=======
+            name: name
+            name_1: name_1
+            definition: definition
+            name_2: name_2
+            accession: accession
+            is_relationshiptype: is_relationshiptype
+            is_obsolete: is_obsolete
+          default: name_1
+          info:
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
             name:
               sortable: true
               default_sort_order: asc
@@ -874,6 +893,16 @@ display:
               separator: ''
               empty_column: false
               responsive: ''
+<<<<<<< HEAD
+=======
+            name_2:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
             accession:
               sortable: true
               default_sort_order: asc
@@ -895,6 +924,7 @@ display:
               separator: ''
               empty_column: false
               responsive: ''
+<<<<<<< HEAD
             cvterm_edit_link:
               sortable: false
               default_sort_order: asc
@@ -923,6 +953,8 @@ display:
               separator: ''
               empty_column: false
               responsive: ''
+=======
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
           override: true
           sticky: false
           summary: ''
@@ -941,6 +973,7 @@ display:
           replica: false
           query_tags: {  }
       relationships:
+<<<<<<< HEAD
         rel:
           id: rel
           table: dbxref
@@ -962,6 +995,18 @@ display:
           empty: false
           content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/cvterm\">Add a new vocabulary \r\nterm</a>\r\n<p>The following table lists the controlled vocabulary terms managed by Tripal in various chado schema.</p>"
           tokenize: false
+=======
+        db_id:
+          id: db_id
+          table: cvterm
+          field: db_id
+          relationship: none
+          group_type: group
+          admin_label: 'relationship through dbxref to db table'
+          plugin_id: standard
+          required: false
+      header: {  }
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
       footer: {  }
       display_extenders: {  }
     cache_metadata:
@@ -970,7 +1015,11 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
+<<<<<<< HEAD
         - user.permissions
+=======
+        - user.roles
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
       tags: {  }
   page_1:
     id: page_1
@@ -995,5 +1044,9 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
+<<<<<<< HEAD
         - user.permissions
+=======
+        - user.roles
+>>>>>>> refs/remotes/origin/tv4g4-issue2196-db-cv-manage
       tags: {  }
