@@ -49,7 +49,7 @@ class TripalAdminManageQuotaForm implements FormInterface{
       '#default_value' => $username,
     ];
 
-    // Custom quota textfield (prepopulated with defualt value)
+    // Custom quota textfield (prepopulated with default value)
     $form['quota'] = [
       '#type' => 'textfield',
       '#title' => 'Custom User Quota',
@@ -57,7 +57,7 @@ class TripalAdminManageQuotaForm implements FormInterface{
       '#default_value' => tripal_format_bytes($default_quota),
     ];
 
-    // Custom exp date textfield (prepopulated with defualt value)
+    // Custom exp date textfield (prepopulated with default value)
     $form['expiration'] = [
       '#type' => 'textfield',
       '#title' => 'Days to Expire',
@@ -91,7 +91,8 @@ class TripalAdminManageQuotaForm implements FormInterface{
     $expiration = $form_state->getValue('expiration');
 
     // Make sure the username is a valid user.
-    $user = user_load_by_name($username);
+    $users = \Drupal::entityTypeManager()->getStorage('user')->loadByProperties(['name' => $username]);
+    $user = reset($users);
     if (!$user) {
       $form_state->setErrorByName('username', 'Cannot find this username');
       return;
@@ -147,8 +148,8 @@ class TripalAdminManageQuotaForm implements FormInterface{
     }
 
     // Get the UID of the given user.
-    $user = user_load_by_name($username);
-
+    $users = \Drupal::entityTypeManager()->getStorage('user')->loadByProperties(['name' => $username]);
+    $user = reset($users);
     try {
       // Set user quota.
       tripal_set_user_quota($user->id(), $size, $expiration);
