@@ -117,6 +117,17 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $values = ['buddy_record' => $chado_buddy_records[0]];
     $chado_buddy_records = $instance->getCv($values, []);
     $this->assertEquals(1, count($chado_buddy_records), "We did not receive the Cv when querying using a ChadoBuddyRecord");
+
+    // TEST: we can delete a cv.
+    $cv_id = $chado_buddy_records[0]->getValue('cv.cv_id');
+    $result = $instance->deleteCv(['cv.cv_id' => $cv_id]);
+    $this->assertTrue($result, "We did not delete a Cv using its pkey");
+    $n = $this->chado_connection->select('1:cv')
+      ->condition('cv_id', $cv_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The cv was not deleted in the database");
   }
 
   /**
@@ -155,6 +166,16 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer cvterm_id for the new Cvterm "newCvterm001"');
     $cv_id = $values['get']['cv.cv_id'];
     $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the new Cvterm "newCvterm001"');
+
+    // TEST: we can not delete a cv if it is in use by a cvterm.
+    $result = $instance->deleteCv(['cv.cv_id' => $cv_id]);
+    $this->assertFalse($result, "We deleted a Cv that is in use by a Cvterm");
+    $n = $this->chado_connection->select('1:cv')
+      ->condition('cv_id', $cv_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(1, $n, "The cv was incorrectly deleted from the database");
 
     // TEST: Updating a non-existent Cvterm should return FALSE.
     $chado_buddy_records = $instance->updateCvterm(['cvterm.name' => 'newCvterm002', 'cvterm.definition' => 'def002'],
@@ -421,6 +442,69 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
       'We did not get the correct cvterm_id for the upserted Cvterm with synonym "syn006"');
     $this->assertEquals(7, $values['get']['cvtermsynonym.type_id'],
       'We did not update the type_id for the upserted Cvterm with synonym "syn006"');
+
+    // TEST: we can delete a cvterm.
+    $records = $instance->getCvterm(['cvterm.name' => 'newCvterm002']);
+    $this->assertNotEmpty($records, 'Failed getting cvterm created earlier');
+    $cvterm_id = $records[0]->getValue('cvterm.cvterm_id');
+    $dbxref_id = $records[0]->getValue('dbxref.dbxref_id');
+    $result = $instance->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id]);
+    $this->assertTrue($result, "We did not delete a Cvterm using its pkey");
+    $n = $this->chado_connection->select('1:cvterm')
+      ->condition('cvterm_id', $cvterm_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The cvterm was not deleted in the database");
+    $n = $this->chado_connection->select('1:dbxref')
+      ->condition('dbxref_id', $dbxref_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(1, $n, "The dbxref was incorrectly deleted in the database");
+
+    // TEST: we can delete a cvterm and its dbxref.
+    $records = $instance->getCvterm(['cvterm.name' => 'newCvterm003']);
+    $this->assertNotEmpty($records, 'Failed getting cvterm created earlier');
+    $cvterm_id = $records[0]->getValue('cvterm.cvterm_id');
+    $dbxref_id = $records[0]->getValue('dbxref.dbxref_id');
+    $result = $instance->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id], ['drop_dbxref' => TRUE]);
+    $this->assertTrue($result, "We did not delete a Cvterm using its pkey");
+    $n = $this->chado_connection->select('1:cvterm')
+      ->condition('cvterm_id', $cvterm_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The cvterm was not deleted in the database");
+    $n = $this->chado_connection->select('1:dbxref')
+      ->condition('dbxref_id', $dbxref_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The dbxref was incorrectly retained in the database");
+
+    // TEST: we can delete a cv even if it is in use by a cvterm.
+    // Do this last as we are also destroying any cvterms because
+    // the foreign key has ON DELETE CASCADE set.
+    $cv_id = $this->chado_connection->select('1:cv', 'cv')
+      ->fields('cv', ['cv_id'])
+      ->condition('name', 'local', '=')
+      ->execute()
+      ->fetchField();
+    $result = $instance->deleteCv(['cv.name' => 'local'], ['cascade' => TRUE]);
+    $this->assertTrue($result, "We should have deleted a CV that is in use by a CV term");
+    $n = $this->chado_connection->select('1:cv')
+      ->condition('cv_id', $cv_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The cv was not deleted from the database");
+    $n = $this->chado_connection->select('1:cvterm')
+      ->condition('cv_id', $cv_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The cvterms were not deleted from the database");
 
     // TEST: If we disable auto-lookup of linking columns and specify one
     // then we should be fine...
