@@ -323,45 +323,6 @@ display:
       sorts: {  }
       arguments: {  }
       filters:
-        accession:
-          id: accession
-          table: dbxref
-          field: accession
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: string
-          operator: contains
-          value: ''
-          group: 1
-          exposed: true
-          expose:
-            operator_id: accession_op
-            label: Accession
-            description: ''
-            use_operator: false
-            operator: accession_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: accession
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-            placeholder: ''
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
         name:
           id: name
           table: db
@@ -401,6 +362,49 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
+        accession:
+          id: accession
+          table: dbxref
+          field: accession
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: string
+          operator: contains
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: accession_op
+            label: Accession
+            description: ''
+            use_operator: false
+            operator: accession_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: accession
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+      filter_groups:
+        operator: AND
+        groups:
+          1: AND
       style:
         type: table
         options:
@@ -483,7 +487,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: '<p>The following table lists database cross references managed by Tripal in various chado schema.</p>'
+          content: '<p>The following table lists database cross references managed by Tripal in various chado schemas.</p>'
           tokenize: false
       footer: {  }
       display_extenders: {  }

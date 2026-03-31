@@ -357,7 +357,7 @@ class ChadoCvtermForm extends FormBase {
     $view->storage->invalidateCaches();
 
     // @todo This redirect loses any filters we may have applied.
-    $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_cvterms')->toString());
+    $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_cvterm')->toString());
     $response->send();
   }
 

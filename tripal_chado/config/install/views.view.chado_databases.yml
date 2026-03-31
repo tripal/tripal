@@ -645,7 +645,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: false
-          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/db\">Add a new database</a>\r\n<p>The following table lists the external databases managed by Tripal in various chado schema.</p>"
+          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/db\">Add a new database</a>\r\n<p>The following table lists the external databases managed by Tripal in various chado schemas.</p>"
           tokenize: false
       footer: {  }
       display_extenders: {  }

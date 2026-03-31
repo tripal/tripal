@@ -681,6 +681,13 @@ class TripalChadoHooks {
         'id' => 'chado_cv_delete_link',
       ],
     ];
+    $data['cv']['cv_items_link'] = [
+      'title' => $this->t('Controlled Vocabulary Items'),
+      'help' => $this->t('Clickable link to view vocabulary terms in a single controlled vocabulary'),
+      'field' => [
+        'id' => 'chado_cv_items_link',
+      ],
+    ];
 
     // The chado dbxref table.
     $data['dbxref']['table']['group'] = $this->t('Database cross-reference');

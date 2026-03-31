@@ -220,6 +220,55 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: false
+        cv_items_link:
+          id: cv_items_link
+          table: cv
+          field: cv_items_link
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: chado_cv_items_link
+          label: 'Controlled Vocabulary Items'
+          exclude: true
+          alter:
+            alter_text: true
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: false
         cv_delete_link:
           id: cv_delete_link
           table: cv
@@ -321,6 +370,7 @@ display:
           destination: true
           fields:
             cv_edit_link: cv_edit_link
+            cv_items_link: cv_items_link
             cv_delete_link: cv_delete_link
             cv_id: '0'
             name: '0'
@@ -546,7 +596,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/cv\">Add a new vocabulary </a>\r\n<p>The following table lists the controlled vocabularies managed by Tripal in various chado schema.</p>"
+          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/cv\">Add a new vocabulary </a>\r\n<p>The following table lists the controlled vocabularies managed by Tripal in various chado schemas.</p>"
           tokenize: false
       footer: {  }
       display_extenders: {  }

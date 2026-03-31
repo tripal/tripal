@@ -971,7 +971,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/cvterm\">Add a new vocabulary \r\nterm</a>\r\n<p>The following table lists the controlled vocabulary terms managed by Tripal in various chado schema.</p>"
+          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/cvterm\">Add a new vocabulary \r\nterm</a>\r\n<p>The following table lists the controlled vocabulary terms managed by Tripal in various chado schemas.</p>"
           tokenize: false
       footer: {  }
       display_extenders: {  }

@@ -102,11 +102,19 @@ tripal_chado.chado_mviews:
   requirements:
     _permission: 'manage chado materialized views'
 
+tripal_chado.chado_db_form:
+  path: 'admin/tripal/storage/chado/db'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoDbForm'
+    _title: 'Add a Chado External Database'
+  requirements:
+    _permission: 'administer tripal'
+
 tripal_chado.chado_db_form_edit:
   path: 'admin/tripal/storage/chado/db/{db_id}'
   defaults:
     _form: '\Drupal\tripal_chado\Form\ChadoDbForm'
-    _title: 'Edit a Chado Controlled Vocabulary'
+    _title: 'Edit a Chado External Database'
   requirements:
     _permission: 'administer tripal'
 
@@ -114,7 +122,7 @@ tripal_chado.chado_db_delete_form:
   path: 'admin/tripal/storage/chado/db_delete/{db_id}'
   defaults:
     _form: '\Drupal\tripal_chado\Form\ChadoDbDeleteForm'
-    _title: 'Delete a Chado Controlled Vocabulary'
+    _title: 'Delete a Chado External Database'
   requirements:
     _permission: 'administer tripal'
 
