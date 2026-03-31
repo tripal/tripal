@@ -10,12 +10,12 @@ use Drupal\views\ResultRow;
 use Drupal\Core\Render\Markup;
 
 /**
- * Field handler to present a link to delete a chado CV term.
+ * Field handler to present a link to edit a chado DB.
  *
  * @ingroup views_field_handlers
  */
-#[ViewsField('chado_cvterm_delete_link')]
-class ChadoCvtermDeleteLink extends FieldPluginBase {
+#[ViewsField('chado_db_edit_link')]
+class ChadoDbEditLink extends FieldPluginBase {
 
   /**
    * {@inheritdoc}
@@ -70,9 +70,9 @@ class ChadoCvtermDeleteLink extends FieldPluginBase {
    */
   public function render(ResultRow $values) {
     // Return the text, so the code never thinks the value is empty.
-    $cvterm_id = $values->cvterm_id;
-    $url = Url::fromUserInput('/admin/tripal/storage/chado/cvterm_delete/' . $cvterm_id)->toString();
-    $html = '<a href="' . $url . '">Delete</a>';
+    $db_id = $values->db_id;
+    $url = Url::fromUserInput('/admin/tripal/storage/chado/db/' . $db_id)->toString();
+    $html = '<a href="' . $url . '">Edit</a>';
     $markup = new Markup();
 
     return $markup->create($html);

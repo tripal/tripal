@@ -28,7 +28,7 @@ class ChadoCvtermEditLink extends FieldPluginBase {
    * {@inheritdoc}
    */
   public function query() {
-    // do nothing -- to override the parent query.
+    // Do nothing -- to override the parent query.
   }
 
   /**
@@ -49,7 +49,7 @@ class ChadoCvtermEditLink extends FieldPluginBase {
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
 
-    // Remove the checkbox
+    // Remove the checkbox.
     unset($form['alter']['alter_text']);
     unset($form['alter']['text']['#states']);
     unset($form['alter']['help']['#states']);
@@ -71,9 +71,8 @@ class ChadoCvtermEditLink extends FieldPluginBase {
   public function render(ResultRow $values) {
     // Return the text, so the code never thinks the value is empty.
     $cvterm_id = $values->cvterm_id;
-    $str = "wth";
     $url = Url::fromUserInput('/admin/tripal/storage/chado/cvterm/' . $cvterm_id)->toString();
-    $html = '<a href="' .  $url . '">Edit</a>';
+    $html = '<a href="' . $url . '">Edit</a>';
     $markup = new Markup();
 
     return $markup->create($html);

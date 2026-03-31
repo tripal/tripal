@@ -6,12 +6,10 @@ dependencies:
   module:
     - tripal_chado
     - user
-_core:
-  default_config_hash: WnaE2l8X9VYoNdgbQJ40iUsNwM3H0orL07ZCk0cdGTk
-id: tripal_cv_admin_cvterms
+id: chado_controlled_vocabulary_terms
 label: 'Chado Controlled Vocabulary Terms'
 module: views
-description: 'DO NOT DISABLE'
+description: 'Allows viewing, adding, editing, and deleting controlled vocabulary terms stored in chado'
 tag: ''
 base_table: cvterm
 base_field: cvterm_id
@@ -179,7 +177,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: 'Controlled vocabulary term definition'
+          label: 'Controlled Vocabulary Term Definition'
           exclude: false
           alter:
             alter_text: false
@@ -613,7 +611,18 @@ display:
       cache:
         type: tag
         options: {  }
-      empty: {  }
+      empty:
+        area_text_custom:
+          id: area_text_custom
+          table: views
+          field: area_text_custom
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: text_custom
+          empty: true
+          content: '<p>No items match the specified filters</p>'
+          tokenize: false
       sorts: {  }
       arguments: {  }
       filters:
@@ -961,7 +970,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: text_custom
-          empty: false
+          empty: true
           content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/cvterm\">Add a new vocabulary \r\nterm</a>\r\n<p>The following table lists the controlled vocabulary terms managed by Tripal in various chado schema.</p>"
           tokenize: false
       footer: {  }
@@ -981,12 +990,12 @@ display:
     position: 1
     display_options:
       display_extenders: {  }
-      path: admin/tripal/loaders/chado_vocabs/chado_cvterms
+      path: admin/tripal/terms/chado_cvterm
       menu:
         type: normal
-        title: 'Manage Chado CV Terms'
+        title: 'Manage Chado Vocabulary Terms'
         description: 'View, edit and add controlled vocabulary terms'
-        weight: 0
+        weight: 40
         expanded: false
         menu_name: admin
         parent: entity.tripal_content_terms.collection

@@ -572,7 +572,7 @@ class TripalChadoHooks {
     $data['db']['table']['base'] = [
       'field' => 'db_id',
       'title' => $this->t('Chado table: db'),
-      'help' => $this->t('External Databases'),
+      'help' => $this->t('External databases'),
     ];
     $data['db']['table']['join']['dbxref'] = [
       'left_field' => 'db_id',
@@ -613,6 +613,27 @@ class TripalChadoHooks {
       'field' => ['id' => 'standard'],
       'filter' => ['id' => 'string'],
     ];
+    $data['db']['db_edit_link'] = [
+      'title' => $this->t('Edit Vocabulary'),
+      'help' => $this->t('Clickable link to edit an external database'),
+      'field' => [
+        'id' => 'chado_db_edit_link',
+      ],
+    ];
+    $data['db']['db_delete_link'] = [
+      'title' => $this->t('Delete Vocabulary'),
+      'help' => $this->t('Clickable link to delete an external database'),
+      'field' => [
+        'id' => 'chado_db_delete_link',
+      ],
+    ];
+    $data['db']['db_items_link'] = [
+      'title' => $this->t('Cross Reference Items'),
+      'help' => $this->t('Clickable link to view cross references in a single database'),
+      'field' => [
+        'id' => 'chado_db_items_link',
+      ],
+    ];
 
     // The chado cv table.
     $data['cv']['table']['group'] = $this->t('Controlled Vocabularies');
@@ -645,6 +666,20 @@ class TripalChadoHooks {
       'sort' => ['id' => 'standard'],
       'field' => ['id' => 'standard'],
       'filter' => ['id' => 'string'],
+    ];
+    $data['cv']['cv_edit_link'] = [
+      'title' => $this->t('Edit Vocabulary'),
+      'help' => $this->t('Clickable link to edit a controlled vocabulary'),
+      'field' => [
+        'id' => 'chado_cv_edit_link',
+      ],
+    ];
+    $data['cv']['cv_delete_link'] = [
+      'title' => $this->t('Delete Vocabulary'),
+      'help' => $this->t('Clickable link to delete a controlled vocabulary'),
+      'field' => [
+        'id' => 'chado_cv_delete_link',
+      ],
     ];
 
     // The chado dbxref table.

@@ -140,11 +140,11 @@ class ChadoCvtermForm extends FormBase {
     $form['cvterm_name'] = [
       '#disabled' => FALSE,
       '#type' => 'textfield',
+      '#maxlength' => 1024,
       '#title' => $this->t('Controlled Vocabulary Term'),
       '#description' => $this->t('Enter the name of the controlled vocabulary term'),
       '#required' => TRUE,
       '#default_value' => $default_cvterm_name,
-      '#maxlength' => 255,
     ];
 
     $form['cvterm_definition'] = [
@@ -184,7 +184,7 @@ class ChadoCvtermForm extends FormBase {
       '#disabled' => ($action == 'edit'),
       '#type' => 'textfield',
       '#title' => $this->t('External Database Name'),
-      '#description' => $this->t('All terms must be assocated with a database. If there is no database for this term (e.g. it is a custom term specific to this site) then select the database \'null\' or consider creating a database specific for your site and use that anytime you would like to add terms.'),
+      '#description' => $this->t('All terms must be assocated with a database. If there is no database for this term (e.g. it is a custom term specific to this site) then select the database "null" or consider creating a database specific for your site and use that anytime you would like to add terms.'),
       '#required' => TRUE,
       '#default_value' => $default_db_name,
       '#maxlength' => 255,
@@ -303,7 +303,7 @@ class ChadoCvtermForm extends FormBase {
   }
 
   /**
-   * Submit the Create/Edit Custom table form.
+   * Submit the Cvterm form.
    *
    * @param array &$form
    *   The form array definition.
@@ -353,11 +353,11 @@ class ChadoCvtermForm extends FormBase {
     }
 
     // Views caching can prevent seeing edits we just made.
-    $view = Views::getView('tripal_cv_admin_cvterms');
+    $view = Views::getView('chado_controlled_vocabulary_terms');
     $view->storage->invalidateCaches();
 
     // @todo This redirect loses any filters we may have applied.
-    $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/loaders/chado_vocabs/chado_cvterms')->toString());
+    $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_cvterms')->toString());
     $response->send();
   }
 

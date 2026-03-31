@@ -102,6 +102,45 @@ tripal_chado.chado_mviews:
   requirements:
     _permission: 'manage chado materialized views'
 
+tripal_chado.chado_db_form_edit:
+  path: 'admin/tripal/storage/chado/db/{db_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoDbForm'
+    _title: 'Edit a Chado Controlled Vocabulary'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_db_delete_form:
+  path: 'admin/tripal/storage/chado/db_delete/{db_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoDbDeleteForm'
+    _title: 'Delete a Chado Controlled Vocabulary'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_cv_form:
+  path: 'admin/tripal/storage/chado/cv'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoCvForm'
+    _title: 'Add a Chado Controlled Vocabulary'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_cv_form_edit:
+  path: 'admin/tripal/storage/chado/cv/{cv_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoCvForm'
+    _title: 'Edit a Chado Controlled Vocabulary'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_cv_delete_form:
+  path: 'admin/tripal/storage/chado/cv_delete/{cv_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoCvDeleteForm'
+    _title: 'Delete a Chado Controlled Vocabulary'
+  requirements:
+    _permission: 'administer tripal'
 
 tripal_chado.chado_cvterm_form:
   path: 'admin/tripal/storage/chado/cvterm'

@@ -6,7 +6,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
@@ -73,6 +72,11 @@ class ChadoCvtermDeleteForm extends FormBase {
       '#type' => 'value',
       '#value' => $cvterm_id,
     ];
+    $form['warning'] = [
+      '#markup' => '<p><strong>'
+      . $this->t('Be VERY CAREFUL when deleting terms, they may be referenced by other records. We recommend you make a backup before deleting terms.')
+      . '</strong></p>',
+    ];
     $form['description'] = [
       '#type' => 'table',
       '#rows' => [
@@ -130,11 +134,11 @@ class ChadoCvtermDeleteForm extends FormBase {
     }
 
     // Views caching can cause deleted term to persist in the view.
-    $view = Views::getView('tripal_cv_admin_cvterms');
+    $view = Views::getView('chado_controlled_vocabulary_terms');
     $view->storage->invalidateCaches();
 
     // @todo This redirect loses any filters we may have applied.
-    $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/loaders/chado_vocabs/chado_cvterms')->toString());
+    $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_cvterms')->toString());
     $response->send();
   }
 
