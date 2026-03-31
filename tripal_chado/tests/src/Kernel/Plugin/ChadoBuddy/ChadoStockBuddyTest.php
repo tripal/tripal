@@ -547,7 +547,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
   public static function provideAssociateStockScenarios() {
     $scenarios = [];
 
-    // #0: Associate with the project table
+    // #0: Associate with the project table.
     $scenarios[] = [
       'project',
       'project_stock',
@@ -596,11 +596,11 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     ]);
 
     // Insert a record into our base table for testing.
-    $base_table_query = $this->chado_connection->insert('1:' . $base_table)
+    $base_table_pkey = $this->chado_connection->insert('1:' . $base_table)
       ->fields(['name' => 'test_record'])
       ->execute();
     $expected_result = TRUE;
-    $result = $stock_instance->associateStock($base_table, 1, $test_chado_stock_record, $options);
+    $result = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $options);
     $this->assertIsBool($result, "We did not retrieve a boolean when associating a stock with the base table \"$base_table\"");
     $this->assertEquals($expected_result, $result, "We did not retrieve the expected result when associating a stock with the base table \"$base_table\"");
 
