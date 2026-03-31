@@ -132,6 +132,17 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     // TEST: case insensitive override should work.
     $chado_buddy_records = $instance->getDb(['db.name' => 'NEWdb003'], ['case_insensitive' => 'db.name']);
     $this->assertEquals(1, count($chado_buddy_records), "We did not receive case insensitive results for getDb when we should have");
+
+    // TEST: we can delete a db.
+    $db_id = $chado_buddy_records[0]->getValue('db.db_id');
+    $result = $instance->deleteDb(['db.db_id' => $db_id]);
+    $this->assertTrue($result, "We did not delete a db using its pkey");
+    $n = $this->chado_connection->select('1:db')
+      ->condition('db_id', $db_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The db was not deleted in the database");
   }
 
   /**
@@ -273,6 +284,32 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     $status = $instance->associateDbxref($base_table, 1, $chado_buddy_records[0], []);
     $this->assertIsBool($status, "We did not retrieve a boolean when associating a dbxref with the base table \"$base_table\"");
     $this->assertTrue($status, "We did not retrieve TRUE when associating a dbxref with the base table \"$base_table\"");
+
+    // TEST: we can not delete a db if it is in use by a dbxref.
+    // Note that cascade won't handle continuing on to a cvterm,
+    // so this test is limited to just db + dbxref.
+    $result = $instance->insertDb(['db.name' => 'newDb006', 'db.description' => 'desc006']);
+    $this->assertIsObject($result, 'Failed setup for test inserting db newDb006');
+    $result = $instance->insertDbxref(['dbxref.accession' => 'newDbxref006', 'db.name' => 'newDb006']);
+    $this->assertIsObject($result, 'Failed setup for test inserting dbxref newDbxref006');
+    $result = $instance->deleteDb(['db.name' => 'newDb006']);
+    $this->assertFalse($result, "We deleted a db that is in use by a dbxref");
+    $n = $this->chado_connection->select('1:db')
+      ->condition('name', 'newDb006', '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(1, $n, "The db newDb006 was incorrectly deleted from the database");
+
+    // TEST: we can delete a db if we set cascade.
+    $result = $instance->deleteDb(['db.name' => 'newDb006'], ['cascade' => TRUE]);
+    $this->assertTrue($result, "We did not delete a db that is in use by a dbxref with cascade set");
+    $n = $this->chado_connection->select('1:db')
+      ->condition('name', 'newDb006', '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The db newDb006 was not deleted from the database");
   }
 
 }
