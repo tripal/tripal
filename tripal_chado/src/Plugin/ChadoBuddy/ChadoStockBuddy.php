@@ -816,7 +816,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   | table                 | pub_id    | is_current  | is_not      | rank        | cvterm_type_id |
    *   +-----------------------+-----------+-------------+-------------+-------------+----------------+
    *   | project_stock         | -absent   | -absent     | -absent     | -absent     | -absent        |
-   *   | stockcollection_stock | -absent   | -absent     | -absent     | -absent     | not null       |
+   *   | stockcollection_stock | -absent   | -absent     | -absent     | -absent     | -absent        |
    *   | nd_experiment_stock   | -absent   | -absent     | -absent     | -absent     | not null       |
    *   | stock_cvterm          | not null  | -absent     | has default | has default | -absent        |
    *   | stock_dbxref          | -absent   | has default | -absent     | -absent     | -absent        |

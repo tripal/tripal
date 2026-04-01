@@ -540,6 +540,11 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    *   An array of test scenarios, each containing:
    *   - base_table: A string of the base table for which the stock should be
    *     associated.
+   *   - base_table_values: An array of values to insert into the base table.
+   *   - foreign_table_values: If values need to be inserted into foreign tables
+   *     in order to insert into the base table, this array is structured such
+   *     that the keys are the table names and the values are the array of
+   *     values to insert into those tables.
    *   - linking_table: A string of the linking table that is used to create the
    *     relationship between the stock record and base table.
    *   - options: An array of options to pass to associateStock().
@@ -550,8 +555,45 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     // #0: Associate with the project table.
     $scenarios[] = [
       'project',
+       [
+         'name' => 'Test Project',
+       ],
+       [],
       'project_stock',
       [],
+    ];
+
+    // #1: Associate with stockcollection table.
+    $scenarios[] = [
+      'stockcollection',
+      [
+        // Cvterm ID for 'germplasm'.
+        'type_id' => 41,
+        'uniquename' => 'Test Stock Collection',
+      ],
+      [],
+      'stockcollection_stock',
+      [],
+    ];
+
+    // #2: Associate with nd_experiment table.
+    $scenarios[] = [
+      'nd_experiment',
+      [
+        'type_id' => 1,
+        'nd_geolocation_id' => 1,
+      ],
+      [
+        'nd_geolocation' => [
+          'latitude' => 1.23,
+          'longitude' => 4.56,
+          'altitude' => 789,
+        ],
+      ],
+      'nd_experiment_stock',
+      [
+        'type_id' => 1,
+      ],
     ];
 
     return $scenarios;
@@ -562,6 +604,12 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    *
    * @param string $base_table
    *   A string indicating the base table which the stock should be associated.
+   * @param array $base_table_values
+   *   An array of values to insert into the base table.
+   * @param array $foreign_table_values
+   *   If values need to be inserted into foreign tables in order to insert into
+   *   the base table, this array is structured such that the keys are the table
+   *   names and the values are the array of values to insert into those tables.
    * @param string $linking_table
    *   A string indicating the linking table that is used to create the
    *   relationship between the stock record and base table.
@@ -571,7 +619,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    * @dataProvider provideAssociateStockScenarios
   */
   #[DataProvider('provideAssociateStockScenarios')]
-  public function testAssociateStock(string $base_table, string $linking_table, array $options) {
+  public function testAssociateStock(string $base_table, array $base_table_values, array $foreign_table_values, string $linking_table, array $options) {
 
     // Insert an organism needed for our chado stock buddy record.
     $type = \Drupal::service('tripal_chado.chado_buddy');
@@ -595,9 +643,20 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'organism.species' => 'databasica',
     ]);
 
+    // If our base table requires foreign table records to be inserted first,
+    // then insert those.
+    foreach ($foreign_table_values as $foreign_table => $values) {
+      $foreign_table_pkey = NULL;
+      $foreign_table_pkey = $this->chado_connection->insert('1:' . $foreign_table)
+        ->fields($values)
+        ->execute();
+      // Verify the foreign table record was inserted.
+      $this->assertTrue(is_numeric($foreign_table_pkey), "We did not retrieve a numeric primary key when inserting into the foreign table \"$foreign_table\" for our base table \"$base_table\" in preparation for testing associateStock().");
+    }
+
     // Insert a record into our base table for testing.
     $base_table_pkey = $this->chado_connection->insert('1:' . $base_table)
-      ->fields(['name' => 'test_record'])
+      ->fields($base_table_values)
       ->execute();
     $expected_result = TRUE;
     $result = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $options);
