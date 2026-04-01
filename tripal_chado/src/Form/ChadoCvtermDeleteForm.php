@@ -9,6 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
+use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy;
 use Drupal\views\Views;
 
@@ -27,7 +28,8 @@ class ChadoCvtermDeleteForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('tripal_chado.chado_buddy')
+      $container->get('tripal_chado.database'),
+      $container->get('tripal_chado.chado_buddy'),
     );
   }
 
@@ -35,6 +37,7 @@ class ChadoCvtermDeleteForm extends FormBase {
    * Class constructor.
    */
   public function __construct(
+    protected readonly ChadoConnection $chado_connection,
     protected readonly ChadoBuddyPluginManager $buddy_manager,
   ) {
     // Create the buddy instances we will need.
@@ -67,6 +70,20 @@ class ChadoCvtermDeleteForm extends FormBase {
     }
     $cvterm_record = reset($cvterm_records);
 
+    $table_def = $this->chado_connection->schema()->getTableDef('cvterm', ['source' => 'database', 'format' => 'default']);
+    // Format is [referencing_table =>
+    // [cvterm column (cvterm_id) => referencing_table column], ].
+    $foreign_keys = $table_def['referenced_by'] ?? [];
+    $total_references = 0;
+    foreach ($foreign_keys as $referencing_table => $keydef) {
+      foreach ($keydef as $pkey => $refkey) {
+        $query = $this->chado_connection->select('1:' . $referencing_table);
+        $query->condition($refkey, $cvterm_id, '=');
+        $n = $query->countQuery()->execute()->fetchField();
+        $total_references += $n;
+      }
+    }
+
     $form = [];
     $form['cvterm_id'] = [
       '#type' => 'value',
@@ -95,13 +112,21 @@ class ChadoCvtermDeleteForm extends FormBase {
       '#description' => $this->t('If checked, also delete the database cross reference record associated with this term.'),
       '#default_value' => 1,
     ];
-    $form['sure'] = [
-      '#markup' => $this->t('<p><strong>Are you sure you want to delete this term?</strong></p>'),
-    ];
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => 'Delete',
-    ];
+    if ($total_references) {
+      $form['sure'] = [
+        '#markup' => $this->t('<p><strong>There are @n foreign key references to this term, it cannot be deleted.</strong></p>',
+          ['@n' => $total_references]),
+      ];
+    }
+    else {
+      $form['sure'] = [
+        '#markup' => $this->t('<p><strong>Are you sure you want to delete this term?</strong></p>'),
+      ];
+      $form['submit'] = [
+        '#type' => 'submit',
+        '#value' => 'Delete',
+      ];
+    }
     $form['cancel'] = [
       '#type' => 'submit',
       '#value' => 'Cancel',
