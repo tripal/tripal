@@ -821,6 +821,13 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    *     on the method, this can include an array of values for insert, array of
    *     conditions for lookup, or both. It can also include an array of
    *     options, though not required.
+   *     NOTE: For testing associateStock(), the method_input array should
+   *     EXCLUDE the ChadoBuddyRecord parameter. The test will use the stock
+   *     record that it creates and provide it to associateStock() in the
+   *     correct order. Thus, the input should include only:
+   *     - base_table (string)
+   *     - record_id (int)
+   *     - options (array)
    *   - expected_exception_message: The expected exception message.
    */
   public static function provideStockBuddyExceptionScenarios() {
@@ -1093,6 +1100,27 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy parseValidateForeignKeysOption error, validate_foreign_keys option for key cvterm_id must be a boolean value:",
     ];
 
+    // #16: Provide an invalid base table to associateStock().
+    $scenarios[] = [
+      'associateStock',
+      [
+        'madeupbasetable',
+        1000,
+        [],
+      ],
+      "ChadoBuddy associateStock error, invalid base_table provided: madeupbasetable. Valid options are:",
+    ];
+
+    // #17: Provide an invalid record_id to associateStock().
+    $scenarios[] = [
+      'associateStock',
+      [
+        'project',
+        999999,
+        [],
+      ],
+      "ChadoBuddy associateStock database error",
+    ];
     return $scenarios;
   }
 
@@ -1106,6 +1134,13 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    *   this can include an array of values for insert, array of conditions for
    *   lookup, or both. It can also include an array of options, though not
    *   required.
+   *   NOTE: For testing associateStock(), the method_input array should
+   *   EXCLUDE the ChadoBuddyRecord parameter. The test will use the stock
+   *   record that it creates and provide it to associateStock() in the
+   *   correct order. Thus, the input should include only:
+   *   - base_table (string)
+   *   - record_id (int)
+   *   - options (array)
    * @param string $expected_exception_message
    *   The expected exception message.
    *
@@ -1129,7 +1164,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
 
     // Insert stock records so that they already exist.
     $stock_instance = $type->createInstance('chado_stock_buddy', []);
-    $stock_instance->insertStock([
+    $existing_stock = $stock_instance->insertStock([
       'stock.name' => 'ExistingStock',
       'stock.uniquename' => 'existingstock',
       'stock.type_id' => 3,
@@ -1144,6 +1179,15 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'organism.genus' => 'Tripalus',
       'organism.species' => 'databasica',
     ]);
+
+    // For associateStock() scenarios, we need a ChadoBuddyRecord object. Use
+    // the existing stock record we just created.
+    if ($method_name == 'associateStock') {
+      // Move the $options array to the end of the input array to make room
+      // for the ChadoBuddyRecord parameter.
+      $method_input[3] = $method_input[2];
+      $method_input[2] = $existing_stock;
+    }
 
     // Now call the method for this scenario.
     $exception_caught = FALSE;

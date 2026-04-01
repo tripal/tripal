@@ -891,7 +891,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
       }
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy associateCvterm database error ' . $e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy associateStock database error ' . $e->getMessage());
     }
 
     return TRUE;
