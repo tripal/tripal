@@ -541,6 +541,9 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    *   - base_table: A string of the base table for which the stock should be
    *     associated.
    *   - base_table_values: An array of values to insert into the base table.
+   *     If foreign keys need to be created first, add those to the
+   *     foreign_table_values parameter and the test method will add the foreign
+   *     key values to this array before inserting into the base table.
    *   - foreign_table_values: If values need to be inserted into foreign tables
    *     in order to insert into the base table, this array is structured such
    *     that the keys are the table names and the values are the array of
@@ -581,7 +584,6 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'nd_experiment',
       [
         'type_id' => 1,
-        'nd_geolocation_id' => 1,
       ],
       [
         'nd_geolocation' => [
@@ -596,6 +598,109 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       ],
     ];
 
+    // #3: Associate with the cvterm table.
+    $scenarios[] = [
+      'cvterm',
+      [
+        'name' => 'Test Cvterm',
+        'cv_id' => 1,
+      ],
+      [
+        'dbxref' => [
+          'accession' => 'test_accession_for_cvterm',
+          'db_id' => 1,
+        ],
+      ],
+      'stock_cvterm',
+      [
+        'pub_id' => 1,
+        'is_not' => TRUE,
+        'rank' => 1,
+      ],
+    ];
+
+    // #4: Associate with the dbxref table.
+    $scenarios[] = [
+      'dbxref',
+      [
+        'accession' => 'Test Accession',
+        'db_id' => 1,
+        'version' => '1.0',
+      ],
+      [],
+      'stock_dbxref',
+      [],
+    ];
+
+    // #5: Associate with the feature table.
+    $scenarios[] = [
+      'feature',
+      [
+        'uniquename' => 'Test Feature',
+        // The ID of the organism created within our test.
+        'organism_id' => 1,
+        'type_id' => 1,
+      ],
+      [],
+      'stock_feature',
+      [
+        'type_id' => 1,
+      ],
+    ];
+
+    // #6: Associate with the featuremap table.
+    $scenarios[] = [
+      'featuremap',
+      [
+        'name' => 'Test Feature Map',
+      ],
+      [],
+      'stock_featuremap',
+      [
+        'type_id' => 1,
+      ],
+    ];
+
+    // #7: Associate with the genotype table.
+    $scenarios[] = [
+      'genotype',
+      [
+        'uniquename' => 'Test Genotype',
+        'type_id' => 1,
+      ],
+      [],
+      'stock_genotype',
+      [],
+    ];
+
+    // #8: Associate with the library table.
+    $scenarios[] = [
+      'library',
+      [
+        'uniquename' => 'Test Library',
+        // The ID of the organism created within our test.
+        'organism_id' => 1,
+        'type_id' => 1,
+      ],
+      [],
+      'stock_library',
+      [],
+    ];
+
+    /**
+    // #9: Associate with the pub table.
+    $scenarios[] = [
+      'pub',
+      [
+        'uniquename' => 'Test Pub',
+        'type_id' => 1,
+      ],
+      [],
+      'stock_pub',
+      [],
+    ];
+    */
+
     return $scenarios;
   }
 
@@ -605,7 +710,10 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    * @param string $base_table
    *   A string indicating the base table which the stock should be associated.
    * @param array $base_table_values
-   *   An array of values to insert into the base table.
+   *   An array of values to insert into the base table. If foreign keys need to
+   *   be created first, add those to the foreign_table_values parameter and the
+   *   test method will add the foreign key values to this array before
+   *   inserting into the base table.
    * @param array $foreign_table_values
    *   If values need to be inserted into foreign tables in order to insert into
    *   the base table, this array is structured such that the keys are the table
@@ -652,12 +760,18 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
         ->execute();
       // Verify the foreign table record was inserted.
       $this->assertTrue(is_numeric($foreign_table_pkey), "We did not retrieve a numeric primary key when inserting into the foreign table \"$foreign_table\" for our base table \"$base_table\" in preparation for testing associateStock().");
+      // Add our new foreign table primary key to our base table values.
+      $base_table_values[$foreign_table . '_id'] = $foreign_table_pkey;
     }
 
     // Insert a record into our base table for testing.
     $base_table_pkey = $this->chado_connection->insert('1:' . $base_table)
       ->fields($base_table_values)
       ->execute();
+    // Verify the base table record was inserted.
+    $this->assertTrue(is_numeric($base_table_pkey), "We did not retrieve a numeric primary key when inserting into the base table \"$base_table\" in preparation for testing associateStock().");
+
+    // Associate the stock record with the base table record.
     $expected_result = TRUE;
     $result = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $options);
     $this->assertIsBool($result, "We did not retrieve a boolean when associating a stock with the base table \"$base_table\"");
@@ -666,6 +780,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     // Lookup the associated record in its linking table.
     $linking_table_query = $this->chado_connection->select('1:' . $linking_table, 'lt')
       ->fields('lt', ['stock_id'])
+      ->fields('lt', [$base_table . '_id'])
       ->execute();
     $results = $linking_table_query->fetchAll();
     $this->assertIsArray($results, "We should have been able to select from the \"$linking_table\" table");
@@ -674,10 +789,13 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $retrieved_stock_id = $results[0]->stock_id;
     $this->assertEquals($expected_stock_id, $retrieved_stock_id,
       "We did not get the stock_id from \"$linking_table\" that should have been set by associateStock()");
+    $retrieved_base_table_id = $results[0]->{$base_table . '_id'};
+    $this->assertEquals($base_table_pkey, $retrieved_base_table_id,
+      "We did not get the correct base table primary key from \"$linking_table\" that should have been set by associateStock()");
 
     // Repeat the same association, it should not create a new one.
     $expected_result = TRUE;
-    $result = $stock_instance->associateStock($base_table, 1, $test_chado_stock_record, $options);
+    $result = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $options);
     $this->assertIsBool($result, "We did not retrieve a boolean when associating a stock with the base table \"$base_table\"");
     $this->assertEquals($expected_result, $result, "We did not retrieve the expected result when associating a stock with the base table \"$base_table\"");
     $linking_table_query = $this->chado_connection->select('1:' . $linking_table, 'lt')
