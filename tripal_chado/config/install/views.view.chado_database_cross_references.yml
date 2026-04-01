@@ -509,7 +509,7 @@ display:
       path: admin/tripal/terms/chado_dbxref
       menu:
         type: normal
-        title: 'Manage Database Cross References'
+        title: 'View Database Cross References'
         description: 'View cross references to external databases'
         weight: 20
         expanded: false
