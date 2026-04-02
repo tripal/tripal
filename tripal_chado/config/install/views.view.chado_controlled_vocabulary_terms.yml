@@ -84,8 +84,8 @@ display:
           alter:
             alter_text: false
             text: ''
-            make_link: false
-            path: ''
+            make_link: true
+            path: '/admin/tripal/terms/chado_cv?name={{ name }}'
             absolute: false
             external: false
             replace_spaces: false
@@ -231,8 +231,8 @@ display:
           alter:
             alter_text: false
             text: ''
-            make_link: false
-            path: ''
+            make_link: true
+            path: '/admin/tripal/terms/chado_db?name={{ name_2 }}'
             absolute: false
             external: false
             replace_spaces: false
