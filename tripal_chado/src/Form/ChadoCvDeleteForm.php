@@ -89,11 +89,6 @@ class ChadoCvDeleteForm extends FormBase {
       '#type' => 'value',
       '#value' => $cv_id,
     ];
-    $form['warning'] = [
-      '#markup' => '<p><strong>'
-      . $this->t('Be VERY CAREFUL when deleting controlled vocabularies, they may be referenced by other records. We recommend you make a backup before deleting vocabularies.')
-      . '</strong></p>',
-    ];
     $form['description'] = [
       '#type' => 'table',
       '#rows' => [
@@ -103,14 +98,16 @@ class ChadoCvDeleteForm extends FormBase {
       ],
     ];
     if ($total_references) {
-      $form['sure'] = [
-        '#markup' => $this->t('<p><strong>There are @n foreign key references to this vocabulary, it cannot be deleted.</strong></p>',
-          ['@n' => $total_references]),
-      ];
+      $this->messenger()->addError($this->t('There are @n foreign key references to this vocabulary, it cannot be deleted.',
+        ['@n' => $total_references]));
     }
     else {
       $form['sure'] = [
-        '#markup' => $this->t('<p><strong>Are you sure you want to delete this vocabulary?</strong></p>'),
+        '#markup' => '<p><strong>'
+          . $this->t('Be VERY CAREFUL when deleting controlled vocabularies, they may be referenced by other records. We recommend you make a backup before deleting vocabularies.')
+          . '<br>'
+          . $this->t('Are you sure you want to delete this vocabulary?')
+          . '</strong></p>',
       ];
       $form['submit'] = [
         '#type' => 'submit',
