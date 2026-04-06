@@ -140,24 +140,28 @@ class ChadoCvtermDeleteForm extends FormBase {
    *   The form state object.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $cvterm_id = $form_state->getValue('cvterm_id');
-    $drop_dbxref = $form_state->getValue('drop_dbxref');
-    try {
-      $this->cvterm_buddy->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id], ['drop_dbxref' => $drop_dbxref]);
-      if ($drop_dbxref) {
-        $this->messenger()->addStatus($this->t('The term and dbxref have been deleted'));
-      }
-      else {
-        $this->messenger()->addStatus($this->t('The term has been deleted'));
-      }
-    }
-    catch (ChadoBuddyException $e) {
-      $this->messenger()->addError($this->t('Unable to delete the term: @error', ['@error' => $e->getMessage()]));
-    }
+    $triggering_element = $form_state->getTriggeringElement();
 
-    // Views caching can cause deleted term to persist in the view.
-    $view = Views::getView('chado_controlled_vocabulary_terms');
-    $view->storage->invalidateCaches();
+    if ($triggering_element['#value'] == 'Delete') {
+      $cvterm_id = $form_state->getValue('cvterm_id');
+      $drop_dbxref = $form_state->getValue('drop_dbxref');
+      try {
+        $this->cvterm_buddy->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id], ['drop_dbxref' => $drop_dbxref]);
+        if ($drop_dbxref) {
+          $this->messenger()->addStatus($this->t('The term and dbxref have been deleted'));
+        }
+        else {
+          $this->messenger()->addStatus($this->t('The term has been deleted'));
+        }
+      }
+      catch (ChadoBuddyException $e) {
+        $this->messenger()->addError($this->t('Unable to delete the term: @error', ['@error' => $e->getMessage()]));
+      }
+
+      // Views caching can cause deleted term to persist in the view.
+      $view = Views::getView('chado_controlled_vocabulary_terms');
+      $view->storage->invalidateCaches();
+    }
 
     // @todo This redirect loses any filters we may have applied.
     $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_cvterm')->toString());

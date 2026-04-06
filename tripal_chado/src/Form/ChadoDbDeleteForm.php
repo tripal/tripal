@@ -132,18 +132,22 @@ class ChadoDbDeleteForm extends FormBase {
    *   The form state object.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $db_id = $form_state->getValue('db_id');
-    try {
-      $this->dbxref_buddy->deleteDb(['db.db_id' => $db_id], []);
-      $this->messenger()->addStatus($this->t('The database has been deleted'));
-    }
-    catch (ChadoBuddyException $e) {
-      $this->messenger()->addError($this->t('Unable to delete the database: @error', ['@error' => $e->getMessage()]));
-    }
+    $triggering_element = $form_state->getTriggeringElement();
 
-    // Views caching can cause deleted database to persist in the view.
-    $view = Views::getView('chado_databases');
-    $view->storage->invalidateCaches();
+    if ($triggering_element['#value'] == 'Delete') {
+      $db_id = $form_state->getValue('db_id');
+      try {
+        $this->dbxref_buddy->deleteDb(['db.db_id' => $db_id], []);
+        $this->messenger()->addStatus($this->t('The database has been deleted'));
+      }
+      catch (ChadoBuddyException $e) {
+        $this->messenger()->addError($this->t('Unable to delete the database: @error', ['@error' => $e->getMessage()]));
+      }
+
+      // Views caching can cause deleted database to persist in the view.
+      $view = Views::getView('chado_databases');
+      $view->storage->invalidateCaches();
+    }
 
     // @todo This redirect loses any filters we may have applied.
     $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_db')->toString());

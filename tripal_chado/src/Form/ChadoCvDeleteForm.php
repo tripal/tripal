@@ -130,18 +130,22 @@ class ChadoCvDeleteForm extends FormBase {
    *   The form state object.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $cv_id = $form_state->getValue('cv_id');
-    try {
-      $this->cvterm_buddy->deleteCv(['cv.cv_id' => $cv_id], []);
-      $this->messenger()->addStatus($this->t('The vocabulary has been deleted'));
-    }
-    catch (ChadoBuddyException $e) {
-      $this->messenger()->addError($this->t('Unable to delete the vocabulary: @error', ['@error' => $e->getMessage()]));
-    }
+    $triggering_element = $form_state->getTriggeringElement();
 
-    // Views caching can cause deleted term to persist in the view.
-    $view = Views::getView('chado_controlled_vocabularies');
-    $view->storage->invalidateCaches();
+    if ($triggering_element['#value'] == 'Delete') {
+      $cv_id = $form_state->getValue('cv_id');
+      try {
+        $this->cvterm_buddy->deleteCv(['cv.cv_id' => $cv_id], []);
+        $this->messenger()->addStatus($this->t('The vocabulary has been deleted'));
+      }
+      catch (ChadoBuddyException $e) {
+        $this->messenger()->addError($this->t('Unable to delete the vocabulary: @error', ['@error' => $e->getMessage()]));
+      }
+
+      // Views caching can cause deleted term to persist in the view.
+      $view = Views::getView('chado_controlled_vocabularies');
+      $view->storage->invalidateCaches();
+    }
 
     // @todo This redirect loses any filters we may have applied.
     $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_cv')->toString());
