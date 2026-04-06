@@ -184,8 +184,8 @@ display:
           alter:
             alter_text: false
             text: ''
-            make_link: false
-            path: ''
+            make_link: true
+            path: '{{ url }}'
             absolute: false
             external: false
             replace_spaces: false
