@@ -687,7 +687,6 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [],
     ];
 
-    /**
     // #9: Associate with the pub table.
     $scenarios[] = [
       'pub',
@@ -699,7 +698,6 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'stock_pub',
       [],
     ];
-    */
 
     return $scenarios;
   }

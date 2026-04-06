@@ -825,7 +825,6 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   | stock_genotype        | -absent   | -absent     | -absent     | -absent     | -absent        |
    *   | stock_library         | -absent   | -absent     | -absent     | -absent     | -absent        |
    *   | stock_pub             | -absent   | -absent     | -absent     | -absent     | -absent        |
-   *   | stockprop             | -absent   | -absent     | -absent     | has default | not null       |
    *   phpcs:enable
    *
    * @return bool
@@ -849,7 +848,6 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
       'genotype' => 'stock_genotype',
       'library' => 'stock_library',
       'pub' => 'stock_pub',
-      'stock' => 'stockprop',
     ];
 
     $linking_table = $possible_linking_tables[$base_table] ?? NULL;
@@ -915,8 +913,8 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
     $lookup_columns = $options['lookup_columns'] ?? TRUE;
     if ($lookup_columns) {
       // For Chado 1.3, these are the only possible additional columns.
-      // Defaults are null pub, FALSE (encoded as zero), rank zero, null cvterm.
-      $defaults = ['pub_id' => 1, 'is_not' => 0, 'rank' => 0, 'cvterm_type_id' => 1];
+      // Defaults are: 'is_not' FALSE (encoded as zero), rank zero, null cvterm.
+      $defaults = ['is_not' => 0, 'rank' => 0, 'cvterm_type_id' => 1];
       // If any of these were specified, we disable the automatic lookup.
       foreach (array_keys($options) as $key) {
         if (in_array($key, array_keys($defaults))) {
