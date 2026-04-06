@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal\Commands;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\tripal\Services\SyncTripalFieldStorage;
@@ -24,6 +25,7 @@ class TripalCommands extends DrushCommands {
    */
   public function __construct(
     protected AccountSwitcherInterface $accountSwitcherService,
+    protected EntityTypeManagerInterface $entityTypeManager,
     protected TripalEntityTypeCollection $entityTypeCollectionService,
     protected TripalFieldCollection $fieldCollectionService,
     protected SyncTripalFieldStorage $syncFieldStorageService,
@@ -46,7 +48,10 @@ class TripalCommands extends DrushCommands {
       $this->logger->error($this->t('The --username argument is required.'));
       return FALSE;
     }
-    $user = user_load_by_name($uname);
+    $users = $this->entityTypeManager
+      ->getStorage('user')
+      ->loadByProperties(['name' => $uname]);
+    $user = reset($users);
     if (!$user) {
       $this->logger->error($this->t('The --username argument does not specify a valid user.'));
       return FALSE;

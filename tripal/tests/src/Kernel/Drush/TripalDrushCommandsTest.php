@@ -96,6 +96,7 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
     // An instance of the TripalCommands drush command class.
     $this->drush_command = new TripalCommands(
       $this->container->get('account_switcher'),
+      $this->container->get('entity_type.manager'),
       $this->container->get('tripal.tripalentitytype_collection'),
       $this->container->get('tripal.tripalfield_collection'),
       $this->container->get('tripal.sync_tripal_field_storage'),
