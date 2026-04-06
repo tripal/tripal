@@ -89,6 +89,10 @@ class ChadoCvtermDeleteForm extends FormBase {
       '#type' => 'value',
       '#value' => $cvterm_id,
     ];
+    $form['cvterm_name'] = [
+      '#type' => 'value',
+      '#value' => $cvterm_record->getValue('cvterm.name'),
+    ];
     $form['description'] = [
       '#type' => 'table',
       '#rows' => [
@@ -144,18 +148,22 @@ class ChadoCvtermDeleteForm extends FormBase {
 
     if ($triggering_element['#value'] == 'Delete') {
       $cvterm_id = $form_state->getValue('cvterm_id');
+      $cvterm_name = $form_state->getValue('cvterm_name');
       $drop_dbxref = $form_state->getValue('drop_dbxref');
       try {
         $this->cvterm_buddy->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id], ['drop_dbxref' => $drop_dbxref]);
         if ($drop_dbxref) {
-          $this->messenger()->addStatus($this->t('The term and dbxref have been deleted'));
+          $this->messenger()->addStatus($this->t('The term "@name" and dbxref have been deleted',
+            ['@name' => $cvterm_name]));
         }
         else {
-          $this->messenger()->addStatus($this->t('The term has been deleted'));
+          $this->messenger()->addStatus($this->t('The term "@name" has been deleted',
+            ['@name' => $cvterm_name]));
         }
       }
       catch (ChadoBuddyException $e) {
-        $this->messenger()->addError($this->t('Unable to delete the term: @error', ['@error' => $e->getMessage()]));
+        $this->messenger()->addError($this->t('Unable to delete the term "@name": @error',
+          ['@name' => $cvterm_name, '@error' => $e->getMessage()]));
       }
 
       // Views caching can cause deleted term to persist in the view.

@@ -89,6 +89,10 @@ class ChadoCvDeleteForm extends FormBase {
       '#type' => 'value',
       '#value' => $cv_id,
     ];
+    $form['cv_name'] = [
+      '#type' => 'value',
+      '#value' => $cv_record->getValue('cv.name'),
+    ];
     $form['description'] = [
       '#type' => 'table',
       '#rows' => [
@@ -134,12 +138,15 @@ class ChadoCvDeleteForm extends FormBase {
 
     if ($triggering_element['#value'] == 'Delete') {
       $cv_id = $form_state->getValue('cv_id');
+      $cv_name = $form_state->getValue('cv_name');
       try {
         $this->cvterm_buddy->deleteCv(['cv.cv_id' => $cv_id], []);
-        $this->messenger()->addStatus($this->t('The vocabulary has been deleted'));
+        $this->messenger()->addStatus($this->t('The vocabulary "@name" has been deleted',
+          ['@name' => $cv_name]));
       }
       catch (ChadoBuddyException $e) {
-        $this->messenger()->addError($this->t('Unable to delete the vocabulary: @error', ['@error' => $e->getMessage()]));
+        $this->messenger()->addError($this->t('Unable to delete the vocabulary "@name": @error',
+          ['@name' => $cv_name, '@error' => $e->getMessage()]));
       }
 
       // Views caching can cause deleted term to persist in the view.

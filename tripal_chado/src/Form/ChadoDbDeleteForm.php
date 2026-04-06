@@ -89,6 +89,10 @@ class ChadoDbDeleteForm extends FormBase {
       '#type' => 'value',
       '#value' => $db_id,
     ];
+    $form['db_name'] = [
+      '#type' => 'value',
+      '#value' => $db_record->getValue('db.name'),
+    ];
     $form['description'] = [
       '#type' => 'table',
       '#rows' => [
@@ -136,12 +140,15 @@ class ChadoDbDeleteForm extends FormBase {
 
     if ($triggering_element['#value'] == 'Delete') {
       $db_id = $form_state->getValue('db_id');
+      $db_name = $form_state->getValue('db_name');
       try {
         $this->dbxref_buddy->deleteDb(['db.db_id' => $db_id], []);
-        $this->messenger()->addStatus($this->t('The database has been deleted'));
+        $this->messenger()->addStatus($this->t('The database "@name" has been deleted',
+          ['@name' => $db_name]));
       }
       catch (ChadoBuddyException $e) {
-        $this->messenger()->addError($this->t('Unable to delete the database: @error', ['@error' => $e->getMessage()]));
+        $this->messenger()->addError($this->t('Unable to delete the database "@name": @error',
+          ['@name' => $db_name, '@error' => $e->getMessage()]));
       }
 
       // Views caching can cause deleted database to persist in the view.
