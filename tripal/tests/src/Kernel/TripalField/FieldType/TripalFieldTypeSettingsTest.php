@@ -136,6 +136,7 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
     // Build the form using the Drupal form builder.
     $formBuilder = FieldStorageConfigEditForm::create($this->container);
     $formBuilder->setEntity($fieldStorage);
+    $formBuilder->setEntityTypeManager(\Drupal::entityTypeManager());
     $form_state = new FormState();
     $form_state->set('field_config', $fieldConfig);
     $form_state->set('entity_type_id', 'tripal_entity');
