@@ -285,8 +285,8 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
       ->execute();
     $linking_table = $base_table . '_cvterm';
     $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records[0], []);
-    $this->assertIsBool($status, "We did not retrieve a boolean when associating a cvterm with the base table \"$base_table\"");
-    $this->assertTrue($status, "We did not retrieve TRUE when associating a cvterm with the base table \"$base_table\"");
+    $this->assertIsInt($status, "We did not retrieve an integer when associating a cvterm with the base table \"$base_table\"");
+    $this->assertEquals(1, $status, "We did not retrieve 1 when associating a cvterm with the base table \"$base_table\"");
     $query = $this->chado_connection->select('1:' . $linking_table, 'lt')
       ->fields('lt', ['cvterm_id'])
       ->execute();
@@ -301,8 +301,8 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     // TEST: associate a cvterm with a base table but it already exists.
     // Just repeat the same association, should not be an error.
     $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records[0], []);
-    $this->assertIsBool($status, "We did not retrieve a boolean when re-associating a cvterm with the base table \"$base_table\"");
-    $this->assertTrue($status, "We did not retrieve TRUE when re-associating a cvterm with the base table \"$base_table\"");
+    $this->assertIsInt($status, "We did not retrieve an integer when re-associating a cvterm with the base table \"$base_table\"");
+    $this->assertEquals(2, $status, "We did not retrieve 2 when re-associating a cvterm with the base table \"$base_table\"");
 
     // TEST: associate a cvterm with a base table where there are required
     // columns in the linking table (i.e. pub_id), but we disable automatic
@@ -337,8 +337,8 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $linking_table = $base_table . '_cvterm';
     $options = [];
     $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records[0], $options);
-    $this->assertIsBool($status, "We did not retrieve a boolean when associating a cvterm with the base table \"$base_table\"");
-    $this->assertTrue($status, "We did not retrieve TRUE when associating a cvterm with the base table \"$base_table\"");
+    $this->assertIsInt($status, "We did not retrieve an integer when associating a cvterm with the base table \"$base_table\"");
+    $this->assertEquals(1, $status, "We did not retrieve 1 when associating a cvterm with the base table \"$base_table\"");
     $query = $this->chado_connection->select('1:' . $linking_table, 'lt')
       ->fields('lt', ['cvterm_id', 'pub_id'])
       ->execute();
