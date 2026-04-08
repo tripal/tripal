@@ -613,4 +613,64 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     return TRUE;
   }
 
+  /**
+   * Used by associate methods to add not NULL columns to linking tables.
+   *
+   * When making associations between a base table and a ChadoBuddy record,
+   * if there are additional not NULL columns in the linking table,
+   * then add them to the options.
+   *
+   * @param string $linking_table
+   *   The name of the linking table, e.g. stock_cvterm.
+   * @param array $defaults
+   *   An array of default values to use for any potential not NULL columns in
+   *   tables where records can be associated with this ChadoBuddy record. The
+   *   keys should be the column names without the table prefix, and the values
+   *   should be the default values to use for those columns if they are not
+   *   specified in the $options array.
+   * @param array $options
+   *   The options passed to the associate method (eg. associateStock()) where
+   *   the keys are the column names without the table prefix, and the values
+   *   are the values to use for those columns. Columns vary depending on the
+   *   linking table.
+   *   The following keys are common among all associate methods:
+   *   - pkey (string): The name of the primary key column in the base table.
+   *     Looking up the primary key for the base table is costly. If it is
+   *     known, then pass it in using this option for better performance.
+   *   - lookup_columns (bool): Whether to look up any additional columns that
+   *     are not specified in the options. FALSE will disable looking up any
+   *     additional columns, which may cause the insert to fail if any NOT NULL
+   *     columns are not specified. Default TRUE.
+   *
+   * @return array
+   *   The passed options with not-NULL columns added.
+   */
+  protected function addLinkingColumns(string $linking_table, array $defaults, array $options): array {
+    $lookup_columns = $options['lookup_columns'] ?? TRUE;
+    if ($lookup_columns) {
+      // If any of these were specified, we disable the automatic lookup.
+      foreach (array_keys($options) as $key) {
+        if (in_array($key, array_keys($defaults))) {
+          $lookup_columns = FALSE;
+          break;
+        }
+      }
+      if ($lookup_columns) {
+        // Automatic lookup is enabled.
+        // Determine actual columns for this linking table.
+        $linking_table_def = $this->getChadoTableDef($linking_table);
+        foreach ($linking_table_def['fields'] as $field_id => $def) {
+          if (array_key_exists($field_id, $defaults)) {
+            // Only include if a NOT NULL constraint exists,
+            // and there is not some type of default value.
+            if ($def['not null'] and ($def['type'] != 'serial') and !($def['default'] ?? FALSE)) {
+              $options[$field_id] = $defaults[$field_id];
+            }
+          }
+        }
+      }
+    }
+    return $options;
+  }
+
 }
