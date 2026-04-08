@@ -1119,6 +1119,22 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       ],
       "ChadoBuddy associateStock database error",
     ];
+
+    // #18: Try to associate a stock with a base table that requires a cvterm_id
+    // in the linking table but do not provide a cvterm_id in the options and
+    // turn off looking it up.
+    $scenarios[] = [
+      'associateStock',
+      [
+        'feature',
+        1000,
+        [
+          'lookup_columns' => FALSE,
+        ],
+      ],
+      "ChadoBuddy associateStock database error",
+    ];
+
     return $scenarios;
   }
 
