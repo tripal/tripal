@@ -608,15 +608,19 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   Also pass in any other columns used in the linking table, some of which
    *   may have a NOT NULL constraint.
    *
-   * @return bool
-   *   Returns true if successful.
    *   Both the dbxref and the chado record indicated by $record_id
    *   MUST ALREADY EXIST.
+   *
+   * @return int
+   *   Indicates whether the association was
+   *   - created (ChadoBuddyPluginBase::NEW = 1)
+   *   - already existed (ChadoBuddyPluginBase::EXISTING = 2)
+   *   If the association request was not successful, an exception is thrown.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
    */
-  public function associateDbxref(string $base_table, int $record_id, ChadoBuddyRecord $dbxref, array $options = []) {
+  public function associateDbxref(string $base_table, int $record_id, ChadoBuddyRecord $dbxref, array $options = []): int {
     $linking_table = $base_table . '_dbxref';
 
     // Get the primary key of the base table.
@@ -650,13 +654,15 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
         $query = $this->chado_connection->insert('1:' . $linking_table);
         $query->fields($this->removeTablePrefix($fields));
         $query->execute();
+        return self::NEW;
+      }
+      else {
+        return self::EXISTING;
       }
     }
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy associateDbxref database error ' . $e->getMessage());
     }
-
-    return TRUE;
   }
 
 }
