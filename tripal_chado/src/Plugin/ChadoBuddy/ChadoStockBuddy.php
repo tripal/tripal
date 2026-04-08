@@ -780,6 +780,9 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *
    * For example, to the project_stock or stockcollection_stock table.
    *
+   * Both the stock record and the chado record indicated by $record_id
+   * MUST ALREADY EXIST.
+   *
    * @param string $base_table
    *   The base table for which the stock should be associated. For example, to
    *   associate a stock with a project, the base_table=project and stock_id is
@@ -827,16 +830,17 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   | stock_pub             | -absent   | -absent     | -absent     | -absent     | -absent        |
    *   phpcs:enable
    *
-   * @return bool
-   *   Returns TRUE if successful.
-   *   Both the stock and the chado record indicated by $record_id
-   *   MUST ALREADY EXIST.
+   * @return int
+   *   Indicates whether the association was
+   *   - created (ChadoBuddyPluginBase::NEW = 1)
+   *   - already existed (ChadoBuddyPluginBase::EXISTING = 2)
+   *   If the association request was not successful, an exception is thrown.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   - If an invalid base_table is provided.
    *   - If an error is encountered during insert.
    */
-  public function associateStock(string $base_table, int $record_id, ChadoBuddyRecord $stock, array $options = []) {
+  public function associateStock(string $base_table, int $record_id, ChadoBuddyRecord $stock, array $options = []): int {
     $possible_linking_tables = [
       'project' => 'project_stock',
       'stockcollection' => 'stockcollection_stock',
@@ -894,13 +898,18 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
         $query = $this->chado_connection->insert('1:' . $linking_table);
         $query->fields($fields);
         $query->execute();
+
+        // Return NEW to indicate the association was created.
+        return self::NEW;
+      }
+      else {
+        // Return EXISTING to indicate the association already existed.
+        return self::EXISTING;
       }
     }
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy associateStock database error ' . $e->getMessage());
     }
-
-    return TRUE;
   }
 
 }

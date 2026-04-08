@@ -769,11 +769,11 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     // Verify the base table record was inserted.
     $this->assertTrue(is_numeric($base_table_pkey), "We did not retrieve a numeric primary key when inserting into the base table \"$base_table\" in preparation for testing associateStock().");
 
-    // Associate the stock record with the base table record.
-    $expected_result = TRUE;
-    $result = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $options);
-    $this->assertIsBool($result, "We did not retrieve a boolean when associating a stock with the base table \"$base_table\"");
-    $this->assertEquals($expected_result, $result, "We did not retrieve the expected result when associating a stock with the base table \"$base_table\"");
+    // Associate the stock record with the base table record for the first time.
+    $expected_status = 1;
+    $status = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $options);
+    $this->assertIsInt($status, "We did not retrieve an integer when associating a stock with the base table \"$base_table\"");
+    $this->assertEquals($expected_status, $status, "We did not retrieve the expected status when associating a stock with the base table \"$base_table\"");
 
     // Lookup the associated record in its linking table.
     $linking_table_query = $this->chado_connection->select('1:' . $linking_table, 'lt')
@@ -792,10 +792,10 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "We did not get the correct base table primary key from \"$linking_table\" that should have been set by associateStock()");
 
     // Repeat the same association, it should not create a new one.
-    $expected_result = TRUE;
-    $result = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $options);
-    $this->assertIsBool($result, "We did not retrieve a boolean when associating a stock with the base table \"$base_table\"");
-    $this->assertEquals($expected_result, $result, "We did not retrieve the expected result when associating a stock with the base table \"$base_table\"");
+    $expected_status = 2;
+    $status = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $options);
+    $this->assertIsInt($status, "We did not retrieve an integer when associating a stock with the base table \"$base_table\"");
+    $this->assertEquals($expected_status, $status, "We did not retrieve the expected status when associating a stock with the base table \"$base_table\"");
     $linking_table_query = $this->chado_connection->select('1:' . $linking_table, 'lt')
       ->fields('lt', ['stock_id'])
       ->execute();
