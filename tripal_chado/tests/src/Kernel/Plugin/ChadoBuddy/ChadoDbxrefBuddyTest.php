@@ -266,8 +266,8 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
       ->execute();
     $linking_table = $base_table . '_dbxref';
     $status = $instance->associateDbxref($base_table, 1, $chado_buddy_records[0], []);
-    $this->assertIsBool($status, "We did not retrieve a boolean when associating a dbxref with the base table \"$base_table\"");
-    $this->assertTrue($status, "We did not retrieve TRUE when associating a dbxref with the base table \"$base_table\"");
+    $this->assertIsInt($status, "We did not retrieve an integer when associating a dbxref with the base table \"$base_table\"");
+    $this->assertEquals(1, $status, "We did not retrieve 1 when associating a dbxref with the base table \"$base_table\"");
     $query = $this->chado_connection->select('1:' . $linking_table, 'lt')
       ->fields('lt', ['dbxref_id'])
       ->execute();
@@ -282,8 +282,8 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     // TEST: associate a dbxref with a base table but record already exists.
     // To do so, we just associate the same record a second time.
     $status = $instance->associateDbxref($base_table, 1, $chado_buddy_records[0], []);
-    $this->assertIsBool($status, "We did not retrieve a boolean when associating a dbxref with the base table \"$base_table\"");
-    $this->assertTrue($status, "We did not retrieve TRUE when associating a dbxref with the base table \"$base_table\"");
+    $this->assertIsInt($status, "We did not retrieve an integer when associating a dbxref with the base table \"$base_table\"");
+    $this->assertEquals(2, $status, "We did not retrieve 2 when reassociating a dbxref with the base table \"$base_table\"");
 
     // TEST: we can not delete a db if it is in use by a dbxref.
     // Note that cascade won't handle continuing on to a cvterm,
