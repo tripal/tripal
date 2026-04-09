@@ -1042,7 +1042,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
           'pub_id' => 1,
           'is_not' => 0,
           'rank' => 0,
-          'cvterm_type_id' => 1
+          'cvterm_type_id' => 1,
         ];
 
         // Add in any of the other columns for the linking table.

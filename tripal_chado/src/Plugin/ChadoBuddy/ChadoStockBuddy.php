@@ -14,7 +14,7 @@ use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
 /**
- * Plugin implementation of the chado stock buddy.
+ * Plugin implementation of the Chado stock buddy.
  */
 #[ChadoBuddy(
   id: 'chado_stock_buddy',
@@ -165,8 +165,10 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
     $valid_columns = $this->getTableColumns($this->valid_tables);
     $conditions = $this->dereferenceBuddyRecord($conditions);
 
-    // @todo How do we handle input of multiple dbxref identifiers using the
-    // stock_dbxref table?
+    if (!($options['skip_validate'] ?? FALSE)) {
+      $this->validateInput($conditions, $valid_columns);
+    }
+
     $query = $this->chado_connection->select('1:stock', 'stock');
     $query->leftJoin('1:organism', 'organism', 'organism.organism_id = stock.organism_id');
     $query->leftJoin('1:cvterm', 'cvterm', 'cvterm.cvterm_id = stock.type_id');
@@ -205,10 +207,12 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
   /**
    * Inserts a stock record.
    *
-   * NOTE: Creation of an organism record is NOT supported. Please use the
-   *   ChadoOrganismBuddy to create the organism for your stock if necessary.
-   * NOTE: Creation of a cvterm record is NOT supported. Please use the
-   *   ChadoCvtermBuddy to create the cvterm for stock.type_id if necessary.
+   * NOTE: In addition to the stock record, only creation of a single dbxref
+   *   record for stock.dbxref_id is supported using this method. See $options.
+   *   Creation of an organism record or a cvterm record are NOT supported.
+   *   Please use the ChadoOrganismBuddy or ChadoCvtermBuddy to create an
+   *   organism for your stock record or to create the cvterm for stock.type_id,
+   *   respectively, if required.
    *
    * @param array $values
    *   An associative array that describes the values to be inserted into the
@@ -241,10 +245,11 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   (Optional) Associative array of options with these supported keys:
    *   - create_dbxref - set to TRUE (default FALSE) if you specified the
    *     necessary fields and want to create the dbxref for stock.dbxref_id when
-   *     creating this stock, if it does not already exist. To add more than one
-   *     stock_dbxref record for an existing stock, you will need to use
-   *     ::associateStock() to link this stock using the stock_dbxref table.
+   *     creating this stock, if it does not already exist.
    *     NOTE: This is NOT recommended. We suggest you import ontologies first.
+   *     To add more than one stock_dbxref record for this stock, you will need
+   *     to create them using the ChadoDbxrefBuddy and then use
+   *     ::associateStock() to link this stock using the stock_dbxref table.
    *   - validate_foreign_keys - specifies whether to validate foreign keys.
    *     Default is TRUE for all foreign keys. If you specify a boolean value,
    *     then that value is used for validating all potential foreign keys.
@@ -311,10 +316,12 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
   /**
    * Updates an existing stock record.
    *
-   * NOTE: Creation of an organism record is NOT supported. Please use the
-   *   ChadoOrganismBuddy to create the organism for your stock if necessary.
-   * NOTE: Creation of a cvterm record is NOT supported. Please use the
-   *   ChadoCvtermBuddy to create the cvterm for stock.type_id if necessary.
+   * NOTE: When updating a stock record, only creation of a single dbxref record
+   *   for stock.dbxref_id is supported using this method. See $options.
+   *   Creation of an organism record or a cvterm record are NOT supported.
+   *   Please use the ChadoOrganismBuddy or ChadoCvtermBuddy to create an
+   *   organism for your stock record or to create the cvterm for stock.type_id,
+   *   respectively, if required.
    *
    * @param array $values
    *   An associative array that describes the values to be updated for a
@@ -350,10 +357,11 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   (Optional) Associative array of options with these supported keys:
    *   - create_dbxref - set to TRUE (default FALSE) if you specified the
    *     necessary fields and want to create the dbxref for stock.dbxref_id when
-   *     updating this stock, if it does not already exist. To add more than one
-   *     stock_dbxref record for an existing stock, you will need to use
-   *     ::associateStock() to link this stock using the stock_dbxref table.
+   *     updating this stock, if it does not already exist.
    *     NOTE: This is NOT recommended. We suggest you import ontologies first.
+   *     To add more than one stock_dbxref record for an existing stock, you
+   *     will need to create them using the ChadoDbxrefBuddy and then use
+   *     ::associateStock() to link this stock using the stock_dbxref table.
    *   - validate_foreign_keys - specifies whether to validate foreign keys.
    *     Default is TRUE for all foreign keys. If you specify a boolean value,
    *     then that value is used for validating all potential foreign keys.
@@ -380,6 +388,8 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
     $this->validateInput($values, $valid_columns);
     $this->validateInput($conditions, $valid_columns);
 
+    // Skip the validate step since the conditions have already been checked.
+    $options['skip_validate'] = TRUE;
     $existing_records = $this->getStock($conditions, $options);
     if (count($existing_records) < 1) {
       return FALSE;
@@ -425,10 +435,12 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
   /**
    * Insert a stock if it doesn't yet exist OR update it if it does.
    *
-   * NOTE: Creation of an organism record is NOT supported. Please use the
-   *   ChadoOrganismBuddy to create the organism for your stock if necessary.
-   * NOTE: Creation of a cvterm record is NOT supported. Please use the
-   *   ChadoCvtermBuddy to create the cvterm for stock.type_id if necessary.
+   * NOTE: In addition to the stock record, only creation of a single dbxref
+   *   record for stock.dbxref_id is supported using this method. See $options.
+   *   Creation of an organism record or a cvterm record are NOT supported.
+   *   Please use the ChadoOrganismBuddy or ChadoCvtermBuddy to create an
+   *   organism for your stock record or to create the cvterm for stock.type_id,
+   *   respectively, if required.
    *
    * @param array $values
    *   An associative array that describes the values to be updated for a
@@ -461,10 +473,11 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   (Optional) Associative array of options with these supported keys:
    *   - create_dbxref - set to TRUE (default FALSE) if you specified the
    *     necessary fields and want to create the dbxref for stock.dbxref_id when
-   *     updating this stock, if it does not already exist. To add more than one
-   *     stock_dbxref record for an existing stock, you will need to use
-   *     ::associateStock() to link this stock using the stock_dbxref table.
+   *     creating/updating this stock, if it does not already exist.
    *     NOTE: This is NOT recommended. We suggest you import ontologies first.
+   *     To add more than one stock_dbxref record for this stock, you will need
+   *     to create them using the ChadoDbxrefBuddy and then use
+   *     ::associateStock() to link this stock using the stock_dbxref table.
    *   - validate_foreign_keys - specifies whether to validate foreign keys.
    *     Default is TRUE for all foreign keys. If you specify a boolean value,
    *     then that value is used for validating all potential foreign keys.
