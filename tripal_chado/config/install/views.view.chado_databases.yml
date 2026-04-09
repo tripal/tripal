@@ -671,11 +671,11 @@ display:
       menu:
         type: normal
         title: 'Manage External Databases'
-        description: 'Add or edit external databases stored in chado'
-        weight: 10
+        description: 'View, edit, or add external databases stored in chado'
+        weight: 20
         expanded: false
         menu_name: admin
-        parent: entity.tripal_content_terms.collection
+        parent: tripal.admin.terms
         context: '0'
     cache_metadata:
       max-age: -1

@@ -993,11 +993,11 @@ display:
       menu:
         type: normal
         title: 'Manage Chado Vocabulary Terms'
-        description: 'View, edit and add controlled vocabulary terms'
-        weight: 40
+        description: 'View, edit, or add controlled vocabulary terms'
+        weight: 50
         expanded: false
         menu_name: admin
-        parent: entity.tripal_content_terms.collection
+        parent: tripal.admin.terms
         context: '0'
     cache_metadata:
       max-age: -1

@@ -618,11 +618,11 @@ display:
       menu:
         type: normal
         title: 'Manage Chado Vocabularies'
-        description: 'View, edit and add controlled vocabularies'
-        weight: 30
+        description: 'View, edit, or add controlled vocabularies'
+        weight: 40
         expanded: false
         menu_name: admin
-        parent: entity.tripal_content_terms.collection
+        parent: tripal.admin.terms
         context: '0'
     cache_metadata:
       max-age: -1

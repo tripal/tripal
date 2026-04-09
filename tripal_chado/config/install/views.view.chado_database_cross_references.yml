@@ -510,10 +510,10 @@ display:
         type: normal
         title: 'View Database Cross References'
         description: 'View cross references to external databases'
-        weight: 20
+        weight: 30
         expanded: false
         menu_name: admin
-        parent: entity.tripal_content_terms.collection
+        parent: tripal.admin.terms
         context: '0'
     cache_metadata:
       max-age: -1
