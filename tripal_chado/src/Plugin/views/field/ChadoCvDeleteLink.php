@@ -20,49 +20,8 @@ class ChadoCvDeleteLink extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function usesGroupBy() {
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function query() {
     // Do nothing -- to override the parent query.
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-
-    // Override the alter text option to always alter the text.
-    $options['alter']['contains']['alter_text'] = ['default' => TRUE];
-    $options['hide_alter_empty'] = ['default' => FALSE];
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
-    parent::buildOptionsForm($form, $form_state);
-
-    // Remove the checkbox.
-    unset($form['alter']['alter_text']);
-    unset($form['alter']['text']['#states']);
-    unset($form['alter']['help']['#states']);
-    $form['#pre_render'][] = [$this, 'preRenderCustomForm'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function trustedCallbacks() {
-    $callbacks = parent::trustedCallbacks();
-    $callbacks[] = 'preRenderCustomForm';
-    return $callbacks;
   }
 
   /**
@@ -76,24 +35,6 @@ class ChadoCvDeleteLink extends FieldPluginBase {
     $markup = new Markup();
 
     return $markup->create($html);
-  }
-
-  /**
-   * Prerender function to move the textarea to the top of a form.
-   *
-   * @param array $form
-   *   The form build array.
-   *
-   * @return array
-   *   The modified form build array.
-   */
-  public function preRenderCustomForm($form) {
-    $form['text'] = $form['alter']['text'];
-    $form['help'] = $form['alter']['help'];
-    unset($form['alter']['text']);
-    unset($form['alter']['help']);
-
-    return $form;
   }
 
 }
