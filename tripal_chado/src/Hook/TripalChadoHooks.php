@@ -741,6 +741,13 @@ class TripalChadoHooks {
         'label' => 'dbxref to db relationship',
       ],
     ];
+    $data['dbxref']['dbxref_urlprefix_link'] = [
+      'title' => $this->t('External Link'),
+      'help' => $this->t('Clickable link to the accession in its host database'),
+      'field' => [
+        'id' => 'chado_dbxref_urlprefix_link',
+      ],
+    ];
 
     // The chado cvterm table.
     $data['cvterm']['table']['group'] = $this->t('Controlled Vocabulary Terms');
