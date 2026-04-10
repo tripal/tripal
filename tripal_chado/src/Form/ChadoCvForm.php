@@ -134,7 +134,7 @@ class ChadoCvForm extends FormBase {
     ];
 
     $form['cancel'] = [
-      '#markup' => Link::fromTextAndUrl('Cancel', Url::fromUserInput('/admin/tripal/loaders/chado_vocabs/chado_cvs'))->toString(),
+      '#markup' => Link::fromTextAndUrl('Cancel', Url::fromUserInput('/admin/tripal/terms/chado_cv'))->toString(),
     ];
 
     return $form;
