@@ -22,7 +22,7 @@ class TripalChadoRebuildServiceTest extends ChadoTestKernelBase {
    *
    * @var array
    */
-  protected static $modules = ['system', 'user', 'tripal', 'tripal_chado', 'views'];
+  protected static $modules = ['system', 'user', 'tripal', 'tripal_chado', 'filter', 'views'];
 
   /**
    * Module handler service.

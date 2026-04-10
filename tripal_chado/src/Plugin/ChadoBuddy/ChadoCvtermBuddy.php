@@ -978,6 +978,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     additional columns, which may cause the insert to fail if any NOT NULL
    *     columns are not specified. Default TRUE.
    *
+   *   Both the cvterm and the chado record indicated by $record_id
+   *   MUST ALREADY EXIST.
+   *
    *   While the column name options above are optional, they will incur a
    *   slight performance hit if not included due to needing to look them up
    *   via the schema. See the table below for which columns apply to which
@@ -1000,15 +1003,16 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *   | stock_relationship_cvterm   | yes null | -absent     | -absent     | -absent        |
    *   phpcs:enable
    *
-   * @return bool
-   *   Returns TRUE if successful.
-   *   Both the cvterm and the chado record indicated by $record_id
-   *   MUST ALREADY EXIST.
+   * @return int
+   *   Indicates whether the association was
+   *   - created (ChadoBuddyPluginBase::NEW = 1)
+   *   - already existed (ChadoBuddyPluginBase::EXISTING = 2)
+   *   If the association request was not successful, an exception is thrown.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
    */
-  public function associateCvterm(string $base_table, int $record_id, ChadoBuddyRecord $cvterm, array $options = []) {
+  public function associateCvterm(string $base_table, int $record_id, ChadoBuddyRecord $cvterm, array $options = []): int {
     $linking_table = $base_table . '_cvterm';
 
     // Get the primary key of the base table.
@@ -1042,13 +1046,15 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
         $query = $this->chado_connection->insert('1:' . $linking_table);
         $query->fields($fields);
         $query->execute();
+        return self::NEW;
+      }
+      else {
+        return self::EXISTING;
       }
     }
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy associateCvterm database error ' . $e->getMessage());
     }
-
-    return TRUE;
   }
 
   /**
