@@ -36,7 +36,7 @@ class ChadoDbxrefUrlprefixLink extends FieldPluginBase {
     if ($urlprefix && $accession) {
       $urlprefix = preg_replace('/{db}/', $db, $urlprefix);
       $urlprefix = preg_replace('/{accession}/', $accession, $urlprefix);
-      $html = '<a href="' . $urlprefix . '">🔗' . $db . ':' . $accession . '</a>';
+      $html = '<a href="' . $urlprefix . '" target="_blank">🔗' . $db . ':' . $accession . '</a>';
     }
     else {
       $html = $this->t('not available');
