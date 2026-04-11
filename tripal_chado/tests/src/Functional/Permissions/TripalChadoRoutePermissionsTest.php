@@ -34,7 +34,6 @@ class TripalChadoRoutePermissionsTest extends BrowserTestBase {
     $urls = [
       'Data Loaders' => 'admin/tripal/loaders',
       'Data Storage' => 'admin/tripal/storage',
-      'Tripal Terms' => 'admin/tripal/terms',
     ];
 
     $userAuthenticatedOnly = $this->drupalCreateUser();
