@@ -48,6 +48,15 @@
   update_value: 'https://case5.com'
   expect_count: 1
   expect_value: 'https://case5.com'
+# test deleting a value, e.g. when a URL no longer exists.
+- table: 'db'
+  conditions:
+    - column: 'name'
+      value: 'PMID'
+  update_column: 'description'
+  update_value: ''
+  expect_count: 1
+  expect_value: ''
 # test a different table.
 - table: 'cv'
   conditions:
@@ -55,6 +64,6 @@
       value: 'synonym_type'
   update_column: 'definition'
   existing_value: ''
-  update_value: 'case6'
+  update_value: 'case7'
   expect_count: 1
-  expect_value: 'case6'
+  expect_value: 'case7'
