@@ -1164,3 +1164,18 @@ function tripal_chado_update_10417() {
     throw new UpdateException('Could not perform update: ' . $e->getMessage());
   }
 }
+
+/**
+ * Fix blank descriptions and invalid urls in db and cv records. PR 2462.
+ */
+function tripal_chado_update_10419() {
+  try {
+    $messenger = \Drupal::messenger();
+    $chado_patch_service = \Drupal::service('tripal_chado.patch_service');
+    $count = $chado_patch_service->patchChado(__DIR__ . '/config/update_10419/update_10419.yml');
+    $messenger->addMessage("Updated $count records");
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not perform update: ' . $e->getMessage());
+  }
+}

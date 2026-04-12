@@ -1,0 +1,30 @@
+# n.b. No url available for this DB.
+- table: 'db'
+  conditions:
+    - column: 'name'
+      value: 'BS'
+  update_column: 'description'
+  existing_value: ''
+  update_value: 'The Protein Feature Ontology is a structured controlled vocabulary for features of a protein sequence or structure.'
+- table: 'db'
+  conditions:
+    - column: 'name'
+      value: 'GO'
+  update_column: 'description'
+  existing_value: ''
+  update_value: 'The mission of the GO Consortium is to develop a comprehensive, computational model of biological systems, ranging from the molecular to the organism level, across the multiplicity of species in the tree of life.'
+- table: 'db'
+  conditions:
+    - column: 'name'
+      value: 'GO'
+  update_column: 'url'
+  existing_value: ''
+  update_value: 'https://geneontology.org/'
+- table: 'db'
+  conditions:
+    - column: 'name'
+      value: 'GO'
+  update_column: 'urlprefix'
+  existing_value: ''
+  update_value: 'https://amigo.geneontology.org/amigo/term/{db}:{accession}'
+
