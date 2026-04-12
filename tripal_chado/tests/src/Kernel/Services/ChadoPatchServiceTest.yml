@@ -1,0 +1,60 @@
+# tests behavior of a non-existent db record.
+- table: 'db'
+  conditions:
+    - column: 'name'
+      value: 'non-exist'
+  update_column: 'url'
+  existing_value: ''
+  update_value: 'https://case1.com'
+  expect_count: 0
+  expect_value: 'not-applicable-if-zero'
+# tests updating a record unconditionally regardless of current value.
+- table: 'db'
+  conditions:
+    - column: 'name'
+      value: 'BS'
+  update_column: 'urlprefix'
+  update_value: 'https://case2.com'
+  expect_count: 1
+  expect_value: 'https://case2.com'
+# tests >1 query conditions that do not match any record, no update made.
+- table: 'db'
+  conditions:
+    - column: 'name'
+      value: 'cellular_component'
+    - column: 'url'
+      value: 'non-exist'
+  update_column: 'url'
+  update_value: 'https://case3.com'
+  expect_count: 0
+  expect_value: 'https://geneontology.org/'
+# tests update inhibited because existing value does not match.
+- table: 'db'
+  conditions:
+    - column: 'name'
+      value: 'schema'
+  update_column: 'url'
+  existing_value: 'non-exist'
+  update_value: 'https://case4.com'
+  expect_count: 1
+  expect_value: 'https://schema.org/'
+# tests update made if existing value does match.
+- table: 'db'
+  conditions:
+    - column: 'name'
+      value: 'format'
+  update_column: 'url'
+  existing_value: 'http://edamontology.org/page'
+  update_value: 'https://case5.com'
+  expect_count: 1
+  expect_value: 'https://case5.com'
+# test a different table.
+- table: 'cv'
+  conditions:
+    - column: 'name'
+      value: 'synonym_type'
+  update_column: 'definition'
+  existing_value: ''
+  update_value: 'case6'
+  expect_count: 1
+  expect_value: 'case6'
