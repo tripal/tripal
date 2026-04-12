@@ -21,32 +21,48 @@ vocabularies:
 
     -   name: 'dc'
         label: 'DCMI Metadata Terms'
-        url: 'http://purl.org/dc/dcmitype/'
+        url: 'https://www.dublincore.org/specifications/dublin-core/dcmi-terms/'
         idSpaces:
             -   name: 'dc'
                 description: 'DCMI Metadata Terms'
-                urlPrefix: 'http://purl.org/dc/terms/{accession}'
+                urlPrefix: 'https://purl.org/dc/terms/{accession}'
         terms:
             -   id: 'dc:Service'
                 name: 'Service'
                 description: 'A system that provides one or more functions.'
 
+    -   name: 'dcterms'
+        label: 'DCMI Metadata Terms'
+        url: 'https://www.dublincore.org/specifications/dublin-core/dcmi-terms/'
+        idSpaces:
+            -   name: 'dc'
+                description: 'DCMI Metadata Terms'
+                urlPrefix: 'https://purl.org/dc/terms/{accession}'
+
+    -   name: 'doi'
+        label: 'Digital Object Identifier'
+        url: 'https://www.doi.org'
+        idSpaces:
+            -   name: 'doi'
+                description: 'A DOI name is a digital identifier of an object, any object — physical, digital, or abstract.'
+                urlPrefix: 'https://doi.org/{accession}'
+
     -   name: 'EDAM'
         label: 'Bioscientific data analysis ontology'
-        url: 'http://edamontology.org/page'
+        url: 'https://edamontology.org/page'
         idSpaces:
             -   name: 'data'
                 description: "Bioinformatics operations, data types, formats, identifiers and topics."
-                urlPrefix: "http://edamontology.org/{db}_{accession}"
+                urlPrefix: "https://edamontology.org/{db}_{accession}"
             -   name: 'format'
                 description: 'A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere. The main focus in EDAM lies on formats as means of structuring data exchanged between different tools or resources.'
-                urlPrefix: "http://edamontology.org/{db}_{accession}"
+                urlPrefix: "https://edamontology.org/{db}_{accession}"
             -   name: 'operation'
                 description: 'A function that processes a set of inputs and results in a set of outputs, or associates arguments (inputs) with values (outputs). Special cases are: a) An operation that consumes no input (has no input arguments).'
-                urlPrefix: "http://edamontology.org/{db}_{accession}"
+                urlPrefix: "https://edamontology.org/{db}_{accession}"
             -   name: 'topic'
                 description: 'A category denoting a rather broad domain or field of interest, of study, application, work, data, or technology. Topics have no clearly defined borders between each other.'
-                urlPrefix: "http://edamontology.org/{db}_{accession}"
+                urlPrefix: "https://edamontology.org/{db}_{accession}"
         terms:
             -   id: 'data:1249'
                 name: 'Sequence length'
@@ -136,10 +152,11 @@ vocabularies:
     -   name: 'efo'
         label: 'The Experimental Factor Ontology (EFO) provides a systematic description of many experimental variables available in EBI databases, and for external projects such as the NHGRI GWAS catalogue. It combines parts of several biological ontologies, such as anatomy, disease and chemical compounds. The scope of EFO is to support the annotation, analysis and visualization of data handled by many groups at the EBI and as the core ontology for OpenTargets.org'
         url: 'http://www.ebi.ac.uk/efo/efo.owl'
+        url: 'https://www.ebi.ac.uk/efo/'
         idSpaces:
             -   name: 'EFO'
                 description: 'Experimental Factor Ontology'
-                urlPrefix: 'http://www.ebi.ac.uk/efo/{db}_{accession}'
+                urlPrefix: 'https://www.ebi.ac.uk/efo/{db}_{accession}'
         terms:
             -   id: 'EFO:0000548'
                 name: 'instrument'
@@ -196,7 +213,7 @@ vocabularies:
         idSpaces:
             -   name: 'OBCS'
                 description: "Ontology of Biological and Clinical Statistics"
-                urlPrefix: "http://purl.obolibrary.org/obo/{db}_{accession}"
+                urlPrefix: "https://purl.obolibrary.org/obo/{db}_{accession}"
         terms:
             -   id: 'OBCS:0000117'
                 name: 'rank order'
@@ -204,11 +221,11 @@ vocabularies:
 
     -   name: 'obi'
         label: 'Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific'
-        url: 'http://obi-ontology.org/page/Main_Page'
+        url: 'https://obi-ontology.org/'
         idSpaces:
             -   name: 'OBI'
                 description: "The Ontology for Biomedical Investigation"
-                urlPrefix: "http://purl.obolibrary.org/obo/{db}_{accession}"
+                urlPrefix: "https://purl.obolibrary.org/obo/{db}_{accession}"
         terms:
             -   id: 'OBI:0100026'
                 name: 'organism'
@@ -222,11 +239,11 @@ vocabularies:
 
     -   name: 'ogi'
         label: 'Ontology for genetic interval'
-        url: 'http://purl.bioontology.org/ontology/OGI'
+        url: 'https://purl.bioontology.org/ontology/OGI'
         idSpaces:
             -   name: 'OGI'
                 description: "Ontology for genetic interval"
-                urlPrefix: "http://purl.obolibrary.org/obo/{db}_{accession}"
+                urlPrefix: "https://purl.obolibrary.org/obo/{db}_{accession}"
         terms:
             -   id: 'OGI:0000021'
                 name: 'location on map'
@@ -238,7 +255,7 @@ vocabularies:
         idSpaces:
             -   name: 'IAO'
                 description: 'Information Artifact Ontology'
-                urlPrefix: 'http://purl.obolibrary.org/obo/{db}_{accession}'
+                urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
         terms:
             -   id: 'IAO:0000064'
                 name: 'algorithm'
@@ -267,7 +284,6 @@ vocabularies:
         idSpaces:
             -   name: 'null'
                 description: 'No database'
-                urlPrefix: 'cv/lookup/{db}/{accession}'
 
     -   name: 'local'
         label: 'Locally created terms'
@@ -561,11 +577,11 @@ vocabularies:
 
     -   name: 'sbo'
         label: 'Systems Biology.  Terms commonly used in Systems Biology, and in particular in computational modeling.'
-        url: 'http://www.ebi.ac.uk/sbo/main/'
+        url: 'https://www.ebi.ac.uk/ols4/ontologies/sbo'
         idSpaces:
             -   name: 'SBO'
                 description: "Systems Biology Ontology"
-                urlPrefix: "http://purl.obolibrary.org/obo/{db}_{accession}"
+                urlPrefix: "https://www.ebi.ac.uk/ols4/ontologies/sbo/classes/http%253A%252F%252Fbiomodels.net%252FSBO%252F{db}_{accession}"
         terms:
             -   id: 'SBO:0000358'
                 name: 'phenotype'
@@ -582,11 +598,11 @@ vocabularies:
 
     -   name: 'swo'
         label: 'Bioinformatics operations, data types, formats, identifiers and topics'
-        url: 'http://purl.obolibrary.org/obo/swo'
+        url: 'https://obofoundry.org/ontology/swo.html'
         idSpaces:
             -   name: 'SWO'
                 description: "Bioinformatics operations, data types, formats, identifiers and topics"
-                urlPrefix: "http://www.ebi.ac.uk/swo/{db}_{accession}"
+                urlPrefix: "https://www.ebi.ac.uk/swo/{db}_{accession}"
         terms:
             -   id: 'SWO:0000001'
                 name: 'software'
@@ -594,19 +610,19 @@ vocabularies:
 
     -   name: 'PMID'
         label: 'PubMed.'
-        url: 'http://www.ncbi.nlm.nih.gov/pubmed'
+        url: 'https://www.ncbi.nlm.nih.gov/pubmed'
         idSpaces:
             -   name: 'PMID'
                 description: "PubMed"
-                urlPrefix: "http://www.ncbi.nlm.nih.gov/pubmed/{accession}"
+                urlPrefix: "https://www.ncbi.nlm.nih.gov/pubmed/{accession}"
 
     -   name: 'uo'
         label: 'Units of Measurement Ontology'
-        url: 'http://purl.obolibrary.org/obo/uo'
+        url: 'https://obofoundry.org/ontology/uo.html'
         idSpaces:
             -   name: 'UO'
                 description: "Units of Measurement Ontology"
-                urlPrefix: "http://purl.obolibrary.org/obo/UO_{accession}"
+                urlPrefix: "https://purl.obolibrary.org/obo/{db}_{accession}"
         terms:
             -   id: 'UO:0000000'
                 name: 'unit'
@@ -614,11 +630,11 @@ vocabularies:
 
     -   name: 'ncit'
         label: 'NCI Thesaurus OBO Edition'
-        url: 'http://purl.obolibrary.org/obo/ncit.owl'
+        url: 'https://www.ebi.ac.uk/ols4/ontologies/ncit'
         idSpaces:
             -   name: 'NCIT'
                 description: 'The NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.'
-                urlPrefix: 'http://purl.obolibrary.org/obo/{db}_{accession}'
+                urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
         terms:
             -   id: 'NCIT:C25164'
                 name: 'Date'
@@ -730,11 +746,11 @@ vocabularies:
                 description: 'The person or authoritative body who provided the information.'
     -   name: 'ncbitaxon'
         label: 'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy'
-        url: 'http://www.berkeleybop.org/ontologies/ncbitaxon/'
+        url: 'https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon'
         idSpaces:
             -   name: 'NCBITaxon'
                 description: 'NCBI organismal classification'
-                urlPrefix: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={accession}'
+                urlprefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
         terms:
             -   id: 'NCBITaxon:common_name'
                 name: 'common name'
@@ -747,7 +763,7 @@ vocabularies:
         idSpaces:
             -   name: 'AGRO'
                 description: 'Agronomy Ontology'
-                urlPrefix: 'http://purl.obolibrary.org/obo/{db}_{accession}'
+                urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
         terms:
             -   id: 'AGRO:00000360'
                 name: 'experimental site'
@@ -762,7 +778,7 @@ vocabularies:
         idSpaces:
             -   name: 'rdfs'
                 description: 'Resource Description Framework Schema'
-                urlPrefix: 'http://www.w3.org/2000/01/rdf-schema#{accession}'
+                urlPrefix: 'https://www.w3.org/TR/rdf11-schema/#ch_{accession}'
         terms:
             -   id: 'rdfs:comment'
                 name: 'comment'
@@ -789,6 +805,10 @@ vocabularies:
             -   name: 'SO'
                 description: "The Sequence Ontology"
                 urlPrefix: "http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}"
+            -   name: 'BS'
+                description: 'The Protein Feature Ontology is a structured controlled vocabulary for features of a protein sequence or structure.'
+            -   name: 'RNAMOD'
+                description: ''
         terms:
             -   id: 'SO:0000110'
                 name: 'sequence_feature'
@@ -814,11 +834,11 @@ vocabularies:
 
     -   name: 'taxonomic_rank'
         label: 'Taxonomic Rank'
-        url: 'http://www.obofoundry.org/ontology/taxrank.html'
+        url: 'https://www.obofoundry.org/ontology/taxrank.html'
         idSpaces:
             -   name: 'TAXRANK'
                 description: "A vocabulary of taxonomic ranks (species, family, phylum, etc)"
-                urlPrefix: "http://purl.obolibrary.org/obo/{db}_{accession}"
+                urlPrefix: "https://purl.obolibrary.org/obo/{db}_{accession}"
         terms:
             -   id: 'TAXRANK:0000005'
                 name: 'genus'
@@ -868,7 +888,7 @@ vocabularies:
 
     -   name: 'hydra'
         label: 'A Vocabulary for Hypermedia-Driven Web APIs.'
-        url: 'http://www.w3.org/ns/hydra/core'
+        url: 'https://www.hydra-cg.com/'
         idSpaces:
             -   name: 'hydra'
                 description: "A Vocabulary for Hypermedia-Driven Web APIs"
@@ -943,11 +963,10 @@ vocabularies:
 
     -   name: 'sep'
         label: 'A structured controlled vocabulary for the annotation of sample processing and separation techniques in scientific experiments.'
-        url: 'http://psidev.info/index.php?q=node/312'
+        url: 'https://psidev.info/index.php?q=node/312'
         idSpaces:
             -   name: 'sep'
-                description: "Sample processing and separation techniques."
-                urlPrefix: "http://purl.obolibrary.org/obo/{db}_{accession}"
+                description: "Sample processing and separation techniques. (deprecated)"
         terms:
             -   id: 'sep:00195'
                 name: 'biological sample'
@@ -958,11 +977,11 @@ vocabularies:
 
     -   name: 'SIO'
         label: 'The Semanticscience Integrated Ontology (SIO) provides a simple, integrated ontology of types and relations for rich description of objects, processes and their attributes.'
-        url: 'http://sio.semanticscience.org/'
+        url: 'https://sio.semanticscience.org/'
         idSpaces:
             -   name: 'SIO'
                 description: "Semanticscience Integrated Ontology"
-                urlPrefix: "http://semanticscience.org/resource/{db}_{accession}"
+                urlPrefix: "https://semanticscience.org/resource/{db}_{accession}"
         terms:
             -   id: 'SIO:000067'
                 name: 'namespace'
@@ -1009,7 +1028,7 @@ vocabularies:
         idSpaces:
             -   name: 'PBO'
                 description: 'Plant Breeding Ontology (PBO): an ontology for the plant breeding community which captures more than 2200 entries where 80 represent the core terms.'
-                urlPrefix: 'https://agroportal.lirmm.fr/ontologies/PBO/PBO_{accession}'
+                urlprefix: 'https://agroportal.lirmm.fr/ontologies/PBO/PBO_{accession}'
         terms:
             -   id: 'PBO:0000065'
                 name: 'progeny'
@@ -1019,9 +1038,41 @@ vocabularies:
         idSpaces:
             -   name: 'gene_ontology'
                 description: 'Gene Ontology'
+                urlprefix: 'https://amigo.geneontology.org/amigo/term/GO:{accession}'
             -   name: 'biological_process'
                 description: 'BPs are the larger processes or ‘biological programs’ accomplished by the concerted action of multiple molecular activities'
             -   name: 'cellular_component'
                 description: 'CC serves to capture the cellular location where a molecular function takes place'
             -   name: 'molecular_function'
                 description: 'MFs represent molecular-level activities performed by gene products'
+            -   name: 'GO'
+                description: 'The mission of the GO Consortium is to develop a comprehensive, computational model of biological systems, ranging from the molecular to the organism level, across the multiplicity of species in the tree of life.''
+                urlprefix: 'https://amigo.geneontology.org/amigo/term/{db}:{accession}'
+    -   name: 'MOD'
+        label: 'Protein modification'
+        url: 'https://www.ebi.ac.uk/ols4/ontologies/mod'
+        idSpaces:
+            -   name: 'MOD'
+                description: 'Protein modification'
+                urlprefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
+    -   name: 'orcid'
+        label: 'Open Researcher and Contributor ID'
+        url: 'https://orcid.org/'
+        idSpaces:
+            -   name: 'orcid'
+                description: 'ORCID is a free, unique, persistent identifier (PID) for individuals to use as they engage in research, scholarship, and innovation activities.'
+                urlprefix: 'https://orcid.org/{accession}'
+    -   name: 'synonym_type'
+        label: 'Type of synonym'
+        url: 'cv/lookup/synonym_type'
+        idSpaces:
+            -   name: 'synonym_type'
+                description: 'Classification of the type of synonym. This ontology is defined by Tripal.'
+                urlprefix: 'cv/lookup/{db}/{accession}'
+    -   name: 'wikipedia'
+        label: 'The Free Encyclopedia'
+        url: 'https://www.wikipedia.org/'
+        idSpaces:
+            -   name: 'wikipedia'
+                description: 'The Free Encyclopedia'
+                urlprefix: 'https://wikipedia.org/wiki/{accession}'
