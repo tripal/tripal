@@ -749,7 +749,7 @@ vocabularies:
         idSpaces:
             -   name: 'NCBITaxon'
                 description: 'NCBI organismal classification'
-                urlprefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
+                urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
         terms:
             -   id: 'NCBITaxon:common_name'
                 name: 'common name'
@@ -1027,7 +1027,7 @@ vocabularies:
         idSpaces:
             -   name: 'PBO'
                 description: 'Plant Breeding Ontology (PBO): an ontology for the plant breeding community which captures more than 2200 entries where 80 represent the core terms.'
-                urlprefix: 'https://agroportal.lirmm.fr/ontologies/PBO/PBO_{accession}'
+                urlPrefix: 'https://agroportal.lirmm.fr/ontologies/PBO/PBO_{accession}'
         terms:
             -   id: 'PBO:0000065'
                 name: 'progeny'
@@ -1037,7 +1037,7 @@ vocabularies:
         idSpaces:
             -   name: 'gene_ontology'
                 description: 'Gene Ontology'
-                urlprefix: 'https://amigo.geneontology.org/amigo/term/GO:{accession}'
+                urlPrefix: 'https://amigo.geneontology.org/amigo/term/GO:{accession}'
             -   name: 'biological_process'
                 description: 'BPs are the larger processes or ‘biological programs’ accomplished by the concerted action of multiple molecular activities'
             -   name: 'cellular_component'
@@ -1046,7 +1046,7 @@ vocabularies:
                 description: 'MFs represent molecular-level activities performed by gene products'
             -   name: 'GO'
                 description: 'The mission of the GO Consortium is to develop a comprehensive, computational model of biological systems, ranging from the molecular to the organism level, across the multiplicity of species in the tree of life.'
-                urlprefix: 'https://amigo.geneontology.org/amigo/term/{db}:{accession}'
+                urlPrefix: 'https://amigo.geneontology.org/amigo/term/{db}:{accession}'
     -   name: 'gene_ontology'
         label: 'Gene Ontology'
         url: 'https://geneontology.org/'
@@ -1056,25 +1056,25 @@ vocabularies:
         idSpaces:
             -   name: 'MOD'
                 description: 'Protein modification'
-                urlprefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
+                urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
     -   name: 'orcid'
         label: 'Open Researcher and Contributor ID'
         url: 'https://orcid.org/'
         idSpaces:
             -   name: 'orcid'
                 description: 'ORCID is a free, unique, persistent identifier (PID) for individuals to use as they engage in research, scholarship, and innovation activities.'
-                urlprefix: 'https://orcid.org/{accession}'
+                urlPrefix: 'https://orcid.org/{accession}'
     -   name: 'synonym_type'
         label: 'Type of synonym'
         url: 'cv/lookup/synonym_type'
         idSpaces:
             -   name: 'synonym_type'
                 description: 'Classification of the type of synonym. This ontology is defined by Tripal.'
-                urlprefix: 'cv/lookup/{db}/{accession}'
+                urlPrefix: 'cv/lookup/{db}/{accession}'
     -   name: 'wikipedia'
         label: 'The Free Encyclopedia'
         url: 'https://www.wikipedia.org/'
         idSpaces:
             -   name: 'wikipedia'
                 description: 'The Free Encyclopedia'
-                urlprefix: 'https://wikipedia.org/wiki/{accession}'
+                urlPrefix: 'https://wikipedia.org/wiki/{accession}'
