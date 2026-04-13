@@ -1045,7 +1045,7 @@ vocabularies:
             -   name: 'molecular_function'
                 description: 'MFs represent molecular-level activities performed by gene products'
             -   name: 'GO'
-                description: 'The mission of the GO Consortium is to develop a comprehensive, computational model of biological systems, ranging from the molecular to the organism level, across the multiplicity of species in the tree of life.''
+                description: 'The mission of the GO Consortium is to develop a comprehensive, computational model of biological systems, ranging from the molecular to the organism level, across the multiplicity of species in the tree of life.'
                 urlprefix: 'https://amigo.geneontology.org/amigo/term/{db}:{accession}'
     -   name: 'gene_ontology'
         label: 'Gene Ontology'
