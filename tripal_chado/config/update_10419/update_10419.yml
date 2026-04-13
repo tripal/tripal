@@ -45,8 +45,8 @@
     - column: 'name'
       value: 'GO'
   update_column: 'description'
-  existing_value: ''
-  update_value: 'The mission of the GO Consortium is to develop a comprehensive, computational model of biological systems, ranging from the molecular to the organism level, across the multiplicity of species in the tree of life.'
+  existing_value: 'GO'
+  update_value: 'Gene Ontology'
 - table: 'db'
   conditions:
     - column: 'name'
@@ -344,7 +344,7 @@
 - table: 'db'
   conditions:
     - column: 'name'
-      value: 'http'
+      value: 'https'
   update_column: 'description'
   existing_value: ''
   update_value: 'This database is an unintended artifact of the Tripal obo importer'
