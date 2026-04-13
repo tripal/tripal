@@ -44,7 +44,7 @@
     - column: 'name'
       value: 'format'
   update_column: 'url'
-  existing_value: 'http://edamontology.org/page'
+  existing_value: 'https://edamontology.org/page'
   update_value: 'https://case5.com'
   expect_count: 1
   expect_value: 'https://case5.com'
