@@ -1,0 +1,9 @@
+name: 'Tripal Views'
+type: 'module'
+description: 'Provides Custom Views for Tripal.'
+core_version_requirement: '^10.5 || ^11.2'
+php: 8.2
+package: 'Tripal'
+version: '4.0.alpha4'
+dependencies:
+  - 'tripal:tripal'

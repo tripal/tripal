@@ -1,0 +1,3 @@
+services:
+  tripal_views.hooks:
+    class: 'Drupal\tripal_views\Hook\TripalViewsHooks'
