@@ -122,7 +122,7 @@ INSERT INTO chado.cv VALUES (28, 'schema', 'Schema.org. Schema.org is sponsored 
 INSERT INTO chado.cv VALUES (29, 'sep', 'A structured controlled vocabulary for the annotation of sample processing and separation techniques in scientific experiments.');
 INSERT INTO chado.cv VALUES (30, 'SIO', 'The Semanticscience Integrated Ontology (SIO) provides a simple, integrated ontology of types and relations for rich description of objects, processes and their attributes.');
 INSERT INTO chado.cv VALUES (31, 'cellular_component', NULL);
-INSERT INTO chado.cv VALUES (32, 'synonym_type', NULL);
+INSERT INTO chado.cv VALUES (32, 'synonym_type', 'Type of synonym');
 INSERT INTO chado.cv VALUES (33, 'PBO', 'Plant Breeding Ontology');
 INSERT INTO chado.db VALUES (19, 'UO', 'Units of Measurement Ontology', 'https://purl.obolibrary.org/obo/{db}_{accession}', 'https://obofoundry.org/ontology/uo.html');
 INSERT INTO chado.db VALUES (2, 'CO_010', 'Crop Germplasm Ontology', 'http://www.cropontology.org/terms/CO_010:{accession}', 'http://www.cropontology.org/get-ontology/CO_010');
@@ -131,7 +131,7 @@ INSERT INTO chado.db VALUES (3, 'dc', 'DCMI Metadata Terms', 'https://purl.org/d
 INSERT INTO chado.db VALUES (42, 'dcterms', 'DCMI Metadata Terms', 'https://purl.org/dc/terms/{accession}', 'https://www.dublincore.org/specifications/dublin-core/dcmi-terms/');
 INSERT INTO chado.db VALUES (39, 'https', '', NULL, '');
 INSERT INTO chado.db VALUES (20, 'NCIT', 'The NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.', 'https://purl.obolibrary.org/obo/{db}_{accession}', 'https://www.ebi.ac.uk/ols4/ontologies/ncit');
-INSERT INTO chado.db VALUES (12, 'OBI', 'The Ontology for Biomedical Investigation', 'http://purl.obolibrary.org/obo/{db}_{accession}', 'http://obi-ontology.org/page/Main_Page');
+INSERT INTO chado.db VALUES (12, 'OBI', 'The Ontology for Biomedical Investigation', 'https://purl.obolibrary.org/obo/{db}_{accession}', 'https://obi-ontology.org/');
 INSERT INTO chado.db VALUES (40, 'doi', 'A DOI name is a digital identifier of an object, any object — physical, digital, or abstract.', 'https://doi.org/{accession}', 'https://www.doi.org');
 INSERT INTO chado.db VALUES (25, 'TAXRANK', 'A vocabulary of taxonomic ranks (species, family, phylum, etc)', 'https://purl.obolibrary.org/obo/{db}_{accession}', 'https://www.obofoundry.org/ontology/taxrank.html');
 INSERT INTO chado.db VALUES (13, 'OGI', 'Ontology for genetic interval', 'https://purl.obolibrary.org/obo/{db}_{accession}', 'https://purl.bioontology.org/ontology/OGI');
@@ -161,8 +161,8 @@ INSERT INTO chado.db VALUES (31, 'SIO', 'Semanticscience Integrated Ontology', '
 INSERT INTO chado.db VALUES (32, 'GO', 'The mission of the GO Consortium is to develop a comprehensive, computational model of biological systems, ranging from the molecular to the organism level, across the multiplicity of species in the tree of life.', 'https://amigo.geneontology.org/amigo/term/{db}:{accession}', 'https://geneontology.org/');
 INSERT INTO chado.db VALUES (33, 'synonym_type', 'Classification of the type of synonym. This ontology is defined by Tripal.', 'cv/lookup/{db}/{accession}', 'cv/lookup/synonym_type');
 INSERT INTO chado.db VALUES (34, 'loinc', '', NULL, '');
-INSERT INTO chado.db VALUES (35, 'BS', 'The Protein Feature Ontology is a structured controlled vocabulary for features of a protein sequence or structure.', NULL, '');
-INSERT INTO chado.db VALUES (36, 'RNAMOD', 'RNA modification', NULL, '');
+INSERT INTO chado.db VALUES (35, 'BS', 'The Protein Feature Ontology is a structured controlled vocabulary for features of a protein sequence or structure.', NULL, 'http://www.sequenceontology.org');
+INSERT INTO chado.db VALUES (36, 'RNAMOD', 'RNA modification', NULL, 'http://www.sequenceontology.org');
 INSERT INTO chado.db VALUES (37, 'MOD', 'Protein modification', 'https://purl.obolibrary.org/obo/{db}_{accession}', 'https://www.ebi.ac.uk/ols4/ontologies/mod');
 INSERT INTO chado.db VALUES (38, 'wikipedia', 'The Free Encyclopedia', 'https://wikipedia.org/wiki/{accession}', 'https://www.wikipedia.org/');
 INSERT INTO chado.db VALUES (41, 'PBO', 'Plant Breeding Ontology (PBO): an ontology for the plant breeding community which captures more than 2200 entries where 80 represent the core terms.', 'https://agroportal.lirmm.fr/ontologies/PBO/PBO_{accession}', 'https://agroportal.lirmm.fr/ontologies/PBO');

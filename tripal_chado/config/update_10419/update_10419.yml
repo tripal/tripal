@@ -15,6 +15,13 @@
 - table: 'db'
   conditions:
     - column: 'name'
+      value: 'BS'
+  update_column: 'url'
+  existing_value: ''
+  update_value: 'http://www.sequenceontology.org'
+- table: 'db'
+  conditions:
+    - column: 'name'
       value: 'EFO'
   update_column: 'urlprefix'
   existing_value: 'http://www.ebi.ac.uk/efo/{db}_{accession}'
@@ -180,6 +187,13 @@
   update_column: 'description'
   existing_value: ''
   update_value: 'RNA modification'
+- table: 'db'
+  conditions:
+    - column: 'name'
+      value: 'RNAMOD'
+  update_column: 'url'
+  existing_value: ''
+  update_value: 'http://www.sequenceontology.org'
 - table: 'db'
   conditions:
     - column: 'name'

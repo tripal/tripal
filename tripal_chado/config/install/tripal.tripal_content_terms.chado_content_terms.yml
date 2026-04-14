@@ -181,11 +181,11 @@ vocabularies:
 
     -   name: 'ero'
         label: 'The Eagle-I Research Resource Ontology models research resources such instruments. protocols, reagents, animal models and biospecimens. It has been developed in the context of the eagle-i project (http://eagle-i.net/).'
-        url: 'http://purl.bioontology.org/ontology/ERO'
+        url: 'https://purl.bioontology.org/ontology/ERO'
         idSpaces:
             -   name: 'ERO'
                 description: 'The Eagle-I Research Resource Ontology'
-                urlPrefix: 'http://purl.bioontology.org/ontology/ERO/{db}:{accession}'
+                urlPrefix: 'https://purl.bioontology.org/ontology/ERO/{db}:{accession}'
         terms:
             -   id: 'ERO:0001716'
                 name: 'database'
@@ -807,7 +807,7 @@ vocabularies:
             -   name: 'BS'
                 description: 'The Protein Feature Ontology is a structured controlled vocabulary for features of a protein sequence or structure.'
             -   name: 'RNAMOD'
-                description: ''
+                description: 'RNA modification'
         terms:
             -   id: 'SO:0000110'
                 name: 'sequence_feature'
@@ -1035,9 +1035,6 @@ vocabularies:
         label: 'Gene Ontology'
         url: 'https://geneontology.org/'
         idSpaces:
-            -   name: 'gene_ontology'
-                description: 'Gene Ontology'
-                urlPrefix: 'https://amigo.geneontology.org/amigo/term/GO:{accession}'
             -   name: 'biological_process'
                 description: 'BPs are the larger processes or ‘biological programs’ accomplished by the concerted action of multiple molecular activities'
             -   name: 'cellular_component'
@@ -1050,6 +1047,10 @@ vocabularies:
     -   name: 'gene_ontology'
         label: 'Gene Ontology'
         url: 'https://geneontology.org/'
+        idSpaces:
+            -   name: 'gene_ontology'
+                description: 'Gene Ontology'
+                urlPrefix: 'https://amigo.geneontology.org/amigo/term/GO:{accession}'
     -   name: 'MOD'
         label: 'Protein modification'
         url: 'https://www.ebi.ac.uk/ols4/ontologies/mod'
