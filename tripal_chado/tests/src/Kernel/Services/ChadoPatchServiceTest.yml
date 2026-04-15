@@ -63,7 +63,7 @@
     - column: 'name'
       value: 'synonym_type'
   update_column: 'definition'
-  existing_value: 'Classification of the type of synonym. This ontology is defined by Tripal.'
+  existing_value: 'Type of synonym'
   update_value: 'case7'
   expect_count: 1
   expect_value: 'case7'
