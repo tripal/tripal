@@ -15,6 +15,16 @@ use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInterface, ContainerFactoryPluginInterface {
 
   /**
+   * Indicates an association was newly created.
+   */
+  const NEW = 1;
+
+  /**
+   * Indicates an association already existed.
+   */
+  const EXISTING = 2;
+
+  /**
    * Provides the TripalDBX connection to chado.
    *
    * @var Drupal\tripal_chado\Database\ChadoConnection
@@ -79,7 +89,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * @param string $table_name
    *   The table name to query.
    *
-   * @return array|NULL
+   * @return array|null
    *   The table schema, or NULL if the table does not exist.
    */
   public function getChadoTableDef(string $table_name): ?array {
