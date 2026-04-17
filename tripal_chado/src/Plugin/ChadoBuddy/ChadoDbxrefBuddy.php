@@ -703,7 +703,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $existing_records = $this->getDb($conditions, $options);
     if (count($existing_records) > 0) {
       if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy deleteDb error, more than one record matched the specified values\n" . print_r($values, TRUE));
+        throw new ChadoBuddyException("ChadoBuddy deleteDb error, more than one record matched the specified conditions\n" . print_r($conditions, TRUE));
       }
       $db_id = $existing_records[0]->getValue('db.db_id');
 

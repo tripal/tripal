@@ -1097,7 +1097,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $existing_records = $this->getCv($conditions, $options);
     if (count($existing_records) > 0) {
       if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy deleteCv error, more than one record matched the specified values\n" . print_r($values, TRUE));
+        throw new ChadoBuddyException("ChadoBuddy deleteCv error, more than one record matched the specified conditions\n" . print_r($conditions, TRUE));
       }
       $cv_id = $existing_records[0]->getValue('cv.cv_id');
 
@@ -1197,7 +1197,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $existing_records = $this->getCvterm($conditions, $options);
     if (count($existing_records) > 0) {
       if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy deleteCvterm error, more than one record matched the specified values\n" . print_r($values, TRUE));
+        throw new ChadoBuddyException("ChadoBuddy deleteCvterm error, more than one record matched the specified conditions\n" . print_r($conditions, TRUE));
       }
       $cvterm_id = $existing_records[0]->getValue('cvterm.cvterm_id');
       $dbxref_id = $existing_records[0]->getValue('dbxref.dbxref_id');
@@ -1222,6 +1222,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
         return FALSE;
       }
       else {
+        $transaction = $this->chado_connection->startTransaction();
         try {
           // Perform the record deletion. This might fail if
           // a foreign key is not defined as ON DELETE CASCADE.
@@ -1240,6 +1241,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
             $query->execute();
           }
           catch (\Exception $e) {
+            $transaction->rollback();
             throw new ChadoBuddyException('ChadoBuddy deleteCvterm database error deleting dbxref: ' . $e->getMessage());
           }
         }
