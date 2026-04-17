@@ -310,6 +310,47 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
       ->execute()
       ->fetchField();
     $this->assertEquals(0, $n, "The db newDb006 was not deleted from the database");
+
+    // TEST: delete a dbxref with no foreign keys should succeed.
+    $result = $instance->insertDb(['db.name' => 'newDb007-8', 'db.description' => 'desc007']);
+    $this->assertIsObject($result, 'Failed setup for test inserting db newDb007');
+    $result = $instance->insertDbxref(['dbxref.accession' => 'newDbxref007', 'db.name' => 'newDb007-8']);
+    $this->assertIsObject($result, 'Failed setup for test inserting dbxref newDbxref007');
+    $result = $instance->deleteDbxref(['dbxref.accession' => 'newDbxref007']);
+    $this->assertTrue($result, "We deleted a dbxref that has no foreign keys");
+    $n = $this->chado_connection->select('1:dbxref')
+      ->condition('accession', 'newDbxref007', '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The dbxref newDbxref007 was incorrectly retained in the database");
+
+    // TEST: delete a dbxref with a foreign key should fail.
+    $result = $instance->insertDbxref(['dbxref.accession' => 'newDbxref008', 'db.name' => 'newDb007-8']);
+    $this->assertIsObject($result, 'Failed setup for test inserting dbxref newDbxref008');
+    $dbxref_id = $result->getValue('dbxref.dbxref_id');
+    $n = $this->chado_connection->insert('1:biomaterial')
+      ->fields(['dbxref_id' => $dbxref_id])
+      ->execute();
+    $this->assertEquals(1, $n, "The test biomaterial was not inserted");
+    $result = $instance->deleteDbxref(['dbxref.accession' => 'newDbxref008']);
+    $this->assertFalse($result, "We incorrectly deleted a dbxref that has a foreign key");
+    $n = $this->chado_connection->select('1:dbxref')
+      ->condition('accession', 'newDbxref008', '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(1, $n, "The dbxref newDbxref008 was incorrectly deleted from the database");
+
+    // TEST: delete a dbxref with a foreign key but cascade set should succeed.
+    $result = $instance->deleteDbxref(['dbxref.accession' => 'newDbxref008'], ['cascade' => TRUE]);
+    $this->assertTrue($result, "We failed to delete a dbxref that has a foreign key with cascade set");
+    $n = $this->chado_connection->select('1:dbxref')
+      ->condition('accession', 'newDbxref008', '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The dbxref newDbxref008 was incorrectly retained in the database");
   }
 
 }
