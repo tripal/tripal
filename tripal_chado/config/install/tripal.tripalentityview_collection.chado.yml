@@ -1,9 +1,0 @@
-id: 'entityview_collection_tripal_chado'
-label: 'Tripal Chado Views'
-description: 'Drupal Views available for Chado content in the tripal_chado module'
-content_types:
-  - label: 'Analysis'
-    id: 'views.view.tripal_entity_analysis'
-  - label: 'Publication'
-    id: 'views.view.tripal_entity_pub'
-
