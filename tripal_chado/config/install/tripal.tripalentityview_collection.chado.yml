@@ -5,5 +5,5 @@ content_types:
   - label: 'Analysis'
     id: 'views.view.tripal_entity_analysis'
   - label: 'Publication'
-    id: 'views.view.tripal_entity_publication'
+    id: 'views.view.tripal_entity_pub'
 

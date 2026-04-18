@@ -10,7 +10,7 @@ dependencies:
   module:
     - tripal
     - tripal_chado
-id: tripal_entity_publication
+id: tripal_entity_pub
 label: Publication
 module: views
 description: 'Use the publication page for books, journal articles, or other citable work.'
