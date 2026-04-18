@@ -9,7 +9,7 @@ dependencies:
   module:
     - tripal
     - tripal_chado
-id: chado_analysis
+id: tripal_entity_analysis
 label: Analysis
 module: views
 description: 'Use the analysis page for an individual analysis, workflow or pipeline that was performed using statistical or computational means.'
