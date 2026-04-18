@@ -2,9 +2,11 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\api;
 
+use Drupal\Core\Database\Database;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Testing the tripal_chado/api/tripal_chado.query.api.php functions.
@@ -13,10 +15,9 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
  * @group Tripal Chado
  * @group Tripal API
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal API')]
+#[Group('legacy-api')]
 #[IgnoreDeprecations]
+#[RunTestsInSeparateProcesses]
 class ChadoQueryAPITest extends ChadoTestBrowserBase {
 
   protected $defaultTheme = 'stark';
@@ -25,6 +26,7 @@ class ChadoQueryAPITest extends ChadoTestBrowserBase {
 
   /**
    * Modules to enable.
+   *
    * @var array
    */
   protected static $modules = ['tripal', 'tripal_chado'];
@@ -35,26 +37,21 @@ class ChadoQueryAPITest extends ChadoTestBrowserBase {
   protected function setUp(): void {
     parent::setUp();
 
-    // Open connection to Chado
+    // Open connection to Chado.
     $this->connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
   }
 
   /**
    * Tests chado_query().
-   *
-   * @group tripal-chado
-   * @group chado-query
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-query')]
   public function testChadoQuery() {
-    $drupal_connection = \Drupal\Core\Database\Database::getConnection();
+    $drupal_connection = Database::getConnection();
     $chado_testschema = $this->testSchemaName;
 
     // --------------
     // Check that errors are thrown if the correct parameters are not supplied.
     // -- SQL must be a string.
-    $sql = $args =  ['Fred', 'Sarah', 'Jane'];
+    $sql = $args = ['Fred', 'Sarah', 'Jane'];
     $dbq = chado_query($sql, $args);
     $this->assertEquals(FALSE, $dbq);
 
@@ -80,7 +77,8 @@ class ChadoQueryAPITest extends ChadoTestBrowserBase {
     $args = [
       ':genus' => 'Tripalus',
       ':species' => 'databasica' . uniqid(),
-      ':type_id' => 2, //version
+    // Version.
+      ':type_id' => 2,
       ':infra' => 'Quad',
       ':common' => 'Cultivated Tripal',
       ':abbrev' => 'T. databasica',
@@ -131,14 +129,9 @@ class ChadoQueryAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado_insert(), chado_select(), chado_update(), and chado_delete().
-   *
-   * @group tripal-chado
-   * @group chado-query
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-query')]
   public function testChadoQueryHelpers() {
-    $drupal_connection = \Drupal\Core\Database\Database::getConnection();
+    $drupal_connection = Database::getConnection();
 
     $chado_testschema = $this->testSchemaName;
 
@@ -146,7 +139,8 @@ class ChadoQueryAPITest extends ChadoTestBrowserBase {
     $values = [
       'genus' => 'Tripalus',
       'species' => 'ferox' . uniqid(),
-      'type_id' => 2, //version
+    // Version.
+      'type_id' => 2,
       'infraspecific_name' => 'Quad',
       'common_name' => 'Wild Tripal',
       'abbreviation' => 'T. ferox',
@@ -159,7 +153,6 @@ class ChadoQueryAPITest extends ChadoTestBrowserBase {
       [':g' => $values['genus'], ':s' => $values['species']])->fetchObject();
     $this->assertIsObject($result);
     $this->assertEquals($values['species'], $result->species);
-
 
     // SELECT.
     $resource = chado_select_record(
@@ -196,53 +189,33 @@ class ChadoQueryAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests chado_get_table_max_rank().
-   *
-   * @group tripal-chado
-   * @group chado-query
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-query')]
   public function testChadoTableMaxRank() {
-    $drupal_connection = \Drupal\Core\Database\Database::getConnection();
+    $drupal_connection = Database::getConnection();
     $this->markTestIncomplete('This test has not been implemented yet.');
   }
 
   /**
    * Tests chado_set_active().
-   *
-   * @group tripal-chado
-   * @group chado-query
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-query')]
   public function testChadoSetActive() {
-    $drupal_connection = \Drupal\Core\Database\Database::getConnection();
+    $drupal_connection = Database::getConnection();
     $this->markTestIncomplete('This test has not been implemented yet.');
   }
 
   /**
    * Tests chado_pager_query() and chado_pager_get_count().
-   *
-   * @group tripal-chado
-   * @group chado-query
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-query')]
   public function testChadoPagerQuery() {
-    $drupal_connection = \Drupal\Core\Database\Database::getConnection();
+    $drupal_connection = Database::getConnection();
     $this->markTestIncomplete('This test has not been implemented yet.');
   }
 
   /**
    * Tests chado_schema_get_foreign_key().
-   *
-   * @group tripal-chado
-   * @group chado-query
    */
-  #[Group('tripal-chado')]
-  #[Group('chado-query')]
   public function testChadoSchemaGetFK() {
-    $drupal_connection = \Drupal\Core\Database\Database::getConnection();
+    $drupal_connection = Database::getConnection();
     $this->markTestIncomplete('This test has not been implemented yet.');
   }
 

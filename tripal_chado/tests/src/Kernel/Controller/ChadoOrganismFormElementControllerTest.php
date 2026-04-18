@@ -1,11 +1,13 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Kernel;
+namespace Drupal\Tests\tripal_chado\Kernel\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the Organism Autocomplete Form Element.
@@ -14,9 +16,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group Organism Autocomplete Form Element
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Organism Autocomplete Form Element')]
+#[Group('autocomplete')]
+#[Group('bio-organism')]
+#[RunTestsInSeparateProcesses]
 class ChadoOrganismFormElementControllerTest extends ChadoTestKernelBase {
   /**
    * The default theme to use for this test.

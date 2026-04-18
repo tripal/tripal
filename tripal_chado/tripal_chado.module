@@ -5,8 +5,9 @@
  * Contains tripal_chado.module.
  */
 
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Hook\Attribute\LegacyHook;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Config\FileStorage;
 
 require_once 'src/api/tripal_chado.schema.api.php';
 require_once 'src/api/tripal_chado.custom_tables.api.php';
@@ -25,289 +26,48 @@ require_once 'src/api/tripal_chado.viewsdata.inc';
 
 /**
  * Implements hook_help().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_chado\Hook\TripalChadoHooks in
+ * tripal_chado/src/Hook/TripalChadoHooks.php.
  */
+#[LegacyHook]
 function tripal_chado_help($route_name, RouteMatchInterface $route_match) {
-  switch ($route_name) {
-    // Main module help for the tripal_chado module.
-    case 'help.page.tripal_chado':
-      $output = '';
-      $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('Chado integration for Tripal.') . '</p>';
-      return $output;
-
-    default:
-  }
+  return \Drupal::service('tripal_chado.hooks')->help($route_name, $route_match);
 }
 
 /**
  * Implements hook_config_schema_info_alter().
  *
- * Specifically, we are altering config schema set in the tripal module.
- * We use this approach to ensure we are extending the existing schema
- * which makes these changes available to extension modules defining their
- * own yml files.
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_chado\Hook\TripalChadoHooks in
+ * tripal_chado/src/Hook/TripalChadoHooks.php.
  */
+#[LegacyHook]
 function tripal_chado_config_schema_info_alter(&$definitions) {
-
-  // Third party settings for entity types
-  // (always add to both collection + content type entity).
-  // -- Collection.
-  $definitions['tripal.tripalentitytype_collection.*']['mapping']['content_types']['sequence']['mapping']['settings']['mapping']['chado_base_table'] = [
-    'type' => 'string',
-    'label' => 'Entity Third Party Setting for Base Chado Table',
-    'nullable' => true
-  ];
-  $definitions['tripal.tripalentitytype_collection.*']['mapping']['content_types']['sequence']['mapping']['settings']['mapping']['bundle_type_table'] = [
-    'type' => 'string',
-    'label' => 'Entity Third Party Setting for Table Specifying Content CV Term',
-    'nullable' => true
-  ];
-  $definitions['tripal.tripalentitytype_collection.*']['mapping']['content_types']['sequence']['mapping']['settings']['mapping']['bundle_type_column'] = [
-    'type' => 'string',
-    'label' => 'Entity Third Party Setting for Column Specifying Content CV Term',
-    'nullable' => true
-  ];
-
-  // -- Content Type Entity.
-  $definitions['tripal.content_type.*']['mapping']['third_party_settings']['mapping']['tripal']['mapping']['chado_base_table'] = [
-    'type' => 'string',
-    'label' => 'Entity Third Party Setting for Base Chado Table',
-    'nullable' => true
-  ];
-  $definitions['tripal.content_type.*']['mapping']['third_party_settings']['mapping']['tripal']['mapping']['bundle_type_table'] = [
-    'type' => 'string',
-    'label' => 'Entity Third Party Setting for Table Specifying Content CV Term',
-    'nullable' => true
-  ];
-  $definitions['tripal.content_type.*']['mapping']['third_party_settings']['mapping']['tripal']['mapping']['bundle_type_column'] = [
-    'type' => 'string',
-    'label' => 'Entity Third Party Setting for Column Specifying Content CV Term',
-    'nullable' => true
-  ];
-
-  // ADDITIONS TO TRIPAL FIELDS.
-  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['base_table'] = [
-    'type' => 'string',
-    'label' => 'Field Base Chado Table',
-    'nullable' => false
-  ];
-  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['base_column'] = [
-    'type' => 'string',
-    'label' => 'Field Base Chado Column',
-    'nullable' => false
-  ];
-  // Specific to the schema__additional_type field.
-  // Indicates the table where the type_id column is used to differentiate the type.
-  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['type_table'] = [
-    'type' => 'string',
-    'label' => 'Table containing Type ID',
-    'nullable' => false
-  ];
-  // Indicates the column used as a foreign key to the cvterm table where the type is linked.
-  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['type_column'] = [
-    'type' => 'string',
-    'label' => 'Column Linking to CVTerm table',
-    'nullable' => false
-  ];
-  // Specific to the chado_linker__prop field.
-  // Indicates the table that contains the property columns.
-  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['prop_table'] = [
-    'type' => 'string',
-    'label' => 'Table containing property columns',
-    'nullable' => false
-  ];
-  // Specific to linker tables.
-  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['linker_table'] = [
-    'type' => 'string',
-    'label' => 'The linking table used by the current field.',
-    'nullable' => true
-  ];
-  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['linker_fkey_column'] = [
-    'type' => 'string',
-    'label' => 'The column in the linking table which is a foreign key pointing to the base table (e.g. for feature_synonym this would be feature_id).',
-    'nullable' => true
-  ];
-  // Specific to relationship tables.
-  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['subject_column'] = [
-    'type' => 'string',
-    'label' => 'The column in the relationship table which is a foreign key for the relationship subject pointing to the base table.',
-    'nullable' => true
-  ];
-  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['object_column'] = [
-    'type' => 'string',
-    'label' => 'The column in the relationship table which is a foreign key for the relationship object pointing to the base table.',
-    'nullable' => true
-  ];
-
-  // ADDITIONS TO TRIPAL FIELD COLLECTION -YML FIELD CREATION.
-  // Adds the Base table and column information needed for all Chado fields.
-  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['base_table'] = [
-    'type' => 'string',
-    'label' => 'Field Base Chado Table',
-    'nullable' => false
-  ];
-  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['base_column'] = [
-    'type' => 'string',
-    'label' => 'Field Base Chado Column',
-    'nullable' => false
-  ];
-  // Specific to the schema__additional_type field.
-  // Indicates the table where the type_id column is used to differentiate the type.
-  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['type_table'] = [
-    'type' => 'string',
-    'label' => 'Table containing Type ID',
-    'nullable' => false
-  ];
-  // Indicates the column used as a foreign key to the cvterm table where the type is linked.
-  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['type_column'] = [
-    'type' => 'string',
-    'label' => 'Column Linking to CVTerm table',
-    'nullable' => false
-  ];
-  // Specific to the chado_linker__prop field.
-  // Indicates the table that contains the property columns.
-  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['prop_table'] = [
-    'type' => 'string',
-    'label' => 'Table containing property columns',
-    'nullable' => false
-  ];
-  // Specific to linker tables.
-  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['linker_table'] = [
-    'type' => 'string',
-    'label' => 'The linking table used by the current field.',
-    'nullable' => true
-  ];
-  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['linker_fkey_column'] = [
-    'type' => 'string',
-    'label' => 'The column in the linking table which is a foreign key pointing to the base table (e.g. for feature_synonym this would be feature_id).',
-    'nullable' => true
-  ];
-  // Specific to relationship tables
-  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['subject_column'] = [
-    'type' => 'string',
-    'label' => 'The column in the relationship table which is a foreign key for the relationship subject pointing to the base table.',
-    'nullable' => true
-  ];
-  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['object_column'] = [
-    'type' => 'string',
-    'label' => 'The column in the relationship table which is a foreign key for the relationship object pointing to the base table.',
-    'nullable' => true
-  ];
-}
-
-/**
- * Used by the hook_rebuild() function to recreate views from default.
- *
- * If the user deletes one of the views that are created on install of the
- * Tripal Chado module then this will restore them when the cache is cleared.
- */
-function tripal_chado_rebuild_views() {
-
-  //
-  // Make sure the Views are present.
-  //
-  $storage = \Drupal::entityTypeManager()->getStorage('view');
-  $dir = \Drupal::service('extension.path.resolver')->getPath('module', 'tripal_chado');
-  $fileStorage = new FileStorage($dir);
-
-  // The chado_custom_tables view.
-  $view = $storage->load('chado_custom_tables');
-  if (!$view) {
-    $config = $fileStorage->read('config/install/views.view.chado_custom_tables');
-    $view = $storage->create($config);
-    $view->save();
-  }
-
-  // The chado_materialized_views view.
-  $view = $storage->load('chado_mviews');
-  if (!$view) {
-    $config = $fileStorage->read('config/install/views.view.chado_mviews');
-    $view = $storage->create($config);
-    $view->save();
-  }
-}
-
-/**
- * Used by the hook_rebuild() to recreate chado term mappings from default.
- */
-function tripal_chado_rebuild_chado_term_mappings() {
-
-  $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-  $dir = \Drupal::service('extension.list.module')->getPath('tripal_chado');
-  $fileStorage = new FileStorage($dir);
-
-  $mapping = $storage->load('core_mapping');
-  if (!$mapping) {
-    $config = $fileStorage->read('config/install/tripal_chado.chado_term_mapping.core_mapping');
-    $mapping = $storage->create($config);
-    $mapping->save();
-  }
-
-  $storage = \Drupal::entityTypeManager()->getStorage('tripal_content_terms');
-  $mapping = $storage->load('chado_content_terms');
-  if (!$mapping) {
-    $config = $fileStorage->read('config/install/tripal.tripal_content_terms.chado_content_terms');
-    $mapping = $storage->create($config);
-    $mapping->save();
-  }
+  \Drupal::service('tripal_chado.hooks')->configSchemaInfoAlter($definitions);
 }
 
 /**
  * Implements hook_rebuild().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_chado\Hook\TripalChadoHooks in
+ * tripal_chado/src/Hook/TripalChadoHooks.php.
  */
+#[LegacyHook]
 function tripal_chado_rebuild() {
-  tripal_chado_rebuild_views();
-  tripal_chado_rebuild_chado_term_mappings();
-
-  # Rebuild the Custom Tables and Materialized views views.
-  $dir = \Drupal::service('extension.list.module')->getPath('tripal_chado');
-  $fileStorage = new FileStorage($dir);
-
-  $custom_tables_config = $fileStorage->read('config/install/views.view.chado_custom_tables');
-  $mviews_config = $fileStorage->read('config/install/views.view.chado_mviews');
-
-  $storage = \Drupal::entityTypeManager()->getStorage('view');
-
-  // Reload the custom tables view.
-  $view = $storage->load('chado_custom_tables');
-  $view->delete();
-  $view = $storage->create($custom_tables_config);
-  $view->save();
-
-  // Reload the materialized view view.
-  $view = $storage->load('chado_mviews');
-  $view->delete();
-  $view = $storage->create($mviews_config);
-  $view->save();
-
+  return \Drupal::service('tripal_chado.hooks')->rebuild();
 }
 
 /**
- * Implements hook_form_alter
+ * Implements hook_form_alter.
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_chado\Hook\TripalChadoHooks in
+ * tripal_chado/src/Hook/TripalChadoHooks.php.
  */
-function tripal_chado_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-
-
-  // If this is the field_config_edit_form and if we are adding a Chado
-  // field then we need to add a submit hook to set the base table in the
-  // content type's 3rd party settings.  The field settings form doesn't allow
-  // us to set a submit callback, so we have to add it using hook_form_alter.
-  // Under Drupal ≤10.1 we want 'field_storage_config_edit_form', the storage form
-  // Under Drupal ≥10.2 we want 'field_config_edit_form', storage is a subform within this form
-  if (($form_id == 'field_storage_config_edit_form') or ($form_id == 'field_config_edit_form')) {
-
-    // If we have `storge_plugin_settings` specifying a `base_table`, then
-    // this is a Chado field and we should add the callback on submit so
-    // we can set the 3rd party settings on the content type. The location
-    // within the form varies depending on Drupal version, for 10.2 it is
-    // in the subform.
-    $base_table = $form_state->getValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_table'])
-        ?? $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-    if ($base_table) {
-      $form['actions']['submit']['#submit'][] = [
-        'Drupal\tripal_chado\TripalField\ChadoFieldItemBase',
-        'storageSettingsFormSubmitBaseTable'
-      ];
-    }
-  }
+#[LegacyHook]
+function tripal_chado_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  \Drupal::service('tripal_chado.hooks')->formAlter($form, $form_state, $form_id);
 }

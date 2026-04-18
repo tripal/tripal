@@ -1,11 +1,15 @@
 <?php
 
-namespace Drupal\Tests\tripal\Functional;
+namespace Drupal\Tests\tripal\Functional\Permissions;
 
+use Drupal\tripal\Entity\TripalEntity;
+use Drupal\tripal\Entity\TripalEntityType;
+use Drupal\tripal\Services\TripalJob;
 use Drupal\Tests\tripal\Traits\TripalTestTrait;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\file\Entity\File;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the basic functions of the TripalTerm Entity Type.
@@ -14,24 +18,19 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Term
  * @group Tripal Entities
  */
-#[Group('Tripal')]
-#[Group('Tripal Term')]
-#[Group('Tripal Entities')]
+#[Group('access')]
+#[RunTestsInSeparateProcesses]
 class TripalRoutePermissionsTest extends BrowserTestBase {
 
   use TripalTestTrait;
 
-  // protected $htmlOutputEnabled = TRUE;
   protected $defaultTheme = 'stark';
 
   protected static $modules = ['system', 'user', 'path', 'node', 'file', 'field_ui', 'tripal'];
 
   /**
    * Test all the base Tripal admin paths.
-   *
-   * @group Tripal Permissions
    */
-  #[Group('Tripal Permissions')]
   public function testTripalAdminPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
@@ -49,11 +48,11 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
       // Under Drupal ~10.2, if there are no extensions present, and there aren't, then
       // we won't be able to access the 'admin/tripal/extension' menu, even as admin.
       // To test, we would have to create an extension first.
-      // 'Extensions' => 'admin/tripal/extension',
+      // 'Extensions' => 'admin/tripal/extension'.
     ];
 
     $userAuthenticatedOnly = $this->drupalCreateUser();
-    // Drupal 10.2 tightens permissions, second permission is needed to access files path
+    // Drupal 10.2 tightens permissions, second permission is needed to access files path.
     $userTripalAdmin = $this->drupalCreateUser(['administer tripal', 'admin tripal files']);
 
     // First check all the URLs with no user logged in.
@@ -115,15 +114,14 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Jobs
    */
-  #[Group('Tripal Permissions')]
-  #[Group('Tripal Jobs')]
+  #[Group('service-job')]
   public function testTripalJobPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
     $session = $this->getSession();
 
     // The job to use for testing.
-    $job = new \Drupal\tripal\Services\TripalJob();
+    $job = new TripalJob();
     $values = [];
     $values['job_name'] = 'Job ' . uniqid();
     $values['modulename'] = 'tripal';
@@ -184,8 +182,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Dashboard
    */
-  #[Group('Tripal Permissions')]
-  #[Group('Tripal Dashboard')]
+  #[Group('service-dashboard')]
   public function testTripalDashboardPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
@@ -237,18 +234,20 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    *
    * Permissions to test:
    *  - administer tripal content: Allows users to access the Tripal Content listing and add, edit, delete Tripal content of any type.
-   *  - access tripal content overview: Allows the user to access the Tripal content listing.
    *  - publish tripal content: Allows the user to publish Tripal content of all Tripal Content Types for online access.
-   *  - add tripal content entities: Create new Tripal Content
-   *  - edit tripal content entities: Edit Tripal Content
-   *  - delete tripal content entities: Delete Tripal Content
-   *  - view tripal content entities: View Tripal Content
+   *  - create TYPE content: Create new Tripal Content
+   *  - edit any TYPE content: Edit Tripal Content
+   *  - edit own TYPE content: Edit their own Tripal Content
+   *  - delete any TYPE content: Delete Tripal Content
+   *  - delete own TYPE content: Delete their own Tripal Content
+   *  - view all TYPE content: View Tripal Content
+   *  - view own TYPE content: View their own Tripal Content
    *
    * @group Tripal Permissions
    * @group Tripal Content
    */
-  #[Group('Tripal Permissions')]
-  #[Group('Tripal Content')]
+  #[Group('tripal-content')]
+  #[Group('access-entity')]
   public function testTripalContentPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
@@ -259,7 +258,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     $values = [];
     $values['id_space_name'] = 'FRED';
     $values['term'] = [
-      'accession' => '1g2h3j4k5'
+      'accession' => '1g2h3j4k5',
     ];
     $this->createTripalTerm($values, 'tripal_default_id_space', 'tripal_default_vocabulary');
     // -- Content Type.
@@ -270,29 +269,42 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     $values['termAccession'] = '1g2h3j4k5';
     $values['help_text'] = 'This is just random text to meet the requirement of this field.';
     $values['category'] = 'Testing';
-    $content_type_obj = \Drupal\tripal\Entity\TripalEntityType::create($values);
+    $content_type_obj = TripalEntityType::create($values);
     $this->assertIsObject($content_type_obj, "Unable to create a test content type.");
     $content_type_obj->save();
     $content_type = $content_type_obj->id();
-    // -- Content Entity.
+
+    // -- Content Entity 1.
     $values = [];
-    $values['title'] = 'Mini Fredicity ' . uniqid();
+    $values['title'] = 'Mini Fredicity' . uniqid();
     $values['type'] = $content_type;
-    $entity = \Drupal\tripal\Entity\TripalEntity::create($values);
-    $this->assertIsObject($content_type_obj, "Unable to create a test entity.");
-    $entity->save();
-    $entity_id = $entity->id();
+    $entity_one = TripalEntity::create($values);
+    $this->assertIsObject($content_type_obj, "Unable to create a test entity one.");
+    $entity_one->save();
+    $entity_one_id = $entity_one->id();
+
+    // -- Content Entity 2.
+    $values = [];
+    $values['title'] = 'Fredicity' . uniqid();
+    $values['type'] = $content_type;
+    $entity_two = TripalEntity::create($values);
+    $this->assertIsObject($content_type_obj, "Unable to create a test entity two.");
+    $entity_two->save();
+    $entity_two_id = $entity_two->id();
 
     // The URLs to check.
     $urls = [
-      'entity-canonical' => 'bio_data/' . $entity_id,
       'entity-add-page' => 'bio_data/add',
-      'entity-add-form' => 'bio_data/add/' . $content_type,
-      'entity-edit-form' => 'bio_data/' . $entity_id . '/edit',
-      'entity-delete-form' => 'bio_data/' . $entity_id . '/delete',
-      'entity-unpublish-form' => 'bio_data/' . $entity_id . '/unpublish',
+      'entity-one-canonical' => 'bio_data/' . $entity_one_id,
+      'entity-one-edit-form' => 'bio_data/' . $entity_one_id . '/edit',
+      'entity-one-delete-form' => 'bio_data/' . $entity_one_id . '/delete',
+      'entity-one-unpublish-form' => 'bio_data/' . $entity_one_id . '/unpublish',
+      'entity-two-canonical' => 'bio_data/' . $entity_two_id,
+      'entity-two-edit-form' => 'bio_data/' . $entity_two_id . '/edit',
+      'entity-two-delete-form' => 'bio_data/' . $entity_two_id . '/delete',
+      'entity-two-unpublish-form' => 'bio_data/' . $entity_two_id . '/unpublish',
       'entity-collection' => 'admin/content/bio_data',
-      //'publish-content' => '',
+      // 'publish-content' => '',
       'unpublish-content' => 'admin/content/bio_data/unpublish',
       'entitytype-add-form' => 'admin/structure/bio_data/add',
       'entitytype-edit-form' => 'admin/structure/bio_data/manage/' . $content_type,
@@ -307,16 +319,16 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     // It's assumed url keys not in the array should return 403 access denied
     // for that permission.
     $permissions_mapping = [
-      'access tripal content overview' => ['entity-collection'],
       'publish tripal content' => ['publish-content', 'unpublish-content'],
-      'add tripal content entities' => ['entity-add-form'],
-      'edit tripal content entities' => ['entity-edit-form'],
-      'delete tripal content entities' => ['entity-delete-form'],
-      'view tripal content entities' => ['entity-canonical'],
-      'administer tripal content' => ['entity-canonical', 'entity-add-page',
-        'entity-add-form', 'entity-edit-form', 'entity-delete-form',
+      "create $content_type content" => ['entity-add-form', 'entity-add-page'],
+      "edit any $content_type content" => ['entity-one-edit-form', 'entity-two-edit-form'],
+      "delete any $content_type content" => ['entity-one-delete-form', 'entity-two-delete-form'],
+      "view all $content_type content" => ['entity-one-canonical', 'entity-two-canonical', 'entity-collection'],
+      'administer tripal content' => ['entity-one-canonical', 'entity-two-canonical', 'entity-add-page',
+        'entity-add-form', 'entity-one-edit-form', 'entity-one-delete-form',
+        'entity-two-edit-form', 'entity-two-delete-form',
         'entity-collection', 'publish-content', 'unpublish-content',
-        'entity-unpublish-form'],
+        'entity-one-unpublish-form', 'entity-two-unpublish-form'],
       'manage tripal content types' => ['entitytype-add-form', 'entitytype-edit-form', 'entitytype-delete-form', 'entitytype-collection'],
       'administer tripal_entity fields' => ['entitytype-manage-fields'],
       'administer tripal_entity form display' => ['entitytype-manage-form'],
@@ -338,7 +350,12 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     foreach ($urls as $title => $path) {
       $html = $this->drupalGet($path);
       $status_code = $session->getStatusCode();
-      $this->assertEquals(403, $status_code, "The anonymous user should not be able to access any content pages including: $title ($path).");
+      if (!in_array($title, $permissions_mapping["view all $content_type content"])) {
+        $this->assertEquals(403, $status_code, "The anonymous user should not be able to access any content pages including: $title ($path).");
+      }
+      else {
+        $this->assertEquals(200, $status_code, "The anonymous user should be able to access the content listing page: $title ($path). by default");
+      }
     }
 
     // Next check all the URLs with the authenticated, unprivileged user.
@@ -347,7 +364,12 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     foreach ($urls as $title => $path) {
       $html = $this->drupalGet($path);
       $status_code = $session->getStatusCode();
-      $this->assertEquals(403, $status_code, "The unprivileged user should not be able to access any content pages including: $title ($path).");
+      if (!in_array($title, $permissions_mapping["view all $content_type content"])) {
+        $this->assertEquals(403, $status_code, "The unprivileged user should not be able to access any content pages including: $title ($path).");
+      }
+      else {
+        $this->assertEquals(200, $status_code, "The unprivileged user should be able to access the content listing page: $title ($path). by default");
+      }
     }
 
     // Finally use the permissions mapping to check each permission.
@@ -362,11 +384,44 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
         $msg_part = ($expected_code === 200) ? 'should have permission to' : 'should be denied access to';
 
         $status_code = $session->getStatusCode();
-        $this->assertEquals($expected_code, $status_code, "The user with only '$permission' permission $msg_part $title ($path).");
+        if (!in_array($title, $permissions_mapping["view all $content_type content"])) {
+          $this->assertEquals($expected_code, $status_code, "The user with only '$permission' permission $msg_part $title ($path).");
+        }
+      }
+    }
+
+    // Create a second user with only 'create', 'view own', 'edit own',
+    // 'delete own' permissions.
+    $restricted_user = $this->drupalCreateUser([
+      "create $content_type content",
+      "view own $content_type content",
+      "edit own $content_type content",
+      "delete own $content_type content",
+    ]);
+
+    // Assign ownership of the second entity to this user.
+    $entity_two->setOwner($restricted_user);
+    $entity_two->save();
+
+    // Array contains pages which that permission SHOULD be able to access.
+    $restricted_permissions = ['entity-add-form', 'entity-add-page',
+      'entity-two-edit-form', 'entity-two-delete-form', 'entity-two-canonical',
+      'entity-collection',
+    ];
+
+    // Finally check all URLs with the restricted user.
+    $this->drupalLogin($restricted_user);
+    foreach ($urls as $title => $path) {
+      $html = $this->drupalGet($path);
+      $expected_code = (array_search($title, $restricted_permissions) === FALSE) ? 403 : 200;
+      $msg_part = ($expected_code === 200) ? 'should have permission to' : 'should be denied access to';
+
+      $status_code = $session->getStatusCode();
+      if (!in_array($title, $permissions_mapping["view all $content_type content"])) {
+        $this->assertEquals($expected_code, $status_code, "The user with only access to their own content $msg_part $title ($path).");
       }
     }
   }
-
 
   /**
    * Test permissions around Administering Tripal File Usage pages.
@@ -374,8 +429,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Data Files
    */
-  #[Group('Tripal Permissions')]
-  #[Group('Tripal Data Files')]
+  #[Group('importer-datafiles')]
   public function testAdminTripalDataFilesPages() {
     $session = $this->getSession();
     $this->assertTrue(\Drupal::request()->hasSession(),
@@ -432,8 +486,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Data Files
    */
-  #[Group('Tripal Permissions')]
-  #[Group('Tripal Data Files')]
+  #[Group('importer-datafiles')]
   public function testTripalDataFilesPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
@@ -514,8 +567,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Term Configuration
    */
-  #[Group('Tripal Permissions')]
-  #[Group('Tripal Term Configuration')]
+  #[Group('service-collection')]
   public function testTripalTermConfigPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
@@ -562,4 +614,5 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
       $this->assertEquals(200, $status_code, "The privileged user should be able to access this admin page: $title which should be at '$path'.");
     }
   }
+
 }

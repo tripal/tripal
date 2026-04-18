@@ -8,6 +8,7 @@ use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalEntity Class.
@@ -15,8 +16,9 @@ use PHPUnit\Framework\Attributes\Group;
  * @group TripalEntity
  * @group TripalTokenParser
  */
-#[Group('TripalEntity')]
-#[Group('TripalTokenParser')]
+#[Group('tripal-content')]
+#[Group('service-token-parser')]
+#[RunTestsInSeparateProcesses]
 class TripalEntityTest extends TripalTestKernelBase {
 
   /**
@@ -39,6 +41,13 @@ class TripalEntityTest extends TripalTestKernelBase {
    * @var \Drupal\tripal\Services\TripalTokenParser
    */
   protected ?object $token_parser = NULL;
+
+  /**
+   * The test tripal entity type.
+   *
+   * @var Drupal\tripal\Entity\TripalEntityType
+   */
+  protected TripalEntityType $entityType;
 
   /**
    * {@inheritdoc}
@@ -68,7 +77,7 @@ class TripalEntityTest extends TripalTestKernelBase {
     // Create a Tripal Entity Type to be used in the following tests.
     // Note: We can't mock one since they both use SqlContentEntityStorage
     // and we need the entity storage in place to test TripalEntity.
-    $entityType = TripalEntityType::create([
+    $this->entityType = TripalEntityType::create([
       'id' => $this->bundle_name,
       'label' => 'FAKE Organism For Testing',
       'term' => $term,
@@ -79,9 +88,9 @@ class TripalEntityTest extends TripalTestKernelBase {
       'hide_empty_field' => '',
       'ajax_field' => '',
     ]);
-    $this->assertIsObject($entityType,
+    $this->assertIsObject($this->entityType,
       'We were unable to create our Tripal Entity type during test setup');
-    $entityType->save();
+    $this->entityType->save();
   }
 
   /**
@@ -226,6 +235,22 @@ class TripalEntityTest extends TripalTestKernelBase {
     $this->assertTrue($ret_all_null, "We passed in an array of NULL therefore, the helper method should have confirmed that they were all null.");
     $ret_all_null = TripalEntity::allNull([NULL, NULL, NULL, NULL, 5, NULL]);
     $this->assertFalse($ret_all_null, "We passed in an array with one integer near the end therefore, the helper method should have confirmed that they were NOT all null.");
+
+    // Tests deletion of the entity type.
+    $drupal_connection = \Drupal::database();
+    $count = $drupal_connection->select('tripal_entity', 'E')
+      ->condition('type', $this->bundle_name, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(1, $count, 'There should be one record in the tripal_entity table before deletion');
+    $this->entityType->delete();
+    $count = $drupal_connection->select('tripal_entity', 'E')
+      ->condition('type', $this->bundle_name, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $count, 'There should be no records in the tripal_entity table after deletion');
   }
 
 }

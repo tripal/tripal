@@ -260,12 +260,16 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
         'accession' => $child->accession,
         'idSpace' => $child->DBSUB_name,
         'vocabulary' => $child->CVSUB_name,
+        'id_space_plugin' => 'chado_id_space',
+        'vocabulary_plugin_id' => 'chado_vocabulary',
       ]);
       $type_term = new TripalTerm([
         'name' => $child->CVTTYPE_name,
         'accession' => $child->DBXTYPE_accession,
         'idSpace' => $child->DBTYPE_name,
         'vocabulary' => $child->CVTYPE_name,
+        'id_space_plugin' => 'chado_id_space',
+        'vocabulary_plugin_id' => 'chado_vocabulary',
       ]);
       $terms[] = [$child_term, $type_term];
     }
@@ -280,8 +284,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     if (!$this->is_valid) {
       return NULL;
     }
-
-    $cache_id = 'chado_id_space_term_' . $accession;
+    $cache_id = 'chado_id_space_term_' . $this->getName() . '_' . $accession;
     if ($cache = \Drupal::cache()->get($cache_id)) {
       return $cache->data;
     }
@@ -346,6 +349,8 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
             'accession' => $synonym->accession,
             'idSpace' => $synonym->DB_name,
             'vocabulary' => $synonym->CV_name,
+            'id_space_plugin' => 'chado_id_space',
+            'vocabulary_plugin_id' => 'chado_vocabulary',
           ]);
         }
         $term->addSynonym($synonym->synonym, $type_term);
@@ -388,6 +393,8 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
           'accession' => $property->accession,
           'idSpace' => $property->DB_name,
           'vocabulary' => $property->CV_name,
+          'id_space_plugin' => 'chado_id_space',
+          'vocabulary_plugin_id' => 'chado_vocabulary',
         ]);
         $term->addProperty($prop_term, $property->value);
       }
@@ -420,12 +427,16 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
           'accession' => $parent->accession,
           'idSpace' => $parent->DBOBJ_name,
           'vocabulary' => $parent->CVOBJ_name,
+          'id_space_plugin' => 'chado_id_space',
+          'vocabulary_plugin_id' => 'chado_vocabulary',
         ]);
         $type_term = new TripalTerm([
           'name' => $parent->CVTTYPE_name,
           'accession' => $parent->DBXTYPE_accession,
           'idSpace' => $parent->DBTYPE_name,
           'vocabulary' => $parent->CVTYPE_name,
+          'id_space_plugin' => 'chado_id_space',
+          'vocabulary_plugin_id' => 'chado_vocabulary',
         ]);
         $term->addParent($parent_term, $type_term);
       }
@@ -468,6 +479,8 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
         'vocabulary' => $cvterm->CV_name,
         'definition' => $cvterm->definition,
         'accession' => $cvterm->accession,
+        'id_space_plugin' => 'chado_id_space',
+        'vocabulary_plugin_id' => 'chado_vocabulary',
       ]);
       $terms[$cvterm->name][$term->getTermId()] = $term;
     }
@@ -497,6 +510,8 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
         'vocabulary' => $cvterm->CV_name,
         'definition' => $cvterm->definition,
         'accession' => $cvterm->accession,
+        'id_space_plugin' => 'chado_id_space',
+        'vocabulary_plugin_id' => 'chado_vocabulary',
       ]);
       $terms[$cvterm->synonym][$term->getTermId()] = $term;
     }
@@ -556,7 +571,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
     $term->setInternalId($cvterm->cvterm_id);
 
     // Invalidate the cache for this term.
-    $cache_id = 'chado_id_space_term_' . $term->getAccession();
+    $cache_id = 'chado_id_space_term_' . $term->getIdSpace() . '_' . $term->getAccession();
     \Drupal::cache()->invalidate($cache_id);
 
     return TRUE;

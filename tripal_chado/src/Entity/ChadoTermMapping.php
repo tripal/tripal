@@ -27,7 +27,6 @@ use Drupal\tripal_chado\ListBuilders\ChadoTermMappingListBuilder;
   ],
   config_prefix: 'chado_term_mapping',
   admin_permission: 'administer tripal',
-  bundle_of: 'tripal_entity',
   entity_keys: [
     'id' => 'id',
     'label' => 'label',

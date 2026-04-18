@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
+use Drupal\Component\Utility\Random;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
@@ -21,6 +22,11 @@ use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 )]
 class TripalTextTypeItem extends TripalFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "tripal_text_type";
 
   /**
@@ -45,12 +51,13 @@ class TripalTextTypeItem extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    $values = [];
+    $value = [];
 
-    $random = new \Drupal\Component\Utility\Random();
-    $values['value'] = $random->sentences(mt_rand(1, 4500000));
+    $random = new Random();
+    $value['record_id'] = 0;
+    $value['value'] = $random->sentences(9);
 
-    return $values;
+    return [$value];
   }
 
   /**

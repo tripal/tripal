@@ -19,8 +19,11 @@ class TripalContentFieldsForm implements FormInterface {
    * {@inheritDoc}
    * @see \Drupal\Core\Form\FormInterface::buildForm()
    */
-  public function buildForm(array $form, FormStateInterface $form_state,
-      TripalEntityType $tripal_entity_type = NULL) {
+  public function buildForm(
+    array $form,
+    FormStateInterface $form_state,
+    ?TripalEntityType $tripal_entity_type = NULL,
+  ) {
 
     /** @var \Drupal\tripal\Services\TripalFieldCollection $tripal_fields **/
     $tripal_field_collection = \Drupal::service('tripal.tripalfield_collection');

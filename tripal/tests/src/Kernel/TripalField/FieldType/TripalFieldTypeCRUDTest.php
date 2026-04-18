@@ -1,19 +1,21 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel\TripalField;
+namespace Drupal\Tests\tripal\Kernel\TripalField\FieldType;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalFieldItemBase class indirectly.
  *
  * @group TripalField
  */
-#[Group('TripalField')]
+#[Group('tripal-field')]
+#[RunTestsInSeparateProcesses]
 class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
 
   /**
@@ -151,8 +153,8 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
     ]);
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $field_type['id'] . " field.");
     // -- confirm the values in the created entity match those we set.
-    foreach ($field_value as $property_key => $expected_property_value) {
-      $this->assertEquals($expected_property_value, $entity->{$field_name}->{$property_key},
+    foreach ($field_value[0] as $property_key => $expected_property_value) {
+      $this->assertEquals($expected_property_value, $entity->{$field_name}[0]->{$property_key},
         "The value of the property $property_key was not what we expected for this field.");
     }
   }

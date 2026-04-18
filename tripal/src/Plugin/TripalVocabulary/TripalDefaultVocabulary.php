@@ -26,7 +26,7 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
    *
    * @var bool
    */
-  protected $is_valid = False;
+  protected $is_valid = FALSE;
 
   /**
    * {@inheritdoc}
@@ -34,14 +34,14 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    // Instantiate the TripalLogger
+    // Instantiate the TripalLogger.
     $this->messageLogger = \Drupal::service('tripal.logger');
   }
 
   /**
    * Loads the vocabulary record.
    *
-   * @return
+   * @return object|null
    *   An associative array containing the list of vocabularies.
    */
   protected function loadVocab() {
@@ -78,11 +78,11 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
    * {@inheritDoc}
    */
   public function recordExists() {
-   $cv = $this->loadVocab();
-   if ($cv and $cv['name'] == $this->getName()) {
-      return True;
+    $cv = $this->loadVocab();
+    if ($cv and $cv['name'] == $this->getName()) {
+      return TRUE;
     }
-    return False;
+    return FALSE;
   }
 
   /**
@@ -90,12 +90,14 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
    */
   public function isValid() {
 
-    // Make sure the name of this collection does not exceeed the allowed size in Chado.
+    // Make sure the name of this collection does not exceeed the allowed
+    // size in Chado.
     $name = $this->getName();
-    if (!empty($name) AND (strlen($name) > 255)) {
-      $this->messageLogger->error('TripalDefaultVocabulary: The vocabulary name must not be longer than @size characters. ' +
-          'The value provided was: @value',
-	  ['@size' => 255, '@value' => $this->getName()]);
+    if (!empty($name) and (strlen($name) > 255)) {
+      $this->messageLogger->error(
+        'TripalDefaultVocabulary: The vocabulary name must not be longer than @size characters. The value provided was: @value',
+        ['@size' => 255, '@value' => $this->getName()]
+      );
       $this->is_valid = FALSE;
       return FALSE;
     }
@@ -104,12 +106,12 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
   }
 
   /**
-   * Returns the namespace of the vocabulary
+   * Returns the namespace of the vocabulary.
    *
    * This should be identical to the name of the collection, and
    * therefore, there is no setter function.
    *
-   * @return string $namespace
+   * @return string
    *   The namespace of the vocabulary.
    */
   public function getNameSpace() {
@@ -123,10 +125,10 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
     $this->messageLogger->warning('The TripalDefaultVocabulary::destroy() function is currently not implemented');
   }
 
-    /**
+  /**
    * {@inheritdoc}
    */
-  public function getTerms($name, $exact = True){
+  public function getTerms($name, $exact = TRUE) {
     $this->messageLogger->warning('The TripalDefaultVocabulary::getTerms() function is currently not implemented');
   }
 
@@ -138,25 +140,25 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
     // associate borrowed terms with a vocabulary.  If we
     // add the ID space of borrowed terms to a vocabulary then
     // setting the URL will be incorrect for those ID spaces.
-
     // Don't set a value for a vocabulary that isn't valid.
     if (!$this->is_valid) {
-      return False;
+      return FALSE;
     }
 
     // Don't exceed the expected size of the URL for the database.
     if (strlen($url) > 255) {
-      $this->messageLogger->error('TripalDefaultVocabulary: The vocabulary name must not be longer than @size characters. ' +
-          'The value provided was: @value',
-          ['@size' => 255, '@value' => $this->getName()]);
-          return False;
+      $this->messageLogger->error(
+        'TripalDefaultVocabulary: The vocabulary name must not be longer than @size characters. The value provided was: @value',
+        ['@size' => 255, '@value' => $this->getName()]
+      );
+      return FALSE;
     }
 
     // If we don't have any ID spaces then there is no URL.
     $id_spaces = $this->getIdSpaceNames();
     if (count($id_spaces) == 0) {
       $this->messageLogger->error('TripalDefaultVocabulary: Cannot set the URL when no ID spaces are present for the vocabulary.');
-      return False;
+      return FALSE;
     }
 
     // Update the record in the table for the URL for all ID spaces.
@@ -166,11 +168,13 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
     $update = $update->condition('name', $this->getName(), '=');
     $num_updated = $update->execute();
     if ($num_updated != 1) {
-      $this->messageLogger->error(t('TripalDefaultVocabulary: The URL could not be updated for the vocabulary, "@vocab.',
-          ['@vocab' => $this->getName()]));
-      return False;
+      $this->messageLogger->error(
+        'TripalDefaultVocabulary: The URL could not be updated for the vocabulary, "@vocab.',
+        ['@vocab' => $this->getName()]
+      );
+      return FALSE;
     }
-    return True;
+    return TRUE;
   }
 
   /**
@@ -187,21 +191,21 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
   public function setLabel($label) {
     // Don't set a value for a vocabulary that isn't valid.
     if (!$this->is_valid) {
-      return False;
+      return FALSE;
     }
 
     // Make sure the label is not too long.
     if (empty($label)) {
       $this->messageLogger->error('TripalDefaultVocabulary: You must provide a label when calling setLabel().');
-      return False;
+      return FALSE;
     }
     if (strlen($label) > 255) {
-      $this->messageLogger->error('TripalDefaultVocabulary: The label for the vocabulary must not be longer than @size characters. ' +
-          'The value provided was: @value',
-          ['@size' => 255, '@value' => $label]);
-      return False;
+      $this->messageLogger->error(
+        'TripalDefaultVocabulary: The label for the vocabulary must not be longer than @size characters. The value provided was: @value',
+        ['@size' => 255, '@value' => $label]
+      );
+      return FALSE;
     }
-
 
     // Update the record.
     $chado = \Drupal::service('database');
@@ -211,9 +215,9 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
     $num_updated = $update->execute();
     if ($num_updated != 1) {
       $this->messageLogger->error('TripalDefaultVocabulary: The label could not be updated for the vocabulary.');
-      return False;
+      return FALSE;
     }
-    return True;
+    return TRUE;
   }
 
   /**
@@ -242,7 +246,7 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
    */
   public function addIdSpace($idSpace) {
 
-    // Get the ID collection for this idSpace and if it exists 
+    // Get the ID collection for this idSpace and if it exists
     // then add the idSpace to our list.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $id = $idsmanager->loadCollection($idSpace);
@@ -254,9 +258,9 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
       $update = $update->fields(['idspaces' => serialize($idspaces)]);
       $update = $update->condition('name', $this->getName(), '=');
       $update->execute();
-      return True;
+      return TRUE;
     }
-    return False;
+    return FALSE;
   }
 
   /**
@@ -273,4 +277,5 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
       $update->execute();
     }
   }
+
 }

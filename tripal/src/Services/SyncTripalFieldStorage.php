@@ -109,7 +109,7 @@ class SyncTripalFieldStorage {
   /**
    * Identify + resolve differences between drupal tables + tripal field schema.
    *
-   * @param string $entity_type
+   * @param string|null $entity_type
    *   The id of the entity type whose associated fields we want to fix.
    *   If this parameter is omitted then all TripalEntityType instances
    *   will be fixed.
@@ -120,7 +120,7 @@ class SyncTripalFieldStorage {
    *    - missing_property_column: where a column for a new TripalField property
    *      does not have a column in the corresponding Drupal field table.
    */
-  public function resolveDifferences(string $entity_type = NULL, array $difference_types = []): array {
+  public function resolveDifferences(?string $entity_type = NULL, array $difference_types = []): array {
     $all_columns_added = [];
 
     if ($entity_type !== NULL) {

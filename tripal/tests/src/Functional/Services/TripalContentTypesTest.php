@@ -1,11 +1,11 @@
 <?php
 
-namespace Drupal\Tests\tripal\Functional\Entity;
+namespace Drupal\Tests\tripal\Functional\Services;
 
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use PHPUnit\Framework\Attributes\Group;
-
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the basic functions of the TripalContentTypes Service.
@@ -14,9 +14,10 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Content
  * @group Tripal Content Types
  */
-#[Group('Tripal')]
-#[Group('Tripal Content')]
-#[Group('Tripal Content Types')]
+#[Group('tripal-content')]
+#[Group('tripal-content')]
+#[group('service-collection')]
+#[RunTestsInSeparateProcesses]
 class TripalContentTypesTest extends TripalTestBrowserBase {
 
   /**
@@ -48,7 +49,7 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
       'id' => 'organism',
       'title_format' => "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]",
       'url_format' => "organism/[TripalEntity__entity_id]",
-      'synonyms' => ['bio_data_1']
+      'synonyms' => ['bio_data_1'],
     ];
 
     /** @var \Drupal\tripal\Services\TripalContentTypes $content_type_service **/
@@ -60,7 +61,6 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $content_type = $content_type_service->createContentType($good);
     $this->assertTrue(!is_null($content_type), "Failed to create a content type with a valid definition.");
 
-
     // Test that when a value is missing it fails validation.
     $bad = $good;
     unset($bad['term']);
@@ -69,14 +69,12 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $content_type = $content_type_service->createContentType($bad);
     $this->assertTrue(is_null($content_type), "Created a content type when the term is incorrect.");
 
-
     $bad = $good;
     unset($bad['id']);
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'id' should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
     $this->assertTrue(is_null($content_type), "Created a content type when the id is incorrect.");
-
 
     $bad = $good;
     unset($bad['label']);
@@ -85,7 +83,6 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $content_type = $content_type_service->createContentType($bad);
     $this->assertTrue(is_null($content_type), "Created a content type when the label is incorrect.");
 
-
     $bad = $good;
     unset($bad['category']);
     $is_valid = $content_type_service->validate($bad);
@@ -93,14 +90,12 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $content_type = $content_type_service->createContentType($bad);
     $this->assertTrue(is_null($content_type), "Created a content type when the category is incorrect.");
 
-
     $bad = $good;
     unset($bad['help_text']);
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'help_text' should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
     $this->assertTrue(is_null($content_type), "Created a content type when the help_text is incorrect.");
-
 
     $bad = $good;
     $bad['synonyms'] = 'xyz';
@@ -110,4 +105,5 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $this->assertTrue(is_null($content_type), "Created a content type when the synonyms are incorrect.");
 
   }
+
 }

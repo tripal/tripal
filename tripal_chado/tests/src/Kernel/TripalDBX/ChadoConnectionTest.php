@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
+use Drupal\tripal_chado\Database\ChadoSchema;
+use Drupal\Core\Database\DatabaseExceptionWrapper;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
 use Drupal\tripal\TripalDBX\TripalDbxConnection;
@@ -11,6 +13,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for ChadoConnection.
@@ -25,15 +28,14 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers \Drupal\tripal_chado\Database\ChadoConnection::findVersion
  * @covers \Drupal\tripal_chado\Database\ChadoConnection::removeAllTestSchemas
  */
-#[Group('Tripal Chado')]
-#[Group('TripalDBX')]
-#[Group('ChadoDBX')]
-#[Group('ChadoConnection')]
 #[CoversClass(TripalDbxConnection::class)]
 #[CoversClass(TripalDbxSchema::class)]
 #[CoversMethod(ChadoConnection::class, 'getAvailableInstances')]
 #[CoversMethod(ChadoConnection::class, 'findVersion')]
 #[CoversMethod(ChadoConnection::class, 'removeAllTestSchemas')]
+#[Group('tripal-dbx')]
+#[Group('chado-schema')]
+#[RunTestsInSeparateProcesses]
 class ChadoConnectionTest extends ChadoTestKernelBase {
 
   /**
@@ -67,9 +69,12 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * @var array
    */
   protected static array $init_levels = [
-    3, // self::$INIT_CHADO_EMPTY,
-    4, // self::$INIT_CHADO_DUMMY,
-    5, // self::$PREPARE_TEST_CHADO,
+    // self::$INIT_CHADO_EMPTY,.
+    3,
+    // self::$INIT_CHADO_DUMMY,.
+    4,
+    // self::$PREPARE_TEST_CHADO,.
+    5,
   ];
 
   /**
@@ -174,7 +179,7 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
       'schema_name' => ['string'],
       'version' => ['string'],
       'is_default' => ['boolean'],
-      'is_test' => ['boolean','string'],
+      'is_test' => ['boolean', 'string'],
       'is_reserved' => ['boolean'],
       'has_data' => ['boolean'],
       'size' => ['integer'],
@@ -269,19 +274,21 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     // When using expectException the execution of all other assertions is skipped.
     try {
       $query = $chado_connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
-    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+    }
+    catch (DatabaseExceptionWrapper $e) {
       $this->assertTrue(TRUE, "We expect to have an exception thrown when TripalDBX incorrectly assumes the feature table is in Drupal, which it's not.");
     }
 
     // Now we want to tell Tripal DBX that the default schema for this query should be chado.
     // Using useTripalDbxSchemaFor():
-    //---------------------------------
+    // ---------------------------------
     // PARENT CLASS: Let's check if it works when a parent class is white listed.
     $chado_connection = \Drupal::service('tripal_chado.database');
-    $chado_connection->useTripalDbxSchemaFor(\Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase::class);
+    $chado_connection->useTripalDbxSchemaFor(ChadoTestKernelBase::class);
     try {
       $query = $chado_connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
-    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+    }
+    catch (DatabaseExceptionWrapper $e) {
       $this->assertTrue(FALSE, "Now TripalDBX should know that chado is the default schema for this test class and it should not throw an exception.");
     }
     // We expect: "SCHEMAPREFIX"."feature" but since the quotes are not
@@ -294,12 +301,13 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
       "The sql statement does not have the table prefix we expect."
     );
 
-    // CURRENT CLASS: Let's test it works when the current class is whitelisted
+    // CURRENT CLASS: Let's test it works when the current class is whitelisted.
     $chado_connection = \Drupal::service('tripal_chado.database');
     $chado_connection->useTripalDbxSchemaFor(\Drupal\Tests\tripal_chado\Functional\ChadoConnectionTest::class);
     try {
       $query = $chado_connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
-    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+    }
+    catch (DatabaseExceptionWrapper $e) {
       $this->assertTrue(FALSE, "Now TripalDBX should know that chado is the default schema for this test class and it should not throw an exception.");
     }
     // We expect: "SCHEMAPREFIX"."feature" but since the quotes are not
@@ -312,12 +320,13 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
       "The sql statement does not have the table prefix we expect."
     );
 
-    // CURRENT OBJECT: Let's test it works when the current class is whitelisted
+    // CURRENT OBJECT: Let's test it works when the current class is whitelisted.
     $chado_connection = \Drupal::service('tripal_chado.database');
     $chado_connection->useTripalDbxSchemaFor($this);
     try {
       $query = $chado_connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
-    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+    }
+    catch (DatabaseExceptionWrapper $e) {
       $this->assertTrue(FALSE, "Now TripalDBX should know that chado is the default schema for this test class and it should not throw an exception.");
     }
     // We expect: "SCHEMAPREFIX"."feature" but since the quotes are not
@@ -354,9 +363,10 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     // INSERT:
     try {
       $query = $chado->insert('1:db')
-      ->fields(['name' => 'GO']);
+        ->fields(['name' => 'GO']);
       $query->execute();
-    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+    }
+    catch (DatabaseExceptionWrapper $e) {
       $this->assertTrue(FALSE, "We should be able to insert into the Chado db table.");
     }
     $db_id = $chado->query("SELECT db_id FROM {1:db} WHERE name='GO'")->fetchField();
@@ -365,11 +375,12 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     // SELECT:
     try {
       $queryBuilder_db_id = $chado->select('1:db', 'db')
-      ->fields('db', ['db_id'])
-      ->condition('db.name', 'GO', '=')
+        ->fields('db', ['db_id'])
+        ->condition('db.name', 'GO', '=')
         ->execute()
         ->fetchField();
-    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+    }
+    catch (DatabaseExceptionWrapper $e) {
       $this->assertTrue(FALSE, "We should be able to select from the Chado db table using the query builder.");
     }
     $this->assertIsNumeric($queryBuilder_db_id, "We expect the returned db_id to be numeric.");
@@ -379,10 +390,11 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     $description = 'This is the description we will add during update.';
     try {
       $query = $chado->update('1:db')
-      ->fields(['description' => $description])
+        ->fields(['description' => $description])
         ->condition('name', 'GO', '=');
       $query->execute();
-    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+    }
+    catch (DatabaseExceptionWrapper $e) {
       $this->assertTrue(FALSE, "We should be able to update the Chado db table using the query builder.");
     }
     $results = $chado->query("SELECT * FROM {1:db} WHERE name='GO'")->fetchAll();
@@ -393,9 +405,10 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     // DELETE:
     try {
       $chado->delete('1:db')
-      ->condition('db.name', 'GO', '=')
+        ->condition('db.name', 'GO', '=')
         ->execute();
-    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+    }
+    catch (DatabaseExceptionWrapper $e) {
       $this->assertTrue(FALSE, "We should be able to delete from the Chado db table using the query builder.");
     }
     $results = $chado->query("SELECT * FROM {1:db} WHERE name='GO'")->fetchAll();
@@ -461,11 +474,11 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     // -- first insert into drupal chado_installations table.
     $drupal_connection = \Drupal::service('database');
     $drupal_connection->insert('chado_installations')
-    ->fields([
-      'schema_name' => $chado_connection->getSchemaName(),
-      'version' => $version,
-    ])
-    ->execute();
+      ->fields([
+        'schema_name' => $chado_connection->getSchemaName(),
+        'version' => $version,
+      ])
+      ->execute();
     // -- now try to find the version.
     $retrieved_version = $chado_connection->findVersion();
     $this->assertEquals(
@@ -491,18 +504,18 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     $chado_connection = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
     // -- Update the chadoprop version to 1.2.
     $result = $chado_connection->select('1:cvterm', 'cvt')
-    ->fields('cvt', ['cvterm_id']);
+      ->fields('cvt', ['cvterm_id']);
     $result->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
     $result->condition('cv.name', 'chado_properties');
     $result->condition('cvt.name', 'version');
     $result = $result->execute();
     $version_cvterm_id = $result->fetchField();
     $chado_connection->update('1:chadoprop')
-    ->fields([
-      'value' => $expected_version,
-    ])
-    ->condition('type_id', $version_cvterm_id)
-    ->execute();
+      ->fields([
+        'value' => $expected_version,
+      ])
+      ->condition('type_id', $version_cvterm_id)
+      ->execute();
     // -- Now find the version and confirm it matches our expectations.
     $retrieved_version = $chado_connection->findVersion();
     $this->assertEquals(
@@ -550,7 +563,7 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     // Ask for something valid and ensure and ensure we get it.
     $retrieved_schema = $chado_connection->getTripalDbxClass('Schema');
     $this->assertEquals(
-      \Drupal\tripal_chado\Database\ChadoSchema::class,
+      ChadoSchema::class,
       $retrieved_schema,
       "ChadoConnection::getTripalDbxClass() should return the full namespaced ChadoSchema."
     );
@@ -638,4 +651,5 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
       self::$testSchemas[$test_schema] = FALSE;
     }
   }
+
 }

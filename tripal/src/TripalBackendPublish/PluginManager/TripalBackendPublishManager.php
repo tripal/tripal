@@ -2,11 +2,11 @@
 
 namespace Drupal\tripal\TripalBackendPublish\PluginManager;
 
-use Drupal\tripal\Services\TripalJob;
-use Drupal\tripal\Services\TripalLogger;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\tripal\Services\TripalJob;
+use Drupal\tripal\Services\TripalLogger;
 
 /**
  * Provides a TripalBackendPublish plugin manager.
@@ -101,7 +101,7 @@ class TripalBackendPublishManager extends DefaultPluginManager {
    * @param array $options
    *   Associative array of additional options to pass to the publish
    *   plugin. Valid keys are 'schema_name', 'republish', 'batch_size'.
-   * @param ?\Drupal\tripal\Services\TripalJob $job
+   * @param Drupal\tripal\Services\TripalJob|null $job
    *   An optional TripalJob object.
    */
   public static function runTripalJob($bundle, $datastore, $options = [], ?TripalJob $job = NULL) {

@@ -1,10 +1,11 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional\Service;
+namespace Drupal\Tests\tripal_chado\Functional\Services;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalPublish service in the context of the Chado content types.
@@ -12,8 +13,10 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal
  * @group Tripal Content
  */
-#[Group('Tripal')]
-#[Group('Tripal Content')]
+#[Group('tripal-content')]
+#[Group('tripal-publish')]
+#[Group('chado-publish')]
+#[RunTestsInSeparateProcesses]
 class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
   /**
@@ -233,7 +236,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
    */
   public function checkFieldItem($bundle, $field_name, $num_expected, $match, $check) {
 
-    $drupal_columns = ['bundle', 'entity_id', 'revision' ,'delta', 'deleted', 'langcode'];
+    $drupal_columns = ['bundle', 'entity_id', 'revision' , 'delta', 'deleted', 'langcode'];
 
     $public = \Drupal::service('database');
     $select = $public->select('tripal_entity__' . $field_name, 'f');
@@ -251,7 +254,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $records = $result->fetchAll();
 
     $this->assertCount($num_expected, $records,
-        'The number of items expected for field "' . $field_name .'" with bundle "'
+        'The number of items expected for field "' . $field_name . '" with bundle "'
         . $bundle . '" is not correct.');
 
     foreach ($records as $delta => $record) {
@@ -290,7 +293,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'required' => FALSE,
       'storage_settings' => [
         'storage_plugin_id' => 'chado_storage',
-        'storage_plugin_settings'=> [
+        'storage_plugin_settings' => [
           'base_table' => 'project',
           'linker_table' => 'project_stock',
           'linker_fkey_column' => 'stock_id',
@@ -305,13 +308,13 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
           'default' => [
             'region' => 'content',
             'label' => 'above',
-            'weight' => 15
+            'weight' => 15,
           ],
         ],
         'form' => [
-          'default'=> [
-            'region'=> 'content',
-            'weight' => 15
+          'default' => [
+            'region' => 'content',
+            'weight' => 15,
           ],
         ],
       ],
@@ -343,7 +346,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         'storage_plugin_id' => 'chado_storage',
         'storage_plugin_settings' => [
           'base_table' => 'organism',
-          'prop_table' => 'organismprop'
+          'prop_table' => 'organismprop',
         ],
       ],
       'settings' => [
@@ -355,13 +358,13 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
           'default' => [
             'region' => 'content',
             'label' => 'above',
-            'weight' => 15
+            'weight' => 15,
           ],
         ],
         'form' => [
           'default' => [
             'region' => 'content',
-            'weight' => 15
+            'weight' => 15,
           ],
         ],
       ],
@@ -385,7 +388,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         'storage_plugin_id' => 'chado_storage',
         'storage_plugin_settings' => [
           'base_table' => 'organism',
-          'prop_table' => 'organismprop'
+          'prop_table' => 'organismprop',
         ],
       ],
       'settings' => [
@@ -397,13 +400,13 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
           'default' => [
             'region' => 'content',
             'label' => 'above',
-            'weight' => 15
+            'weight' => 15,
           ],
         ],
         'form' => [
           'default' => [
             'region' => 'content',
-            'weight' => 15
+            'weight' => 15,
           ],
         ],
       ],
@@ -468,7 +471,6 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     // % Run the first test set with caching disabled. %
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
     // Update configuration.
     $config_edit->set('tripal_entity_type.default_cache_backend_field_values', FALSE);
     $config_edit->save();
@@ -492,7 +494,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'abbreviation' => 'O. sativa',
       'type_id' => $subspecies_term_id,
       'infraspecific_name' => 'Japonica',
-      'comment' => 'rice is nice'
+      'comment' => 'rice is nice',
     ]);
     $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage']);
     $this->assertCount(1, $entities,
@@ -536,7 +538,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'genus' => 'Gorilla',
       'species' => 'gorilla',
       'abbreviation' => 'G. gorilla',
-      'comment' => 'Gorilla'
+      'comment' => 'Gorilla',
     ]);
     $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage']);
     $this->assertCount(1, $entities,
@@ -624,28 +626,48 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // 0 in the drupal field table, the default for an integer.
     $this->checkFieldItem('organism', 'field_note', 1,
         ['record_id' => $organism_id, 'prop_id' => 1],
-        ['type_id' => 0, 'linker_id' => $organism_id,
-         'bundle' => 'organism', 'entity_id' => 1]);
+        [
+          'type_id' => 0,
+          'linker_id' => $organism_id,
+          'bundle' => 'organism',
+          'entity_id' => 1,
+        ]);
 
     $this->checkFieldItem('organism', 'field_note', 1,
         ['record_id' => $organism_id, 'prop_id' => 2],
-        ['type_id' => 0, 'linker_id' => $organism_id,
-         'bundle' => 'organism', 'entity_id' => 1]);
+        [
+          'type_id' => 0,
+          'linker_id' => $organism_id,
+          'bundle' => 'organism',
+          'entity_id' => 1,
+        ]);
 
     $this->checkFieldItem('organism', 'field_note', 1,
         ['record_id' => $organism_id, 'prop_id' => 3],
-        ['type_id' => 0, 'linker_id' => $organism_id,
-         'bundle' => 'organism', 'entity_id' => 1]);
+        [
+          'type_id' => 0,
+          'linker_id' => $organism_id,
+          'bundle' => 'organism',
+          'entity_id' => 1,
+        ]);
 
     $this->checkFieldItem('organism', 'field_comment', 1,
         ['record_id' => $organism_id, 'prop_id' => 4],
-        ['type_id' => 0, 'linker_id' => $organism_id,
-         'bundle' => 'organism', 'entity_id' => 1]);
+        [
+          'type_id' => 0,
+          'linker_id' => $organism_id,
+          'bundle' => 'organism',
+          'entity_id' => 1,
+        ]);
 
     $this->checkFieldItem('organism', 'field_comment', 1,
         ['record_id' => $organism_id, 'prop_id' => 5],
-        ['type_id' => 0, 'linker_id' => $organism_id,
-         'bundle' => 'organism', 'entity_id' => 1]);
+        [
+          'type_id' => 0,
+          'linker_id' => $organism_id,
+          'bundle' => 'organism',
+          'entity_id' => 1,
+        ]);
 
     // Check that only the exact number of properties were published.
     $this->checkFieldItem('organism', 'field_note', 3, ['entity_id' => 1], []);
@@ -654,27 +676,26 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     //
     // Test publishing a field that uses a linker table.
     //
-
     // Create and publish the contacts and the project.
     $contact_db = $idsmanager->loadCollection('TCONTACT', "chado_id_space");
     $person_term_id = $contact_db->getTerm('0000003')->getInternalId();
     $contact_id1 = $this->addChadoContact($chado, [
       'name' => 'John Doe',
       'type_id' => $person_term_id,
-      'description' => 'Bioinformaticist extrodinaire'
+      'description' => 'Bioinformaticist extraordinaire',
     ]);
     $contact_id2 = $this->addChadoContact($chado, [
       'name' => 'Lady Gaga',
       'type_id' => $person_term_id,
-      'description' => 'Pop star'
+      'description' => 'Pop star',
     ]);
     $project_id1 = $this->addChadoProject($chado, [
       'name' => 'Bad Project',
-      'description' => 'Want your bad project'
+      'description' => 'Want your bad project',
     ]);
     $project_id2 = $this->addChadoProject($chado, [
       'name' => 'Project Face',
-      'description' => 'I wanna project like they do in Texas, please'
+      'description' => 'I wanna project like they do in Texas, please',
     ]);
     $project_contact_id1 = $this->addChadoProjectContact($chado, [
       'project_id' => $project_id1,
@@ -737,7 +758,6 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     // %     Run tests set with caching enabled.       %
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
     // Update configuration.
     $config_edit->set('tripal_entity_type.default_cache_backend_field_values', TRUE);
     $config_edit->save();
@@ -753,7 +773,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'abbreviation' => 'O. sativa',
       'type_id' => $subspecies_term_id,
       'infraspecific_name' => 'Japonica',
-      'comment' => 'rice is nice, too'
+      'comment' => 'rice is nice, too',
     ]);
     $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage']);
     $this->assertCount(1, $entities,
@@ -850,28 +870,48 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // integer.
     $this->checkFieldItem('organism', 'field_note', 1,
       ['record_id' => $organism_id3, 'prop_id' => 6],
-      ['type_id' => $note_type_id, 'linker_id' => $organism_id3,
-      'bundle' => 'organism', 'entity_id' => $entity_id]);
+      [
+        'type_id' => $note_type_id,
+        'linker_id' => $organism_id3,
+        'bundle' => 'organism',
+        'entity_id' => $entity_id,
+      ]);
 
     $this->checkFieldItem('organism', 'field_note', 1,
       ['record_id' => $organism_id3, 'prop_id' => 7],
-      ['type_id' => $note_type_id, 'linker_id' => $organism_id3,
-      'bundle' => 'organism', 'entity_id' => $entity_id]);
+      [
+        'type_id' => $note_type_id,
+        'linker_id' => $organism_id3,
+        'bundle' => 'organism',
+        'entity_id' => $entity_id,
+      ]);
 
     $this->checkFieldItem('organism', 'field_note', 1,
     ['record_id' => $organism_id3, 'prop_id' => 8],
-    ['type_id' => $note_type_id, 'linker_id' => $organism_id3,
-     'bundle' => 'organism', 'entity_id' => $entity_id]);
+    [
+      'type_id' => $note_type_id,
+      'linker_id' => $organism_id3,
+      'bundle' => 'organism',
+      'entity_id' => $entity_id,
+    ]);
 
     $this->checkFieldItem('organism', 'field_comment', 1,
     ['record_id' => $organism_id3, 'prop_id' => 9],
-    ['type_id' => $comment_type_id, 'linker_id' => $organism_id3,
-     'bundle' => 'organism', 'entity_id' => $entity_id]);
+    [
+      'type_id' => $comment_type_id,
+      'linker_id' => $organism_id3,
+      'bundle' => 'organism',
+      'entity_id' => $entity_id,
+    ]);
 
     $this->checkFieldItem('organism', 'field_comment', 1,
     ['record_id' => $organism_id3, 'prop_id' => 10],
-    ['type_id' => $comment_type_id, 'linker_id' => $organism_id3,
-     'bundle' => 'organism', 'entity_id' => $entity_id]);
+    [
+      'type_id' => $comment_type_id,
+      'linker_id' => $organism_id3,
+      'bundle' => 'organism',
+      'entity_id' => $entity_id,
+    ]);
 
     // Check that only the exact number of properties were published.
     $this->checkFieldItem('organism', 'field_note', 3, ['entity_id' => 1], []);
@@ -885,7 +925,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'species' => 'salmonis',
       'common_name' => 'salmon louse',
       'abbreviation' => 'L. salmonis',
-      'comment' => 'The salmon louse is a major ectoparasite of salmonids.'
+      'comment' => 'The salmon louse is a major ectoparasite of salmonids.',
     ]);
     $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage']);
     $this->assertCount(1, $entities,
@@ -914,8 +954,11 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
     $this->checkFieldItem('organism', 'organism_comment', 1,
         ['record_id' => $organism_id4],
-        ['bundle' => 'organism', 'entity_id' => $entity_id,
-          'value' => 'The salmon louse is a major ectoparasite of salmonids.']);
+        [
+          'bundle' => 'organism',
+          'entity_id' => $entity_id,
+          'value' => 'The salmon louse is a major ectoparasite of salmonids.',
+        ]);
 
     // We expect no infraspecies here, so expected count is zero.
     $this->checkFieldItem('organism', 'organism_infraspecific_name', 0,

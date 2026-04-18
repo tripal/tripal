@@ -72,7 +72,7 @@ class ChadoStockFormatterDefault extends ChadoFormatterBase {
         'common_name' => $item->get('stock_common_name')->getString(),
       ];
 
-      // Special case handling for abbreviation of infraspecific type
+      // Special case handling for abbreviation of infraspecific type.
       $values['infratype_abbrev'] = chado_abbreviate_infraspecific_rank($values['infratype']);
 
       // Substitute values in token string to generate displayed string.
@@ -94,7 +94,7 @@ class ChadoStockFormatterDefault extends ChadoFormatterBase {
 
     // If more than one value has been found, display all values in an
     // unordered list.
-// @todo: add a pager
+    // @todo add pager here.
     elseif (count($list) > 1) {
       $elements[0] = [
         '#theme' => 'item_list',

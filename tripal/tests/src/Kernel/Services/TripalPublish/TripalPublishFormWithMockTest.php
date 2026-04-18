@@ -10,13 +10,15 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager;
 use Drupal\tripal\TripalStorage\TripalStorageBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the publish form with a mock datastore.
  *
  * @group TripalPublish
  */
-#[Group('TripalPublish')]
+#[Group('tripal-publish')]
+#[RunTestsInSeparateProcesses]
 class TripalPublishFormWithMockTest extends TripalTestKernelBase {
 
   use UserCreationTrait;

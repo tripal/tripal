@@ -1,9 +1,10 @@
 <?php
 
-namespace Drupal\Tests\tripal\Functional;
+namespace Drupal\Tests\tripal\Functional\Permissions;
 
 use Drupal\Tests\BrowserTestBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the basic functions of the TripalTerm Entity Type.
@@ -12,9 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group Tripal Chado Permissions
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
-#[Group('Tripal Chado Permissions')]
+#[Group('access')]
+#[RunTestsInSeparateProcesses]
 class TripalChadoRoutePermissionsTest extends BrowserTestBase {
 
   protected $defaultTheme = 'stark';
@@ -23,7 +23,6 @@ class TripalChadoRoutePermissionsTest extends BrowserTestBase {
 
   /**
    * Test all the base Tripal Chado admin paths.
-   *
    */
   public function testTripalChadoAdminPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
@@ -38,7 +37,7 @@ class TripalChadoRoutePermissionsTest extends BrowserTestBase {
     ];
 
     $userAuthenticatedOnly = $this->drupalCreateUser();
-    // Drupal 10.2 tightens permissions, second permission is needed to access importers
+    // Drupal 10.2 tightens permissions, second permission is needed to access importers.
     $userTripalAdmin = $this->drupalCreateUser(['administer tripal', 'allow tripal import']);
 
     // First check all the URLs with no user logged in.

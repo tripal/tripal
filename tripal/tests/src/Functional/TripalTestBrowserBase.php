@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\Tests\tripal\Functional;
 
 use Drupal\Tests\BrowserTestBase;
@@ -13,7 +14,7 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group Tripal
  */
-#[Group('Tripal')]
+#[Group('tripal-testing')]
 abstract class TripalTestBrowserBase extends BrowserTestBase {
 
   use TripalTestTrait;
@@ -34,7 +35,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
   protected function setUp(): void {
     parent::setUp();
     // Not ready to add this to all tests just yet.
-    // \Drupal::state()->set('is_a_test_environment', TRUE);
+    // \Drupal::state()->set('is_a_test_environment', TRUE);.
   }
 
 }

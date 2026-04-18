@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalImporter;
 
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal\Services\TripalLogger;
-use Symfony\Component\Yaml\Yaml;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for the OBO ontology importer.
@@ -16,9 +16,11 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoImporter
  * @group OntologyImporter
  */
-#[Group('TripalImporter')]
-#[Group('ChadoImporter')]
-#[Group('OntologyImporter')]
+#[Group('tripal-importer')]
+#[Group('chado-importer')]
+#[group('importer-obo')]
+#[Group('bio-cv')]
+#[RunTestsInSeparateProcesses]
 class OboImporterTest extends ChadoTestKernelBase {
 
   use UserCreationTrait;
@@ -94,6 +96,21 @@ class OboImporterTest extends ChadoTestKernelBase {
   protected array $scenarios;
 
   /**
+   * Messages encountered when EBI OLS is down or broken.
+   *
+   * @var array
+   *   A list of error messages encountered when the external
+   *   web site is down or not functioning normally are tagged
+   *   with 'skip', messages normally encountered are tagged
+   *   with 'normal'.
+   */
+  protected array $message_actions = [
+    '/a lookup will be performed with the EBI Ontology Lookup Service/' => 'normal',
+    '/Cannot find the ontology via an EBI OLS lookup/' => 'skip',
+    '/Service Temporarily Unavailable/' => 'skip',
+  ];
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -107,9 +124,14 @@ class OboImporterTest extends ChadoTestKernelBase {
 
     // Create a mocked logger to access error messages from the Tripal logger.
     $mock_logger = $this->getMockBuilder(TripalLogger::class)
-      ->onlyMethods(['warning'])
+      ->onlyMethods(['warning', 'error'])
       ->getMock();
     $mock_logger->method('warning')
+      ->willReturnCallback(function ($message, $context, $options) {
+        $this->mock_messages[] = str_replace(array_keys($context), $context, $message);
+        return NULL;
+      });
+    $mock_logger->method('error')
       ->willReturnCallback(function ($message, $context, $options) {
         $this->mock_messages[] = str_replace(array_keys($context), $context, $message);
         return NULL;
@@ -120,9 +142,8 @@ class OboImporterTest extends ChadoTestKernelBase {
     $this->drupal_connection = $this->container->get('database');
 
     // First retrieve info from the YAML file for each test.
-    $yaml_data = Yaml::parse(file_get_contents($this->yaml_info_file));
-    $this->system_under_test = $yaml_data['system-under-test'];
-    $this->scenarios = $yaml_data['scenarios'];
+    // First retrieve info from the YAML file for this particular test.
+    [$this->system_under_test, $this->scenarios] = $this->getTestInfoFromYaml($this->yaml_info_file);
 
     // Create the test Chado installation we will be using.
     $this->system_under_test['chado_version'] ??= '1.3';
@@ -146,6 +167,17 @@ class OboImporterTest extends ChadoTestKernelBase {
     // Inserts records with the SQL to generate needed materialized views.
     $this->populateMviewSql();
 
+    // Create a conflicting dbxref and cv term to test issue #2382 problem.
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $term_values = [
+      'db.name' => 'data',
+      'cv.name' => 'EDAM',
+      'dbxref.accession' => 'has_format',
+      'cvterm.name' => 'has format',
+      'cvterm.definition' => 'Tests a conflicting existing dbxref for a cvterm.',
+    ];
+    $cvterm_buddy->insertCvterm($term_values, []);
   }
 
   /**
@@ -169,28 +201,6 @@ class OboImporterTest extends ChadoTestKernelBase {
     ];
 
     return $scenarios;
-  }
-
-  /**
-   * Retrieves the current scenario based on the data provider.
-   *
-   * NOTE: Also ensures the type_ids match what is currently in the database.
-   *
-   * @param int $current_scenario_key
-   *   The key of the scenario in the YAML.
-   * @param string $current_scenario_label
-   *   The label of the scenario in the YAML.
-   *
-   * @return array
-   *   The scenario to be tested as defined in the YAML.
-   */
-  public function retrieveCurrentScenario(int $current_scenario_key, string $current_scenario_label) {
-
-    // Retrieve the correct scenario.
-    $current_scenario = $this->scenarios[$current_scenario_key];
-    $this->assertEquals($current_scenario_label, $current_scenario['label'], 'We may not have retrieved the expected scenario');
-
-    return $current_scenario;
   }
 
   /**
@@ -250,7 +260,7 @@ class OboImporterTest extends ChadoTestKernelBase {
   #[DataProvider('provideScenarios')]
   public function testOboImporter(int $current_scenario_key, string $current_scenario_label) {
 
-    $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
+    $current_scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
 
     $this->mock_messages = [];
 
@@ -278,7 +288,7 @@ class OboImporterTest extends ChadoTestKernelBase {
 
     // Test that expected counts before import are one less.
     foreach ($current_scenario['expect'] as $expect) {
-      $expected_count = ($expect['count'] ?? 1) - 1;
+      $expected_count = $expect['precount'] ?? 0;
       $query = $this->chado_connection->select('1:' . $expect['table'], 'T');
       $query->condition('T.' . $expect['column'], $expect['value'], '=');
       $query->fields('T', [$expect['column']]);
@@ -287,7 +297,45 @@ class OboImporterTest extends ChadoTestKernelBase {
     }
 
     // Run the importer.
-    $obo_importer->run();
+    try {
+      $obo_importer->run();
+    }
+    catch(\Exception $e) {
+      // If we get a specific known message due to the EBI OLS external
+      // database being down, then mark this test as skipped.
+      $skip_triggered = [];
+      foreach ($this->mock_messages as $message) {
+        // For each expected external message...
+        $matched_any = FALSE;
+        foreach ($this->message_actions as $pattern => $action) {
+          // If it's in our list with an action of skip
+          // then we indicate the test should be skipped.
+          if (preg_match($pattern, $message)) {
+            $matched_any = TRUE;
+            // Note: an action of normal will simply be ignored
+            // since it would fall into an 'else' here.
+            if ($action == 'skip') {
+              $skip_triggered[] = $message;
+            }
+          }
+        }
+        if (!$matched_any) {
+          // If it doesn't match any of our pattern then it is a new
+          // unanticipated error and we want to immediately fail.
+          $this->fail('Unanticipated error: ' . $message);
+        }
+      }
+      // If any of the known external error messages were caught
+      // then we want to skip here.
+      if ($skip_triggered) {
+        $this->markTestSkipped("We received only known external error messages and chose to ignore them. Specifically:\n"
+          . implode("\n", $skip_triggered));
+      }
+      // If the exception did not create a logger message, fail now.
+      else {
+        $this->fail('Unanticipated exception: ' . $e->getMessage());
+      }
+    }
 
     // Test that any expected warning was generated.
     if (array_key_exists('expect_message', $current_scenario)) {

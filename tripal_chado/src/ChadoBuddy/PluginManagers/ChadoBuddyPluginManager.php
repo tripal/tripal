@@ -15,8 +15,7 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 class ChadoBuddyPluginManager extends DefaultPluginManager {
 
   /**
-   * Provides the TripalDBX connection to chado that ChadoBuddies created by
-   * this plugin manager should act upon.
+   * Provides the TripalDBX connection to chado.
    *
    * @var Drupal\tripal_chado\Database\ChadoConnection
    */
@@ -48,4 +47,5 @@ class ChadoBuddyPluginManager extends DefaultPluginManager {
   public function createInstance($plugin_id, array $configuration = []) {
     return $this->getFactory()->createInstance($plugin_id, $configuration, $this->connection);
   }
+
 }

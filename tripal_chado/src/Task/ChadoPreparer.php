@@ -907,21 +907,23 @@ class ChadoPreparer extends ChadoTaskBase {
       'auto_load' => FALSE,
     ];
     $ontologies[] = [
-      'vocabulary' => $this->getVocabulary('cellular_component'),
+      // This obo file also includes namepaces: biological_process,
+      // cellular_component, external, and molecular_function.
+      'vocabulary' => $this->getVocabulary('gene_ontology'),
       'idSpace' => $this->getIdSpace('GO'),
-      'path' => 'http://purl.obolibrary.org/obo/go.obo',
+      'path' => 'http://purl.obolibrary.org/obo/go.obo||{tripal_chado}/files/go.obo',
       'auto_load' => FALSE,
     ];
     $ontologies[] = [
       'vocabulary' => $this->getVocabulary('sequence'),
       'idSpace' => $this->getIdSpace('SO'),
-      'path' => 'http://purl.obolibrary.org/obo/so.obo',
+      'path' => 'http://purl.obolibrary.org/obo/so.obo||{tripal_chado}/files/so.obo',
       'auto_load' => TRUE,
     ];
     $ontologies[] = [
       'vocabulary' => $this->getVocabulary('taxonomic_rank'),
       'idSpace' => $this->getIdSpace('TAXRANK'),
-      'path' => 'http://purl.obolibrary.org/obo/taxrank.obo',
+      'path' => 'http://purl.obolibrary.org/obo/taxrank.obo||{tripal_chado}/files/taxrank.obo',
       'auto_load' => TRUE,
     ];
     $ontologies[] = [
@@ -939,6 +941,10 @@ class ChadoPreparer extends ChadoTaskBase {
 
     // Iterate through each ontology and install them with the OBO Importer.
     foreach ($ontologies as $ontology) {
+      // Fallback if the idSpace does not have a description.
+      if (!$ontology['idSpace']->getDescription()) {
+        $ontology['idSpace']->setDescription($ontology['idSpace']->getName());
+      }
       $obo_id = $this->insertOntologyRecord($ontology);
       $schema_name = $this->outputSchemas[0]->getSchemaName();
       if ($ontology['auto_load']) {

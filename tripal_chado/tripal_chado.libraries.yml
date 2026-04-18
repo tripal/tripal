@@ -10,6 +10,11 @@ tripal_chado.field.ChadoDbxrefWidgetDefault:
     component:
       src/Plugin/Field/FieldWidget/ChadoDbxrefWidgetDefault.css: {}
 
+tripal_chado.field.ChadoEmbeddedEntityFormatter:
+  css:
+    component:
+      src/Plugin/Field/FieldFormatter/ChadoEmbeddedEntityFormatter.css: {}
+
 tripal_chado.field.ChadoRelationshipWidgetDefault:
   css:
     component:

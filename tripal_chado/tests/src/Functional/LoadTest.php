@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Functional;
 use Drupal\Core\Url;
 use Drupal\Tests\BrowserTestBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Simple test to ensure that main page loads with module enabled.
@@ -12,8 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal
  * @group Tripal Chado
  */
-#[Group('Tripal')]
-#[Group('Tripal Chado')]
+#[Group('render')]
+#[RunTestsInSeparateProcesses]
 class LoadTest extends BrowserTestBase {
 
   protected $defaultTheme = 'stark';

@@ -32,7 +32,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
 
     // Get the list of databases
     $databases = [];
-    $query = $chado->select('db', 'd');
+    $query = $chado->select('1:db', 'd');
     $query->fields('d', ['db_id', 'name']);
     $query->orderBy('name');
     $results = $query->execute();

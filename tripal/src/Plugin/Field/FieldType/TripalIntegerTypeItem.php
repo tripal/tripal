@@ -21,6 +21,11 @@ use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 )]
 class TripalIntegerTypeItem extends TripalFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "tripal_integer_type";
 
   /**
@@ -45,11 +50,12 @@ class TripalIntegerTypeItem extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    $values = [];
+    $value = [];
 
-    $values['value'] = mt_rand(1, 100000);
+    $value['record_id'] = 0;
+    $value['value'] = mt_rand(1, 100000);
 
-    return $values;
+    return [$value];
   }
 
   /**
@@ -71,4 +77,5 @@ class TripalIntegerTypeItem extends TripalFieldItemBase {
       new IntStoragePropertyType($entity_type_id, self::$id, "value", $term),
     ];
   }
+
 }

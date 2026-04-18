@@ -1,22 +1,23 @@
 <?php
 
-namespace Drupal\Tests\tripal\Functional\Entity;
+namespace Drupal\Tests\tripal\Functional\Services;
 
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use PHPUnit\Framework\Attributes\Group;
-
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * Tests the basic functions of the TripalFieldCollection Service..
+ * Tests the basic functions of the TripalFieldCollection Service.
  *
  * @group Tripal
  * @group Tripal Content
  * @group Discover
  */
-#[Group('Tripal')]
-#[Group('Tripal Content')]
-#[Group('Discover')]
+#[Group('tripal-field')]
+#[Group('field-discovery')]
+#[group('service-collection')]
+#[RunTestsInSeparateProcesses]
 class TripalFieldCollectionTest extends TripalTestBrowserBase {
 
   /**
@@ -34,8 +35,7 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
    */
   public function testTripalFieldCollection() {
 
-    //\Drupal::state()->set('is_a_test_environment', TRUE);
-
+    // \Drupal::state()->set('is_a_test_environment', TRUE);
     // Create the vocabulary term needed for testing the content type.
     // We'll use the default Tripal IdSpace and Vocabulary plugins.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
@@ -60,13 +60,12 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
       'id' => 'organism',
       'title_format' => "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]",
       'url_format' => "organism/[TripalEntity__entity_id]",
-      'synonyms' => ['bio_data_1']
+      'synonyms' => ['bio_data_1'],
     ];
     /** @var \Drupal\tripal\Services\TripalContentTypes $content_type_setup **/
     $content_type_service = \Drupal::service('tripal.tripalentitytype_collection');
     $content_type = $content_type_service->createContentType($ct_details);
     $this->assertTrue(!is_null($content_type), "Failed to create a content type with avalid definition.");
-
 
     /** @var \Drupal\tripal\Services\TripalFieldCollection $fields_service **/
     $fields_service = \Drupal::service('tripal.tripalfield_collection');
@@ -91,7 +90,7 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
       'required' => TRUE,
       'storage_settings' => [
         'storage_plugin_id' => 'drupal_sql_storage',
-        'storage_plugin_settings'=> [],
+        'storage_plugin_settings' => [],
         'max_length' => 255,
       ],
       'settings' => [
@@ -103,13 +102,13 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
           'default' => [
             'region' => 'content',
             'label' => 'above',
-            'weight' => 15
+            'weight' => 15,
           ],
         ],
         'form' => [
-          'default'=> [
-            'region'=> 'content',
-            'weight' => 15
+          'default' => [
+            'region' => 'content',
+            'weight' => 15,
           ],
         ],
       ],
@@ -130,7 +129,7 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
     $this->assertTrue(array_key_exists('translatable', $defaults), "The field default array is missing the translatable element.");
     $this->assertTrue(array_key_exists('cardinality', $defaults), "The field default array is missing the cardinality element.");
 
-    // Check the storage settings
+    // Check the storage settings.
     $this->assertTrue(array_key_exists('storage_settings', $defaults), "The field default array is missing the storage_settings element.");
     $this->assertTrue(array_key_exists('storage_plugin_id', $defaults['storage_settings']), "The field default array is missing the storage_settings > storage_plugin_id element.");
     $this->assertTrue(array_key_exists('storage_plugin_settings', $defaults['storage_settings']), "The field default array is missing the storage_settinsg > storage_plugin_settings element.");
@@ -140,19 +139,19 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
     $this->assertTrue(array_key_exists('termIdSpace', $defaults['settings']), "The field default array is missing the termIdSpace settings element.");
     $this->assertTrue(array_key_exists('termAccession', $defaults['settings']), "The field default array is missing the termAccession settings element.");
 
-    // Check the displays
+    // Check the displays.
     $this->assertTrue(array_key_exists('display', $defaults), "The field default array is missing the display element.");
     $this->assertTrue(array_key_exists('view', $defaults['display']), "The field default array is missing the view display element.");
     $this->assertTrue(array_key_exists('form', $defaults['display']), "The field default array is missing the form display element.");
 
-    // Check the view display
+    // Check the view display.
     $this->assertTrue(array_key_exists('default', $defaults['display']['view']), "The field default array is missing display > view > default element.");
     $this->assertTrue(array_key_exists('region', $defaults['display']['view']['default']), "The field default array is missing the display > view > default > region element.");
     $this->assertTrue(array_key_exists('label', $defaults['display']['view']['default']), "The field default array is missing the display > view > default > label element.");
     $this->assertTrue(array_key_exists('weight', $defaults['display']['view']['default']), "The field default array is missing the display > view > default > weight element.");
     $this->assertTrue(array_key_exists('label', $defaults['display']['view']['teaser']), "The field default array is missing the display > view > teaser > label element.");
 
-    // check the form display
+    // Check the form display.
     $this->assertTrue(array_key_exists('default', $defaults['display']['form']), "The field default array is missing the display > form > default element.");
     $this->assertTrue(array_key_exists('region', $defaults['display']['form']['default']), "The field default array is missing the display > form > default > region element.");
     $this->assertTrue(array_key_exists('weight', $defaults['display']['form']['default']), "The field default array is missing the display > form > default > weight element.");
@@ -163,7 +162,7 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
     $this->assertIsInt($defaults['cardinality'], 'The cardinality element is not an integer');
     $this->assertIsArray($defaults['storage_settings']['storage_plugin_settings'], 'The storage_plugin_settings element should be an array');
 
-    // Make sure the setFieldDefDefaults functions doesn't change any valid values
+    // Make sure the setFieldDefDefaults function doesn't change any valid values.
     $new_def = $fields_service->setFieldDefDefaults($field_def);
     $this->assertTrue($field_def['name'] == $new_def['name'], "The name element changed after setting defaults.");
     $this->assertTrue($field_def['content_type'] == $new_def['content_type'], "The content_type element changed after setting defaults.");
@@ -192,7 +191,7 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
     $this->assertTrue($field_def['display']['form']['default']['region'] == $new_def['display']['form']['default']['region'],
         "The display > form > default > region element changed after setting defaults.");
 
-    // Make sure we have some newly added defaults that were missing
+    // Make sure we have some newly added defaults that were missing.
     $this->assertTrue(array_key_exists('translatable', $new_def), "Missing the translatable element after setting defaults.");
     $this->assertTrue(array_key_exists('revisionable', $new_def), "Missing the revisionable element after setting defaults.");
     $this->assertTrue(array_key_exists('teaser', $new_def['display']['view']), "Missing the display > view > teaser element after setting defaults.");
@@ -264,7 +263,6 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
     // -------------------------------------------------------------
     // Tests for field discovery
     // -------------------------------------------------------------
-
     // Test that the discover function works by providing the default keys.
     $discovered_fields = $fields_service->discover($content_type);
     $this->assertTrue(array_key_exists('new', $discovered_fields), "Missing the 'new' key in the array returned by the discover() function.");
@@ -276,16 +274,15 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
     // in testing. There we'll find a discover method that should
     // return various types of fields.  We'll make sure we see
     // those fields as expected.
-
-    // Make sure we see a valid field
+    // Make sure we see a valid field.
     $this->assertTrue(array_key_exists('organism_test_field', $discovered_fields['new']), "Missing the 'organism_test_field' key in the 'new' array returned by the discover() function.");
 
     // Make sure we see a properly truncated field name with
-    // spaces and unicode character replaced with underscores
+    // spaces and unicode character replaced with underscores.
     $this->assertTrue(array_key_exists('organism__test_field_but_with__1', $discovered_fields['new']), "Missing the 'organism__test_field_but_with__1' key in the 'new' array returned by the discover() function.");
 
     // Same as above, but cvterm_id was not passed. The field name should
-    // end with a unique id
+    // end with a unique id.
     $found = FALSE;
     foreach ($discovered_fields['new'] as $field) {
       if (preg_match('/^organism__test_fie_[0-9a-f]{13}$/', $field['name'])) {
@@ -308,6 +305,5 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
     $this->assertTrue(array_key_exists('organism_test_field', $discovered_fields['existing']), "Missing the 'organism_test_field' key in the 'existing' array returned by the discover() function.");
 
   }
-
 
 }

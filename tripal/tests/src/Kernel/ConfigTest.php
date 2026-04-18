@@ -2,19 +2,20 @@
 
 namespace Drupal\Tests\tripal\Kernel;
 
-use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for configuration in Yaml files.
+ *
  * These tests do not currently cover any code.
  *
  * @group Tripal
  * @group Tripal Config
  */
-#[Group('Tripal')]
-#[Group('Tripal Config')]
-class configTest extends TripalTestKernelBase {
+#[Group('consistency')]
+#[RunTestsInSeparateProcesses]
+class ConfigTest extends TripalTestKernelBase {
 
   /**
    * {@inheritdoc}
@@ -22,24 +23,12 @@ class configTest extends TripalTestKernelBase {
   protected static $modules = ['tripal', 'tripal_biodb', 'tripal_chado'];
 
   /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function tearDownAfterClass() :void {
-  }
-
-  /**
+   * Check version.
+   *
    * When we update the version of Tripal, we need to remember to
    * do it in all three yaml files. This function confirms that
    * version and also core_version_requirements are consistent in
    * each of the sub-modules' *.info.yml files.
-   *
    */
   public function testConfigYaml() {
     $previous_module = NULL;

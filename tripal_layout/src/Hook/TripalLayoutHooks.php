@@ -1,0 +1,49 @@
+<?php
+
+namespace Drupal\tripal_layout\Hook;
+
+use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+
+/**
+ * Hook implementations for the Tripal Layout module.
+ */
+class TripalLayoutHooks {
+
+  use StringTranslationTrait;
+
+  /**
+   * Implements hook_help().
+   */
+  #[Hook('help')]
+  public function help($route_name, RouteMatchInterface $route_match): string|array|null {
+    switch ($route_name) {
+      // Main module help for the tripal_layout module.
+      case 'help.page.tripal_layout':
+        $output = '<h3>' . $this->t('About') . '</h3>';
+        $output .= '<p>' . $this->t('Layouts for Tripal entity types.') . '</p>';
+        return ['#markup' => $output];
+    }
+    return NULL;
+  }
+
+  /**
+   * Implements hook_page_attachments().
+   */
+  #[Hook('page_attachments')]
+  public function addPageAttachments(array &$attachments): void {
+    $attachments['#attached']['library'][] = 'tripal_layout/tripal-layout';
+  }
+
+  /**
+   * Implements hook_rebuild().
+   */
+  #[Hook('rebuild')]
+  public function rebuild(): string {
+    \Drupal::service('tripal_layout.rebuild_service')->executeRebuild();
+    // Return value is only used for phpunit tests.
+    return 'tripal_layout';
+  }
+
+}

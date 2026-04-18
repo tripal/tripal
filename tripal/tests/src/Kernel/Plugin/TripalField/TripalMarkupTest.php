@@ -1,0 +1,349 @@
+<?php
+
+namespace Drupal\Tests\tripal\Kernel\Plugin\TripalField;
+
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
+use Drupal\tripal\Entity\TripalEntity;
+use Drupal\tripal\Plugin\Field\FieldType\TripalMarkupTypeItem;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+
+/**
+ * Tests the Field Types in the associated Test Info YAML.
+ *
+ * Specifically focused on create + update actions performed on the entity
+ * directly.
+ */
+#[Group('tripal-field')]
+#[RunTestsInSeparateProcesses]
+class TripalMarkupTest extends TripalTestKernelBase {
+
+  use TripalEntityFieldTestTrait;
+
+  /**
+   * The theme to use when rendering content in the test environment.
+   *
+   * @var string
+   */
+  protected $defaultTheme = 'stark';
+
+  /**
+   * The modules that this test depends on.
+   *
+   * NOTE: since this is a kernel test, these modules are not being installed
+   * but are available to be installed.
+   *
+   * @var array
+   */
+  protected static $modules = [
+    'system',
+    'user',
+    'path',
+    'path_alias',
+    'field',
+    'datetime',
+    'tripal',
+  ];
+
+  /**
+   * The test drupal connection. It is also set in the container.
+   *
+   * @var object
+   */
+  protected object $drupal_connection;
+
+  /**
+   * The YAML file indicating the scenarios to test and how to setup the enviro.
+   *
+   * @var string
+   */
+  protected string $yaml_info_file = __DIR__ . '/TripalMarkup-TestInfo.yml';
+
+  /**
+   * Describes the environment to setup for this test.
+   *
+   * Note: This is defined in the YAML file and then set in the setUp() method.
+   *
+   * @var array
+   *   An array with the following keys:
+   *   - bundle: an array defining the tripal entity type to create.
+   *   - fields: a list of fields to be attached the above bundle.
+   */
+  protected array $system_under_test;
+
+  /**
+   * The TripalEntityType id of the bundle being used in this test.
+   *
+   * Note: This is defined in the YAML file and then set in the setUp() method.
+   *
+   * @var string
+   */
+  protected string $bundle_name;
+
+  /**
+   * Describes the scenarios to test.
+   *
+   * Note: This is defined in the YAML file and then set in the setUp() method.
+   *
+   * This will be used in combination with the data provider. It can't be
+   * accessed directly in the dataProvider due to the way that PHPUnit is
+   * setup.
+   *
+   * @var array
+   *  A list of scenarios where each one has the following keys:
+   *  - label: A human-readable label for the scenario to be used in assert
+   *    messages.
+   *  - descrition: A description of the scenario and what you are wanting to
+   *    test. This will not be used in the test but is rather there to help
+   *    people reading the YAML file and to make it easier to maintain.
+   *  - create: An array of the values to be provided when creating a
+   *    TripalEntity. There should be a key matching the name of each field in
+   *    the system-under-test and it's value should be an array containing all
+   *    the property types for that field mapped to a value.
+   *  - edit: An array of the values to be provided when updating an existing
+   *    TripalEntity. There should be a key matching the name of each field in
+   *    the system-under-test and it's value should be an array containing all
+   *    the property types for that field mapped to a value.
+   */
+  protected array $scenarios;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+
+    // The Drupal connection will be created in the parent. This is used
+    // when checking the Drupal field tables.
+    $this->drupal_connection = $this->container->get('database');
+
+    // First retrieve info from the YAML file for this particular test.
+    [$this->system_under_test, $this->scenarios] = $this->getTestInfoFromYaml($this->yaml_info_file);
+    $this->bundle_name = $this->system_under_test['bundle']['id'];
+
+    // Next setup the environment according to the system under test.
+    $this->setupEntityFieldTestEnvironment();
+
+    $values = [
+      'id_space_name' => 'owl',
+      'term' => [
+        'name' => 'hasValue',
+        'accession' => 'hasValue',
+      ],
+    ];
+    $this->createTripalTerm($values, 'tripal_default_id_space', 'tripal_default_vocabulary');
+    $values = [
+      'id_space_name' => 'schema',
+      'term' => [
+        'name' => 'WebPageElement',
+        'accession' => 'WebPageElement',
+      ],
+    ];
+    $this->createTripalTerm($values, 'tripal_default_id_space', 'tripal_default_vocabulary');
+
+    $this->setupEntityFieldSystemUnderTest($this->system_under_test);
+  }
+
+  /**
+   * Data Provider: works with the YAML to provide scenarios for testing.
+   *
+   * @return array
+   *   List of scenarios to test where each one matches a key and label in the
+   *   associated YAML scenarios.
+   */
+  public static function provideScenarios() {
+    $scenarios = [];
+
+    $scenarios[] = [
+      0,
+      "When markup is set",
+    ];
+
+    return $scenarios;
+  }
+
+  /**
+   * Tests the field through TripalEntity->save().
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
+   */
+  #[DataProvider('provideScenarios')]
+  public function testFieldTypeCrud(int $current_scenario_key, string $current_scenario_label) {
+
+    // Retrieve the correct scenario.
+    $current_scenario = $this->scenarios[$current_scenario_key];
+    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+
+    // 1. Create the entity with that value set.
+    $entity = TripalEntity::create([
+      'title' => $this->randomString(),
+      'type' => $this->bundle_name,
+    ] + $current_scenario['create']['user_input']);
+    $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
+    $status = $entity->save();
+    $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
+    $markup_value = TripalMarkupTypeItem::getMarkupValue($entity, $entity->getFieldDefinition('field_instructions'));
+    $this->assertEquals($current_scenario['create']['expected_markup'], $markup_value, "The value returned by getMarkupValue() right after create did not match the expected value for our " . $current_scenario['label'] . " scenario.");
+
+    // @debug print_r($entity->toArray());
+    // 2. Load the entity we just created so we can check the values.
+    $created_entity = TripalEntity::load($entity->id());
+    $this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, $current_scenario['label'] . ' CREATE ');
+    $markup_value = TripalMarkupTypeItem::getMarkupValue($created_entity, $created_entity->getFieldDefinition('field_instructions'));
+    $this->assertEquals($current_scenario['create']['expected_markup'], $markup_value, "The value returned by getMarkupValue() when loading the created entity did not match the expected value for our " . $current_scenario['label'] . " scenario.");
+
+    // 3. Make changes and then save again.
+    foreach ($current_scenario['edit']['user_input'] as $field_name => $new_values) {
+      $created_entity->set($field_name, $new_values);
+    }
+    // @debug print_r($created_entity->toArray());
+    $status = $created_entity->save();
+    $this->assertEquals(SAVED_UPDATED, $status, "We expected to have updated the existing entity for our " . $current_scenario['label'] . " scenario.");
+    $markup_value = TripalMarkupTypeItem::getMarkupValue($created_entity, $created_entity->getFieldDefinition('field_instructions'));
+    $this->assertEquals($current_scenario['edit']['expected_markup'], $markup_value, "The value returned by getMarkupValue() when saving the edited entity did not match the expected value for our " . $current_scenario['label'] . " scenario.");
+
+    // 4. Load the entity we just updated so we can check the values.
+    $updated_entity = TripalEntity::load($created_entity->id());
+    // @debug print_r($updated_entity->toArray());
+    $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, $current_scenario['label'] . ' EDIT ');
+    $markup_value = TripalMarkupTypeItem::getMarkupValue($updated_entity, $updated_entity->getFieldDefinition('field_instructions'));
+    $this->assertEquals($current_scenario['edit']['expected_markup'], $markup_value, "The value returned by getMarkupValue() when loading the updated entity did not match the expected value for our " . $current_scenario['label'] . " scenario.");
+
+    // 5. Lets also check that we can generate a sample value without error.
+    $sample_value = TripalMarkupTypeItem::generateSampleValue($created_entity->getFieldDefinition('field_instructions'));
+    $this->assertIsArray($sample_value, "The sample value generated was not an array as expected for our " . $current_scenario['label'] . " scenario.");
+    $this->assertArrayHasKey(0, $sample_value, "The sample value generated did not have the expected 0 key for our " . $current_scenario['label'] . " scenario.");
+    $this->assertArrayHasKey('has_value', $sample_value[0], "The sample value generated did not have the expected 'has_value' key for our " . $current_scenario['label'] . " scenario.");
+    $this->assertIsBool($sample_value[0]['has_value'], "The 'has_value' key in the sample value generated was not a boolean as expected for our " . $current_scenario['label'] . " scenario.");
+
+    // 6. Finally, lets check that the entity can be deleted without effecting
+    // the field settings.
+    $updated_entity->delete();
+    $this->assertNull(TripalEntity::load($updated_entity->id()), "The entity was not deleted as expected for our " . $current_scenario['label'] . " scenario.");
+    // Use the entity manager to get the field settings.
+    $field_definitions = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->bundle_name);
+    if (isset($field_definitions['field_instructions'])) {
+      $field_definition = $field_definitions['field_instructions'];
+      $markup_settings = $field_definition->getSetting('markup');
+      $this->assertEquals($current_scenario['edit']['expected_markup'], $markup_settings, "The markup settings did not match the expected value for our " . $current_scenario['label'] . " scenario after deleting an entity.");
+    }
+  }
+
+  /**
+   * Tests the field widget.
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
+   */
+  #[DataProvider('provideScenarios')]
+  public function testWidgetForm(int $current_scenario_key, string $current_scenario_label) {
+    $field_name = 'field_instructions';
+
+    // Retrieve the correct scenario.
+    $current_scenario = $this->scenarios[$current_scenario_key];
+    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+
+    // Setup an empty Tripal entity form to interact with (test defaults).
+    $form_stuff = $this->setupTripalEntityAddForm($this->bundle_name);
+    $form = $form_stuff[1];
+    // Retrieve the widget form for the field we are testing.
+    $widget_form_element = $form[$field_name]['widget'][0];
+
+    // @debug print_r($widget_form_element);
+    // Confirm there are the form elements I expect.
+    foreach ($current_scenario['widget'] as $expected_element) {
+      $this->assertArrayHasKey($expected_element['key'], $widget_form_element, "The widget form element did not have the expected key for our " . $current_scenario['label'] . " scenario.");
+      $element_key = $expected_element['key'];
+      foreach ($expected_element as $property_key => $expected_value) {
+        if ($property_key !== 'key') {
+          $this->assertEquals($expected_value, $widget_form_element[$element_key][$property_key], "The $element_key [ $property_key ] widget form element did not match the value we expected for our " . $current_scenario['label'] . " scenario.");
+        }
+      }
+    }
+  }
+
+  /**
+   * Tests TripalMarkupTypeItem::fieldSettingsForm().
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
+   */
+  #[DataProvider('provideScenarios')]
+  public function testFieldSettingsForm(int $current_scenario_key, string $current_scenario_label) {
+
+    // Retrieve the correct scenario.
+    $current_scenario = $this->scenarios[$current_scenario_key];
+    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+
+    // Create the entity with that value set because we need an entity to get
+    // this form.
+    $entity = TripalEntity::create([
+      'title' => $this->randomString(),
+      'type' => $this->bundle_name,
+    ] + $current_scenario['create']['user_input']);
+    $entity->save();
+
+    // Retrieve the field settings form.
+    $field_type_plugin = $entity->get('field_instructions')->first();
+    $form = [];
+    $form_state = $this->getMockBuilder('Drupal\Core\Form\FormStateInterface')->getMock();
+    $elements = $field_type_plugin->fieldSettingsForm($form, $form_state);
+
+    // Confirm the markup element I expect is there.
+    // @debug print_r($elements);
+    $this->assertArrayHasKey('markup', $elements, "The field settings form did not have the expected 'markup' key for our field settings form test.");
+    $this->assertEquals('text_format', $elements['markup']['#type'], "The 'markup' element in the field settings form did not have the expected '#type'.");
+    $this->assertEquals('basic_html', $elements['markup']['#format'], "The 'markup' element in the field settings form did not have the expected '#format'.");
+
+  }
+
+  /**
+   * Tests the formatter.
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
+   */
+  #[DataProvider('provideScenarios')]
+  public function testFormatter(int $current_scenario_key, string $current_scenario_label) {
+
+    // Retrieve the correct scenario.
+    $current_scenario = $this->scenarios[$current_scenario_key];
+    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+
+    // Create the entity with that value set because we need an entity
+    // in order to render it ;-p.
+    $entity = TripalEntity::create([
+      'title' => $this->randomString(),
+      'type' => $this->bundle_name,
+    ] + $current_scenario['create']['user_input']);
+    $entity->save();
+
+    // Render the field and confirm the output is what we expect.
+    $rendered = $entity->field_instructions->view();
+    $this->assertIsArray($rendered, "The rendered field was not an array as expected for our " . $current_scenario['label'] . " scenario.");
+    foreach ($current_scenario['formatter'] as $expected_key => $expected_value) {
+      $this->assertArrayHasKey($expected_key, $rendered, "The rendered field did not have the expected key for our " . $current_scenario['label'] . " scenario.");
+      $this->assertEquals($expected_value, $rendered[$expected_key], "The $expected_key element in the rendered field did not match the value we expected for our " . $current_scenario['label'] . " scenario.");
+    }
+  }
+
+}

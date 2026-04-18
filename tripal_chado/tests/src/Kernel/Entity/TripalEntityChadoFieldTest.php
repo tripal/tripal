@@ -7,6 +7,7 @@ use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the TripalEntity Class with Chado Fields attached.
@@ -15,9 +16,10 @@ use PHPUnit\Framework\Attributes\Group;
  * @group ChadoFields
  * @group TripalTokenParser
  */
-#[Group('TripalEntity')]
-#[Group('ChadoFields')]
-#[Group('TripalTokenParser')]
+#[Group('tripal-content')]
+#[Group('chado-field')]
+#[Group('service-token-parser')]
+#[RunTestsInSeparateProcesses]
 class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
 
   use TripalEntityFieldTestTrait;
@@ -157,8 +159,7 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
    */
   #[DataProvider('provideScenarios')]
   public function testTripalChadoEntitySaveUrlAlias(int $current_scenario_key, string $current_scenario_label) {
-    $current_scenario = $this->scenarios[$current_scenario_key];
-    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+    $current_scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
 
     // 1. Create the entity with that value set.
     $submitted_title = $this->randomString();

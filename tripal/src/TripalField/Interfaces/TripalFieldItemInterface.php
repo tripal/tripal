@@ -9,6 +9,17 @@ use Drupal\tripal\Entity\TripalEntityType;
 interface TripalFieldItemInterface extends FieldItemInterface {
 
   /**
+   * Returns the main property to be used for display.
+   *
+   * Note: this is used as the value for tokens for this field such as in
+   * the title and URL.
+   *
+   * @return string
+   *   The name of a property returned by tripalTypes.
+   */
+  public static function mainDisplayPropertyName();
+
+  /**
    * Returns the tripal storage plugin id for this field.
    *
    * @return string

@@ -263,6 +263,12 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       }
     }
 
+    // A 400 error will return a page but no expected information.
+    if (!array_key_exists('Count', $this->webquery)) {
+      $this->logger->error('Skipping due to download error, NCBI may be in maintenance mode.');
+      return NULL;
+    }
+
     // initialize the retrieval loop
     $total_records = $this->webquery['Count'];
     $start = $page * $num_to_retrieve;

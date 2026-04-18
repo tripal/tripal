@@ -2,11 +2,21 @@
 
 namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
+use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
+use Drupal\Core\Database\ConnectionNotDefinedException;
+use Drupal\mysql\Driver\Database\mysql\Connection;
+use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
+use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Config\DatabaseStorage;
+use Drupal\Core\Database\Database;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\TripalDBX\TripalDbxConnection;
+use Prophecy\Prophecy\ObjectProphecy;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests for Tripal DBX connection on a real database.
@@ -38,9 +48,6 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers ::query
  */
 #[CoversClass(TripalDbxConnection::class)]
-#[Group('Tripal')]
-#[Group('TripalDBX')]
-#[Group('TripalDbxConnection')]
 #[CoversMethod(TripalDbxConnection::class, '__construct')]
 #[CoversMethod(TripalDbxConnection::class, 'getDatabaseName')]
 #[CoversMethod(TripalDbxConnection::class, 'getDatabaseKey')]
@@ -60,6 +67,8 @@ use PHPUnit\Framework\Attributes\Group;
 #[CoversMethod(TripalDbxConnection::class, '__toString')]
 #[CoversMethod(TripalDbxConnection::class, 'executeSqlQueries')]
 #[CoversMethod(TripalDbxConnection::class, 'query')]
+#[Group('tripal-dbx')]
+#[RunTestsInSeparateProcesses]
 class ConnectionTest extends TripalTestKernelBase {
 
   /**
@@ -68,15 +77,35 @@ class ConnectionTest extends TripalTestKernelBase {
   protected static $modules = ['tripal'];
 
   /**
-   * Test members.
+   * Prophesize config factory object.
    *
-   * "pro*" members are prophesize objects while their "non-pro*" equivqlent are
-   * the revealed objects.
+   * "pro*" members are prophesize objects while their "non-pro*" equivalent
+   * are the revealed objects.
+   *
+   * @var Prophecy\Prophecy\ObjectProphecy
    */
-  protected $proConfigFactory;
-  protected $configFactory;
-  protected $proConfig;
-  protected $config;
+  protected ObjectProphecy $proConfigFactory;
+
+  /**
+   * Revealed config factory object.
+   *
+   * @var \Drupal\Core\Config\ConfigFactory
+   */
+  protected ConfigFactory $configFactory;
+
+  /**
+   * Prophesize config object.
+   *
+   * @var Prophecy\Prophecy\ObjectProphecy
+   */
+  protected ObjectProphecy $proConfig;
+
+  /**
+   * Revealed config object.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected ImmutableConfig $config;
 
   /**
    * {@inheritdoc}
@@ -89,12 +118,12 @@ class ConnectionTest extends TripalTestKernelBase {
     // Then instantiate a new config factory that will use that database through
     // a new instance of config storage using that database.
     // Get Drupal real database.
-    $drupal_db = \Drupal\Core\Database\Database::getConnection(
+    $drupal_db = Database::getConnection(
       'default',
       'simpletest_original_default'
     );
     // Instantiate a new config storage.
-    $config_storage = new \Drupal\Core\Config\DatabaseStorage(
+    $config_storage = new DatabaseStorage(
       $drupal_db,
       'config'
     );
@@ -103,7 +132,7 @@ class ConnectionTest extends TripalTestKernelBase {
     // Get a typed config (note: this will use the test config storage).
     $typed_config = \Drupal::service('config.typed');
     // Instantiate a new config factory.
-    $config_factory = new \Drupal\Core\Config\ConfigFactory(
+    $config_factory = new ConfigFactory(
       $config_storage,
       $event_dispatcher,
       $typed_config
@@ -114,11 +143,10 @@ class ConnectionTest extends TripalTestKernelBase {
     $this->assertNotEmpty($reserved_schema_patterns, 'Reserved schema patterns not empty.');
     $test_schema_base_names = $config
       ->get('test_schema_base_names')
-      ?? ['default' => '_test_tripaldbx', ]
-    ;
+      ?? ['default' => '_test_tripaldbx'];
 
     // Mock the Config object.
-    $this->proConfig = $this->prophesize(\Drupal\Core\Config\ImmutableConfig::class);
+    $this->proConfig = $this->prophesize(ImmutableConfig::class);
     $this->proConfig->get('reserved_schema_patterns')->willReturn(
       [
         // Added when the module is installed.
@@ -134,7 +162,7 @@ class ConnectionTest extends TripalTestKernelBase {
     $this->config = $this->proConfig->reveal();
 
     // Mock the ConfigFactory service.
-    $this->proConfigFactory = $this->prophesize(\Drupal\Core\Config\ConfigFactory::class);
+    $this->proConfigFactory = $this->prophesize(ConfigFactory::class);
     $this->proConfigFactory->get('tripal.settings')->willReturn($this->config);
     $this->configFactory = $this->proConfigFactory->reveal();
 
@@ -147,13 +175,13 @@ class ConnectionTest extends TripalTestKernelBase {
   protected function getConnectionMock(
     $schema_name = '',
     $database = 'default',
-    $logger = NULL
+    $logger = NULL,
   ) {
     // Create a mock for the abstract class.
-    $dbmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
+    $dbmock = $this->getMockBuilder(TripalDbxConnection::class)
       ->setConstructorArgs([$schema_name, $database, $logger])
       ->onlyMethods(['getTripalDbxClass', 'findVersion', 'getAvailableInstances'])
-      ->getMockForAbstractClass();
+      ->getMock();
 
     $dbmock
       ->expects($this->any())
@@ -170,8 +198,7 @@ class ConnectionTest extends TripalTestKernelBase {
    */
   protected function allowTestSchemas() {
     $test_schema_base_names = \Drupal::config('tripal.settings')
-      ->get('test_schema_base_names')
-    ;
+      ->get('test_schema_base_names');
     $tripaldbx = \Drupal::service('tripal.dbx');
     $tripaldbx->freeSchemaPattern($test_schema_base_names['default'], TRUE);
   }
@@ -181,31 +208,27 @@ class ConnectionTest extends TripalTestKernelBase {
    */
   public function testConnectionConstructorAllDefault() {
     // Create a mock for the abstract class.
-    $dbmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
+    $dbmock = $this->getMockBuilder(TripalDbxConnection::class)
       ->disableOriginalConstructor()
-      ->onlyMethods(['setTarget', 'setKey', 'setSchemaName', 'findVersion'])
-      ->getMockForAbstractClass()
-    ;
+      ->onlyMethods(['setTarget', 'setKey', 'setSchemaName', 'findVersion', 'getAvailableInstances'])
+      ->getMock();
 
     $dbmock->expects($this->once())
       ->method('setTarget')
-      ->with($this->equalTo('default'))
-    ;
+      ->with($this->equalTo('default'));
     $dbmock->expects($this->once())
       ->method('setKey')
-      ->with($this->equalTo('default'))
-    ;
+      ->with($this->equalTo('default'));
     $dbmock->expects($this->once())
       ->method('setSchemaName')
-      ->with($this->equalTo(''))
-    ;
+      ->with($this->equalTo(''));
     $dbmock
       ->expects($this->any())
       ->method('findVersion')
       ->willReturn('');
 
     // Call the constructor.
-    $reflected_class = new \ReflectionClass(\Drupal\tripal\TripalDBX\TripalDbxConnection::class);
+    $reflected_class = new \ReflectionClass(TripalDbxConnection::class);
     $constructor = $reflected_class->getConstructor();
     $constructor->invoke($dbmock);
 
@@ -271,8 +294,7 @@ class ConnectionTest extends TripalTestKernelBase {
     // TripalDbx::isSchemaReserved (or TripalDbx::isInvalidSchemaName with
     // $ignore_reservation = FALSE).
     // $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
-    // $this->expectExceptionMessage('reserved');
-
+    // $this->expectExceptionMessage('reserved');.
     $schema_name = 'public';
     $tripaldbx = \Drupal::service('tripal.dbx');
     $issue = $tripaldbx->isInvalidSchemaName($schema_name);
@@ -293,8 +315,7 @@ class ConnectionTest extends TripalTestKernelBase {
     // TripalDbx::isSchemaReserved (or TripalDbx::isInvalidSchemaName with
     // $ignore_reservation = FALSE).
     // $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
-    // $this->expectExceptionMessage('reserved');
-
+    // $this->expectExceptionMessage('reserved');.
     // The schema name should be invalid because it is reserved.
     $schema_name = '_test_new';
     $tripaldbx = \Drupal::service('tripal.dbx');
@@ -309,30 +330,29 @@ class ConnectionTest extends TripalTestKernelBase {
    * Tests constructor: invalid schema, default key.
    */
   public function testConnectionConstructorInvalidSchemaDefaultKey() {
-    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
+    $this->expectException(ConnectionException::class);
     $this->expectExceptionMessage('must not');
-    $dbmock = $this->getConnectionMock('0test');
+    $this->getConnectionMock('0test');
   }
 
   /**
    * Tests constructor: test schema, invalid database.
    */
   public function testConnectionConstructorTestSchemaInvalidDatabase() {
-    $mocked_mysqldb = $this->getMockBuilder(\Drupal\mysql\Driver\Database\mysql\Connection::class)
+    $mocked_mysqldb = $this->getMockBuilder(Connection::class)
       ->disableOriginalConstructor()
-      ->getMock()
-    ;
-    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
+      ->getMock();
+    $this->expectException(ConnectionException::class);
     $this->expectExceptionMessage('PostgreSQL');
-    $dbmock = $this->getConnectionMock('test', $mocked_mysqldb);
+    $this->getConnectionMock('test', $mocked_mysqldb);
   }
 
   /**
    * Tests constructor: test schema, invalid key.
    */
   public function testConnectionConstructorTestSchemaInvalidKey() {
-    $this->expectException(\Drupal\Core\Database\ConnectionNotDefinedException::class);
-    $dbmock = $this->getConnectionMock('test', 'someunexistingdatabasekey');
+    $this->expectException(ConnectionNotDefinedException::class);
+    $this->getConnectionMock('test', 'someunexistingdatabasekey');
   }
 
   /**
@@ -342,7 +362,7 @@ class ConnectionTest extends TripalTestKernelBase {
     // Create a secondary connection on-the-fly that clones the default one.
     $db = \Drupal::database();
     $options = $db->getConnectionOptions();
-    \Drupal\Core\Database\Database::addConnectionInfo('secondary', 'default', $options);
+    Database::addConnectionInfo('secondary', 'default', $options);
     $dbmock = $this->getConnectionMock('test', 'secondary');
     $this->assertEquals($dbmock->getDatabaseKey(), 'secondary');
   }
@@ -370,7 +390,7 @@ class ConnectionTest extends TripalTestKernelBase {
    */
   public function testSchemaNoSchema() {
     $dbmock = $this->getConnectionMock('');
-    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\SchemaException::class);
+    $this->expectException(SchemaException::class);
     $this->expectExceptionMessage('schema');
     $dbmock->schema();
   }
@@ -396,7 +416,7 @@ class ConnectionTest extends TripalTestKernelBase {
     $this->assertEquals($schema_name, $internal_schema, 'TripalDbxSchema schema 2 correct.');
 
     $dbmock->setSchemaName('');
-    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\SchemaException::class);
+    $this->expectException(SchemaException::class);
     $this->expectExceptionMessage('schema');
     $schema = $dbmock->schema();
   }
@@ -405,15 +425,14 @@ class ConnectionTest extends TripalTestKernelBase {
    * Tests schema name changes impacts on other members and methods.
    */
   public function testSchemaNameChangeImpacts() {
-    $drupal_prefix = $this->get_drupal_prefix();
+    $drupal_prefix = $this->getDrupalPrefix();
 
     $dbmock = $this->getConnectionMock('first');
     // Manages fake versions. First schema would be 42 and next 806.
     $dbmock
       ->expects($this->exactly(2))
       ->method('findVersion')
-      ->will($this->onConsecutiveCalls('42', '806'))
-    ;
+      ->willReturnOnConsecutiveCalls('42', '806');
 
     $version = $dbmock->getVersion();
     $this->assertEquals('42', $version, 'Version set.');
@@ -469,43 +488,40 @@ class ConnectionTest extends TripalTestKernelBase {
    * Tests ::addExtraSchema with no Tripal DBX schema.
    */
   public function testAddExtraSchemaNoSchema() {
-    $drupal_prefix = $this->get_drupal_prefix();
     $dbmock = $this->getConnectionMock();
 
-    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
+    $this->expectException(ConnectionException::class);
     $this->expectExceptionMessage('No current schema');
-    $prefix_test = $dbmock->addExtraSchema('toto');
+    $dbmock->addExtraSchema('toto');
   }
 
   /**
    * Tests ::setExtraSchema with index 0.
    */
   public function testSetExtraSchemaZero() {
-    $drupal_prefix = $this->get_drupal_prefix();
     $dbmock = $this->getConnectionMock();
 
-    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
+    $this->expectException(ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema index');
-    $prefix_test = $dbmock->setExtraSchema('toto', 0);
+    $dbmock->setExtraSchema('toto', 0);
   }
 
   /**
    * Tests ::setExtraSchema with index 1.
    */
   public function testSetExtraSchemaOne() {
-    $drupal_prefix = $this->get_drupal_prefix();
     $dbmock = $this->getConnectionMock();
 
-    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
+    $this->expectException(ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema index');
-    $prefix_test = $dbmock->setExtraSchema('toto', 1);
+    $dbmock->setExtraSchema('toto', 1);
   }
 
   /**
    * Tests ::prefixTables with no Tripal DBX schema.
    */
   public function testPrefixNoSchema() {
-    $drupal_prefix = $this->get_drupal_prefix();
+    $drupal_prefix = $this->getDrupalPrefix();
     $dbmock = $this->getConnectionMock();
 
     $prefix_test = $dbmock->prefixTables(
@@ -521,7 +537,7 @@ class ConnectionTest extends TripalTestKernelBase {
       'Correct table prefixing X.'
     );
 
-    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
+    $this->expectException(ConnectionException::class);
     $this->expectExceptionMessage('No schema set for this connection');
     $prefix_test = $dbmock->prefixTables(
       'Y {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}'
@@ -532,10 +548,9 @@ class ConnectionTest extends TripalTestKernelBase {
    * Tests ::prefixTables with a Tripal DBX schema but no extra.
    */
   public function testPrefixNoExtraSchema() {
-    $drupal_prefix = $this->get_drupal_prefix();
+    $drupal_prefix = $this->getDrupalPrefix();
     $test_schema_base_names = \Drupal::config('tripal.settings')
-      ->get('test_schema_base_names')
-    ;
+      ->get('test_schema_base_names');
     $this->allowTestSchemas();
 
     $sch_1 = $test_schema_base_names['default'] . '_a';
@@ -573,7 +588,7 @@ class ConnectionTest extends TripalTestKernelBase {
     );
 
     // Test prefixing with an unexisting/not set extra schema.
-    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
+    $this->expectException(ConnectionException::class);
     $this->expectExceptionMessage('Invalid schema');
     $prefix_test = $dbmock->prefixTables(
       'Z {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}, {2:tdbx2_table}, {1:tdbx1_table2}'
@@ -584,10 +599,9 @@ class ConnectionTest extends TripalTestKernelBase {
    * Tests scenario with a Tripal DBX schema and 2 extra.
    */
   public function testConnectionScenario1() {
-    $drupal_prefix = $this->get_drupal_prefix();
+    $drupal_prefix = $this->getDrupalPrefix();
     $test_schema_base_names = \Drupal::config('tripal.settings')
-      ->get('test_schema_base_names')
-    ;
+      ->get('test_schema_base_names');
     $this->allowTestSchemas();
 
     $sch_1 = $test_schema_base_names['default'] . '_a';
@@ -653,7 +667,7 @@ class ConnectionTest extends TripalTestKernelBase {
     );
 
     // Try setting an extra schema with too high index.
-    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
+    $this->expectException(ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema index');
     $dbmock->setExtraSchema('toto', 5);
   }
@@ -662,10 +676,8 @@ class ConnectionTest extends TripalTestKernelBase {
    * Tests scenario with a Tripal DBX schema and 2 extra.
    */
   public function testConnectionScenario2() {
-    $drupal_prefix = $this->get_drupal_prefix();
     $test_schema_base_names = \Drupal::config('tripal.settings')
-      ->get('test_schema_base_names')
-    ;
+      ->get('test_schema_base_names');
     $this->allowTestSchemas();
 
     $sch_1 = $test_schema_base_names['default'] . '_a';
@@ -708,7 +720,7 @@ class ConnectionTest extends TripalTestKernelBase {
     $this->assertEquals(2, $extra_index, 'Extra schemas with restarted index.');
 
     // Try setting an extra schema with too high index.
-    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
+    $this->expectException(ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema index');
     $dbmock->setExtraSchema($sch_4, 4);
   }
@@ -717,10 +729,8 @@ class ConnectionTest extends TripalTestKernelBase {
    * Tests scenario for prefixTables with extra schema modified.
    */
   public function testConnectionScenario3() {
-    $drupal_prefix = $this->get_drupal_prefix();
     $test_schema_base_names = \Drupal::config('tripal.settings')
-      ->get('test_schema_base_names')
-    ;
+      ->get('test_schema_base_names');
     $this->allowTestSchemas();
 
     $sch_1 = $test_schema_base_names['default'] . '_a';
@@ -782,7 +792,7 @@ class ConnectionTest extends TripalTestKernelBase {
     $this->assertEquals([], $extra_schemas, 'Extra schemas cleared.');
 
     // Test prefixing with an unexisting/not set extra schema.
-    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
+    $this->expectException(ConnectionException::class);
     $this->expectExceptionMessage('Invalid schema');
     $prefix_test = $dbmock->prefixTables(
       'Z {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}, {2:tdbx2_table}, {1:tdbx1_table2}'
@@ -794,8 +804,7 @@ class ConnectionTest extends TripalTestKernelBase {
    */
   public function testTablePrefix() {
     $test_schema_base_names = \Drupal::config('tripal.settings')
-      ->get('test_schema_base_names')
-    ;
+      ->get('test_schema_base_names');
     $this->allowTestSchemas();
     $sch_1 = $test_schema_base_names['default'] . '_a';
     $dbmock = $this->getConnectionMock($sch_1);
@@ -808,17 +817,16 @@ class ConnectionTest extends TripalTestKernelBase {
    */
   public function testToString() {
     $test_schema_base_names = \Drupal::config('tripal.settings')
-      ->get('test_schema_base_names')
-    ;
+      ->get('test_schema_base_names');
     $this->allowTestSchemas();
     $sch_1 = $test_schema_base_names['default'] . '_a';
     $dbmock = $this->getConnectionMock($sch_1);
     $dbname = $dbmock->getDatabaseName();
-    $text = ''.$dbmock;
+    $text = '' . $dbmock;
     $this->assertEquals("$dbname.$sch_1", $text);
 
     $dbmock = $this->getConnectionMock();
-    $text = ''.$dbmock;
+    $text = '' . $dbmock;
     $this->assertEquals("$dbname.", $text);
   }
 
@@ -828,8 +836,7 @@ class ConnectionTest extends TripalTestKernelBase {
   public function testExecuteSqlQueries() {
     // Get a test schema.
     $test_schema_base_names = \Drupal::config('tripal.settings')
-      ->get('test_schema_base_names')
-    ;
+      ->get('test_schema_base_names');
     $this->allowTestSchemas();
     $sch_1 = $test_schema_base_names['default'] . '_a';
     $dbmock = $this->getConnectionMock($sch_1);
@@ -855,6 +862,7 @@ class ConnectionTest extends TripalTestKernelBase {
     $table_exists = !empty($dbmock->query($table_exists_sql)->fetch());
     $sql = "DROP TABLE someothertable; DROP SCHEMA $sch_1 CASCADE;";
     $success2 = $dbmock->executeSqlQueries($sql);
+    $this->assertTrue($success2, 'Drop query executed');
     $table_not_exists = !empty($dbmock->query($table_exists_sql)->fetch());
     $schema_not_exists = !empty($dbmock->query($schema_exists_sql)->fetch());
 
@@ -872,8 +880,7 @@ class ConnectionTest extends TripalTestKernelBase {
   public function testExecuteSqlQueriesForceSearchPath() {
     // Get a test schema.
     $test_schema_base_names = \Drupal::config('tripal.settings')
-      ->get('test_schema_base_names')
-    ;
+      ->get('test_schema_base_names');
     $this->allowTestSchemas();
     $sch_1 = $test_schema_base_names['default'] . '_a';
     $sch_2 = $test_schema_base_names['default'] . '_b';
@@ -908,6 +915,7 @@ class ConnectionTest extends TripalTestKernelBase {
 
     $sql = "DROP TABLE someothertable; DROP SCHEMA $sch_1 CASCADE; DROP SCHEMA $sch_2 CASCADE;";
     $success2 = $dbmock->executeSqlQueries($sql);
+    $this->assertTrue($success2, 'Drop query executed');
     $table_not_exists = !empty($dbmock->query($table_exists_sql)->fetch());
     $schema_not_exists = !empty($dbmock->query($schema_exists_sql)->fetch());
     $schema2_not_exists = !empty($dbmock->query($schema2_exists_sql)->fetch());
@@ -929,14 +937,12 @@ class ConnectionTest extends TripalTestKernelBase {
   public function testExecuteSqlFile() {
     // Get a test schema.
     $test_schema_base_names = \Drupal::config('tripal.settings')
-      ->get('test_schema_base_names')
-    ;
+      ->get('test_schema_base_names');
     $this->allowTestSchemas();
     $sch_1 = $test_schema_base_names['default'] . '_a';
     $dbmock = $this->getConnectionMock($sch_1);
     $schema_exists_sql = "SELECT 1 FROM pg_namespace WHERE nspname = '$sch_1';";
     $table_exists_sql = "SELECT 1 FROM pg_tables WHERE schemaname = '$sch_1' AND tablename = 'testtable';";
-
 
     $dbmock->query("CREATE SCHEMA $sch_1;");
     $schema_exists = !empty($dbmock->query($schema_exists_sql)->fetch());
@@ -964,7 +970,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * HELPER: Retrieve the Drupal table prefix for the current site.
    */
-  protected function get_drupal_prefix() {
+  protected function getDrupalPrefix() {
     $database_options = \Drupal::database()->getConnectionOptions();
 
     $drupal_prefix = '';

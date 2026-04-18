@@ -1,7 +1,12 @@
 <?php
+
 namespace Drupal\Tests\tripal_chado\Traits;
 
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Config\DatabaseStorage;
+use Drupal\Core\Database\Database;
 use Drupal\tripal\TripalDBX\TripalDbx;
+use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Symfony\Component\Yaml\Yaml;
 use PHPUnit\Framework\Attributes\Group;
@@ -18,20 +23,26 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('Tripal')]
 #[Group('Tripal Chado')]
 
-trait ChadoTestTrait  {
+trait ChadoTestTrait {
 
   /**
    * Tripal DBX tool instance.
+   *
+   * @var \Drupal\tripal\TripalDBX\TripalDbx
    */
   protected $tripal_dbx = NULL;
 
   /**
    * Real (Drupal live, not test) config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactory
    */
   protected $realConfigFactory;
 
   /**
    * Base name for test schemas.
+   *
+   * @var array
    */
   protected $testSchemaBaseNames;
 
@@ -52,6 +63,8 @@ trait ChadoTestTrait  {
 
   /**
    * A string indicating the name of the current chado test schema.
+   *
+   * @var string
    */
   protected $testSchemaName = NULL;
 
@@ -69,10 +82,11 @@ trait ChadoTestTrait  {
   protected static $db = NULL;
 
   /**
-   * Returns the chado cvterm_id for the term with the given ID space + accession.
+   * Gets the chado cvterm_id for the term with the given ID space + accession.
+   *
    * This is completely independant of Tripal terms.
    */
-  protected function getCvtermID($idspace, $accession) {
+  protected function getCvtermID($idspace, $accession) { // phpcs:ignore
     $connection = $this->getTestSchema();
 
     $query = $connection->select('1:cvterm', 'cvt');
@@ -116,7 +130,7 @@ trait ChadoTestTrait  {
    * @param string $dbname
    *   The name of the database to lookup.
    *
-   * @return object|FALSE
+   * @return object|false
    *   An object containing the columns of the db table (e.g. name).
    *   Returns FALSE if the db record doesn't exist.
    */
@@ -141,7 +155,7 @@ trait ChadoTestTrait  {
    * @param string $cvterm_name
    *   The name of the cvterm to lookup.
    *
-   * @return object|FALSE
+   * @return object|false
    *   An object containing the columns of the cvterm table (e.g. name).
    *   Returns FALSE if the cvterm record doesn't exist.
    */
@@ -176,8 +190,7 @@ trait ChadoTestTrait  {
             $errors[] =
               'Unable to remove temporary tests schema "'
               . $test_schema
-              . '": ' . $e->getMessage()
-            ;
+              . '": ' . $e->getMessage();
           }
         }
       }
@@ -199,12 +212,12 @@ trait ChadoTestTrait  {
     // Then instantiate a new config factory that will use that database through
     // a new instance of config storage using that database.
     // Get Drupal real database.
-    $drupal_db = \Drupal\Core\Database\Database::getConnection(
+    $drupal_db = Database::getConnection(
       'default',
       'simpletest_original_default'
     );
     // Instantiate a new config storage.
-    $config_storage = new \Drupal\Core\Config\DatabaseStorage(
+    $config_storage = new DatabaseStorage(
       $drupal_db,
       'config'
     );
@@ -213,7 +226,7 @@ trait ChadoTestTrait  {
     // Get a typed config (note: this will use the test config storage).
     $typed_config = \Drupal::service('config.typed');
     // Instanciate a new config factory.
-    $this->realConfigFactory = new \Drupal\Core\Config\ConfigFactory(
+    $this->realConfigFactory = new ConfigFactory(
       $config_storage,
       $event_dispatcher,
       $typed_config
@@ -226,15 +239,14 @@ trait ChadoTestTrait  {
   protected function initTripalDbx() {
     $this->tripal_dbx = \Drupal::service('tripal.dbx');
     // Hack to clear TripalDbx cache on each run.
-    $clear = function() {
+    $clear = function () {
       TripalDbx::$drupalSchema = NULL;
       TripalDbx::$reservedSchemaPatterns = NULL;
     };
     $clear->call(new TripalDbx());
     // Adds live schema reservation.
     $reserved_schema_patterns = $this->realConfigFactory->get('tripal.settings')
-      ->get('reserved_schema_patterns', [])
-    ;
+      ->get('reserved_schema_patterns', []);
     foreach ($reserved_schema_patterns as $pattern => $description) {
       $this->tripal_dbx->reserveSchemaPattern($pattern, $description);
     }
@@ -246,8 +258,7 @@ trait ChadoTestTrait  {
   protected function allowTestSchemas() {
     $this->testSchemaBaseNames = $this->realConfigFactory
       ->get('tripal.settings')
-      ->get('test_schema_base_names', [])
-    ;
+      ->get('test_schema_base_names', []);
     $this->tripal_dbx->freeSchemaPattern(
       $this->testSchemaBaseNames['chado'],
       TRUE
@@ -298,10 +309,11 @@ trait ChadoTestTrait  {
 
   /**
    * Gets a new Chado schema for testing.
-   * Retrieves the current test schema.
-   * If there is not currently a test schema set-up then one will be created.
    *
-   * @param int $init_level
+   * Retrieves the current test schema. If there is not currently a test schema
+   * set-up then one will be created.
+   *
+   * @param int|null $init_level
    *   One of the constant to select the schema initialization level.
    *   If this is supplied then it forces a new connection to be made for
    *   backwards compatibility.
@@ -311,7 +323,7 @@ trait ChadoTestTrait  {
    * @return \Drupal\tripal\TripalDBX\TripalDbxConnection
    *   A bio database connection using the generated schema.
    */
-  protected function getTestSchema(int $init_level = NULL, string $version = '1.3') {
+  protected function getTestSchema(?int $init_level = NULL, string $version = '1.3') {
 
     if ($init_level !== NULL) {
       return $this->createTestSchema($init_level, $version);
@@ -338,8 +350,7 @@ trait ChadoTestTrait  {
   protected function createTestSchema(int $init_level = 0, string $version = '1.3') {
     $schema_name = $this->testSchemaBaseNames['chado']
       . '_'
-      . bin2hex(random_bytes(8))
-    ;
+      . bin2hex(random_bytes(8));
     $tripaldbx_db = new ChadoConnection($schema_name);
     // Make sure schema is free.
     if ($tripaldbx_db->schema()->schemaExists()) {
@@ -387,19 +398,19 @@ trait ChadoTestTrait  {
         break;
 
       case static::PREPARE_TEST_CHADO:
-          $tripaldbx_db->schema()->createSchema();
-          $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
-          $success = $tripaldbx_db->executeSqlFile(
-            $chado_schema_file,
-            ['chado' => $schema_name]);
-          $this->assertTrue($success, 'Chado schema loaded.');
-          $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
+        $tripaldbx_db->schema()->createSchema();
+        $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
+        $success = $tripaldbx_db->executeSqlFile(
+          $chado_schema_file,
+          ['chado' => $schema_name]);
+        $this->assertTrue($success, 'Chado schema loaded.');
+        $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
 
-          // Add version information to the schema so the tests don't fail.
-          $success = $tripaldbx_db->executeSqlFile(__DIR__ . '/../../fixtures/fill_chado_test_prepare.sql',
-              ['chado' => $schema_name]);
-          $this->assertTrue($success, 'Prepared chado records added.');
-          break;
+        // Add version information to the schema so the tests don't fail.
+        $success = $tripaldbx_db->executeSqlFile(__DIR__ . '/../../fixtures/fill_chado_test_prepare.sql',
+            ['chado' => $schema_name]);
+        $this->assertTrue($success, 'Prepared chado records added.');
+        break;
 
       case static::INIT_DUMMY:
         $tripaldbx_db->schema()->createSchema();
@@ -440,13 +451,13 @@ trait ChadoTestTrait  {
       $this->setChadoTestSchemaVersion($tripaldbx_db, $version);
     }
 
-    // Make sure that any other connections to TripalDBX will see this new test schema as
-    // the default schema.
+    // Make sure that any other connections to TripalDBX will see this new test
+    // schema as the default schema.
     $config = \Drupal::service('config.factory')->getEditable('tripal_chado.settings');
     $config->set('default_schema', $schema_name)->save();
 
-    // As a safety check, make sure that the tripalDBX object is using the test schema.
-    // We don't want to perform tests in a live schema.
+    // As a safety check, make sure that the tripalDBX object is using the test
+    // schema. We don't want to perform tests in a live schema.
     $this->assertTrue($tripaldbx_db->getSchemaName() == $schema_name, 'TripalDBX is not using the test schema.');
 
     // Set this to be the Chado connection used in the current test schema.
@@ -459,7 +470,10 @@ trait ChadoTestTrait  {
   /**
    * Sets the chado version of the test schema.
    *
-   * @return void
+   * @param Drupal\tripal_chado\Database\ChadoConnection $chado_connection
+   *   The test schema to set the version for.
+   * @param string $version
+   *   The version of Chado to set (e.g. 1.3).
    */
   protected function setChadoTestSchemaVersion(ChadoConnection &$chado_connection, string $version) {
 
@@ -494,14 +508,12 @@ trait ChadoTestTrait  {
   /**
    * Updates an existing test schema to a new version.
    *
-   * @param ChadoConnection $chado_connection
+   * @param Drupal\tripal_chado\Database\ChadoConnection $chado_connection
    *   The test schema to migrate.
    * @param string $current_version
    *   The current version of the test schema (e.g. 1.3).
    * @param string $version_to_upgrade_to
    *   The version to upgrade the test schema to (e.g. 1.3.3.013).
-   *
-   * @return void
    */
   protected function upgradeTestSchema(ChadoConnection &$chado_connection, string $current_version, string $version_to_upgrade_to) {
 
@@ -594,9 +606,7 @@ trait ChadoTestTrait  {
    * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $tripaldbx_db
    *   A bio database connection using the test schema.
    */
-  protected function freeTestSchema(
-    \Drupal\tripal\TripalDBX\TripalDbxConnection $tripaldbx_db
-  ) {
+  protected function freeTestSchema(TripalDbxConnection $tripaldbx_db) {
     self::$testSchemas[$tripaldbx_db->getSchemaName()] = FALSE;
     try {
       $tripaldbx_db->schema()->dropSchema();
@@ -606,23 +616,21 @@ trait ChadoTestTrait  {
     }
   }
 
-
   /**
-   * Warns test developers if they are missing required modules in a kernel test.
+   * Warns test developers if required modules are missing in a kernel test.
    *
    * This is needed because otherwise the exceptions thrown are not very obvious
    * and complicate debugging kernel tests.
    *
    * @param array $functionality
-   *  A list of functionality you need to support. Although this method handles
-   *  dependencies, you should include all items in the supported keys below
-   *  that you need. This is because in some cases you will want to mock rather
-   *  then include in your kernel tests and this way, this method supports that.
-   *  Supported keys are:
-   *   - TripalTerm
-   *   - TripalEntity
-   *   - ChadoField
-   * @return void
+   *   A list of functionality you need to support. Although this method handles
+   *   dependencies, you should include all items in the supported keys below
+   *   that you need. This is because in some cases you will want to mock rather
+   *   than include in your kernel tests. This way, this method supports that.
+   *   Supported keys are:
+   *     - TripalTerm
+   *     - TripalEntity
+   *     - ChadoField.
    */
   protected function suggestRequiredModules(array $functionality) {
     $suggested_modules = [];
@@ -668,4 +676,5 @@ trait ChadoTestTrait  {
     $modules_array_code = 'protected static $modules = [\'' . implode("','", $suggested_modules) . '\'];';
     $this->assertEmpty($missing_modules, 'You are missing some modules in your static $modules array. For the functionality you requested, we suggest the following: ' . $modules_array_code);
   }
+
 }

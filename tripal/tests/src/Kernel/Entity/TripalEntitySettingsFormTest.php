@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal\Kernel\Entity;
 use Drupal\Core\Form\FormState;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the tripal entity settings form.
@@ -12,8 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal
  * @group TripalEntity
  */
-#[Group('Tripal')]
-#[Group('TripalEntity')]
+#[Group('tripal-content')]
+#[RunTestsInSeparateProcesses]
 class TripalEntitySettingsFormTest extends TripalTestKernelBase {
 
   /**
@@ -93,7 +94,7 @@ class TripalEntitySettingsFormTest extends TripalTestKernelBase {
       'Missing a submit element in the form');
 
     // Try submitting the form.
-    $form_state = new \Drupal\Core\Form\FormState();
+    $form_state = new FormState();
     \Drupal::formBuilder()->submitForm($form_route, $form_state);
     $this->assertTrue($form_state->isValidationComplete(),
       'We expected the form state to have been updated to indicate that validation is complete.');

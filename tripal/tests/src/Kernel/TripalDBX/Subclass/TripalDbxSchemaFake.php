@@ -16,7 +16,7 @@ class TripalDbxSchemaFake extends TripalDbxSchema {
     $format = $parameters['format'] ?? '';
     if ($format == 'SQL') {
       $value = [
-"CREATE TABLE testtable (
+        "CREATE TABLE testtable (
   id integer NOT NULL DEFAULT nextval('testtable_id_seq'::regclass),
   foreign_id int NULL,
   fieldbigint bigint NULL,
@@ -33,7 +33,7 @@ class TripalDbxSchemaFake extends TripalDbxSchema {
 CREATE UNIQUE INDEX testtable_c2 ON testtable USING btree (fieldbigint, fieldsmallint);
 CREATE INDEX testtable_idx1 ON testtable USING btree (foreign_id);
 COMMENT ON TABLE testtable IS 'Some long description
-on multiple lines.';"
+on multiple lines.';",
       ];
     }
     elseif ($format == 'Drupal') {
@@ -42,55 +42,55 @@ on multiple lines.';"
         "fields" => [
           "id" => [
             "type" => "text",
-            "not null" => true,
+            "not null" => TRUE,
             "pgsql_type" => "serial",
           ],
           "foreign_id" => [
             "type" => "text",
-            "not null" => false,
+            "not null" => FALSE,
             "pgsql_type" => "int",
           ],
           "fieldbigint" => [
             "type" => "int",
-            "not null" => false,
+            "not null" => FALSE,
             "pgsql_type" => "bigint",
             "size" => "big",
           ],
           "fieldsmallint" => [
             "type" => "int",
-            "not null" => false,
+            "not null" => FALSE,
             "pgsql_type" => "smallint",
             "size" => "small",
           ],
           "fieldbool" => [
             "type" => "int",
-            "not null" => true,
+            "not null" => TRUE,
             "pgsql_type" => "boolean",
             "size" => "tiny",
             "default" => "false",
           ],
           "fieldreal" => [
             "type" => "float",
-            "not null" => false,
+            "not null" => FALSE,
             "pgsql_type" => "real",
             "default" => "1.0",
           ],
           "fielddouble" => [
             "type" => "float",
-            "not null" => false,
+            "not null" => FALSE,
             "pgsql_type" => "double precision",
             "size" => "big",
             "default" => "NULL",
           ],
           "fieldchar" => [
             "type" => "varchar",
-            "not null" => false,
+            "not null" => FALSE,
             "pgsql_type" => "character varying",
             "length" => 255,
           ],
           "fieldtext" => [
             "type" => "text",
-            "not null" => true,
+            "not null" => TRUE,
             "pgsql_type" => "text",
           ],
         ],
@@ -118,47 +118,47 @@ on multiple lines.';"
         "columns" => [
           "id" => [
             "type" => "integer",
-            "not null" => true,
+            "not null" => TRUE,
             "default" => "nextval('testtable_id_seq'::regclass)",
           ],
           "foreign_id" => [
             "type" => "int",
-            "not null" => false,
+            "not null" => FALSE,
             "default" => "",
           ],
           "fieldbigint" => [
             "type" => "bigint",
-            "not null" => false,
+            "not null" => FALSE,
             "default" => "",
           ],
           "fieldsmallint" => [
             "type" => "smallint",
-            "not null" => false,
+            "not null" => FALSE,
             "default" => "",
           ],
           "fieldbool" => [
             "type" => "boolean",
-            "not null" => true,
+            "not null" => TRUE,
             "default" => "false",
           ],
           "fieldreal" => [
             "type" => "real",
-            "not null" => false,
+            "not null" => FALSE,
             "default" => "1.0",
           ],
           "fielddouble" => [
             "type" => "double precision",
-            "not null" => false,
+            "not null" => FALSE,
             "default" => "NULL",
           ],
           "fieldchar" => [
             "type" => "character varying(255)",
-            "not null" => false,
+            "not null" => FALSE,
             "default" => "",
           ],
           "fieldtext" => [
             "type" => "text",
-            "not null" => true,
+            "not null" => TRUE,
             "default" => "",
           ],
         ],
