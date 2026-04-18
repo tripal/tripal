@@ -77,7 +77,7 @@ display:
           empty_zero: false
           hide_alter_empty: true
           text: view
-          output_url_as_text: false
+          output_url_as_text: true
           absolute: false
         pub_uniquename:
           id: pub_uniquename
