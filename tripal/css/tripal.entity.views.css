@@ -9,6 +9,6 @@
  * For this to work, the view must set the row class to
  * "views-tripal-entity-row-default".
  */
-.views-tripal-entity-row-default td > p {
+.views-tripal-entity-row-default td p {
   margin: 0;
 }
