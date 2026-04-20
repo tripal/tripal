@@ -5,6 +5,7 @@ namespace Drupal\tripal_views\Hook;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\tripal_views\Plugin\views\filter\InformedStringFilter;
 
 /**
  * Hook implementations for the Tripal Views module.
@@ -26,6 +27,19 @@ class TripalViewsHooks {
         return ['#markup' => $output];
     }
     return NULL;
+  }
+
+  /**
+   * Implements hook_views_plugins_filter_alter().
+   */
+  #[Hook('views_plugins_filter_alter')]
+  public function viewsPluginsFilterAlter(array &$plugins) {
+    // Override the default StringFilter class with our own.
+    // @todo can we restrict this override to only apply to Tripal views?
+    if (isset($plugins['string'])) {
+      $plugins['string']['class'] =
+      InformedStringFilter::class;
+    }
   }
 
 }

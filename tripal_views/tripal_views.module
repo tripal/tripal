@@ -19,3 +19,16 @@ use Drupal\Core\Routing\RouteMatchInterface;
 function tripal_views_help($route_name, RouteMatchInterface $route_match) {
   return \Drupal::service('tripal_views.hooks')->help($route_name, $route_match);
 }
+
+/**
+ * Implements hook_views_plugins_filter_alter().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_views\Hook\TripalViewsHooks in
+ * tripal_views/src/Hook/TripalViewsHooks.php.
+ */
+#[LegacyHook]
+function tripal_views_views_plugins_filter_alter(array &$plugins) {
+  return \Drupal::service('tripal_views.hooks')->viewsPluginsFilterAlter($plugins);
+}
+

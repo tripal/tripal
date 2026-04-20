@@ -11,7 +11,7 @@ ARG postgresqlversion='18'
 
 ## Now define the args only needed within the build scope.
 ARG modules='devel devel_php field_group field_group_table'
-ARG tripalmodules='tripal tripal_biodb tripal_chado tripal_layout'
+ARG tripalmodules='tripal tripal_biodb tripal_chado tripal_layout tripal_views'
 ARG chadoschema='chado'
 ARG installchado=TRUE
 ARG migratechado=FALSE
