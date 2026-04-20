@@ -74,4 +74,16 @@ class TripalViewsHooks {
     $query->addWhere('AND', "tripal_entity.type", $allowed_types, 'IN');
   }
 
+  /**
+   * Implements hook_views_pre_render().
+   *
+   * Adds custom css library defined by Tripal to Drupal views.
+   */
+  #[Hook('views_pre_render')]
+  public function viewsPreRender(ViewExecutable $view) {
+    if (preg_match('/^tripal_entity_/', $view->id())) {
+      $view->element['#attached']['library'][] = 'tripal/tripal-entity-views';
+    }
+  }
+
 }

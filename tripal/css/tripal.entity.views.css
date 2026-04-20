@@ -1,0 +1,14 @@
+/**
+ * @file
+ * Styling for entity views defined by tripal.
+ */
+
+/**
+ * The <p> tags in some fields will have margins by default.
+ * Set margin to zero so that all items top-align equally.
+ * For this to work, the view must set the row class to
+ * "views-tripal-entity-row-default".
+ */
+.views-tripal-entity-row-default td > p {
+  margin: 0;
+}
