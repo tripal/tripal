@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal_views\Plugin\views\filter;
+namespace Drupal\tripal_search_views\Plugin\views\filter;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\filter\StringFilter;

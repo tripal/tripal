@@ -23,7 +23,7 @@ jobs:
         uses: 'tripal/test-tripal-action@v1.8'
         with:
           directory-name: 'tripal'
-          modules: 'tripal, tripal_biodb, tripal_chado, tripal_layout, tripal_views'
+          modules: 'tripal, tripal_biodb, tripal_chado, tripal_layout, tripal_search_views'
           php-version: '8.4'
           drupal-version: '10.5.x-dev'
           pgsql-version: '18'

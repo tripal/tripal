@@ -75,8 +75,8 @@
       <file>tripal_chado/tripal_chado.module</file>
       <directory suffix=".php">tripal_layout/src</directory>
       <file>tripal_layout/tripal_layout.module</file>
-      <directory suffix=".php">tripal_views/src</directory>
-      <file>tripal_views/tripal_views.module</file>
+      <directory suffix=".php">tripal_search_viewsh_views/src</directory>
+      <file>tripal_search_views/tripal_search_views.module</file>
     </include>
     <exclude>
       <!-- Exclude Interface classes from coverage -->

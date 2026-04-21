@@ -1,4 +1,4 @@
-name: 'Tripal Views'
+name: 'Tripal Search Views'
 type: 'module'
 description: 'Provides Custom Views for Tripal.'
 core_version_requirement: '^10.5 || ^11.2'
