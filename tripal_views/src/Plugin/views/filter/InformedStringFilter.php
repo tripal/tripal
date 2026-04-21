@@ -19,9 +19,10 @@ class InformedStringFilter extends StringFilter {
    */
   public function buildExposedForm(&$form, FormStateInterface $form_state) {
     parent::buildExposedForm($form, $form_state);
+    $view = $this->view;
     // Only modify the exposed form if this is a filter for a field on
     // Tripal Content and the field name exists.
-    if (!$this->isTripalEntityField('tripal_entity') || !isset($this->definition['field_name'])) {
+    if (!$view || $view->storage->get('base_table') !== 'tripal_entity' || !isset($this->definition['field_name'])) {
       return;
     }
 
@@ -50,16 +51,6 @@ class InformedStringFilter extends StringFilter {
       '#default_value' => $this->value,
     ];
 
-  }
-
-  /**
-   * Determines if this filter is for a field on Tripal Content.
-   *
-   * @param string $entity_type
-   *   The entity type to check.
-   */
-  protected function isTripalEntityField(string $entity_type): bool {
-    return (isset($this->definition['entity_type']) && $this->definition['entity_type'] === $entity_type);
   }
 
 }
