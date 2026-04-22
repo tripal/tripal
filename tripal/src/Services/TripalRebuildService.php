@@ -3,6 +3,7 @@
 namespace Drupal\tripal\Services;
 
 use Drupal\Core\Config\FileStorage;
+use Drupal\Core\Config\InstallStorage;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -102,23 +103,51 @@ class TripalRebuildService {
    * yaml files for these views are stored in the config/optional directory.
    */
   public function rebuildViews() {
-    $view_storage = $this->entity_type_manager->getStorage('view');
-    $file_storage = new FileStorage(DRUPAL_ROOT);
-    $module_list = $this->module_handler->getModuleList();
+    // Generate a list of currently installed tripal content types.
     $content_types = $this->entity_type_manager
       ->getStorage('tripal_entity_type')
       ->loadMultiple();
+    $content_type_ids = [];
     foreach ($content_types as $content_type) {
-      $view_id = 'tripal_entity_' . $content_type->id();
-      $view = $view_storage->load($view_id);
-      if (!$view) {
-        foreach ($module_list as $extension) {
-          $module_path = $extension->getPath();
-          $yaml_path = $module_path . '/config/optional/views.view.' . $view_id;
-          $config = $file_storage->read($yaml_path);
-          if ($config) {
-            $view = $view_storage->create($config);
-            $view->save();
+      $content_type_ids[] = $content_type->id();
+    }
+
+    // Look in all installed modules for possible tripal_entity views.
+    $view_storage = $this->entity_type_manager->getStorage('view');
+    $module_list = $this->module_handler->getModuleList();
+    foreach ($module_list as $module) {
+      $config_path = $module->getPath() . '/' . InstallStorage::CONFIG_OPTIONAL_DIRECTORY;
+      $file_storage = new FileStorage($config_path);
+      $configs = $file_storage->listAll();
+      foreach ($configs as $config_name) {
+        // Only proceed if this config defines a drupal view.
+        if (preg_match('/^views\.view\./', $config_name)) {
+          $config = $file_storage->read($config_name);
+          $base_table = $config['base_table'] ?? '';
+          if ($base_table === 'tripal_entity') {
+            // There must be a dependency on a tripal content type,
+            // and that content type must have been created,
+            // e.g. "tripal.content_type.analysis".
+            $valid = FALSE;
+            $config_deps = $config['dependencies']['config'] ?? [];
+            foreach ($config_deps as $dep) {
+              if (preg_match('/^tripal\.content_type\.(.+)$/', $dep, $matches)) {
+                $content_type = $matches[1];
+                if (in_array($content_type, $content_type_ids)) {
+                  $valid = TRUE;
+                  break;
+                }
+              }
+            }
+            if ($valid) {
+              // Only create the view if it does not already exist.
+              $view_id = $config['id'];
+              $view = $view_storage->load($view_id);
+              if (!$view) {
+                $view = $view_storage->create($config);
+                $view->save();
+              }
+            }
           }
         }
       }
