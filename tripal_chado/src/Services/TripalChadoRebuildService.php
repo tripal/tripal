@@ -88,10 +88,6 @@ class TripalChadoRebuildService {
    *
    * If the user deletes one of the views that are created on install of the
    * Tripal Chado module, then this will restore them when the cache is cleared.
-   *
-   * This also allows us to have default views for content types that may not
-   * exist upon module install, but are created later. For this reason the
-   * yaml files for these views are stored in the config/optional directory.
    */
   public function rebuildViews() {
 
@@ -114,23 +110,6 @@ class TripalChadoRebuildService {
       $config = $fileStorage->read('config/install/views.view.chado_mviews');
       $view = $storage->create($config);
       $view->save();
-    }
-
-    // Default views for chado content types.
-    $content_types = $this->entity_type_manager
-      ->getStorage('tripal_entity_type')
-      ->loadMultiple();
-    foreach ($content_types as $content_type) {
-      $id = 'tripal_entity_' . $content_type->id();
-      $view = $storage->load($id);
-      if (!$view) {
-        $path = 'config/optional/views.view.' . $id;
-        $config = $fileStorage->read($path);
-        if ($config) {
-          $view = $storage->create($config);
-          $view->save();
-        }
-      }
     }
   }
 

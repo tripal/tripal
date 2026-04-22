@@ -5,6 +5,7 @@ namespace Drupal\tripal\Services;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
  * Service for handling tripal's rebuild logic.
@@ -26,19 +27,30 @@ class TripalRebuildService {
   protected $module_extension_list;
 
   /**
+   * The Drupal module handler service.
+   *
+   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $module_handler;
+
+  /**
    * Constructs a new TripalRebuildService object.
    *
    * @param Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The drupal entity type manager service.
    * @param Drupal\Core\Extension\ModuleExtensionList $module_extension_list
    *   The drupal module extension list service.
+   * @param Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The drupal module handler service.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     ModuleExtensionList $module_extension_list,
+    ModuleHandlerInterface $module_handler,
   ) {
     $this->entity_type_manager = $entity_type_manager;
     $this->module_extension_list = $module_extension_list;
+    $this->module_handler = $module_handler;
   }
 
   /**
@@ -76,6 +88,40 @@ class TripalRebuildService {
     if (!$view) {
       $view = $storage->create($config);
       $view->save();
+    }
+
+    // Load default views for any tripal content types.
+    $this->rebuildViews();
+  }
+
+  /**
+   * Used to load default drupal views for tripal content types.
+   *
+   * This allows us to have default views for content types that may not
+   * exist upon module install, but are created later. For this reason the
+   * yaml files for these views are stored in the config/optional directory.
+   */
+  public function rebuildViews() {
+    $view_storage = $this->entity_type_manager->getStorage('view');
+    $file_storage = new FileStorage(DRUPAL_ROOT);
+    $module_list = $this->module_handler->getModuleList();
+    $content_types = $this->entity_type_manager
+      ->getStorage('tripal_entity_type')
+      ->loadMultiple();
+    foreach ($content_types as $content_type) {
+      $view_id = 'tripal_entity_' . $content_type->id();
+      $view = $storage->load($view_id);
+      if (!$view) {
+        foreach ($module_list as $extension) {
+          $module_path = $extension->getPath();
+          $yaml_path = $module_path . '/config/optional/views.view.' . $view_id;
+          $config = $file_storage->read($yaml_path);
+          if ($config) {
+            $view = $view_storage->create($config);
+            $view->save();
+          }
+        }
+      }
     }
   }
 
