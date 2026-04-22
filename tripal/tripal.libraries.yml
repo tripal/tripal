@@ -91,5 +91,5 @@ tripal-entity-views:
   css:
     theme:
       css/tripal.entity.views.css: {}
-#  dependencies:
-#    - 'core/views'
+  dependencies:
+    - 'core/views'
