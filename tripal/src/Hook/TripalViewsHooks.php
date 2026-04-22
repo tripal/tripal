@@ -81,7 +81,8 @@ class TripalViewsHooks {
    */
   #[Hook('views_pre_render')]
   public function viewsPreRender(ViewExecutable $view) {
-    if (preg_match('/^tripal_entity_/', $view->id())) {
+    // Only applies to views with base table 'tripal_entity'.
+    if ($view->storage->get('base_table') === 'tripal_entity') {
       $view->element['#attached']['library'][] = 'tripal/tripal-entity-views';
     }
   }
