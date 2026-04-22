@@ -110,7 +110,7 @@ class TripalRebuildService {
       ->loadMultiple();
     foreach ($content_types as $content_type) {
       $view_id = 'tripal_entity_' . $content_type->id();
-      $view = $storage->load($view_id);
+      $view = $view_storage->load($view_id);
       if (!$view) {
         foreach ($module_list as $extension) {
           $module_path = $extension->getPath();
