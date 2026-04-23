@@ -96,14 +96,12 @@ class TripalRebuildService {
   }
 
   /**
-   * Used to load default drupal views for tripal content types.
+   * Helper function to get a list of active content types.
    *
-   * This allows us to have default views for content types that may not
-   * exist upon module install, but are created later. For this reason the
-   * yaml files for these views are stored in the config/optional directory.
+   * @return array
+   *   The list of content types, e.g. ['analysis', 'contact'...
    */
-  public function rebuildViews() {
-    // Generate a list of currently installed tripal content types.
+  protected function getContentTypeIds(): array {
     $content_types = $this->entity_type_manager
       ->getStorage('tripal_entity_type')
       ->loadMultiple();
@@ -111,6 +109,19 @@ class TripalRebuildService {
     foreach ($content_types as $content_type) {
       $content_type_ids[] = $content_type->id();
     }
+    return $content_type_ids;
+  }
+
+  /**
+   * Used to load default drupal views for tripal content types.
+   *
+   * This allows us to have default views for content types that may not
+   * exist upon module install, but are created later. For this reason the
+   * yaml files for these views are stored in the config/optional directory.
+   */
+  public function rebuildViews() {
+    // Get a list of currently installed tripal content types.
+    $content_type_ids = $this->getContentTypeIds();
 
     // Look in all installed modules for possible tripal_entity views.
     $view_storage = $this->entity_type_manager->getStorage('view');
