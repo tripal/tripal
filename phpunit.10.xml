@@ -57,6 +57,7 @@
       <directory>tripal_biodb/tests/src/Kernel</directory>
       <directory>tripal_chado/tests/src/Kernel</directory>
       <directory>tripal_layout/tests/src/Kernel</directory>
+      <directory>tripal_search_views/tests/src/Kernel</directory>
     </testsuite>
   </testsuites>
   <!-- Settings for coverage reports. -->
