@@ -131,12 +131,10 @@ class TripalRebuildService {
             $valid = FALSE;
             $config_deps = $config['dependencies']['config'] ?? [];
             foreach ($config_deps as $dep) {
-              if (preg_match('/^tripal\.content_type\.(.+)$/', $dep, $matches)) {
-                $content_type = $matches[1];
-                if (in_array($content_type, $content_type_ids)) {
-                  $valid = TRUE;
-                  break;
-                }
+              if (preg_match('/^tripal\.content_type\.(.+)$/', $dep, $matches)
+                  && in_array($matches[1], $content_type_ids)) {
+                $valid = TRUE;
+                break;
               }
             }
             if ($valid) {
