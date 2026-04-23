@@ -707,7 +707,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $foreign_keys = $table_def['referenced_by'] ?? [];
       $total_references = 0;
       foreach ($foreign_keys as $referencing_table => $keydef) {
-        foreach ($keydef as $pkey => $refkey) {
+        foreach ($keydef as $refkey) {
           $query = $this->chado_connection->select('1:' . $referencing_table);
           $query->condition($refkey, $db_id, '=');
           $n = $query->countQuery()->execute()->fetchField();
@@ -786,13 +786,14 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $dbxref_id = $existing_records[0]->getValue('dbxref.dbxref_id');
 
       // Determine if there are referencing records.
-      $table_def = $this->chado_connection->schema()->getTableDef('dbxref', ['source' => 'database', 'format' => 'default']);
+      $table_def = $this->chado_connection->schema()->getTableDef('dbxref',
+        ['source' => 'database', 'format' => 'default']);
       // Format is [referencing_table =>
       // [dbxref column (dbxref_id) => referencing_table column], ].
       $foreign_keys = $table_def['referenced_by'] ?? [];
       $total_references = 0;
       foreach ($foreign_keys as $referencing_table => $keydef) {
-        foreach ($keydef as $pkey => $refkey) {
+        foreach ($keydef as $refkey) {
           $query = $this->chado_connection->select('1:' . $referencing_table);
           $query->condition($refkey, $dbxref_id, '=');
           $n = $query->countQuery()->execute()->fetchField();

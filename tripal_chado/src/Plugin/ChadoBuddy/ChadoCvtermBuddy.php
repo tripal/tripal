@@ -1096,7 +1096,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $foreign_keys = $table_def['referenced_by'] ?? [];
       $total_references = 0;
       foreach ($foreign_keys as $referencing_table => $keydef) {
-        foreach ($keydef as $pkey => $refkey) {
+        foreach ($keydef as $refkey) {
           $query = $this->chado_connection->select('1:' . $referencing_table);
           $query->condition($refkey, $cv_id, '=');
           $n = $query->countQuery()->execute()->fetchField();
@@ -1169,7 +1169,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *       If TRUE, then delete the dbxref record used by the term.
    *       Default is FALSE.
    *
-   * @return bool|NULL
+   * @return bool|null
    *   Returns TRUE if the cvterm was deleted.
    *   Returns FALSE if the cvterm was not deleted.
    *   Returns NULL if the cvterm did not exist.
@@ -1197,7 +1197,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $foreign_keys = $table_def['referenced_by'] ?? [];
       $total_references = 0;
       foreach ($foreign_keys as $referencing_table => $keydef) {
-        foreach ($keydef as $pkey => $refkey) {
+        foreach ($keydef as $refkey) {
           $query = $this->chado_connection->select('1:' . $referencing_table);
           $query->condition($refkey, $cvterm_id, '=');
           $n = $query->countQuery()->execute()->fetchField();
