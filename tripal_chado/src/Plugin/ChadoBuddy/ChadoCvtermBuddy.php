@@ -1076,8 +1076,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *   - did not exist (ChadoBuddyPluginBase::NON_EXISTING = 3)
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If an error is encountered. This is most likely that another table
-   *   is referencing this CV.
+   *   Thrown in the following cases:
+   *   - the conditions match more then one record.
+   *   - SQL error encountered when deleting the cv.
    */
   public function deleteCv(array $conditions, array $options = []): ?bool {
     $valid_tables = ['cv'];
@@ -1174,8 +1175,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *   Returns NULL if the cvterm did not exist.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If an error is encountered. This is most likely that another table
-   *   is referencing this CV.
+   *   Thrown in the following cases:
+   *   - the conditions match more then one record.
+   *   - SQL error encountered when deleting the cvterm.
    */
   public function deleteCvterm(array $conditions, array $options = []): ?bool {
     $valid_tables = ['cvterm', 'cv', 'dbxref'];

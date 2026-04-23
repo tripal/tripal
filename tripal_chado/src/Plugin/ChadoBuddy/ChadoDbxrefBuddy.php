@@ -686,8 +686,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   - did not exist (ChadoBuddyPluginBase::NON_EXISTING = 3)
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If an error is encountered. This is most likely that another table
-   *   is referencing this DB.
+   *   Thrown in the following cases:
+   *   - the conditions match more then one record.
+   *   - SQL error encountered when deleting the db.
    */
   public function deleteDb(array $conditions, array $options = []): ?bool {
     $valid_tables = ['db'];
@@ -770,8 +771,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   - did not exist (ChadoBuddyPluginBase::NON_EXISTING = 3)
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If an error is encountered. This is most likely that another table
-   *   is referencing this Dbxref, typically cvterm.
+   *   Thrown in the following cases:
+   *   - the conditions match more then one record.
+   *   - SQL error encountered when deleting the dbxref.
    */
   public function deleteDbxref(array $conditions, array $options = []): ?bool {
     $valid_tables = ['db', 'dbxref'];
