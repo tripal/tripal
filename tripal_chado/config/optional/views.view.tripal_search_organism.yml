@@ -12,10 +12,10 @@ dependencies:
   module:
     - tripal
     - tripal_chado
-id: tripal_entity_organism
+id: tripal_search_organism
 label: Organism
 module: views
-description: 'Use the organism page for an individual living system, such as animal, plant, bacteria or virus.'
+description: 'An individual living system, such as animal, plant, bacteria, or virus.'
 tag: ''
 base_table: tripal_entity
 base_field: id
@@ -26,7 +26,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: Organism
+      title: 'Organism Search'
       fields:
         view_tripal_entity:
           id: view_tripal_entity

@@ -2,17 +2,18 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.tripal_entity.analysis_description
-    - field.storage.tripal_entity.analysis_name
+    - field.storage.tripal_entity.pub_abstract
+    - field.storage.tripal_entity.pub_title
+    - field.storage.tripal_entity.pub_uniquename
     - system.menu.data-search
-    - tripal.content_type.analysis
+    - tripal.content_type.pub
   module:
     - tripal
     - tripal_chado
-id: tripal_entity_analysis
-label: Analysis
+id: tripal_search_pub
+label: Publication
 module: views
-description: 'Use the analysis page for an individual analysis, workflow or pipeline that was performed using statistical or computational means.'
+description: 'Books, journal articles, or other citable work.'
 tag: ''
 base_table: tripal_entity
 base_field: id
@@ -23,7 +24,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: Analysis
+      title: 'Publication Search'
       fields:
         view_tripal_entity:
           id: view_tripal_entity
@@ -78,15 +79,15 @@ display:
           text: view
           output_url_as_text: true
           absolute: false
-        analysis_name:
-          id: analysis_name
-          table: tripal_entity__analysis_name
-          field: analysis_name
+        pub_uniquename:
+          id: pub_uniquename
+          table: tripal_entity__pub_uniquename
+          field: pub_uniquename
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: field
-          label: Name
+          label: 'Unique local identifier'
           exclude: false
           alter:
             alter_text: false
@@ -119,7 +120,7 @@ display:
           element_class: ''
           element_label_type: ''
           element_label_class: ''
-          element_label_colon: true
+          element_label_colon: false
           element_wrapper_type: ''
           element_wrapper_class: ''
           element_default_classes: true
@@ -128,7 +129,7 @@ display:
           empty_zero: false
           hide_alter_empty: true
           click_sort_column: value
-          type: chado_string_type_formatter
+          type: chado_text_type_formatter
           settings:
             field_prefix: ''
             field_suffix: ''
@@ -144,15 +145,81 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-        analysis_description:
-          id: analysis_description
-          table: tripal_entity__analysis_description
-          field: analysis_description
+        pub_title:
+          id: pub_title
+          table: tripal_entity__pub_title
+          field: pub_title
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: field
-          label: Description
+          label: Title
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: '{{ view_tripal_entity }}'
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 250
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: true
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: chado_text_type_formatter
+          settings:
+            field_prefix: ''
+            field_suffix: ''
+            hide_condition: ''
+            hide_value: ''
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        pub_abstract:
+          id: pub_abstract
+          table: tripal_entity__pub_abstract
+          field: pub_abstract
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: Abstract
           exclude: false
           alter:
             alter_text: false
@@ -185,7 +252,7 @@ display:
           element_class: ''
           element_label_type: ''
           element_label_class: ''
-          element_label_colon: true
+          element_label_colon: false
           element_wrapper_type: ''
           element_wrapper_class: ''
           element_default_classes: true
@@ -194,12 +261,9 @@ display:
           empty_zero: false
           hide_alter_empty: true
           click_sort_column: value
-          type: chado_text_type_formatter
+          type: chado_property_formatter_default
           settings:
-            field_prefix: ''
-            field_suffix: ''
-            hide_condition: ''
-            hide_value: ''
+            token_string: ''
           group_column: value
           group_columns: {  }
           group_rows: true
@@ -271,8 +335,8 @@ display:
           total_pages: null
           id: 0
           tags:
-            next: 'Next ›'
-            previous: '‹ Previous'
+            next: ››
+            previous: ‹‹
           expose:
             items_per_page: false
             items_per_page_label: 'Items per page'
@@ -309,11 +373,12 @@ display:
           entity_field: type
           plugin_id: bundle
           value:
-            analysis: analysis
-        analysis_name_value:
-          id: analysis_name_value
-          table: tripal_entity__analysis_name
-          field: analysis_name_value
+            pub: pub
+          group: 1
+        pub_uniquename_value:
+          id: pub_uniquename_value
+          table: tripal_entity__pub_uniquename
+          field: pub_uniquename_value
           relationship: none
           group_type: group
           admin_label: ''
@@ -323,14 +388,14 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: analysis_name_value_op
-            label: Name
+            operator_id: pub_uniquename_value_op
+            label: 'Unique Local Identifier'
             description: ''
             use_operator: false
-            operator: analysis_name_value_op
+            operator: pub_uniquename_value_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: analysis_name_value
+            identifier: pub_uniquename_value
             required: false
             remember: false
             multiple: false
@@ -349,10 +414,10 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-        analysis_description_value:
-          id: analysis_description_value
-          table: tripal_entity__analysis_description
-          field: analysis_description_value
+        pub_title_value:
+          id: pub_title_value
+          table: tripal_entity__pub_title
+          field: pub_title_value
           relationship: none
           group_type: group
           admin_label: ''
@@ -362,14 +427,14 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: analysis_description_value_op
-            label: Description
+            operator_id: pub_title_value_op
+            label: Title
             description: ''
             use_operator: false
-            operator: analysis_description_value_op
+            operator: pub_title_value_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: analysis_description_value
+            identifier: pub_title_value
             required: false
             remember: false
             multiple: false
@@ -388,6 +453,49 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
+        pub_abstract_value:
+          id: pub_abstract_value
+          table: tripal_entity__pub_abstract
+          field: pub_abstract_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: string
+          operator: contains
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: pub_abstract_value_op
+            label: Abstract
+            description: ''
+            use_operator: false
+            operator: pub_abstract_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: pub_abstract_value
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+      filter_groups:
+        operator: AND
+        groups:
+          1: AND
       style:
         type: table
         options:
@@ -396,10 +504,11 @@ display:
           default_row_class: true
           columns:
             view_tripal_entity: view_tripal_entity
-            analysis_name: analysis_name
-            analysis_description: analysis_description
+            pub_uniquename: pub_uniquename
+            pub_title: pub_title
+            pub_abstract: pub_abstract
             operations: operations
-          default: analysis_name
+          default: pub_title
           info:
             view_tripal_entity:
               sortable: false
@@ -408,15 +517,22 @@ display:
               separator: ''
               empty_column: false
               responsive: ''
-            analysis_name:
+            pub_uniquename:
               sortable: true
               default_sort_order: asc
               align: ''
               separator: ''
               empty_column: false
               responsive: ''
-            analysis_description:
+            pub_title:
               sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            pub_abstract:
+              sortable: false
               default_sort_order: asc
               align: ''
               separator: ''
@@ -430,7 +546,7 @@ display:
           override: true
           sticky: false
           summary: ''
-          empty_table: false
+          empty_table: true
           caption: ''
           description: ''
       row:
@@ -444,9 +560,6 @@ display:
           replica: false
           query_tags: {  }
       relationships: {  }
-      use_more: false
-      use_more_always: false
-      use_more_text: more
       header: {  }
       footer: {  }
       display_extenders: {  }
@@ -458,26 +571,22 @@ display:
         - url
         - url.query_args
       tags:
-        - 'config:field.storage.tripal_entity.analysis_description'
-        - 'config:field.storage.tripal_entity.analysis_name'
+        - 'config:field.storage.tripal_entity.pub_abstract'
+        - 'config:field.storage.tripal_entity.pub_title'
+        - 'config:field.storage.tripal_entity.pub_uniquename'
   page_1:
     id: page_1
     display_title: Page
     display_plugin: page
     position: 1
     display_options:
-      exposed_block: false
       display_extenders: {  }
-      path: data-search/analysis
+      path: data-search/publication
       menu:
         type: normal
-        title: Analysis
-        description: ''
-        weight: 0
-        expanded: false
+        title: Publication
         menu_name: data-search
         parent: ''
-        context: '0'
     cache_metadata:
       max-age: -1
       contexts:
@@ -486,5 +595,6 @@ display:
         - url
         - url.query_args
       tags:
-        - 'config:field.storage.tripal_entity.analysis_description'
-        - 'config:field.storage.tripal_entity.analysis_name'
+        - 'config:field.storage.tripal_entity.pub_abstract'
+        - 'config:field.storage.tripal_entity.pub_title'
+        - 'config:field.storage.tripal_entity.pub_uniquename'

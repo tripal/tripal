@@ -2,18 +2,18 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.tripal_entity.pub_abstract
-    - field.storage.tripal_entity.pub_title
-    - field.storage.tripal_entity.pub_uniquename
+    - field.storage.tripal_entity.biosample_description
+    - field.storage.tripal_entity.biosample_name
+    - field.storage.tripal_entity.biosample_organism
     - system.menu.data-search
-    - tripal.content_type.pub
+    - tripal.content_type.biosample
   module:
     - tripal
     - tripal_chado
-id: tripal_entity_pub
-label: Publication
+id: tripal_search_biological_sample
+label: 'Biological Sample'
 module: views
-description: 'Use the publication page for books, journal articles, or other citable work.'
+description: 'Any material taken from a biological system for use in a systematic study.'
 tag: ''
 base_table: tripal_entity
 base_field: id
@@ -24,7 +24,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: Publication
+      title: 'Biological Sample Search'
       fields:
         view_tripal_entity:
           id: view_tripal_entity
@@ -68,7 +68,7 @@ display:
           element_class: ''
           element_label_type: ''
           element_label_class: ''
-          element_label_colon: true
+          element_label_colon: false
           element_wrapper_type: ''
           element_wrapper_class: ''
           element_default_classes: true
@@ -79,15 +79,15 @@ display:
           text: view
           output_url_as_text: true
           absolute: false
-        pub_uniquename:
-          id: pub_uniquename
-          table: tripal_entity__pub_uniquename
-          field: pub_uniquename
+        biosample_name:
+          id: biosample_name
+          table: tripal_entity__biosample_name
+          field: biosample_name
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: field
-          label: 'Unique local identifier'
+          label: Name
           exclude: false
           alter:
             alter_text: false
@@ -133,7 +133,7 @@ display:
           settings:
             field_prefix: ''
             field_suffix: ''
-            hide_condition: ''
+            hide_condition: never
             hide_value: ''
           group_column: value
           group_columns: {  }
@@ -145,21 +145,21 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-        pub_title:
-          id: pub_title
-          table: tripal_entity__pub_title
-          field: pub_title
+        biosample_organism:
+          id: biosample_organism
+          table: tripal_entity__biosample_organism
+          field: biosample_organism
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: field
-          label: Title
+          label: Organism
           exclude: false
           alter:
             alter_text: false
             text: ''
             make_link: false
-            path: '{{ view_tripal_entity }}'
+            path: ''
             absolute: false
             external: false
             replace_spaces: false
@@ -172,14 +172,77 @@ display:
             suffix: ''
             target: ''
             nl2br: false
-            max_length: 250
+            max_length: 0
             word_boundary: true
             ellipsis: true
             more_link: false
             more_link_text: ''
             more_link_path: ''
             strip_tags: false
-            trim: true
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: record_id
+          type: chado_organism_formatter_default
+          settings:
+            token_string: '<i>[genus] [species]</i> [infratype_abbrev] <i>[infraname]</i>'
+          group_column: ''
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        biosample_description:
+          id: biosample_description
+          table: tripal_entity__biosample_description
+          field: biosample_description
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: Description
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
             preserve_tags: ''
             html: false
           element_type: ''
@@ -201,69 +264,6 @@ display:
             field_suffix: ''
             hide_condition: ''
             hide_value: ''
-          group_column: value
-          group_columns: {  }
-          group_rows: true
-          delta_limit: 0
-          delta_offset: 0
-          delta_reversed: false
-          delta_first_last: false
-          multi_type: separator
-          separator: ', '
-          field_api_classes: false
-        pub_abstract:
-          id: pub_abstract
-          table: tripal_entity__pub_abstract
-          field: pub_abstract
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: field
-          label: Abstract
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 250
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: true
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: false
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-          click_sort_column: value
-          type: chado_property_formatter_default
-          settings:
-            token_string: ''
           group_column: value
           group_columns: {  }
           group_rows: true
@@ -317,7 +317,7 @@ display:
           element_class: ''
           element_label_type: ''
           element_label_class: ''
-          element_label_colon: true
+          element_label_colon: false
           element_wrapper_type: ''
           element_wrapper_class: ''
           element_default_classes: true
@@ -327,7 +327,7 @@ display:
           hide_alter_empty: true
           destination: false
       pager:
-        type: mini
+        type: full
         options:
           offset: 0
           pagination_heading_level: h4
@@ -337,6 +337,8 @@ display:
           tags:
             next: ››
             previous: ‹‹
+            first: '« First'
+            last: 'Last »'
           expose:
             items_per_page: false
             items_per_page_label: 'Items per page'
@@ -345,6 +347,7 @@ display:
             items_per_page_options_all_label: '- All -'
             offset: false
             offset_label: Offset
+          quantity: 9
       exposed_form:
         type: basic
         options:
@@ -373,12 +376,12 @@ display:
           entity_field: type
           plugin_id: bundle
           value:
-            pub: pub
+            biosample: biosample
           group: 1
-        pub_uniquename_value:
-          id: pub_uniquename_value
-          table: tripal_entity__pub_uniquename
-          field: pub_uniquename_value
+        biosample_name_value:
+          id: biosample_name_value
+          table: tripal_entity__biosample_name
+          field: biosample_name_value
           relationship: none
           group_type: group
           admin_label: ''
@@ -388,14 +391,14 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: pub_uniquename_value_op
-            label: 'Unique Local Identifier'
+            operator_id: biosample_name_value_op
+            label: Name
             description: ''
             use_operator: false
-            operator: pub_uniquename_value_op
+            operator: biosample_name_value_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: pub_uniquename_value
+            identifier: biosample_name_value
             required: false
             remember: false
             multiple: false
@@ -414,10 +417,10 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-        pub_title_value:
-          id: pub_title_value
-          table: tripal_entity__pub_title
-          field: pub_title_value
+        biosample_organism_organism_genus:
+          id: biosample_organism_organism_genus
+          table: tripal_entity__biosample_organism
+          field: biosample_organism_organism_genus
           relationship: none
           group_type: group
           admin_label: ''
@@ -427,14 +430,14 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: pub_title_value_op
-            label: Title
+            operator_id: biosample_organism_organism_genus_op
+            label: Genus
             description: ''
             use_operator: false
-            operator: pub_title_value_op
+            operator: biosample_organism_organism_genus_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: pub_title_value
+            identifier: biosample_organism_organism_genus
             required: false
             remember: false
             multiple: false
@@ -453,10 +456,10 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-        pub_abstract_value:
-          id: pub_abstract_value
-          table: tripal_entity__pub_abstract
-          field: pub_abstract_value
+        biosample_organism_organism_species:
+          id: biosample_organism_organism_species
+          table: tripal_entity__biosample_organism
+          field: biosample_organism_organism_species
           relationship: none
           group_type: group
           admin_label: ''
@@ -466,14 +469,53 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: pub_abstract_value_op
-            label: Abstract
+            operator_id: biosample_organism_organism_species_op
+            label: Species
             description: ''
             use_operator: false
-            operator: pub_abstract_value_op
+            operator: biosample_organism_organism_species_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: pub_abstract_value
+            identifier: biosample_organism_organism_species
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+        biosample_description_value:
+          id: biosample_description_value
+          table: tripal_entity__biosample_description
+          field: biosample_description_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: string
+          operator: contains
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: biosample_description_value_op
+            label: Description
+            description: ''
+            use_operator: false
+            operator: biosample_description_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: biosample_description_value
             required: false
             remember: false
             multiple: false
@@ -504,11 +546,11 @@ display:
           default_row_class: true
           columns:
             view_tripal_entity: view_tripal_entity
-            pub_uniquename: pub_uniquename
-            pub_title: pub_title
-            pub_abstract: pub_abstract
+            biosample_name: biosample_name
+            biosample_organism: biosample_organism
+            biosample_description: biosample_description
             operations: operations
-          default: pub_title
+          default: biosample_name
           info:
             view_tripal_entity:
               sortable: false
@@ -517,22 +559,22 @@ display:
               separator: ''
               empty_column: false
               responsive: ''
-            pub_uniquename:
+            biosample_name:
               sortable: true
               default_sort_order: asc
               align: ''
               separator: ''
               empty_column: false
               responsive: ''
-            pub_title:
+            biosample_organism:
               sortable: true
               default_sort_order: asc
               align: ''
               separator: ''
               empty_column: false
               responsive: ''
-            pub_abstract:
-              sortable: false
+            biosample_description:
+              sortable: true
               default_sort_order: asc
               align: ''
               separator: ''
@@ -546,7 +588,7 @@ display:
           override: true
           sticky: false
           summary: ''
-          empty_table: true
+          empty_table: false
           caption: ''
           description: ''
       row:
@@ -571,9 +613,9 @@ display:
         - url
         - url.query_args
       tags:
-        - 'config:field.storage.tripal_entity.pub_abstract'
-        - 'config:field.storage.tripal_entity.pub_title'
-        - 'config:field.storage.tripal_entity.pub_uniquename'
+        - 'config:field.storage.tripal_entity.biosample_description'
+        - 'config:field.storage.tripal_entity.biosample_name'
+        - 'config:field.storage.tripal_entity.biosample_organism'
   page_1:
     id: page_1
     display_title: Page
@@ -581,10 +623,10 @@ display:
     position: 1
     display_options:
       display_extenders: {  }
-      path: data-search/publication
+      path: data-search/biological-sample
       menu:
         type: normal
-        title: Publication
+        title: 'Biological Sample'
         menu_name: data-search
         parent: ''
     cache_metadata:
@@ -595,6 +637,6 @@ display:
         - url
         - url.query_args
       tags:
-        - 'config:field.storage.tripal_entity.pub_abstract'
-        - 'config:field.storage.tripal_entity.pub_title'
-        - 'config:field.storage.tripal_entity.pub_uniquename'
+        - 'config:field.storage.tripal_entity.biosample_description'
+        - 'config:field.storage.tripal_entity.biosample_name'
+        - 'config:field.storage.tripal_entity.biosample_organism'

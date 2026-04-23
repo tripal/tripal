@@ -2,18 +2,18 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.tripal_entity.biosample_description
-    - field.storage.tripal_entity.biosample_name
-    - field.storage.tripal_entity.biosample_organism
+    - field.storage.tripal_entity.contact_description
+    - field.storage.tripal_entity.contact_name
+    - field.storage.tripal_entity.contact_type
     - system.menu.data-search
-    - tripal.content_type.biosample
+    - tripal.content_type.contact
   module:
     - tripal
     - tripal_chado
-id: tripal_entity_biological_sample
-label: 'Biological Sample'
+id: tripal_search_contact
+label: Contact
 module: views
-description: 'Any material taken from a biological system for use in a systematic study'
+description: 'A person or institution that can be linked as a responsible party for data or results.'
 tag: ''
 base_table: tripal_entity
 base_field: id
@@ -24,7 +24,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: 'Biological Sample'
+      title: 'Contact Search'
       fields:
         view_tripal_entity:
           id: view_tripal_entity
@@ -79,10 +79,10 @@ display:
           text: view
           output_url_as_text: true
           absolute: false
-        biosample_name:
-          id: biosample_name
-          table: tripal_entity__biosample_name
-          field: biosample_name
+        contact_name:
+          id: contact_name
+          table: tripal_entity__contact_name
+          field: contact_name
           relationship: none
           group_type: group
           admin_label: ''
@@ -129,11 +129,11 @@ display:
           empty_zero: false
           hide_alter_empty: true
           click_sort_column: value
-          type: chado_text_type_formatter
+          type: chado_string_type_formatter
           settings:
             field_prefix: ''
             field_suffix: ''
-            hide_condition: never
+            hide_condition: ''
             hide_value: ''
           group_column: value
           group_columns: {  }
@@ -145,15 +145,15 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-        biosample_organism:
-          id: biosample_organism
-          table: tripal_entity__biosample_organism
-          field: biosample_organism
+        contact_type:
+          id: contact_type
+          table: tripal_entity__contact_type
+          field: contact_type
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: field
-          label: Organism
+          label: 'Contact Type'
           exclude: false
           alter:
             alter_text: false
@@ -194,10 +194,10 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
-          click_sort_column: record_id
-          type: chado_organism_formatter_default
+          click_sort_column: term_name
+          type: chado_additional_type_formatter_default
           settings:
-            token_string: '<i>[genus] [species]</i> [infratype_abbrev] <i>[infraname]</i>'
+            token_string: ''
           group_column: ''
           group_columns: {  }
           group_rows: true
@@ -208,10 +208,10 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-        biosample_description:
-          id: biosample_description
-          table: tripal_entity__biosample_description
-          field: biosample_description
+        contact_description:
+          id: contact_description
+          table: tripal_entity__contact_description
+          field: contact_description
           relationship: none
           group_type: group
           admin_label: ''
@@ -235,14 +235,14 @@ display:
             suffix: ''
             target: ''
             nl2br: false
-            max_length: 0
+            max_length: 255
             word_boundary: true
             ellipsis: true
             more_link: false
             more_link_text: ''
             more_link_path: ''
             strip_tags: false
-            trim: false
+            trim: true
             preserve_tags: ''
             html: false
           element_type: ''
@@ -258,7 +258,7 @@ display:
           empty_zero: false
           hide_alter_empty: true
           click_sort_column: value
-          type: chado_text_type_formatter
+          type: chado_string_type_formatter
           settings:
             field_prefix: ''
             field_suffix: ''
@@ -284,7 +284,7 @@ display:
           entity_type: null
           entity_field: null
           plugin_id: entity_operations
-          label: 'Operations links'
+          label: ''
           exclude: false
           alter:
             alter_text: false
@@ -373,12 +373,12 @@ display:
           entity_field: type
           plugin_id: bundle
           value:
-            biosample: biosample
+            contact: contact
           group: 1
-        biosample_name_value:
-          id: biosample_name_value
-          table: tripal_entity__biosample_name
-          field: biosample_name_value
+        contact_name_value:
+          id: contact_name_value
+          table: tripal_entity__contact_name
+          field: contact_name_value
           relationship: none
           group_type: group
           admin_label: ''
@@ -388,14 +388,14 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: biosample_name_value_op
-            label: Name
+            operator_id: contact_name_value_op
+            label: 'Name (contact_name)'
             description: ''
             use_operator: false
-            operator: biosample_name_value_op
+            operator: contact_name_value_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: biosample_name_value
+            identifier: contact_name_value
             required: false
             remember: false
             multiple: false
@@ -414,10 +414,10 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-        biosample_organism_organism_genus:
-          id: biosample_organism_organism_genus
-          table: tripal_entity__biosample_organism
-          field: biosample_organism_organism_genus
+        contact_type_term_name:
+          id: contact_type_term_name
+          table: tripal_entity__contact_type
+          field: contact_type_term_name
           relationship: none
           group_type: group
           admin_label: ''
@@ -427,14 +427,14 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: biosample_organism_organism_genus_op
-            label: Genus
+            operator_id: contact_type_term_name_op
+            label: 'Contact Type (contact_type:term_name)'
             description: ''
             use_operator: false
-            operator: biosample_organism_organism_genus_op
+            operator: contact_type_term_name_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: biosample_organism_organism_genus
+            identifier: contact_type_term_name
             required: false
             remember: false
             multiple: false
@@ -453,10 +453,10 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-        biosample_organism_organism_species:
-          id: biosample_organism_organism_species
-          table: tripal_entity__biosample_organism
-          field: biosample_organism_organism_species
+        contact_description_value:
+          id: contact_description_value
+          table: tripal_entity__contact_description
+          field: contact_description_value
           relationship: none
           group_type: group
           admin_label: ''
@@ -466,53 +466,14 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: biosample_organism_organism_species_op
-            label: Species
+            operator_id: contact_description_value_op
+            label: 'Description (contact_description)'
             description: ''
             use_operator: false
-            operator: biosample_organism_organism_species_op
+            operator: contact_description_value_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: biosample_organism_organism_species
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-            placeholder: ''
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
-        biosample_description_value:
-          id: biosample_description_value
-          table: tripal_entity__biosample_description
-          field: biosample_description_value
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: string
-          operator: contains
-          value: ''
-          group: 1
-          exposed: true
-          expose:
-            operator_id: biosample_description_value_op
-            label: Description
-            description: ''
-            use_operator: false
-            operator: biosample_description_value_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: biosample_description_value
+            identifier: contact_description_value
             required: false
             remember: false
             multiple: false
@@ -543,11 +504,11 @@ display:
           default_row_class: true
           columns:
             view_tripal_entity: view_tripal_entity
-            biosample_name: biosample_name
-            biosample_organism: biosample_organism
-            biosample_description: biosample_description
+            contact_name: contact_name
+            contact_type: contact_type
+            contact_description: contact_description
             operations: operations
-          default: '-1'
+          default: contact_name
           info:
             view_tripal_entity:
               sortable: false
@@ -556,21 +517,21 @@ display:
               separator: ''
               empty_column: false
               responsive: ''
-            biosample_name:
+            contact_name:
               sortable: true
               default_sort_order: asc
               align: ''
               separator: ''
               empty_column: false
               responsive: ''
-            biosample_organism:
+            contact_type:
               sortable: true
               default_sort_order: asc
               align: ''
               separator: ''
               empty_column: false
               responsive: ''
-            biosample_description:
+            contact_description:
               sortable: true
               default_sort_order: asc
               align: ''
@@ -610,9 +571,9 @@ display:
         - url
         - url.query_args
       tags:
-        - 'config:field.storage.tripal_entity.biosample_description'
-        - 'config:field.storage.tripal_entity.biosample_name'
-        - 'config:field.storage.tripal_entity.biosample_organism'
+        - 'config:field.storage.tripal_entity.contact_description'
+        - 'config:field.storage.tripal_entity.contact_name'
+        - 'config:field.storage.tripal_entity.contact_type'
   page_1:
     id: page_1
     display_title: Page
@@ -620,10 +581,10 @@ display:
     position: 1
     display_options:
       display_extenders: {  }
-      path: data-search/biological_sample
+      path: data-search/contact
       menu:
         type: normal
-        title: 'Biological Sample'
+        title: Contact
         menu_name: data-search
         parent: ''
     cache_metadata:
@@ -634,6 +595,6 @@ display:
         - url
         - url.query_args
       tags:
-        - 'config:field.storage.tripal_entity.biosample_description'
-        - 'config:field.storage.tripal_entity.biosample_name'
-        - 'config:field.storage.tripal_entity.biosample_organism'
+        - 'config:field.storage.tripal_entity.contact_description'
+        - 'config:field.storage.tripal_entity.contact_name'
+        - 'config:field.storage.tripal_entity.contact_type'
