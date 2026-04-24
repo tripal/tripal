@@ -1191,6 +1191,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   Thrown in the following cases:
+   *   - Foreign key references exist to the record.
    *   - The conditions match more then one record.
    *   - SQL error encountered when deleting the cvterm.
    */
