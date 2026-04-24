@@ -169,7 +169,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the new Cvterm "newCvterm001"');
 
     // TEST: we can not delete a cv if it is in use by a cvterm.
-    $result = $instance->deleteCv(['cv.cv_id' => $cv_id]);
+    $result = $instance->deleteCv(['cv.cv_id' => $cv_id], ['fail_when_referenced' => FALSE]);
     $this->assertEquals(ChadoBuddyPluginBase::FAILURE, $result, "We deleted a Cv that is in use by a Cvterm");
     $n = $this->chado_connection->select('1:cv')
       ->condition('cv_id', $cv_id, '=')

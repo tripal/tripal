@@ -678,6 +678,10 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *       Default is FALSE, and in this case, if any such referencing
    *       records exist, the delete will be skipped and this function
    *       will return FALSE.
+   *     - fail_when_referenced (bool; default TRUE)
+   *       If TRUE, throw an exception when the db indicated is referenced
+   *       by other records and cascade is FALSE. If FALSE, return
+   *       ChadoBuddyPluginBase::FAILURE.
    *
    * @return int
    *   Indicates whether the DB was
@@ -687,10 +691,10 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   Thrown in the following cases:
-   *   - the conditions match more then one record.
+   *   - The conditions match more then one record.
    *   - SQL error encountered when deleting the db.
    */
-  public function deleteDb(array $conditions, array $options = []): ?bool {
+  public function deleteDb(array $conditions, array $options = []): int {
     $valid_tables = ['db'];
     $valid_columns = $this->getTableColumns($valid_tables);
     $conditions = $this->dereferenceBuddyRecord($conditions);
@@ -714,9 +718,14 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
           $total_references += $n;
         }
       }
-      // If there are referencing records and cascade is not set, do nothing.
+      // If there are referencing records and cascade is not set.
       if ($total_references && !($options['cascade'] ?? FALSE)) {
-        return self::FAILURE;
+        if ($options['fail_when_referenced'] ?? TRUE) {
+          throw new ChadoBuddyException('ChadoBuddy deleteDb error, cannot delete the db, other records reference it');
+        }
+        else {
+          return self::FAILURE;
+        }
       }
       else {
         // Perform the record deletion. This might fail if
@@ -763,6 +772,10 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *       Default is FALSE, and in this case, if any such referencing
    *       records exist, the delete will be skipped and this function
    *       will return FALSE.
+   *     - fail_when_referenced (bool; default TRUE)
+   *       If TRUE, throw an exception when the dbxref indicated is referenced
+   *       by other records and cascade is FALSE. If FALSE, return
+   *       ChadoBuddyPluginBase::FAILURE.
    *
    * @return int
    *   Indicates whether the DB was
@@ -772,10 +785,10 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   Thrown in the following cases:
-   *   - the conditions match more then one record.
+   *   - The conditions match more then one record.
    *   - SQL error encountered when deleting the dbxref.
    */
-  public function deleteDbxref(array $conditions, array $options = []): ?bool {
+  public function deleteDbxref(array $conditions, array $options = []): int {
     $valid_tables = ['db', 'dbxref'];
     $valid_columns = $this->getTableColumns($valid_tables);
     $conditions = $this->dereferenceBuddyRecord($conditions);
@@ -800,9 +813,14 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
           $total_references += $n;
         }
       }
-      // If there are referencing records and cascade is not set, do nothing.
+      // If there are referencing records and cascade is not set.
       if ($total_references && !($options['cascade'] ?? FALSE)) {
-        return self::FAILURE;
+        if ($options['fail_when_referenced'] ?? TRUE) {
+          throw new ChadoBuddyException('ChadoBuddy deleteDbxref error, cannot delete the dbxref, other records reference it');
+        }
+        else {
+          return self::FAILURE;
+        }
       }
       else {
         // Perform the record deletion. This might fail if

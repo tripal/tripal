@@ -1068,6 +1068,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *       Default is FALSE, and in this case, if any such referencing
    *       records exist, the delete will be skipped and this function
    *       will return FALSE.
+   *     - fail_when_referenced (bool; default TRUE)
+   *       If TRUE, throw an exception when the cv indicated is referenced
+   *       by other records and cascade is FALSE. If FALSE, return
+   *       ChadoBuddyPluginBase::FAILURE.
    *
    * @return int
    *   Indicates whether the CV was
@@ -1077,10 +1081,11 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   Thrown in the following cases:
-   *   - the conditions match more then one record.
+   *   - Foreign key references exist to the record.
+   *   - The conditions match more then one record.
    *   - SQL error encountered when deleting the cv.
    */
-  public function deleteCv(array $conditions, array $options = []): ?bool {
+  public function deleteCv(array $conditions, array $options = []): int {
     $valid_tables = ['cv'];
     $valid_columns = $this->getTableColumns($valid_tables);
     $conditions = $this->dereferenceBuddyRecord($conditions);
@@ -1104,9 +1109,14 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
         }
       }
 
-      // If there are referencing records and cascade is not set, do nothing.
+      // If there are referencing records and cascade is not set.
       if ($total_references && !($options['cascade'] ?? FALSE)) {
-        return self::FAILURE;
+        if ($options['fail_when_referenced'] ?? TRUE) {
+          throw new ChadoBuddyException('ChadoBuddy deleteCv error, cannot delete the cv, other records reference it');
+        }
+        else {
+          return self::FAILURE;
+        }
       }
       else {
         // Perform the record deletion. This might fail if
@@ -1168,18 +1178,23 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - drop_dbxref
    *       If TRUE, then delete the dbxref record used by the term.
    *       Default is FALSE.
+   *     - fail_when_referenced (bool; default TRUE)
+   *       If TRUE, throw an exception when the cvterm indicated is referenced
+   *       by other records and cascade is FALSE. If FALSE, return
+   *       ChadoBuddyPluginBase::FAILURE.
    *
-   * @return bool|null
-   *   Returns TRUE if the cvterm was deleted.
-   *   Returns FALSE if the cvterm was not deleted.
-   *   Returns NULL if the cvterm did not exist.
+   * @return int
+   *   Indicates whether the cvterm was
+   *   - deleted (ChadoBuddyPluginBase::SUCCESS = 4)
+   *   - not deleted (ChadoBuddyPluginBase::FAILURE = 5)
+   *   - did not exist (ChadoBuddyPluginBase::NON_EXISTING = 3)
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   Thrown in the following cases:
-   *   - the conditions match more then one record.
+   *   - The conditions match more then one record.
    *   - SQL error encountered when deleting the cvterm.
    */
-  public function deleteCvterm(array $conditions, array $options = []): ?bool {
+  public function deleteCvterm(array $conditions, array $options = []): int {
     $valid_tables = ['cvterm', 'cv', 'dbxref'];
     $valid_columns = $this->getTableColumns($valid_tables);
     $conditions = $this->dereferenceBuddyRecord($conditions);
@@ -1205,9 +1220,14 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
         }
       }
 
-      // If there are referencing records and cascade is not set, do nothing.
+      // If there are referencing records and cascade is not set.
       if ($total_references && !($options['cascade'] ?? FALSE)) {
-        return self::FAILURE;
+        if ($options['fail_when_referenced'] ?? TRUE) {
+          throw new ChadoBuddyException('ChadoBuddy deleteCvterm error, cannot delete the cvterm, other records reference it');
+        }
+        else {
+          return self::FAILURE;
+        }
       }
       else {
         $transaction = $this->chado_connection->startTransaction();

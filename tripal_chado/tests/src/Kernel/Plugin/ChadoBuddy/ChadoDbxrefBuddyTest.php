@@ -293,7 +293,7 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     $this->assertIsObject($result, 'Failed setup for test inserting db newDb006');
     $result = $instance->insertDbxref(['dbxref.accession' => 'newDbxref006', 'db.name' => 'newDb006']);
     $this->assertIsObject($result, 'Failed setup for test inserting dbxref newDbxref006');
-    $result = $instance->deleteDb(['db.name' => 'newDb006']);
+    $result = $instance->deleteDb(['db.name' => 'newDb006'], ['fail_when_referenced' => FALSE]);
     $this->assertEquals(ChadoBuddyPluginBase::FAILURE, $result, "We deleted a db that is in use by a dbxref");
     $n = $this->chado_connection->select('1:db')
       ->condition('name', 'newDb006', '=')
@@ -334,7 +334,7 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
       ->fields(['dbxref_id' => $dbxref_id])
       ->execute();
     $this->assertEquals(1, $n, "The test biomaterial was not inserted");
-    $result = $instance->deleteDbxref(['dbxref.accession' => 'newDbxref008']);
+    $result = $instance->deleteDbxref(['dbxref.accession' => 'newDbxref008'], ['fail_when_referenced' => FALSE]);
     $this->assertEquals(ChadoBuddyPluginBase::FAILURE, $result, "We incorrectly deleted a dbxref that has a foreign key");
     $n = $this->chado_connection->select('1:dbxref')
       ->condition('accession', 'newDbxref008', '=')
