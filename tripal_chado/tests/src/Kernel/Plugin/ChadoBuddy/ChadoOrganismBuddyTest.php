@@ -518,7 +518,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
           'organism.abbreviation' => 'Trp',
         ],
       ],
-      "ChadoBuddy getOrganismScientificName error, more than one organism record matches the specified conditions:",
+      "ChadoBuddy getOrganismScientificName error, more than one record",
     ];
 
     return $scenarios;

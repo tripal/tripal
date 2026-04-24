@@ -615,7 +615,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
         // If a cvterm was retrieved, set organism.type_id to the cvterm_id.
         if ($cvterm_records) {
           // Ensure that we didn't retrieve multiple possible cvterms.
-          $this->throwIfMultipleRecords($cvterm_records, 'cvterm.cvterm', 'validateOrganismRankCvterm', $cvterm_values);
+          $this->throwIfMultipleRecords($cvterm_records, 'cvterm.cvterm_id', 'validateOrganismRankCvterm', $cvterm_values);
           $values['organism.type_id'] = $cvterm_records[0]->getValue('cvterm.cvterm_id', ['strict' => FALSE]);
         }
         // If a cvterm could not be found, try to create it if the required

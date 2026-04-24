@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
@@ -121,7 +122,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     // TEST: we can delete a cv.
     $cv_id = $chado_buddy_records[0]->getValue('cv.cv_id');
     $result = $instance->deleteCv(['cv.cv_id' => $cv_id]);
-    $this->assertTrue($result, "We did not delete a Cv using its pkey");
+    $this->assertEquals(ChadoBuddyPluginBase::SUCCESS, $result, "We did not delete a Cv using its pkey");
     $n = $this->chado_connection->select('1:cv')
       ->condition('cv_id', $cv_id, '=')
       ->countQuery()
@@ -169,7 +170,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
 
     // TEST: we can not delete a cv if it is in use by a cvterm.
     $result = $instance->deleteCv(['cv.cv_id' => $cv_id]);
-    $this->assertFalse($result, "We deleted a Cv that is in use by a Cvterm");
+    $this->assertEquals(ChadoBuddyPluginBase::FAILURE, $result, "We deleted a Cv that is in use by a Cvterm");
     $n = $this->chado_connection->select('1:cv')
       ->condition('cv_id', $cv_id, '=')
       ->countQuery()
@@ -449,7 +450,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $cvterm_id = $records[0]->getValue('cvterm.cvterm_id');
     $dbxref_id = $records[0]->getValue('dbxref.dbxref_id');
     $result = $instance->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id]);
-    $this->assertTrue($result, "We did not delete a Cvterm using its pkey");
+    $this->assertEquals(ChadoBuddyPluginBase::SUCCESS, $result, "We did not delete a Cvterm using its pkey");
     $n = $this->chado_connection->select('1:cvterm')
       ->condition('cvterm_id', $cvterm_id, '=')
       ->countQuery()
@@ -469,7 +470,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $cvterm_id = $records[0]->getValue('cvterm.cvterm_id');
     $dbxref_id = $records[0]->getValue('dbxref.dbxref_id');
     $result = $instance->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id], ['drop_dbxref' => TRUE]);
-    $this->assertTrue($result, "We did not delete a Cvterm using its pkey");
+    $this->assertEquals(ChadoBuddyPluginBase::SUCCESS, $result, "We did not delete a Cvterm using its pkey");
     $n = $this->chado_connection->select('1:cvterm')
       ->condition('cvterm_id', $cvterm_id, '=')
       ->countQuery()
@@ -492,7 +493,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
       ->execute()
       ->fetchField();
     $result = $instance->deleteCv(['cv.name' => 'local'], ['cascade' => TRUE]);
-    $this->assertTrue($result, "We should have deleted a CV that is in use by a CV term");
+    $this->assertEquals(ChadoBuddyPluginBase::SUCCESS, $result, "We should have deleted a CV that is in use by a CV term");
     $n = $this->chado_connection->select('1:cv')
       ->condition('cv_id', $cv_id, '=')
       ->countQuery()
