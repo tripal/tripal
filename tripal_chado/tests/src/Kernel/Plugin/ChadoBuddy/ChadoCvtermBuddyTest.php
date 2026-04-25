@@ -177,6 +177,15 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
       ->execute()
       ->fetchField();
     $this->assertEquals(1, $n, "The cv was incorrectly deleted from the database");
+    // Without setting 'fail_when_referenced' should throw an exception.
+    $exception_message = '';
+    try {
+      $result = $instance->deleteCv(['cv.cv_id' => $cv_id], []);
+    }
+    catch (\Exception $e) {
+      $exception_message = $e->getMessage();
+    }
+    $this->assertStringContainsString('other records reference it', $exception_message, "We did not get the exception message expected deleting a cv that has a foreign key");
 
     // TEST: Updating a non-existent Cvterm should return FALSE.
     $chado_buddy_records = $instance->updateCvterm(['cvterm.name' => 'newCvterm002', 'cvterm.definition' => 'def002'],
@@ -443,6 +452,12 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
       'We did not get the correct cvterm_id for the upserted Cvterm with synonym "syn006"');
     $this->assertEquals(7, $values['get']['cvtermsynonym.type_id'],
       'We did not update the type_id for the upserted Cvterm with synonym "syn006"');
+
+    // TEST: delete a cv or cvterm that does not exist.
+    $result = $instance->deleteCv(['cv.name' => 'zzzzzzzzz']);
+    $this->assertEquals(ChadoBuddyPluginBase::NON_EXISTING, $result, 'Unexpected result deleting a non-existing CV');
+    $result = $instance->deleteCvterm(['cvterm.name' => 'zzzzzzzzz']);
+    $this->assertEquals(ChadoBuddyPluginBase::NON_EXISTING, $result, 'Unexpected result deleting a non-existing cvterm');
 
     // TEST: we can delete a cvterm.
     $records = $instance->getCvterm(['cvterm.name' => 'newCvterm002']);

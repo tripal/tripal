@@ -286,6 +286,12 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     $this->assertIsInt($status, "We did not retrieve an integer when associating a dbxref with the base table \"$base_table\"");
     $this->assertEquals(2, $status, "We did not retrieve 2 when reassociating a dbxref with the base table \"$base_table\"");
 
+    // TEST: delete a db or dbxref that does not exist.
+    $result = $instance->deleteDb(['db.name' => 'zzzzzzzzz']);
+    $this->assertEquals(ChadoBuddyPluginBase::NON_EXISTING, $result, 'Unexpected result deleting a non-existing DB');
+    $result = $instance->deleteDbxref(['dbxref.accession' => 'zzzzzzzzz']);
+    $this->assertEquals(ChadoBuddyPluginBase::NON_EXISTING, $result, 'Unexpected result deleting a non-existing dbxref');
+
     // TEST: we can not delete a db if it is in use by a dbxref.
     // Note that cascade won't handle continuing on to a cvterm,
     // so this test is limited to just db + dbxref.
@@ -301,6 +307,15 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
       ->execute()
       ->fetchField();
     $this->assertEquals(1, $n, "The db newDb006 was incorrectly deleted from the database");
+    // Without setting 'fail_when_referenced' should throw an exception.
+    $exception_message = '';
+    try {
+      $result = $instance->deleteDb(['db.name' => 'newDb006'], []);
+    }
+    catch (\Exception $e) {
+      $exception_message = $e->getMessage();
+    }
+    $this->assertStringContainsString('other records reference it', $exception_message, "We did not get the exception message expected deleting a db that has a foreign key");
 
     // TEST: we can delete a db if we set cascade.
     $result = $instance->deleteDb(['db.name' => 'newDb006'], ['cascade' => TRUE]);
@@ -342,6 +357,15 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
       ->execute()
       ->fetchField();
     $this->assertEquals(1, $n, "The dbxref newDbxref008 was incorrectly deleted from the database");
+    // Without setting 'fail_when_referenced' should throw an exception.
+    $exception_message = '';
+    try {
+      $result = $instance->deleteDbxref(['dbxref.accession' => 'newDbxref008'], []);
+    }
+    catch (\Exception $e) {
+      $exception_message = $e->getMessage();
+    }
+    $this->assertStringContainsString('other records reference it', $exception_message, "We did not get the exception message expected deleting a dbxref that has a foreign key");
 
     // TEST: delete a dbxref with a foreign key but cascade set should succeed.
     $result = $instance->deleteDbxref(['dbxref.accession' => 'newDbxref008'], ['cascade' => TRUE]);
