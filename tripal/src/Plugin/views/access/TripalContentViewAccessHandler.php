@@ -130,7 +130,7 @@ class TripalContentViewAccessHandler extends AccessPluginBase {
     $operation = $access_options['operation'];
     // - Expand mode to fit in the statement.
     $mode_string = 'at least 1 of';
-    if ($this->options['mode'] === 'all') {
+    if ($access_options['mode'] === 'all') {
       $mode_string = 'all of';
     }
     // - if all selected...
