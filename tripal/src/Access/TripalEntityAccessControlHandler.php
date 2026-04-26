@@ -310,7 +310,7 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
       // If we have a specific list of content types, then generate the
       // permissions string for each one.
       foreach ($content_types as $content_type) {
-        $permission = $operation . ' ' . $mode . ' ' . $content_type . ' content';
+        $permission = $operation . ' all ' . $content_type . ' content';
         if ($account->hasPermission($permission)) {
           $access_granted++;
         }
