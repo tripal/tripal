@@ -760,7 +760,7 @@ class TripalTerm {
    * indicatew which attributes are loaded and which are not. The
    * array keys are the attribute names and the value is a boolean
    * indicating if the attribute has been loaded. If all attributes
-   * are true then all all have been loaded and the term is complete.
+   * are true then all have been loaded and the term is complete.
    * If some attributes are False then the term is not complete.
    *
    * @return array
