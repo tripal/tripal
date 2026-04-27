@@ -25,6 +25,21 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   const EXISTING = 2;
 
   /**
+   * Indicates a record did not exist.
+   */
+  const NON_EXISTING = 3;
+
+  /**
+   * Indicates an operation, e.g. delete, succeeded.
+   */
+  const SUCCESS = 4;
+
+  /**
+   * Indicates an operation, e.g. delete, failed.
+   */
+  const FAILURE = 5;
+
+  /**
    * Provides the TripalDBX connection to chado.
    *
    * @var Drupal\tripal_chado\Database\ChadoConnection
@@ -568,6 +583,37 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     if (!array_key_exists(0, $output_records) or !($output_records[0] instanceof ChadoBuddyRecord)) {
       $calling_function = debug_backtrace()[1]['function'];
       throw new ChadoBuddyException("ChadoBuddy $calling_function error, the array passed to validateOutput does not contain a ChadoBuddyRecord");
+    }
+  }
+
+  /**
+   * Generates an exception when more than one record is retrieved.
+   *
+   * @param array $records
+   *   An array of buddy records.
+   * @param string $key
+   *   The key to retrieve from each record for the exception message.
+   * @param string $message
+   *   Text to include in the exception message.
+   * @param array $conditions
+   *   The query conditions that retrieved the records.
+   *
+   * @return void
+   *   No return value.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If there are more than one records.
+   */
+  protected function throwIfMultipleRecords(array $records, string $key, string $message, array $conditions): void {
+    if (count($records) > 1) {
+      $values = [];
+      foreach ($records as $record) {
+        $values[] = $record->getValue($key);
+      }
+      throw new ChadoBuddyException("ChadoBuddy $message error, more than one record ("
+        . implode(', ', $values)
+        . ") matched the specified conditions\n"
+        . print_r($conditions, TRUE));
     }
   }
 

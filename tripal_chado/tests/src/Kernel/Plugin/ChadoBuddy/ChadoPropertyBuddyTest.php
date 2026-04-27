@@ -166,7 +166,7 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
       $exception_message = $e->getMessage();
     }
     $this->assertTrue($exception_caught, 'We should get an exception when updating a property record that matches multiple properties.');
-    $this->assertStringContainsString('more than one record matched', $exception_message, "We did not get the exception message we expected when updating a property that matches multiple properties.");
+    $this->assertStringContainsString('more than one record', $exception_message, "We did not get the exception message we expected when updating a property that matches multiple properties.");
     // Test that the update was not performed.
     $chado_buddy_records = $instance->getProperty('project', 1, ['projectprop.value' => 'propfail']);
     $this->assertEquals(0, count($chado_buddy_records), "An update was incorrectly performed for conditions that match more than one record");
@@ -189,7 +189,7 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
       $exception_message = $e->getMessage();
     }
     $this->assertTrue($exception_caught, 'We should get an exception when upserting a property record that matches multiple properties.');
-    $this->assertStringContainsString('more than one record matched', $exception_message, "We did not get the exception message we expected when upserting a property that matches multiple properties.");
+    $this->assertStringContainsString('more than one record', $exception_message, "We did not get the exception message we expected when upserting a property that matches multiple properties.");
     $chado_buddy_records = $instance->getProperty('project', 1, ['projectprop.rank' => 5], []);
     $this->assertEquals(2, count($chado_buddy_records), "The upsert appears to have changed number of records");
 
