@@ -8,6 +8,41 @@ namespace Drupal\tripal\Services;
 class TripalFieldValueLookup {
 
   /**
+   * The entity type ID for which to lookup field values.
+   *
+   * @var string
+   */
+  protected string $entity_type_id;
+
+  /**
+   * Constructs a new TripalFieldValueLookup service.
+   */
+  public function __construct() {
+    // Default to 'tripal_entity' but this can be set to any entity type.
+    $this->entity_type_id = 'tripal_entity';
+  }
+
+  /**
+   * Sets the entity type ID for which to lookup field values.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID to set.
+   */
+  public function setEntityTypeId(string $entity_type_id): void {
+    $this->entity_type_id = $entity_type_id;
+  }
+
+  /**
+   * Gets the entity type ID for which to lookup field values.
+   *
+   * @return string
+   *   The current entity type ID.
+   */
+  public function getEntityTypeId(): string {
+    return $this->entity_type_id;
+  }
+
+  /**
    * Retrieves the current set of values for this field.
    *
    * @param string $field_name
@@ -36,7 +71,7 @@ class TripalFieldValueLookup {
    *   set of field values.
    */
   public function getUniqueFieldValues(string $field_name, array $filters, array $options): array {
-    $entity_type_id = 'tripal_entity';
+    $entity_type_id = $this->entity_type_id;
     $query = \Drupal::service('entity_type.manager')
       ->getStorage($entity_type_id)
       ->getAggregateQuery();
