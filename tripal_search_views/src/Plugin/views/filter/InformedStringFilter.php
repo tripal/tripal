@@ -18,6 +18,7 @@ class InformedStringFilter extends StringFilter {
    * {@inheritDoc}
    */
   public function buildExposedForm(&$form, FormStateInterface $form_state) {
+    $form_state->set('exposed', $this->options['exposed']);
     parent::buildExposedForm($form, $form_state);
     $view = $this->view;
     // Only modify the exposed form if this is a filter for a field on

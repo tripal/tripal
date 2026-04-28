@@ -9,6 +9,7 @@ use Drupal\views\Views;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\views\Tests\ViewResultAssertionTrait;
 use Drupal\tripal\Entity\TripalEntityType;
+use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
  * Tests the InformedStringFilter plugin for Views.
@@ -38,9 +39,9 @@ class InformedStringFilterTest extends ChadoTestKernelBase {
   /**
    * The database connection to the test chado.
    *
-   * @var \Drupal\Core\Database\Connection
+   * @var Drupal\tripal_chado\Database\ChadoConnection
    */
-  protected $connection;
+  protected ChadoConnection $chado_connection;
 
   /**
    * An array of test organisms created.
@@ -70,7 +71,7 @@ class InformedStringFilterTest extends ChadoTestKernelBase {
     \Drupal::service('views.views_data')->clear();
 
     // Open connection to a test Chado.
-    $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+    $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
     // Create some test organisms.
     $this->organisms = [
@@ -92,7 +93,7 @@ class InformedStringFilterTest extends ChadoTestKernelBase {
     ];
 
     foreach ($this->organisms as $organism) {
-      $insert = $this->connection->insert('1:organism');
+      $insert = $this->chado_connection->insert('1:organism');
       $insert->fields([
         'genus' => $organism['genus'],
         'species' => $organism['species'],
@@ -168,27 +169,22 @@ class InformedStringFilterTest extends ChadoTestKernelBase {
    * Tests that the exposed form for the idynamic filter is built as expected.
    */
   public function testBuildExposedForm() {
-
-    $test = \Drupal::config('views.view.test_search_view')->isNew() === FALSE;
-    $this->assertTrue($test, 'The test 2 view configuration is available.');
     // Create a view with informed string filter on the organism_species field.
     $view = Views::getView('test_search_view');
     $this->assertNotNull($view, 'The view is available.');
-
     $view->initHandlers();
-
+    // Ensure the filter is present and is the expected type.
     $this->assertNotNull($view->filter, 'The view has no filters defined.');
-
     $this->assertArrayHasKey('organism_species_value', $view->filter, 'The filter for organism_species_value is not present in the view.');
-
-    $filter = $view->filter['organism_species_value'];
 
     $form = [];
     $form_state = new FormState();
+    $filter = $view->filter['organism_species_value'];
 
     // Build the exposed form.
     $filter->buildExposedForm($form, $form_state);
 
+    // Check that the form has the expected select element and expected options.
     $this->assertArrayHasKey('organism_species_value', $form, 'The exposed form does not have the filter for organism_species_value.');
     $this->assertEquals('select', $form['organism_species_value']['#type'], 'The exposed filter is not a select element.');
     $expected_options = [
