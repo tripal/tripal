@@ -166,7 +166,7 @@ class InformedStringFilterTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests that the exposed form for the idynamic filter is built as expected.
+   * Tests that the exposed form for the dynamic filter is built as expected.
    */
   public function testBuildExposedForm() {
     // Create a view with informed string filter on the organism_species field.
