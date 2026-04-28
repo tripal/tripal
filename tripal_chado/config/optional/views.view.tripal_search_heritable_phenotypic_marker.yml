@@ -2,20 +2,18 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.storage.tripal_entity.germplasm_description
-    - field.storage.tripal_entity.germplasm_is_obsolete
-    - field.storage.tripal_entity.germplasm_name
-    - field.storage.tripal_entity.germplasm_organism
-    - field.storage.tripal_entity.germplasm_unique_name
+    - field.storage.tripal_entity.phenotypic_marker_name
+    - field.storage.tripal_entity.phenotypic_marker_organism
+    - field.storage.tripal_entity.phenotypic_marker_unique_name
     - system.menu.data-search
-    - tripal.content_type.germplasm
+    - tripal.content_type.phenotypic_marker
   module:
     - tripal
     - tripal_chado
-id: tripal_search_germplasm_accession
-label: 'Germplasm Accession'
+id: tripal_search_heritable_phenotypic_marker
+label: 'Heritable Phenotypic Marker'
 module: views
-description: 'Living genetic resources such as seeds or tissues that are maintained for the purpose of animal and plant breeding.'
+description: 'A sequence region characterized as a single heritable trait in a phenotype screen.'
 tag: ''
 base_table: tripal_entity
 base_field: id
@@ -26,7 +24,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: 'Germplasm Accession Search'
+      title: 'Heritable Phenotypic Marker'
       fields:
         view_tripal_entity:
           id: view_tripal_entity
@@ -81,10 +79,10 @@ display:
           text: view
           output_url_as_text: true
           absolute: false
-        germplasm_name:
-          id: germplasm_name
-          table: tripal_entity__germplasm_name
-          field: germplasm_name
+        phenotypic_marker_name:
+          id: phenotypic_marker_name
+          table: tripal_entity__phenotypic_marker_name
+          field: phenotypic_marker_name
           relationship: none
           group_type: group
           admin_label: ''
@@ -147,10 +145,10 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-        germplasm_unique_name:
-          id: germplasm_unique_name
-          table: tripal_entity__germplasm_unique_name
-          field: germplasm_unique_name
+        phenotypic_marker_unique_name:
+          id: phenotypic_marker_unique_name
+          table: tripal_entity__phenotypic_marker_unique_name
+          field: phenotypic_marker_unique_name
           relationship: none
           group_type: group
           admin_label: ''
@@ -174,14 +172,14 @@ display:
             suffix: ''
             target: ''
             nl2br: false
-            max_length: 0
+            max_length: 250
             word_boundary: true
             ellipsis: true
             more_link: false
             more_link_text: ''
             more_link_path: ''
             strip_tags: false
-            trim: false
+            trim: true
             preserve_tags: ''
             html: false
           element_type: ''
@@ -213,10 +211,10 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-        germplasm_organism:
-          id: germplasm_organism
-          table: tripal_entity__germplasm_organism
-          field: germplasm_organism
+        phenotypic_marker_organism:
+          id: phenotypic_marker_organism
+          table: tripal_entity__phenotypic_marker_organism
+          field: phenotypic_marker_organism
           relationship: none
           group_type: group
           admin_label: ''
@@ -276,137 +274,6 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-        germplasm_description:
-          id: germplasm_description
-          table: tripal_entity__germplasm_description
-          field: germplasm_description
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: field
-          label: Description
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 250
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: true
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: false
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-          click_sort_column: value
-          type: chado_text_type_formatter
-          settings:
-            field_prefix: ''
-            field_suffix: ''
-            hide_condition: ''
-            hide_value: ''
-          group_column: value
-          group_columns: {  }
-          group_rows: true
-          delta_limit: 0
-          delta_offset: 0
-          delta_reversed: false
-          delta_first_last: false
-          multi_type: separator
-          separator: ', '
-          field_api_classes: false
-        germplasm_is_obsolete:
-          id: germplasm_is_obsolete
-          table: tripal_entity__germplasm_is_obsolete
-          field: germplasm_is_obsolete
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: field
-          label: 'Is Obsolete'
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: false
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-          click_sort_column: value
-          type: chado_boolean_type_formatter
-          settings:
-            false_string: 'N'
-            true_string: 'Y'
-            hide_condition: ''
-          group_column: value
-          group_columns: {  }
-          group_rows: true
-          delta_limit: 0
-          delta_offset: 0
-          delta_reversed: false
-          delta_first_last: false
-          multi_type: separator
-          separator: ', '
-          field_api_classes: false
         operations:
           id: operations
           table: tripal_entity
@@ -417,7 +284,7 @@ display:
           entity_type: null
           entity_field: null
           plugin_id: entity_operations
-          label: ''
+          label: 'Operations links'
           exclude: false
           alter:
             alter_text: false
@@ -506,12 +373,12 @@ display:
           entity_field: type
           plugin_id: bundle
           value:
-            germplasm: germplasm
+            phenotypic_marker: phenotypic_marker
           group: 1
-        germplasm_name_value:
-          id: germplasm_name_value
-          table: tripal_entity__germplasm_name
-          field: germplasm_name_value
+        phenotypic_marker_name_value:
+          id: phenotypic_marker_name_value
+          table: tripal_entity__phenotypic_marker_name
+          field: phenotypic_marker_name_value
           relationship: none
           group_type: group
           admin_label: ''
@@ -521,14 +388,14 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: germplasm_name_value_op
+            operator_id: phenotypic_marker_name_value_op
             label: Name
             description: ''
             use_operator: false
-            operator: germplasm_name_value_op
+            operator: phenotypic_marker_name_value_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: germplasm_name_value
+            identifier: phenotypic_marker_name_value
             required: false
             remember: false
             multiple: false
@@ -547,10 +414,10 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-        germplasm_unique_name_value:
-          id: germplasm_unique_name_value
-          table: tripal_entity__germplasm_unique_name
-          field: germplasm_unique_name_value
+        phenotypic_marker_unique_name_value:
+          id: phenotypic_marker_unique_name_value
+          table: tripal_entity__phenotypic_marker_unique_name
+          field: phenotypic_marker_unique_name_value
           relationship: none
           group_type: group
           admin_label: ''
@@ -560,14 +427,14 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: germplasm_unique_name_value_op
+            operator_id: phenotypic_marker_unique_name_value_op
             label: 'Unique Name'
             description: ''
             use_operator: false
-            operator: germplasm_unique_name_value_op
+            operator: phenotypic_marker_unique_name_value_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: germplasm_unique_name_value
+            identifier: phenotypic_marker_unique_name_value
             required: false
             remember: false
             multiple: false
@@ -586,10 +453,10 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-        germplasm_organism_organism_scientific_name:
-          id: germplasm_organism_organism_scientific_name
-          table: tripal_entity__germplasm_organism
-          field: germplasm_organism_organism_scientific_name
+        phenotypic_marker_organism_organism_scientific_name:
+          id: phenotypic_marker_organism_organism_scientific_name
+          table: tripal_entity__phenotypic_marker_organism
+          field: phenotypic_marker_organism_organism_scientific_name
           relationship: none
           group_type: group
           admin_label: ''
@@ -599,53 +466,14 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: germplasm_organism_organism_scientific_name_op
+            operator_id: phenotypic_marker_organism_organism_scientific_name_op
             label: Organism
             description: ''
             use_operator: false
-            operator: germplasm_organism_organism_scientific_name_op
+            operator: phenotypic_marker_organism_organism_scientific_name_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: germplasm_organism_organism_scientific_name
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-            placeholder: ''
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
-        germplasm_description_value:
-          id: germplasm_description_value
-          table: tripal_entity__germplasm_description
-          field: germplasm_description_value
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: string
-          operator: contains
-          value: ''
-          group: 1
-          exposed: true
-          expose:
-            operator_id: germplasm_description_value_op
-            label: Description
-            description: ''
-            use_operator: false
-            operator: germplasm_description_value_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: germplasm_description_value
+            identifier: phenotypic_marker_organism_organism_scientific_name
             required: false
             remember: false
             multiple: false
@@ -672,18 +500,15 @@ display:
         type: table
         options:
           grouping: {  }
-          row_class: views-tripal-entity-row-default
+          row_class: ''
           default_row_class: true
           columns:
             view_tripal_entity: view_tripal_entity
-            germplasm_name: germplasm_name
-            germplasm_unique_name: germplasm_unique_name
-            germplasm_type: germplasm_type
-            germplasm_organism: germplasm_organism
-            germplasm_description: germplasm_description
-            germplasm_is_obsolete: germplasm_is_obsolete
+            phenotypic_marker_name: phenotypic_marker_name
+            phenotypic_marker_unique_name: phenotypic_marker_unique_name
+            phenotypic_marker_organism: phenotypic_marker_organism
             operations: operations
-          default: germplasm_name
+          default: phenotypic_marker_name
           info:
             view_tripal_entity:
               sortable: false
@@ -692,42 +517,21 @@ display:
               separator: ''
               empty_column: false
               responsive: ''
-            germplasm_name:
+            phenotypic_marker_name:
               sortable: true
               default_sort_order: asc
               align: ''
               separator: ''
               empty_column: false
               responsive: ''
-            germplasm_unique_name:
+            phenotypic_marker_unique_name:
               sortable: true
               default_sort_order: asc
               align: ''
               separator: ''
               empty_column: false
               responsive: ''
-            germplasm_type:
-              sortable: false
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            germplasm_organism:
-              sortable: true
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            germplasm_description:
-              sortable: true
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            germplasm_is_obsolete:
+            phenotypic_marker_organism:
               sortable: true
               default_sort_order: asc
               align: ''
@@ -767,11 +571,9 @@ display:
         - url
         - url.query_args
       tags:
-        - 'config:field.storage.tripal_entity.germplasm_description'
-        - 'config:field.storage.tripal_entity.germplasm_is_obsolete'
-        - 'config:field.storage.tripal_entity.germplasm_name'
-        - 'config:field.storage.tripal_entity.germplasm_organism'
-        - 'config:field.storage.tripal_entity.germplasm_unique_name'
+        - 'config:field.storage.tripal_entity.phenotypic_marker_name'
+        - 'config:field.storage.tripal_entity.phenotypic_marker_organism'
+        - 'config:field.storage.tripal_entity.phenotypic_marker_unique_name'
   page_1:
     id: page_1
     display_title: Page
@@ -779,10 +581,10 @@ display:
     position: 1
     display_options:
       display_extenders: {  }
-      path: data-search/germplasm-accession
+      path: data-search/heritable-phenotypic-marker
       menu:
         type: normal
-        title: 'Germplasm Accession'
+        title: 'Heritable Phenotypic Marker'
         menu_name: data-search
         parent: ''
     cache_metadata:
@@ -793,8 +595,6 @@ display:
         - url
         - url.query_args
       tags:
-        - 'config:field.storage.tripal_entity.germplasm_description'
-        - 'config:field.storage.tripal_entity.germplasm_is_obsolete'
-        - 'config:field.storage.tripal_entity.germplasm_name'
-        - 'config:field.storage.tripal_entity.germplasm_organism'
-        - 'config:field.storage.tripal_entity.germplasm_unique_name'
+        - 'config:field.storage.tripal_entity.phenotypic_marker_name'
+        - 'config:field.storage.tripal_entity.phenotypic_marker_organism'
+        - 'config:field.storage.tripal_entity.phenotypic_marker_unique_name'

@@ -262,7 +262,7 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
-          click_sort_column: organism_abbreviation
+          click_sort_column: organism_scientific_name
           type: chado_organism_formatter_default
           settings:
             token_string: '<i>[genus] [species]</i> [infratype_abbrev] <i>[infraname]</i>'
