@@ -1,5 +1,5 @@
 name: 'Tripal Search Views test views'
-type: module
+type: 'module'
 description: 'Provides default views for views tripal_search_views tests.'
 core_version_requirement: '^10.5 || ^11.2'
 php: 8.2
