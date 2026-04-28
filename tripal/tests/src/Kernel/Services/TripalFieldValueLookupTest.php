@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\tripal\Kernel\Services;
 
+use Drupal\Core\Database\Connection;
+use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
@@ -21,9 +23,16 @@ class TripalFieldValueLookupTest extends ChadoTestKernelBase {
   /**
    * The database connection to the test chado.
    *
-   * @var \Drupal\Core\Database\Connection
+   * @var Drupal\tripal_chado\Database\ChadoConnection
    */
-  protected $connection;
+  protected ChadoConnection $chado_connection;
+
+  /**
+   * The drupal database connection.
+   *
+   * @var Drupal\Core\Database\Connection
+   */
+  protected Connection $drupal_connection;
 
   /**
    * An array of test organisms created.
@@ -47,10 +56,10 @@ class TripalFieldValueLookupTest extends ChadoTestKernelBase {
     $this->installConfig('tripal_chado');
 
     // Get connection to drupal database in place.
-    $this->public = \Drupal::service('database');
+    $this->drupal_connection = \Drupal::service('database');
 
     // Open connection to a test Chado.
-    $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+    $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
     // Create some test organisms.
     $this->organisms = [
@@ -79,7 +88,7 @@ class TripalFieldValueLookupTest extends ChadoTestKernelBase {
     ];
 
     foreach ($this->organisms as $details) {
-      $insert = $this->connection->insert('1:organism');
+      $insert = $this->chado_connection->insert('1:organism');
       $insert->fields([
         'genus' => $details['genus'],
         'species' => $details['species'],
