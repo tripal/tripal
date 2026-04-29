@@ -70,13 +70,14 @@ class ChadoCvtermDeleteForm extends FormBase {
     }
     $cvterm_record = reset($cvterm_records);
 
-    $table_def = $this->chado_connection->schema()->getTableDef('cvterm', ['source' => 'database', 'format' => 'default']);
+    $table_def = $this->chado_connection->schema()->getTableDef('cvterm',
+      ['source' => 'database', 'format' => 'default']);
     // Format is [referencing_table =>
     // [cvterm column (cvterm_id) => referencing_table column], ].
     $foreign_keys = $table_def['referenced_by'] ?? [];
     $total_references = 0;
     foreach ($foreign_keys as $referencing_table => $keydef) {
-      foreach ($keydef as $pkey => $refkey) {
+      foreach ($keydef as $refkey) {
         $query = $this->chado_connection->select('1:' . $referencing_table);
         $query->condition($refkey, $cvterm_id, '=');
         $n = $query->countQuery()->execute()->fetchField();
@@ -118,10 +119,10 @@ class ChadoCvtermDeleteForm extends FormBase {
     else {
       $form['sure'] = [
         '#markup' => '<p><strong>'
-          . $this->t('Be VERY CAREFUL when deleting terms, they may be referenced by other records. We recommend you make a backup before deleting terms.')
-          . '<br>'
-          . $this->t('Are you sure you want to delete this term?')
-          . '</strong></p>',
+        . $this->t('Be VERY CAREFUL when deleting terms, they may be referenced by other records. We recommend you make a backup before deleting terms.')
+        . '<br>'
+        . $this->t('Are you sure you want to delete this term?')
+        . '</strong></p>',
       ];
       $form['submit'] = [
         '#type' => 'submit',

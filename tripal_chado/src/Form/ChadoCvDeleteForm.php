@@ -76,7 +76,7 @@ class ChadoCvDeleteForm extends FormBase {
     $foreign_keys = $table_def['referenced_by'] ?? [];
     $total_references = 0;
     foreach ($foreign_keys as $referencing_table => $keydef) {
-      foreach ($keydef as $pkey => $refkey) {
+      foreach ($keydef as $refkey) {
         $query = $this->chado_connection->select('1:' . $referencing_table);
         $query->condition($refkey, $cv_id, '=');
         $n = $query->countQuery()->execute()->fetchField();
@@ -108,10 +108,10 @@ class ChadoCvDeleteForm extends FormBase {
     else {
       $form['sure'] = [
         '#markup' => '<p><strong>'
-          . $this->t('Be VERY CAREFUL when deleting controlled vocabularies, they may be referenced by other records. We recommend you make a backup before deleting vocabularies.')
-          . '<br>'
-          . $this->t('Are you sure you want to delete this vocabulary?')
-          . '</strong></p>',
+        . $this->t('Be VERY CAREFUL when deleting controlled vocabularies, they may be referenced by other records. We recommend you make a backup before deleting vocabularies.')
+        . '<br>'
+        . $this->t('Are you sure you want to delete this vocabulary?')
+        . '</strong></p>',
       ];
       $form['submit'] = [
         '#type' => 'submit',
