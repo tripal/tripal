@@ -72,25 +72,34 @@ class TripalFieldValueLookup {
    */
   public function getUniqueFieldValues(string $field_name, array $filters, array $options): array {
     $entity_type_id = $this->entity_type_id;
-    $query = \Drupal::service('entity_type.manager')
+
+    $entity_type_manager = \Drupal::service('entity_type.manager');
+    $definition = $entity_type_manager->getDefinition($entity_type_id);
+    $bundle_key = $definition->getKey('bundle');
+
+    $query = $entity_type_manager
       ->getStorage($entity_type_id)
       ->getAggregateQuery();
 
     $query->accessCheck(FALSE);
 
-    // Group by the field's *value* property.
+    // Group by the field's value column.
     $query->groupBy("$field_name.value");
 
     $bundles = $filters['bundles'] ?? [];
 
     // Optional: restrict to bundles.
-    if (!empty($bundles)) {
-      $query->condition('bundle', $bundles, 'IN');
+    if (!empty($bundles) && $bundle_key) {
+      $query->condition($bundle_key, $bundles, 'IN');
     }
 
-    // Optional: remove empty string / NULL values.
-    $query->condition("$field_name.value", NULL, 'IS NOT NULL');
-    $query->condition("$field_name.value", '', '<>');
+    // Optional: remove null/empty values.
+    if (($filters['remove_null'] ?? TRUE)) {
+      $query->condition("$field_name.value", NULL, 'IS NOT NULL');
+    }
+    if (($filters['remove_empty'] ?? TRUE)) {
+      $query->condition("$field_name.value", '', '<>');
+    }
 
     return $query->execute();
   }

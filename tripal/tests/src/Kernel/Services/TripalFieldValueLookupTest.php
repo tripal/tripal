@@ -168,7 +168,8 @@ class TripalFieldValueLookupTest extends ChadoTestKernelBase {
     // Get the service and call the method.
     $lookup = \Drupal::service('tripal.fieldvalue.lookup');
     $field_name = 'organism_species';
-    $values = $lookup->getUniqueFieldValues($field_name, [], []);
+    $bundles = ['organism', 'analysis'];
+    $values = $lookup->getUniqueFieldValues($field_name, ['bundles' => $bundles], []);
 
     // Check that we got the expected values.
     $expected_vals = [

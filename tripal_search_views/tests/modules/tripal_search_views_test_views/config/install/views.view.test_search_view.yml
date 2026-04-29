@@ -5,6 +5,7 @@ dependencies:
     - field.storage.tripal_entity.organism_genus
     - field.storage.tripal_entity.organism_species
     - system.menu.admin
+    - tripal.content_type.analysis
   module:
     - tripal
     - tripal_chado
@@ -195,6 +196,15 @@ display:
       sorts: {  }
       arguments: {  }
       filters:
+        type:
+          id: type
+          table: tripal_entity
+          field: type
+          entity_type: tripal_entity
+          entity_field: type
+          plugin_id: bundle
+          value:
+            analysis: analysis
         organism_species_value:
           id: organism_species_value
           table: tripal_entity__organism_species
