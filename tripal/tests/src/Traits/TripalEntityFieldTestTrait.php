@@ -273,8 +273,9 @@ trait TripalEntityFieldTestTrait {
           'widget_id' => $field_details['widget'],
           'formatter_id' => $field_details['formatter'],
           'cardinality' => $field_details['cardinality'] ?? 1,
+          'required' => $field_details['required'] ?? TRUE,
           'settings' => $field_details['settings'],
-        ] + $field_details
+        ]
       );
     }
 
@@ -329,18 +330,17 @@ trait TripalEntityFieldTestTrait {
     $term = $this->createTripalTerm($term_values, $options['idspace_plugin_id'], $options['vocab_plugin_id']);
 
     // Now for the field storage.
-    $fieldStorage = FieldStorageConfig::create(
-      [
-        'field_name' => $values['field_name'],
-        'entity_type' => $entity_type,
-        'type' => $values['field_type'],
-        'cardinality' => $values['cardinality'] ?? 1,
-        'settings' => [
-          'termIdSpace' => $term->getIdSpace(),
-          'termAccession' => $term->getAccession(),
-        ] + $values['settings'],
-      ] + $values
-    );
+    $fieldStorage = FieldStorageConfig::create([
+      'field_name' => $values['field_name'],
+      'entity_type' => $entity_type,
+      'type' => $values['field_type'],
+      'cardinality' => $values['cardinality'] ?? 1,
+      'required' => $values['required'] ?? TRUE,
+      'settings' => [
+        'termIdSpace' => $term->getIdSpace(),
+        'termAccession' => $term->getAccession(),
+      ] + $values['settings'],
+    ]);
     $fieldStorage
       ->save();
 

@@ -908,7 +908,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
 
     // Register the TripalStorage backend that this field is managed by.
-    $this->tripalstorage_fields[$tsid] ?? [];
+    $this->tripalstorage_fields[$tsid] ??= [];
     $this->tripalstorage_fields[$tsid][$field_name] = $is_required;
 
     return TRUE;
