@@ -204,19 +204,26 @@ class ChadoDbForm extends FormBase {
       'db.url' => $values['db_url'],
       'db.urlprefix' => $values['db_urlprefix'],
     ];
-    try {
-      if ($action == 'add') {
+    if ($action == 'add') {
+      try {
         $this->dbxref_buddy->insertDb($buddy_values, []);
         $this->messenger()->addStatus($this->t('The database "@name" has been added.', ['@name' => $values['db_name']]));
       }
-      else {
+      catch (ChadoBuddyException $e) {
+        $this->messenger()->addError($this->t('Unable to insert database "@name": @error',
+          ['@name' => $values['db_name'], '@error' => $e->getMessage()]));
+      }
+    }
+    else {
+      try {
         $buddy_conditions = ['db.db_id' => $values['db_id']];
         $this->dbxref_buddy->updateDb($buddy_values, $buddy_conditions, []);
         $this->messenger()->addStatus($this->t('The database "@name" has been updated.', ['@name' => $values['db_name']]));
       }
-    }
-    catch (ChadoBuddyException $e) {
-      $this->messenger()->addError($this->t('An unexpected error occurred: @error', ['@error' => $e->getMessage()]));
+      catch (ChadoBuddyException $e) {
+        $this->messenger()->addError($this->t('Unable to update database "@name": @error',
+          ['@name' => $values['db_name'], '@error' => $e->getMessage()]));
+      }
     }
 
     // Views caching can prevent seeing edits we just made.

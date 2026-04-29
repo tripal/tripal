@@ -163,7 +163,7 @@ class ChadoCvtermForm extends FormBase {
       '#type' => 'number',
       '#min' => 0,
       '#max' => 1,
-      '#title' => $this->t('Is relationshiptype'),
+      '#title' => $this->t('Is Relationshiptype'),
       '#description' => $this->t('This condition is entered as a number, 1 = defines a relationship type, 0 = normal term (default)'),
       '#required' => FALSE,
       '#default_value' => $default_cvterm_is_relationshiptype,
@@ -328,28 +328,36 @@ class ChadoCvtermForm extends FormBase {
       'cvterm.is_obsolete' => $values['cvterm_is_obsolete'],
       'cvterm.is_relationshiptype' => $values['cvterm_is_relationshiptype'],
     ];
-    try {
-      // For the 'add' action, we will have to also create the dbxref.
-      if ($action == 'add') {
-        $buddy_values += [
-          'dbxref.db_id' => $db_id,
-          'dbxref.accession' => $values['dbxref_accession'],
-          'dbxref.version' => $values['dbxref_version'],
-          'dbxref.description' => $values['dbxref_description'],
-        ];
+    // For the 'add' action, we will have to also create the dbxref.
+    if ($action == 'add') {
+      $buddy_values += [
+        'dbxref.db_id' => $db_id,
+        'dbxref.accession' => $values['dbxref_accession'],
+        'dbxref.version' => $values['dbxref_version'],
+        'dbxref.description' => $values['dbxref_description'],
+      ];
+      try {
         $this->cvterm_buddy->insertCvterm($buddy_values, []);
-        $this->messenger()->addStatus($this->t('The vocabulary term "@name" has been added.', ['@name' => $values['cvterm_name']]));
+        $this->messenger()->addStatus($this->t('The vocabulary term "@name" has been added.',
+          ['@name' => $values['cvterm_name']]));
       }
-      else {
-        $buddy_conditions = [
-          'cvterm.cvterm_id' => $cvterm_id,
-        ];
+      catch (ChadoBuddyException $e) {
+        $this->messenger()->addError($this->t('Unable to insert cv term "@name": @error',
+          ['@name' => $values['cvterm_name'], '@error' => $e->getMessage()]));
+      }
+    }
+    else {
+      $buddy_conditions = [
+        'cvterm.cvterm_id' => $cvterm_id,
+      ];
+      try {
         $this->cvterm_buddy->updateCvterm($buddy_values, $buddy_conditions, []);
         $this->messenger()->addStatus($this->t('The vocabulary term "@name" has been updated.', ['@name' => $values['cvterm_name']]));
       }
-    }
-    catch (ChadoBuddyException $e) {
-      $this->messenger()->addError($this->t('An unexpected error occurred: @error', ['@error' => $e->getMessage()]));
+      catch (ChadoBuddyException $e) {
+        $this->messenger()->addError($this->t('Unable to update cv term "@name": @error',
+          ['@name' => $values['cvterm_name'], '@error' => $e->getMessage()]));
+      }
     }
 
     // Views caching can prevent seeing edits we just made.

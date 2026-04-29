@@ -184,19 +184,28 @@ class ChadoCvForm extends FormBase {
       'cv.name' => $values['cv_name'],
       'cv.definition' => $values['cv_definition'],
     ];
-    try {
-      if ($action == 'add') {
+    if ($action == 'add') {
+      try {
         $this->cvterm_buddy->insertCv($buddy_values, []);
-        $this->messenger()->addStatus($this->t('The vocabulary "@name" has been added.', ['@name' => $values['cv_name']]));
+        $this->messenger()->addStatus($this->t('The vocabulary "@name" has been added.',
+          ['@name' => $values['cv_name']]));
       }
-      else {
-        $buddy_conditions = ['cv.cv_id' => $values['cv_id']];
-        $this->cvterm_buddy->updateCv($buddy_values, $buddy_conditions, []);
-        $this->messenger()->addStatus($this->t('The vocabulary "@name" has been updated.', ['@name' => $values['cv_name']]));
+      catch (ChadoBuddyException $e) {
+        $this->messenger()->addError($this->t('Unable to add vocabulary "@name": @error',
+          ['@name' => $values['cv_name'], '@error' => $e->getMessage()]));
       }
     }
-    catch (ChadoBuddyException $e) {
-      $this->messenger()->addError($this->t('An unexpected error occurred: @error', ['@error' => $e->getMessage()]));
+    else {
+      try {
+        $buddy_conditions = ['cv.cv_id' => $values['cv_id']];
+        $this->cvterm_buddy->updateCv($buddy_values, $buddy_conditions, []);
+        $this->messenger()->addStatus($this->t('The vocabulary "@name" has been updated.',
+          ['@name' => $values['cv_name']]));
+      }
+      catch (ChadoBuddyException $e) {
+        $this->messenger()->addError($this->t('Unable to update vocabulary "@name": @error',
+          ['@name' => $values['cv_name'], '@error' => $e->getMessage()]));
+      }
     }
 
     // Views caching can prevent seeing edits we just made.
