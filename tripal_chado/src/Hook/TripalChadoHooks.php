@@ -614,14 +614,14 @@ class TripalChadoHooks {
       'filter' => ['id' => 'string'],
     ];
     $data['db']['db_edit_link'] = [
-      'title' => $this->t('Edit Vocabulary'),
+      'title' => $this->t('Edit Database'),
       'help' => $this->t('Clickable link to edit an external database'),
       'field' => [
         'id' => 'chado_db_edit_link',
       ],
     ];
     $data['db']['db_delete_link'] = [
-      'title' => $this->t('Delete Vocabulary'),
+      'title' => $this->t('Delete Database'),
       'help' => $this->t('Clickable link to delete an external database'),
       'field' => [
         'id' => 'chado_db_delete_link',
@@ -727,6 +727,20 @@ class TripalChadoHooks {
       'sort' => ['id' => 'standard'],
       'field' => ['id' => 'standard'],
       'filter' => ['id' => 'string'],
+    ];
+    $data['dbxref']['dbxref_edit_link'] = [
+      'title' => $this->t('Edit Database Cross Reference'),
+      'help' => $this->t('Clickable link to edit a cross reference to an external database'),
+      'field' => [
+        'id' => 'chado_dbxref_edit_link',
+      ],
+    ];
+    $data['dbxref']['dbxref_delete_link'] = [
+      'title' => $this->t('Delete Database Cross Reference'),
+      'help' => $this->t('Clickable link to delete a cross reference to an external database'),
+      'field' => [
+        'id' => 'chado_dbxref_delete_link',
+      ],
     ];
 
     // Relationship from cvterm, through dbxref, to db table.
