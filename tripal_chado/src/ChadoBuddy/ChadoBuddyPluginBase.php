@@ -489,7 +489,14 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
         $calling_function = debug_backtrace()[1]['function'];
         throw new ChadoBuddyException("ChadoBuddy $calling_function error, something other than a ChadoBuddyRecord was stored under the 'buddy_record' key");
       }
+      // Get the base table for this buddy record.
+      $base_table = $values['buddy_record']->getBaseTable();
+      // Get all values for this buddy record.
       $buddy_values = $values['buddy_record']->getValues();
+      // Subset values to only those in the buddy's base table.
+      $buddy_values = $this->subsetInput($buddy_values, [$base_table]);
+      // Merge these buddy values into the main values array, checking for
+      // duplicates with different values.
       foreach ($buddy_values as $buddy_key => $buddy_value) {
         if (array_key_exists($buddy_key, $values) and ($values[$buddy_key] != $buddy_value)) {
           $calling_function = debug_backtrace()[1]['function'];
