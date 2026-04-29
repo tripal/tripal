@@ -867,7 +867,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   Indicates if this field should be skipped if it is already registered.
    *   TRUE indicates we should override any existing registration.
    */
-  protected function registerTripalField(string $field_name, bool $refresh_cache = FALSE) {
+  public function registerTripalField(string $field_name, bool $refresh_cache = FALSE) {
 
     // Get some general info about this field to confirm it's a TripalField.
     $field_defn = $this->getFieldDefinition($field_name);
@@ -875,12 +875,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       return FALSE;
     }
     $settings = $field_defn->getSettings();
-
-    // Field storage definition as well.
     $field_storage_defn = $field_defn->getFieldStorageDefinition();
-    if (!$field_storage_defn) {
-      return FALSE;
-    }
 
     // Determine some key information to be saved later.
     $is_required = $field_defn->isRequired();
@@ -915,6 +910,49 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Register the TripalStorage backend that this field is managed by.
     $this->tripalstorage_fields[$tsid] ?? [];
     $this->tripalstorage_fields[$tsid][$field_name] = $is_required;
+
+    return TRUE;
+  }
+
+  /**
+   * Get a list of fields managed by a specific backend storage.
+   *
+   * @param string $tsid
+   *   The TripalStorage plugin id (tsid) that controls the backend storage.
+   *   of the fields you are interested in.
+   * @param array $options
+   *   An array of options controlling which fields are returned.
+   *   The following are supported:
+   *   - is_required (bool): when TRUE only include required fields,
+   *     when FALSE only include optional fields.
+   *
+   * @return array
+   *   A list of the fields managed by the specified backend storage.
+   */
+  public function getTripalStorageFields(string $tsid, array $options = []): array {
+    $fields = [];
+
+    // Check if the specified tsid has been registered.
+    if (array_key_exists($tsid, $this->tripalstorage_fields)) {
+
+      // Check if the is_required option has been supplied.
+      if (array_key_exists('is_required', $options)) {
+        // If it has, then we filter tripalstorage_fields for keys with TRUE for
+        // required or FALSE for optional.
+        if ($options['is_required'] === TRUE) {
+          $fields = array_keys($this->tripalstorage_fields[$tsid], TRUE);
+        }
+        else {
+          $fields = array_keys($this->tripalstorage_fields[$tsid], FALSE);
+        }
+      }
+      // If not then return all fields for that storage backend.
+      else {
+        $fields = array_keys($this->tripalstorage_fields[$tsid]);
+      }
+    }
+
+    return $fields;
   }
 
   /**
