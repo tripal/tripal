@@ -423,6 +423,9 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
                       [':value' . $n => $value]);
         $n++;
       }
+      elseif ($value === NULL) {
+        $query->condition($key, NULL, 'IS');
+      }
       else {
         $query->condition($key, $value, '=');
       }

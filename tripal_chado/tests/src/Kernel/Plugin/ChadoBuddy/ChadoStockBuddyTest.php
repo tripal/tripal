@@ -77,8 +77,8 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'stock.uniquename' => 'stock1',
       // Cvterm ID for 'accession'.
       'stock.type_id' => '3',
-      'stock.organism_id' => $organism_id,
-//      'buddy_record' => $organism_buddy_record,
+      //'stock.organism_id' => $organism_id,
+      'buddy_record' => $organism_buddy_record,
     ];
     $test_records = [];
     $test_records['set'] = $stock_instance->upsertStock($stock1_values);
