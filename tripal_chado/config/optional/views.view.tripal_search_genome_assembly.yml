@@ -23,7 +23,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: 'Genome Assembly'
+      title: 'Genome Assembly Search'
       fields:
         view_tripal_entity:
           id: view_tripal_entity
@@ -297,7 +297,20 @@ display:
       cache:
         type: tag
         options: {  }
-      empty: {  }
+      empty:
+        area:
+          id: area
+          table: views
+          field: area
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: text
+          empty: true
+          content:
+            value: 'No [view:label] records matched the supplied criteria.'
+            format: basic_html
+          tokenize: false
       sorts: {  }
       arguments: {  }
       filters:
@@ -397,7 +410,7 @@ display:
         type: table
         options:
           grouping: {  }
-          row_class: ''
+          row_class: views-tripal-entity-row-default
           default_row_class: true
           columns:
             view_tripal_entity: view_tripal_entity
