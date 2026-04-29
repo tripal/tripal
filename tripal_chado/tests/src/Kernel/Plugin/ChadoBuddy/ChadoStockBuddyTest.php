@@ -78,6 +78,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       // Cvterm ID for 'accession'.
       'stock.type_id' => '3',
       'stock.organism_id' => $organism_id,
+//      'buddy_record' => $organism_buddy_record,
     ];
     $test_records = [];
     $test_records['set'] = $stock_instance->upsertStock($stock1_values);
@@ -263,6 +264,36 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       ],
       1,
     ];
+
+    // #8: Insert a stock with an empty description
+    $scenarios[] = [
+      [
+        'stock.name' => 'Stock9',
+        'stock.uniquename' => 'stock9',
+        'stock.type_id' => 3,
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+        'stock.description' => '',
+      ],
+      [],
+      1,
+    ];
+
+    /*
+    // #9: Insert a stock with a null description
+    $scenarios[] = [
+      [
+        'stock.name' => 'Stock10',
+        'stock.uniquename' => 'stock10',
+        'stock.type_id' => 3,
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+        'stock.description' => NULL,
+      ],
+      [],
+      1,
+    ];
+    */
 
     return $scenarios;
 
