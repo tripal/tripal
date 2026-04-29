@@ -35,11 +35,6 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   const SUCCESS = 4;
 
   /**
-   * Indicates an operation, e.g. delete, failed.
-   */
-  const FAILURE = 5;
-
-  /**
    * Provides the TripalDBX connection to chado.
    *
    * @var Drupal\tripal_chado\Database\ChadoConnection

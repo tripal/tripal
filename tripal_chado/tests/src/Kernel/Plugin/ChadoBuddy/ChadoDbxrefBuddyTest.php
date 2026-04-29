@@ -299,15 +299,6 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     $this->assertIsObject($result, 'Failed setup for test inserting db newDb006');
     $result = $instance->insertDbxref(['dbxref.accession' => 'newDbxref006', 'db.name' => 'newDb006']);
     $this->assertIsObject($result, 'Failed setup for test inserting dbxref newDbxref006');
-    $result = $instance->deleteDb(['db.name' => 'newDb006'], ['fail_when_referenced' => FALSE]);
-    $this->assertEquals(ChadoBuddyPluginBase::FAILURE, $result, "We deleted a db that is in use by a dbxref");
-    $n = $this->chado_connection->select('1:db')
-      ->condition('name', 'newDb006', '=')
-      ->countQuery()
-      ->execute()
-      ->fetchField();
-    $this->assertEquals(1, $n, "The db newDb006 was incorrectly deleted from the database");
-    // Without setting 'fail_when_referenced' should throw an exception.
     $exception_message = '';
     try {
       $result = $instance->deleteDb(['db.name' => 'newDb006'], []);
@@ -316,6 +307,12 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
       $exception_message = $e->getMessage();
     }
     $this->assertStringContainsString('other records reference it', $exception_message, "We did not get the exception message expected deleting a db that has a foreign key");
+    $n = $this->chado_connection->select('1:db')
+      ->condition('name', 'newDb006', '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(1, $n, "The db newDb006 was incorrectly deleted from the database");
 
     // TEST: we can delete a db if we set cascade.
     $result = $instance->deleteDb(['db.name' => 'newDb006'], ['cascade' => TRUE]);
@@ -349,15 +346,6 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
       ->fields(['dbxref_id' => $dbxref_id])
       ->execute();
     $this->assertEquals(1, $n, "The test biomaterial was not inserted");
-    $result = $instance->deleteDbxref(['dbxref.accession' => 'newDbxref008'], ['fail_when_referenced' => FALSE]);
-    $this->assertEquals(ChadoBuddyPluginBase::FAILURE, $result, "We incorrectly deleted a dbxref that has a foreign key");
-    $n = $this->chado_connection->select('1:dbxref')
-      ->condition('accession', 'newDbxref008', '=')
-      ->countQuery()
-      ->execute()
-      ->fetchField();
-    $this->assertEquals(1, $n, "The dbxref newDbxref008 was incorrectly deleted from the database");
-    // Without setting 'fail_when_referenced' should throw an exception.
     $exception_message = '';
     try {
       $result = $instance->deleteDbxref(['dbxref.accession' => 'newDbxref008'], []);
@@ -366,6 +354,12 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
       $exception_message = $e->getMessage();
     }
     $this->assertStringContainsString('other records reference it', $exception_message, "We did not get the exception message expected deleting a dbxref that has a foreign key");
+    $n = $this->chado_connection->select('1:dbxref')
+      ->condition('accession', 'newDbxref008', '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(1, $n, "The dbxref newDbxref008 was incorrectly deleted from the database");
 
     // TEST: delete a dbxref with a foreign key but cascade set should succeed.
     $result = $instance->deleteDbxref(['dbxref.accession' => 'newDbxref008'], ['cascade' => TRUE]);
