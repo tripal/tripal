@@ -2,10 +2,19 @@
 
 namespace Drupal\tripal\Services;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+
 /**
  * This service quieries the database to lookup the values for a specific field.
  */
 class TripalFieldValueLookup {
+
+  /**
+   * The Drupal entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * The entity type ID for which to lookup field values.
@@ -16,8 +25,12 @@ class TripalFieldValueLookup {
 
   /**
    * Constructs a new TripalFieldValueLookup service.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entityTypeManager.
    */
-  public function __construct() {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+    $this->entityTypeManager = $entityTypeManager;
     // Default to 'tripal_entity' but this can be set to any entity type.
     $this->entity_type_id = 'tripal_entity';
   }
@@ -71,14 +84,12 @@ class TripalFieldValueLookup {
    *   set of field values.
    */
   public function getUniqueFieldValues(string $field_name, array $filters, array $options): array {
-    $entity_type_id = $this->entity_type_id;
+    $definition = $this->entityTypeManager->getDefinition($this->entity_type_id);
 
-    $entity_type_manager = \Drupal::service('entity_type.manager');
-    $definition = $entity_type_manager->getDefinition($entity_type_id);
     $bundle_key = $definition->getKey('bundle');
 
-    $query = $entity_type_manager
-      ->getStorage($entity_type_id)
+    $query = $this->entityTypeManager
+      ->getStorage($this->entity_type_id)
       ->getAggregateQuery();
 
     $query->accessCheck(FALSE);
