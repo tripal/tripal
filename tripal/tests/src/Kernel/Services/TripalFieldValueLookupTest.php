@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal\Kernel\Services;
 use Drupal\Core\Database\Connection;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
@@ -162,24 +163,136 @@ class TripalFieldValueLookupTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests the getUniqueFieldValues method.
+   * Provides data for testing the getUniqueFieldValues method.
+   *
+   * @return array
+   *   An array of test cases, each containing:
+   *   - scenario: A description of the test scenario.
+   *   - field_name: The name of the field to look up.
+   *   - filters: Optional filters restricting the values returned.
+   *     Supported keys include:
+   *     - remove_null (bool; default TRUE) ensures that NULL is not included
+   *       in the result set.
+   *     - remove_empty (bool; default TRUE) ensures that empty string
+   *       is also removed from the result set.
+   *     - bundles (array; default []) ensures only values for that
+   *       field within the bundles specified are included. By default
+   *       values from all bundles are included.
+   *   - options: Additional options where supported keys include:
+   *     - validate_field (bool; default TRUE) confirms that the field name
+   *       passed in is valid, the field exists for the entity type.
+   *     - refresh_cache (bool; default FALSE) allows you to indicate whether
+   *       you want to use the cache (FALSE) or want to generate the values
+   *       from a fresh query (TRUE).
+   *   - expected_values: The expected values that is expected to be
+   *     returned from the method.
    */
-  public function testGetUniqueFieldValues() {
+  public static function provideDataForGetUniqueFieldValues() {
+    return [
+      [
+        'scenario' => 'no filters',
+        'field_name' => 'organism_species',
+        'filters' => [],
+        'options' => [],
+        'expected_values' => [
+          ['organism_species_value' => 'bogusii'],
+          ['organism_species_value' => 'databasica'],
+          ['organism_species_value' => 'fictus'],
+        ],
+      ],
+      [
+        'scenario' => 'with bundles filter',
+        'field_name' => 'organism_species',
+        'filters' => ['bundles' => ['organism']],
+        'options' => [],
+        'expected_values' => [
+          ['organism_species_value' => 'bogusii'],
+          ['organism_species_value' => 'databasica'],
+          ['organism_species_value' => 'fictus'],
+        ],
+      ],
+      [
+        'scenario' => 'with non-matching bundles filter',
+        'field_name' => 'organism_species',
+        'filters' => ['bundles' => ['analysis']],
+        'options' => [],
+        'expected_values' => [],
+      ],
+      [
+        'scenario' => 'with refresh cache option',
+        'field_name' => 'organism_species',
+        'filters' => [],
+        'options' => ['refresh_cache' => TRUE],
+        'expected_values' => [
+          ['organism_species_value' => 'bogusii'],
+          ['organism_species_value' => 'databasica'],
+          ['organism_species_value' => 'fictus'],
+        ],
+      ],
+    ];
+  }
+
+  /**
+   * Tests the getUniqueFieldValues method.
+   *
+   * @param string $scenario
+   *   A description of the test scenario.
+   * @param string $field_name
+   *   The name of the field to look up.
+   * @param array $filters
+   *   Optional filters restricting the values returned.
+   *   Supported keys include:
+   *   - remove_null (bool; default TRUE) ensures that NULL is not included
+   *     in the result set.
+   *   - remove_empty (bool; default TRUE) ensures that empty string
+   *     is also removed from the result set.
+   *   - bundles (array; default []) ensures only values for that
+   *     field within the bundles specified are included. By default
+   *     values from all bundles are included.
+   * @param array $options
+   *   Additional options where supported keys include:
+   *   - validate_field (bool; default TRUE) confirms that the field name
+   *     passed in is valid, the field exists for the entity type.
+   *   - refresh_cache (bool; default FALSE) allows you to indicate whether
+   *     you want to use the cache (FALSE) or want to generate the values
+   *     from a fresh query (TRUE).
+   * @param array $expected_values
+   *   The expected values that is expected to be returned from the method.
+   *
+   * @dataProvider provideDataForGetUniqueFieldValues
+   */
+  #[DataProvider('provideDataForGetUniqueFieldValues')]
+  public function testGetUniqueFieldValues(string $scenario, string $field_name, array $filters, array $options, array $expected_values) {
     // Get the service and call the method.
     $lookup = \Drupal::service('tripal.fieldvalue.lookup');
-    $field_name = 'organism_species';
-    $bundles = ['organism', 'analysis'];
+    $bundles = $filters['bundles'] ?? [];
+
+    // Set the entity type ID.
+    $lookup->setEntityTypeId('tripal_entity');
+
+    // Check that the entity type ID is set as expected.
+    $entity_type = $lookup->getEntityTypeId();
+    $this->assertEquals('tripal_entity', $entity_type, 'The service has the expected entity type ID set.');
     $values = $lookup->getUniqueFieldValues($field_name, ['bundles' => $bundles], []);
 
     // Check that we got the expected values.
-    $expected_vals = [
-      [$field_name . '_value' => 'bogusii'],
-      [$field_name . '_value' => 'databasica'],
-      [$field_name . '_value' => 'fictus'],
-    ];
+    foreach ($expected_values as $expected) {
+      $this->assertTrue(in_array($expected, $values), "The expected value" . $expected[$field_name . '_value'] . " was not found in the results in the case of " . $scenario . ".");
+    }
+  }
 
-    foreach ($expected_vals as $expected) {
-      $this->assertTrue(in_array($expected, $values), "The expected value" . $expected[$field_name . '_value'] . " was not found in the results.");
+  /**
+   * Tests that an exception is thrown when an invalid field name is provided.
+   */
+  public function testInvalidFieldName() {
+    $lookup = \Drupal::service('tripal.fieldvalue.lookup');
+    $lookup->setEntityTypeId('tripal_entity');
+
+    try {
+      $lookup->getUniqueFieldValues('invalid_field_name', [], ['validate_field' => TRUE]);
+    }
+    catch (\InvalidArgumentException $e) {
+      $this->assertStringContainsString("Invalid field name: invalid_field_name", $e->getMessage(), 'The expected exception message was not found.');
     }
   }
 
