@@ -17,6 +17,8 @@ system-under-test:
     cardinality: 1
     required: true
     settings:
+      termIdSpace: 'FAKE'
+      termAccession: 'name'
       storage_plugin_id: 'drupal_sql_storage'
       max_length: 255
   - name: 'metaphysical_props'
@@ -26,9 +28,11 @@ system-under-test:
     formatter: 'default_tripal_text_type_formatter'
     termIdSpace: 'META'
     termAccession: 'properties'
-    cardinality: 1
+    cardinality: 5
     required: false
     settings:
+      termIdSpace: 'META'
+      termAccession: 'properties'
       storage_plugin_id: 'drupal_sql_storage'
   # Cannot test drupal field due to schema issues. See issue #1999.
   # - name: 'drupal_description'
@@ -70,3 +74,27 @@ scenarios:
         - 'common_name'
         optional_fields:
         - 'metaphysical_props'
+      getTripalFieldInfo:
+        common_name:
+          term: 'FAKE:name'
+          tripalstorage_id: 'drupal_sql_storage'
+          is_required: true
+          cardinality: 1
+          field_type: 'tripal_string_type'
+          tripalstorage_settings: []
+          settings:
+            max_length: 255
+            termIdSpace: 'FAKE'
+            termAccession: 'name'
+            debug: FALSE
+        metaphysical_props:
+          term: 'META:properties'
+          tripalstorage_id: 'drupal_sql_storage'
+          is_required: false
+          cardinality: 5
+          field_type: 'tripal_text_type'
+          tripalstorage_settings: []
+          settings:
+            termIdSpace: 'META'
+            termAccession: 'properties'
+            debug: FALSE

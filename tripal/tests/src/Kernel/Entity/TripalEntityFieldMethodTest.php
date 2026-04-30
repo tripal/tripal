@@ -160,7 +160,7 @@ class TripalEntityFieldMethodTest extends TripalTestKernelBase {
       $field_name = $this->randomMachineName() . '_noDefinition';
     }
 
-    // Test that the tripal fields per storage are detected properly.
+    // TEST: tripal fields per storage are detected properly.
     // -- all fields for drupal_sql_storage should be detected.
     $basic_tripal_fields = $created_entity->getTripalStorageFields('drupal_sql_storage');
     $this->assertEquals($current_scenario['expectations']['getStorageFields']['all_fields'], $basic_tripal_fields, "We expected to have detected all of the tripal fields for our " . $current_scenario['label'] . " scenario.");
@@ -179,6 +179,51 @@ class TripalEntityFieldMethodTest extends TripalTestKernelBase {
     );
     $this->assertEquals($current_scenario['expectations']['getStorageFields']['optional_fields'], $optional_tripal_fields, "We expected to have detected the optional tripal fields for our " . $current_scenario['label'] . " scenario.");
 
+    // -- no fields should be detected for a non-existent storage.
+    $no_tripal_fields = $created_entity->getTripalStorageFields('not_a_real_storage');
+    $this->assertEmpty($no_tripal_fields, "We expected to have detected no tripal fields for a non-existent storage for our " . $current_scenario['label'] . " scenario.");
+
+    // TEST: the correct information is being stored about tripal fields.
+    foreach ($current_scenario['expectations']['getTripalFieldInfo'] as $field_name => $expected_info) {
+      foreach ($expected_info as $request_key => $expected_value) {
+        $field_info = $created_entity->getTripalFieldInfo($field_name, $request_key);
+        $this->assertEquals($expected_value, $field_info, "We expected to have retrieved the correct field info for the '$field_name' field for our " . $current_scenario['label'] . " scenario.");
+      }
+    }
+
+    // TEST: exceptions are thrown when expected.
+    // -- Invalid field name.
+    $exception_thrown = FALSE;
+    $exception_message = 'NOT THROWN';
+    try {
+      $created_entity->getTripalFieldInfo('NOT_A_VALID_FIELD', 'field_type');
+    }
+    catch (\Exception $e) {
+      $exception_thrown = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_thrown, "We expected an exception to be thrown for an invalid field info request.");
+    $this->assertStringContainsString(
+      "You requested information for a field (i.e. 'NOT_A_VALID_FIELD') that is either not attached to this entity or not a valid TripalField.",
+      $exception_message,
+      "We expected a specific exception message for an invalid field info request."
+    );
+    // -- Invalid request key.
+    $exception_thrown = FALSE;
+    $exception_message = 'NOT THROWN';
+    try {
+      $created_entity->getTripalFieldInfo($field_name, 'NOT_A_VALID_KEY');
+    }
+    catch (\Exception $e) {
+      $exception_thrown = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_thrown, "We expected an exception to be thrown for an invalid field info request.");
+    $this->assertStringContainsString(
+      "The Request key 'NOT_A_VALID_KEY' is not supported by TripalEntity::getTripalFieldInfo()",
+      $exception_message,
+      "We expected a specific exception message for an invalid field info request."
+    );
   }
 
 }
