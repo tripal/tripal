@@ -22,6 +22,7 @@ use PHPUnit\Framework\Attributes\Group;
 trait TripalEntityFieldTestTrait {
 
   use UserCreationTrait;
+  use TripalTestTrait;
 
   /**
    * An array of FieldStorageConfig objects keyed by the field name.
@@ -263,6 +264,15 @@ trait TripalEntityFieldTestTrait {
     $fields = [];
     foreach ($system_under_test['fields'] as $field_details) {
 
+      // Create the term for the field.
+      $values = [
+        'id_space_name' => $field_details['termIdSpace'] ?? NULL,
+        'term' => [
+          'accession' => $field_details['termAccession'] ?? NULL,
+        ],
+      ];
+      $this->createTripalTerm($values, 'tripal_default_id_space', 'tripal_default_vocabulary');
+
       // Create both the FieldConfig and FieldStorageConfig.
       $fields[$field_details['name']] = $this->createFieldInstance(
         'tripal_entity',
@@ -275,6 +285,10 @@ trait TripalEntityFieldTestTrait {
           'cardinality' => $field_details['cardinality'] ?? 1,
           'required' => $field_details['required'] ?? TRUE,
           'settings' => $field_details['settings'],
+        ],
+        [
+          'idspace_plugin_id' => 'tripal_default_id_space',
+          'vocab_plugin_id' => 'tripal_default_vocabulary',
         ]
       );
     }
