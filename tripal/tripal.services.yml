@@ -62,6 +62,7 @@ services:
     class: 'Drupal\tripal\Services\TripalFieldValueLookup'
     arguments:
       - '@entity_type.manager'
+      - '@entity_field.manager'
   tripal.publish:
     class: 'Drupal\tripal\Services\TripalPublish'
   tripal.backend_publish:
