@@ -129,19 +129,19 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *     - organism.species
    *     - organism.infraspecific_name
    *     - organism.common_name
-   *     - an organism ChadoBuddyRecord can be used in place of or in addition
-   *       to other keys.
+   *     - buddy_record = an organism ChadoBuddyRecord can be used in place of
+   *       or in addition to other keys (but NOT additional buddy records).
    *   The following terms are valid where it pertains to stock.type_id only:
    *     - cvterm.name
    *     - cvterm.is_obsolete
    *     - cv.name
-   *     - a cvterm ChadoBuddyRecord can be used in place of or in addition to
-   *       other keys.
+   *     - buddy_record = a cvterm ChadoBuddyRecord can be used in place of or
+   *       in addition to other keys (but NOT additional buddy records).
    *   The following terms are valid where it pertains to stock.dbxref_id only:
    *     - dbxref.accession
    *     - db.name
-   *     - a dbxref ChadoBuddyRecord can be used in place of or in addition to
-   *       other keys.
+   *     - buddy_record = a dbxref ChadoBuddyRecord can be used in place of or
+   *       in addition to other keys (but NOT additional buddy records).
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
    *   - 'case_insensitive' - a single key, or an array of keys
@@ -210,7 +210,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    * NOTE: In addition to the stock record, only creation of a single dbxref
    *   record for stock.dbxref_id is supported using this method. See $options.
    *   Creation of an organism record or a cvterm record are NOT supported.
-   *   Please use the ChadoOrganismBuddy or ChadoCvtermBuddy to create an
+   *   Please use either the ChadoOrganismBuddy or ChadoCvtermBuddy to create an
    *   organism for your stock record or to create the cvterm for stock.type_id,
    *   respectively, if required.
    *
@@ -228,19 +228,19 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *     - organism.species
    *     - organism.infraspecific_name
    *     - organism.common_name
-   *     - an organism ChadoBuddyRecord can be used in place of or in addition
-   *       to other keys.
+   *     - buddy_record = an organism ChadoBuddyRecord can be used in place of
+   *       or in addition to other keys (but NOT additional buddy records).
    *   The following terms are valid where it pertains to stock.type_id only:
    *     - cvterm.name
    *     - cvterm.is_obsolete
    *     - cv.name
-   *     - a cvterm ChadoBuddyRecord can be used in place of or in addition to
-   *       other keys.
+   *     - buddy_record = a cvterm ChadoBuddyRecord can be used in place of or
+   *       in addition to other keys (but NOT additional buddy records).
    *   The following terms are valid where it pertains to stock.dbxref_id only:
    *     - dbxref.accession
    *     - db.name
-   *     - a dbxref ChadoBuddyRecord can be used in place of or in addition to
-   *       other keys.
+   *     - buddy_record = a dbxref ChadoBuddyRecord can be used in place of or
+   *       in addition to other keys (but NOT additional buddy records).
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
    *   - create_dbxref - set to TRUE (default FALSE) if you specified the
@@ -319,7 +319,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    * NOTE: When updating a stock record, only creation of a single dbxref record
    *   for stock.dbxref_id is supported using this method. See $options.
    *   Creation of an organism record or a cvterm record are NOT supported.
-   *   Please use the ChadoOrganismBuddy or ChadoCvtermBuddy to create an
+   *   Please use either the ChadoOrganismBuddy or ChadoCvtermBuddy to create an
    *   organism for your stock record or to create the cvterm for stock.type_id,
    *   respectively, if required.
    *
@@ -337,19 +337,19 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *     - organism.species
    *     - organism.infraspecific_name
    *     - organism.common_name
-   *     - an organism ChadoBuddyRecord can be used in place of or in addition
-   *       to other keys.
+   *     - buddy_record = an organism ChadoBuddyRecord can be used in place of
+   *       or in addition to other keys (but NOT additional buddy records).
    *   The following terms are valid where it pertains to stock.type_id only:
    *     - cvterm.name
    *     - cvterm.is_obsolete
    *     - cv.name
-   *     - a cvterm ChadoBuddyRecord can be used in place of or in addition to
-   *       other keys.
+   *     - buddy_record = a cvterm ChadoBuddyRecord can be used in place of or
+   *       in addition to other keys (but NOT additional buddy records).
    *   The following terms are valid where it pertains to stock.dbxref_id only:
    *     - dbxref.accession
    *     - db.name
-   *     - a dbxref ChadoBuddyRecord can be used in place of or in addition to
-   *       other keys.
+   *     - buddy_record = a dbxref ChadoBuddyRecord can be used in place of or
+   *       in addition to other keys (but NOT additional buddy records).
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for $values.
@@ -438,7 +438,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    * NOTE: In addition to the stock record, only creation of a single dbxref
    *   record for stock.dbxref_id is supported using this method. See $options.
    *   Creation of an organism record or a cvterm record are NOT supported.
-   *   Please use the ChadoOrganismBuddy or ChadoCvtermBuddy to create an
+   *   Please use either the ChadoOrganismBuddy or ChadoCvtermBuddy to create an
    *   organism for your stock record or to create the cvterm for stock.type_id,
    *   respectively, if required.
    *
@@ -456,19 +456,19 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *     - organism.species
    *     - organism.infraspecific_name
    *     - organism.common_name
-   *     - an organism ChadoBuddyRecord can be used in place of or in addition
-   *       to other keys.
+   *     - buddy_record = an organism ChadoBuddyRecord can be used in place of
+   *       or in addition to other keys (but NOT additional buddy records).
    *   The following terms are valid where it pertains to stock.type_id only:
    *     - cvterm.name
    *     - cvterm.is_obsolete
    *     - cv.name
-   *     - a cvterm ChadoBuddyRecord can be used in place of or in addition to
-   *       other keys.
+   *     - buddy_record = a cvterm ChadoBuddyRecord can be used in place of or
+   *       in addition to other keys (but NOT additional buddy records).
    *   The following terms are valid where it pertains to stock.dbxref_id only:
    *     - dbxref.accession
    *     - db.name
-   *     - a dbxref ChadoBuddyRecord can be used in place of or in addition to
-   *       other keys.
+   *     - buddy_record = a dbxref ChadoBuddyRecord can be used in place of or
+   *       in addition to other keys (but NOT additional buddy records).
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
    *   - create_dbxref - set to TRUE (default FALSE) if you specified the
