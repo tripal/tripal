@@ -3,7 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Entity;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
+use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -22,7 +22,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
 
-  use TripalEntityFieldTestTrait;
+  use ChadoFieldTestTrait;
 
   /**
    * {@inheritdoc}
@@ -121,7 +121,7 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
       ->execute();
 
     // Setup the environment.
-    $this->setupEntityFieldTestEnvironment($this->system_under_test);
+    $this->setupChadoEntityFieldTestEnvironment($this->system_under_test);
   }
 
   /**
