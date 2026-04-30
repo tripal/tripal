@@ -62,8 +62,8 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $this->assertIsArray($stock_buddy_records, 'We did not retrieve an array for a Stock record that does not exist');
     $this->assertEquals(0, count($stock_buddy_records), 'We did not retrieve an empty array for a Stock record that does not exist');
 
-    // TEST: Insert a stock record with name, uniquename, type_id, organism_id.
-    // First create an organism using the ChadoOrganismBuddy.
+    // TEST: Insert a stock record with name, uniquename, type_id, and an
+    // organism buddy record.
     $simple_organism_values = [
       'organism.genus' => 'Tripalus',
       'organism.species' => 'databasica',
@@ -77,7 +77,6 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'stock.uniquename' => 'stock1',
       // Cvterm ID for 'accession'.
       'stock.type_id' => '3',
-      //'stock.organism_id' => $organism_id,
       'buddy_record' => $organism_buddy_record,
     ];
     $test_records = [];
@@ -279,7 +278,6 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
-    /*
     // #9: Insert a stock with a null description
     $scenarios[] = [
       [
@@ -293,7 +291,6 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [],
       1,
     ];
-    */
 
     return $scenarios;
 

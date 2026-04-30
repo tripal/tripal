@@ -560,9 +560,10 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // buddy record. Normal use case.
     $sub_values = [
       'project.name' => 'Colossus: The Forbin Project',
-      'project_description' => 'The perfect defense system',
+      'project.description' => 'The perfect defense system',
     ];
     $buddy_record = new ChadoBuddyRecord();
+    $buddy_record->setBaseTable('project');
     $buddy_record->setValues($sub_values);
     $expected_values = array_merge($values, $sub_values);
     $values['buddy_record'] = $buddy_record;
