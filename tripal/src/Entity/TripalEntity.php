@@ -1215,11 +1215,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // indicate that by using our Drupal SQL Storage option OR by not
     // creating a Tripal-based field at all depending on their needs.
     if (empty($tsid)) {
-      \Drupal::logger('tripal')->error('The Tripal-based field :field on
-            this content type must indicate a TripalStorage backend and currently does not.',
-        [':field' => $field_name]
-      );
-      return FALSE;
+      throw new \Exception("The Tripal-based field '$field_name' on this content type must indicate a TripalStorage backend and currently does not.");
     }
 
     return [

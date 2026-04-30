@@ -34,18 +34,30 @@ system-under-test:
       termIdSpace: 'META'
       termAccession: 'properties'
       storage_plugin_id: 'drupal_sql_storage'
-  # Cannot test drupal field due to schema issues. See issue #1999.
-  # - name: 'drupal_description'
-  #   type: 'string_long'
-  #   type_class: 'Drupal\Core\Field\Plugin\Field\FieldType\StringLongItem'
-  #   widget: 'string_textarea'
-  #   formatter: 'string'
-  #   termIdSpace: 'META'
-  #   termAccession: 'description'
-  #   cardinality: 1
-  #   required: false
-  #   settings:
-  #     storage_plugin_id: 'none'
+  - name: 'drupal_description'
+    type: 'string_long'
+    type_class: 'Drupal\Core\Field\Plugin\Field\FieldType\StringLongItem'
+    widget: 'string_textarea'
+    formatter: 'string'
+    termIdSpace: 'META'
+    termAccession: 'description'
+    cardinality: 1
+    required: false
+    settings:
+      storage_plugin_id: NULL
+  - name: 'missing_storage'
+    type: 'tripal_text_type'
+    type_class: 'Drupal\tripal\Plugin\Field\FieldType\TripalTextTypeItem'
+    widget: 'default_tripal_text_type_widget'
+    formatter: 'default_tripal_text_type_formatter'
+    termIdSpace: 'BROKEN'
+    termAccession: 'storage'
+    cardinality: 1
+    required: false
+    settings:
+      termIdSpace: 'BROKEN'
+      termAccession: 'storage'
+      storage_plugin_id: NULL
 scenarios:
   - label: 'Simple Entity'
     description: 'Create a page where every field has one value and the title/path are left empty.'
@@ -55,6 +67,10 @@ scenarios:
         - value: 'amazonite'
         metaphysical_props:
         - value: 'soothing, calming, healing from grief'
+        drupal_description:
+        - value: 'This is a really long descriptio if you use your imagination.'
+        # missing_storage:
+        # - value: 'Meh, this has no where to be stored anyway.'
       expected_field_values:
         common_name:
         - value: 'amazonite'
@@ -66,6 +82,13 @@ scenarios:
           expected_result: false
         - field_name: 'common_name'
           expected_result: true
+      getFieldItemBackendStorage:
+        drupal_description:
+          expected_result: false
+        common_name:
+          expected_result:
+          - 0
+          - 'drupal_sql_storage'
       getStorageFields:
         all_fields:
         - 'common_name'
@@ -98,3 +121,16 @@ scenarios:
             termIdSpace: 'META'
             termAccession: 'properties'
             debug: FALSE
+  ## EXCEPTION SCENARIOS.
+  - label: 'No Storage Exception expected'
+    description: 'Entity with Tripal field given value but no storage backend'
+    user_input:
+      common_name:
+      - value: 'amazonite'
+      metaphysical_props:
+      - value: 'soothing, calming, healing from grief'
+      drupal_description:
+      - value: 'This is a really long descriptio if you use your imagination.'
+      missing_storage:
+      - value: 'Meh, this has nowhere to be stored anyway.'
+    exception_message: "The Tripal-based field 'missing_storage' on this content type must indicate a TripalStorage backend and currently does not."

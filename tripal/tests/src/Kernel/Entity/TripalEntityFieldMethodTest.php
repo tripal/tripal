@@ -119,6 +119,24 @@ class TripalEntityFieldMethodTest extends TripalTestKernelBase {
   }
 
   /**
+   * Data Provider: works with the YAML to provide scenarios for testing.
+   *
+   * @return array
+   *   List of scenarios to test where each one matches a key and label in the
+   *   associated YAML scenarios.
+   */
+  public static function provideExceptionScenarios() {
+    $scenarios = [];
+
+    $scenarios[] = [
+      1,
+      'No Storage Exception expected',
+    ];
+
+    return $scenarios;
+  }
+
+  /**
    * Tests a variety of basic get/set methods on the TripalEntity class.
    *
    * @param int $current_scenario_key
@@ -191,12 +209,30 @@ class TripalEntityFieldMethodTest extends TripalTestKernelBase {
       }
     }
 
-    // TEST: exceptions are thrown when expected.
-    // -- Invalid field name.
+    // TEST: getFieldItemBackendStorage() returns what we expect.
+    foreach ($current_scenario['expectations']['getFieldItemBackendStorage'] as $field_name => $expectations) {
+      $item = $created_entity->get($field_name)->first();
+      $storage = $created_entity->getFieldItemBackendStorage($field_name, $item);
+      $this->assertEquals($expectations['expected_result'], $storage, "We expected getFieldItemBackendStorage() to return either FALSE or the storage plugin ID for the '$field_name' field for our " . $current_scenario['label'] . " scenario.");
+    }
+  }
+
+  /**
+   * Tests exceptions not thrown during create and easy to trigger.
+   */
+  public function testSimpleExceptions() {
+    $entity = TripalEntity::create([
+      'title' => $this->randomString(),
+      'type' => $this->bundle_name,
+      'common_name' => $this->randomString(),
+    ]);
+    $entity->save();
+
+    // Test an invalid field name for getTripalFieldInfo().
     $exception_thrown = FALSE;
     $exception_message = 'NOT THROWN';
     try {
-      $created_entity->getTripalFieldInfo('NOT_A_VALID_FIELD', 'field_type');
+      $entity->getTripalFieldInfo('NOT_A_VALID_FIELD', 'field_type');
     }
     catch (\Exception $e) {
       $exception_thrown = TRUE;
@@ -208,11 +244,12 @@ class TripalEntityFieldMethodTest extends TripalTestKernelBase {
       $exception_message,
       "We expected a specific exception message for an invalid field info request."
     );
-    // -- Invalid request key.
+
+    // Test an invalid request key for getTripalFieldInfo().
     $exception_thrown = FALSE;
     $exception_message = 'NOT THROWN';
     try {
-      $created_entity->getTripalFieldInfo($field_name, 'NOT_A_VALID_KEY');
+      $entity->getTripalFieldInfo('common_name', 'NOT_A_VALID_KEY');
     }
     catch (\Exception $e) {
       $exception_thrown = TRUE;
@@ -223,6 +260,44 @@ class TripalEntityFieldMethodTest extends TripalTestKernelBase {
       "The Request key 'NOT_A_VALID_KEY' is not supported by TripalEntity::getTripalFieldInfo()",
       $exception_message,
       "We expected a specific exception message for an invalid field info request."
+    );
+  }
+
+  /**
+   * Specifically tests for exceptions thrown during create.
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideExceptionScenarios
+   */
+  #[DataProvider('provideExceptionScenarios')]
+  public function testExceptionThrownInCreate(int $current_scenario_key, string $current_scenario_label) {
+    $current_scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
+
+    $exception_thrown = FALSE;
+    $exception_message = 'NOT THROWN';
+    try {
+      // Create the entity with that value set.
+      $entity = TripalEntity::create([
+        'title' => $this->randomString(),
+        'type' => $this->bundle_name,
+      ] + $current_scenario['user_input']);
+      $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
+      $entity->save();
+    }
+    catch (\Exception $e) {
+      $exception_thrown = TRUE;
+      $exception_message = $e->getMessage();
+    }
+
+    $this->assertTrue($exception_thrown, "We expected an exception to be thrown for our " . $current_scenario['label'] . " scenario.");
+    $this->assertStringContainsString(
+      $current_scenario['exception_message'],
+      $exception_message,
+      "We expected a specific exception message for our " . $current_scenario['label'] . " scenario."
     );
   }
 
