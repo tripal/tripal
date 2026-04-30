@@ -101,4 +101,50 @@ class TripalEntityHooks {
     }
   }
 
+  /**
+   * Implements hook_config_schema_info_alter().
+   *
+   * Specifically, we are altering config schema set in the tripal module.
+   * We use this approach to ensure we are extending the existing schema
+   * which makes these changes available to extension modules defining their
+   * own yml files.
+   */
+  #[Hook('config_schema_info_alter')]
+  public function configSchemaInfoAlter(&$definitions) {
+
+    // print_r(array_keys($definitions));
+    // Temporary fix for Issue #1999.
+    // We will collect the storage settings for all non-tripal fields and
+    // manually add them to the field storage definition for tripal_entity.
+    // -- on tripal_entity.
+    foreach ($definitions as $key => $field_settings) {
+      if (str_starts_with($key, 'field.storage_settings.') && !str_starts_with($key, 'field.storage.tripal_entity.')) {
+        // If this field doesn't have any settings, we can skip it.
+        if (!array_key_exists('mapping', $field_settings)) {
+          continue;
+        }
+        // For each setting this field defines, see if we have it in our
+        // tripal_entity field storage definition. If not, add it.
+        foreach ($field_settings['mapping'] as $setting_key => $setting) {
+          if (!isset($definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key])) {
+            // -- on entity.
+            $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key] = $setting;
+            // -- on field collection yaml.
+            $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping'][$setting_key] = $setting;
+          }
+          else {
+            // If the setting already exists, we should check to make sure it
+            // is the same. If not, we should log a warning.
+            if ($definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key] != $setting) {
+              \Drupal::logger('tripal')->warning(
+                'The field storage setting @setting_key for field @field_name is different in the tripal_entity field storage definition than in the field storage definition for @field_name. This may cause issues with field storage and retrieval. Please check the field storage definitions for both tripal_entity and @field_name to ensure they are consistent.',
+                ['@setting_key' => $setting_key, '@field_name' => str_replace('field.storage_settings.', '', $key)]
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+
 }
