@@ -68,7 +68,7 @@ class TripalEntityConfigAlterTest extends KernelTestBase {
     // is still correctly defined.
     $expected_maxlength_definition = [
       'type' => 'integer',
-      'label' => 'Storage Maximum length',
+      'label' => 'Maximum length',
     ];
     $this->assertArrayHasKey(
       'max_length',
