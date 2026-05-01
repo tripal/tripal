@@ -887,7 +887,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // TripalStorage Backend ID.
     $tsid = $settings['storage_plugin_id'];
-    // @debug print "\tStorage: $tsid.\n";
+
     // Register information about this field from the field definition.
     // Note: Unless it already exists and we're not told to refresh the cache.
     if ((!array_key_exists($field_name, $this->tripalfield_info)) or ($refresh_cache === TRUE)) {
@@ -905,6 +905,26 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $this->tripalfield_info[$field_name]['is_required'] = $is_required;
       $this->tripalfield_info[$field_name]['cardinality'] = $field_storage_defn->getCardinality();
       $this->tripalfield_info[$field_name]['field_type'] = $field_defn->getType();
+
+      // It would be nice to know it's class as well.
+      $manager = \Drupal::service('plugin.manager.field.field_type');
+      $plugin_definition = $manager->getDefinition($field_defn->getType());
+      $this->tripalfield_info[$field_name]['field_class'] = $plugin_definition['class'];
+      $this->tripalfield_info[$field_name]['field_label'] = $plugin_definition['label'];
+
+      // Now lets add information about it's property types.
+      $property_info = [];
+      foreach ($this->tripalfield_info[$field_name]['field_class']::tripalTypes($field_defn) as $property_type) {
+        $property_info = [];
+        $property_info['id'] = $property_type->getId();
+        $property_info['key'] = $property_type->getKey();
+        $property_info['cardinality'] = $property_type->getCardinality();
+        $property_info['cache_status'] = $property_type->getCacheStatus();
+        $property_info['storage_settings'] = $property_type->getStorageSettings();
+        $property_info['id_space'] = $property_type->getTermIdSpace();
+        $property_info['accession'] = $property_type->getTermAccession();
+        $this->tripalfield_info[$field_name]['property_types'][$property_type->getKey()] = $property_info;
+      }
     }
 
     // Register the TripalStorage backend that this field is managed by.
