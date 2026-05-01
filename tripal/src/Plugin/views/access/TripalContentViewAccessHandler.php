@@ -73,7 +73,7 @@ class TripalContentViewAccessHandler extends AccessPluginBase {
     $form['content_types'] = [
       '#type' => 'select',
       '#title' => $this->t('Content Types'),
-      '#default_value' => $this->options['content_types'],
+      '#default_value' => $this->options['content_types'] ?? '',
       '#options' => $content_type_options,
       '#description' => $this->t('Select which content types whose Tripal Content permissions you want to apply to this view.'),
       '#multiple' => TRUE,
@@ -130,7 +130,7 @@ class TripalContentViewAccessHandler extends AccessPluginBase {
     $operation = $access_options['operation'];
     // - Expand mode to fit in the statement.
     $mode_string = 'at least 1 of';
-    if ($this->options['mode'] === 'all') {
+    if ($access_options['mode'] === 'all') {
       $mode_string = 'all of';
     }
     // - if all selected...
@@ -211,7 +211,7 @@ class TripalContentViewAccessHandler extends AccessPluginBase {
    */
   public function summaryTitle() {
 
-    $num_content_types = count($this->options['content_types']);
+    $num_content_types = count($this->options['content_types'] ?? []);
     $operation = $this->options['operation'];
 
     // Expand mode to fit in the statement.
@@ -221,7 +221,7 @@ class TripalContentViewAccessHandler extends AccessPluginBase {
     }
 
     // If the 'all' content type options was chosen then change the statement.
-    if (array_key_exists('all', $this->options['content_types'])) {
+    if (array_key_exists('all', $this->options['content_types'] ?? [])) {
       $num_content_types = 'the existing';
     }
 
