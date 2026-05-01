@@ -881,7 +881,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $is_required = $field_defn->isRequired();
 
     // Only register TripalFields which use TripalStorage.
-    if (!array_key_exists('storage_plugin_id', $settings)) {
+    if (!array_key_exists('storage_plugin_id', $settings) or empty($settings['storage_plugin_id'])) {
       return FALSE;
     }
 
