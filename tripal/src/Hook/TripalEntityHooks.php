@@ -119,7 +119,7 @@ class TripalEntityHooks {
     // NOTE: there are some conflicts between drupal field settings, which is
     // why this is only a temporary fix. For now, we will manually skip any
     // settings which are known to be different.
-    $skipped_settings = ['allowed_values'];
+    $skipped_settings = [];
     // Now, for each field storage definition, we will check for settings...
     foreach ($definitions as $key => $field_settings) {
       if (str_starts_with($key, 'field.storage_settings.') && !str_starts_with($key, 'field.storage.tripal_entity.')) {
@@ -135,6 +135,15 @@ class TripalEntityHooks {
             $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key] = $setting;
             // -- on field collection yaml.
             $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping'][$setting_key] = $setting;
+          }
+          elseif ($setting_key == 'allowed_values') {
+            // There are two conflicting Drupal field definitions for this
+            // setting. One uses integer keys and the other uses float keys.
+            // Here we choose float as that should work in both cases.
+            // -- on entity.
+            $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key]['sequence']['mapping']['value']['type'] = 'float';
+            // -- on field collection yaml.
+            $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping'][$setting_key]['sequence']['mapping']['value']['type'] = 'float';
           }
           elseif (!in_array($setting_key, $skipped_settings)) {
             // If the setting already exists, we should check to make sure it
