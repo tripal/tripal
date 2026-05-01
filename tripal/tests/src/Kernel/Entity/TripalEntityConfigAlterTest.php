@@ -17,6 +17,7 @@ class TripalEntityConfigAlterTest extends KernelTestBase {
   protected static $modules = [
     'system',
     'field',
+    'options',
     'tripal',
   ];
 
@@ -76,6 +77,20 @@ class TripalEntityConfigAlterTest extends KernelTestBase {
       'Setting from Tripal field storage is still available.'
     );
     $this->assertEquals($expected_maxlength_definition, $settings_mapping['max_length'], 'Shared setting is still correctly defined.');
+
+    // Check that allowed_values is correctly defined with float keys.
+    $this->assertArrayHasKey(
+      'allowed_values',
+      $settings_mapping,
+      'Setting with conflicting definitions is still available.'
+    );
+    $allowed_values_definition = $settings_mapping['allowed_values'];
+    $this->assertArrayHasKey('sequence', $allowed_values_definition);
+    $this->assertArrayHasKey('mapping', $allowed_values_definition['sequence']);
+    $this->assertArrayHasKey('value', $allowed_values_definition['sequence']['mapping']);
+    $this->assertArrayHasKey('type', $allowed_values_definition['sequence']['mapping']['value']);
+    $this->assertEquals('float', $allowed_values_definition['sequence']['mapping']['value']['type'], 'allowed_values is correctly defined with more permissivefloat keys.');
+
   }
 
 }

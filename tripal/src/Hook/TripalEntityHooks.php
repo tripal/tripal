@@ -112,7 +112,6 @@ class TripalEntityHooks {
   #[Hook('config_schema_info_alter')]
   public function configSchemaInfoAlter(&$definitions) {
 
-    // print_r(array_keys($definitions));
     // Temporary fix for Issue #1999.
     // We will collect the storage settings for all non-tripal fields and
     // manually add them to the field storage definition for tripal_entity.
@@ -158,6 +157,7 @@ class TripalEntityHooks {
         }
       }
     }
+
   }
 
 }
