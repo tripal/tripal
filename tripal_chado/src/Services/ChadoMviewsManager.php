@@ -118,7 +118,7 @@ class ChadoMviewsManager extends ChadoCustomTableManager {
    *
    * @return array
    *   An associative array of the materialized views with the key being the id
-   *   and the value the table name.
+   *   and the value being the table name.
    */
   public function getTables(?string $chado_schema = NULL) {
     $tables = [];
