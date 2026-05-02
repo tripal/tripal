@@ -122,8 +122,11 @@ class ChadoFormsTest extends ChadoTestKernelBase {
       foreach ($scenario['submit_values'] ?? [] as $key => $value) {
         $form_state->setValue($key, $value);
       }
+      if (array_key_exists('triggering_element', $scenario)) {
+        $form_state->setTriggeringElement($scenario['triggering_element']);
+      }
 
-      // Submit the form and capture any redirect output.
+      // Submit the form and capture any output.
       ob_start();
       $form_builder->submitForm($form_class, $form_state);
       $output = ob_get_clean();
@@ -193,7 +196,8 @@ class ChadoFormsTest extends ChadoTestKernelBase {
     // If the value is an array, then the value of interest is one
     // or more steps further down in the array, so perform recursion.
     if (is_array($value)) {
-      $this->assertArrayHasKey($key, $form, "Expected the key \"$steps$key\" in the form array but it is not present");
+      $this->assertArrayHasKey($key, $form,
+        "Expected the key \"$steps$key\" in the form array but it is not present");
       $sub_form = $form[$key];
       foreach ($value as $next_key => $next_value) {
         $this->checkExpectations($next_key, $next_value, $sub_form, $steps . $key . ':');
@@ -203,9 +207,10 @@ class ChadoFormsTest extends ChadoTestKernelBase {
       if (is_object($value)) {
         $value = $value->getValue();
       }
-      $this->assertArrayHasKey($key, $form, "Expected the key \"$steps$key\" in the form array but it is not present");
+      $this->assertArrayHasKey($key, $form,
+        "Expected the key \"$steps$key\" in the form array but it is not present");
       $this->assertEquals($value, $form[$key],
-        "We did not get the value we expected for \"$steps$key\".");
+        "We did not get the value we expected \"$value\" for \"$steps$key\".");
     }
   }
 
@@ -249,7 +254,8 @@ class ChadoFormsTest extends ChadoTestKernelBase {
       }
     }
     if (!$found) {
-      $this->fail("Expected to find the string \"$expected\" in a drupal messenger message, but did not");
+      $this->fail("Expected to find the string \"$expected\" in a drupal messenger message, but did not. Messages were: "
+        . print_r($messages, TRUE));
     }
   }
 

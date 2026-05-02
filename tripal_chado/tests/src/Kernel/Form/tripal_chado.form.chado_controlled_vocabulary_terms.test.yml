@@ -1,4 +1,4 @@
-'Tests the controlled vocabulary add form with new term':
+'Controlled vocabulary term add form with a new term':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermForm'
     'setup':
       'views':
@@ -55,7 +55,7 @@
           - 'column': 'cv_id'
             'value': 2
         'count': 1
-'Tests the controlled vocabulary add form with existing term':
+'Controlled vocabulary term add form with an existing term':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermForm'
     'setup':
       'views':
@@ -77,7 +77,7 @@
     'submit_messages':
       - 'error: The specified accession and version already exists for this database'
       - 'error: The specified vocabulary term and value of "Is Obsolete" already exists for this vocabulary'
-'Tests the controlled vocabulary edit form':
+'Controlled vocabulary term edit form with an existing term':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermForm'
     'setup':
       'views':
@@ -117,14 +117,14 @@
           - 'column': 'cv_id'
             'value': 2
         'count': 1
-'Tests the controlled vocabulary edit form with an invalid cvterm_id':
+'Controlled vocabulary term edit form with an invalid cvterm_id argument':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermForm'
     'args':
       'cvterm_id': 500000
     'submit_fails': true
     'submit_output':
       - 'Invalid cvterm_id "500000" passed to chado_cvterm_form'
-'Tests the controlled vocabulary edit form with various invalid inputs':
+'Controlled vocabulary term edit form with various invalid inputs':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermForm'
     'args':
       - null
@@ -143,3 +143,56 @@
       - 'error: Controlled Vocabulary Term field is required.'
       - 'error: External Database Name field is required.'
       - 'error: External Database Accession field is required.'
+'Controlled vocabulary term delete form':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermDeleteForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_controlled_vocabulary_terms'
+    'args':
+      'cvterm_id': 3
+    'form_expectations':
+      '#form_id': 'chado_cvterm_delete_form'
+      'cvterm_id':
+        '#value': 3
+      'cvterm_name':
+        '#value': 'accession'
+      'description':
+        '#type': 'table'
+      'drop_dbxref':
+        '#type': 'checkbox'
+        '#title': 'Delete dbxref'
+      'submit':
+        '#value': 'Delete'
+      'cancel':
+        '#value': 'Cancel'
+    'submit_values':
+      'drop_dbxref': true
+    'triggering_element':
+      '#value': 'Delete'
+    'submit_expectations':
+      'cvterm_id': 3
+    'submit_output':
+      - 'Redirecting to'
+    'submit_messages':
+      - 'status: The term "accession" and dbxref have been deleted'
+    'chado_expectations':
+      - 'table': 'cvterm'
+        'conditions':
+          - 'column': 'cvterm_id'
+            'value': 3
+        'count': 0
+      - 'table': 'dbxref'
+        'conditions':
+          - 'column': 'accession'
+            'value': 'accession'
+        'count': 0
+'Controlled vocabulary term delete form with an invalid cvterm_id argument':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermDeleteForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_controlled_vocabulary_terms'
+    'args':
+      'cvterm_id': 900000
+    'submit_fails': true
+    'submit_output':
+      - 'Invalid cvterm_id "900000" passed to chado_cvterm_delete_form'
