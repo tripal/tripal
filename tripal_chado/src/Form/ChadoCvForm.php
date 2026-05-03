@@ -179,6 +179,7 @@ class ChadoCvForm extends FormBase {
 
     // The action will be either 'edit' or 'add'.
     $action = $values['action'];
+    $success = FALSE;
 
     $buddy_values = [
       'cv.name' => $values['cv_name'],
@@ -189,6 +190,7 @@ class ChadoCvForm extends FormBase {
         $this->cvterm_buddy->insertCv($buddy_values, []);
         $this->messenger()->addStatus($this->t('The vocabulary "@name" has been added.',
           ['@name' => $values['cv_name']]));
+        $success = TRUE;
       }
       catch (ChadoBuddyException $e) {
         $this->messenger()->addError($this->t('Unable to add vocabulary "@name": @error',
@@ -201,6 +203,7 @@ class ChadoCvForm extends FormBase {
         $this->cvterm_buddy->updateCv($buddy_values, $buddy_conditions, []);
         $this->messenger()->addStatus($this->t('The vocabulary "@name" has been updated.',
           ['@name' => $values['cv_name']]));
+        $success = TRUE;
       }
       catch (ChadoBuddyException $e) {
         $this->messenger()->addError($this->t('Unable to update vocabulary "@name": @error',
@@ -208,13 +211,15 @@ class ChadoCvForm extends FormBase {
       }
     }
 
-    // Views caching can prevent seeing edits we just made.
-    $view = Views::getView('chado_controlled_vocabularies');
-    $view->storage->invalidateCaches();
+    if ($success) {
+      // Views caching can prevent seeing edits we just made.
+      $view = Views::getView('chado_controlled_vocabularies');
+      $view->storage->invalidateCaches();
 
-    // @todo This redirect loses any filters we may have applied.
-    $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_cv')->toString());
-    $response->send();
+      // @todo This redirect loses any filters we may have applied.
+      $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_cv')->toString());
+      $response->send();
+    }
   }
 
 }

@@ -316,6 +316,7 @@ class ChadoCvtermForm extends FormBase {
 
     // The action will be either 'edit' or 'add'.
     $action = $values['action'];
+    $success = FALSE;
 
     $cv_id = $autocomplete->getPkeyId($values['cv_name']);
     $db_id = $autocomplete->getPkeyId($values['db_name']);
@@ -340,6 +341,7 @@ class ChadoCvtermForm extends FormBase {
         $this->cvterm_buddy->insertCvterm($buddy_values, []);
         $this->messenger()->addStatus($this->t('The vocabulary term "@name" has been added.',
           ['@name' => $values['cvterm_name']]));
+        $success = TRUE;
       }
       catch (ChadoBuddyException $e) {
         $this->messenger()->addError($this->t('Unable to insert cv term "@name": @error',
@@ -353,6 +355,7 @@ class ChadoCvtermForm extends FormBase {
       try {
         $this->cvterm_buddy->updateCvterm($buddy_values, $buddy_conditions, []);
         $this->messenger()->addStatus($this->t('The vocabulary term "@name" has been updated.', ['@name' => $values['cvterm_name']]));
+        $success = TRUE;
       }
       catch (ChadoBuddyException $e) {
         $this->messenger()->addError($this->t('Unable to update cv term "@name": @error',
@@ -360,13 +363,15 @@ class ChadoCvtermForm extends FormBase {
       }
     }
 
-    // Views caching can prevent seeing edits we just made.
-    $view = Views::getView('chado_controlled_vocabulary_terms');
-    $view->storage->invalidateCaches();
+    if ($success) {
+      // Views caching can prevent seeing edits we just made.
+      $view = Views::getView('chado_controlled_vocabulary_terms');
+      $view->storage->invalidateCaches();
 
-    // @todo This redirect loses any filters we may have applied.
-    $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_cvterm')->toString());
-    $response->send();
+      // @todo This redirect loses any filters we may have applied.
+      $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_cvterm')->toString());
+      $response->send();
+    }
   }
 
 }

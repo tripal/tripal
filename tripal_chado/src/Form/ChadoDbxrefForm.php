@@ -197,6 +197,7 @@ class ChadoDbxrefForm extends FormBase {
 
     // The action will be either 'edit' or 'add'.
     $action = $values['action'];
+    $success = FALSE;
 
     $db_id = $autocomplete->getPkeyId($values['db_name']);
 
@@ -211,6 +212,7 @@ class ChadoDbxrefForm extends FormBase {
         $this->dbxref_buddy->insertDbxref($buddy_values, []);
         $this->messenger()->addStatus($this->t('The database crossreference "@db:@acc" has been added.',
           ['@db' => $values['db_name'], '@acc' => $values['dbxref_accession']]));
+        $success = TRUE;
       }
       catch (ChadoBuddyException $e) {
         $this->messenger()->addError($this->t('Unable to add the cross reference "@db:@acc": @error',
@@ -225,6 +227,7 @@ class ChadoDbxrefForm extends FormBase {
         $this->dbxref_buddy->updateDbxref($buddy_values, $buddy_conditions, []);
         $this->messenger()->addStatus($this->t('The database crossreference "@db:@acc" has been updated.',
           ['@db' => $values['db_name'], '@acc' => $values['dbxref_accession']]));
+        $success = TRUE;
       }
       catch (ChadoBuddyException $e) {
         $this->messenger()->addError($this->t('Unable to update the cross reference "@db:@acc": @error',
@@ -232,13 +235,15 @@ class ChadoDbxrefForm extends FormBase {
       }
     }
 
-    // Views caching can prevent seeing edits we just made.
-    $view = Views::getView('chado_database_cross_references');
-    $view->storage->invalidateCaches();
+    if ($success) {
+      // Views caching can prevent seeing edits we just made.
+      $view = Views::getView('chado_database_cross_references');
+      $view->storage->invalidateCaches();
 
-    // @todo This redirect loses any filters we may have applied.
-    $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_dbxref')->toString());
-    $response->send();
+      // @todo This redirect loses any filters we may have applied.
+      $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_dbxref')->toString());
+      $response->send();
+    }
   }
 
 }

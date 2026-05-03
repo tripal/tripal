@@ -197,6 +197,7 @@ class ChadoDbForm extends FormBase {
 
     // The action will be either 'edit' or 'add'.
     $action = $values['action'];
+    $success = FALSE;
 
     $buddy_values = [
       'db.name' => $values['db_name'],
@@ -208,6 +209,7 @@ class ChadoDbForm extends FormBase {
       try {
         $this->dbxref_buddy->insertDb($buddy_values, []);
         $this->messenger()->addStatus($this->t('The database "@name" has been added.', ['@name' => $values['db_name']]));
+        $success = TRUE;
       }
       catch (ChadoBuddyException $e) {
         $this->messenger()->addError($this->t('Unable to insert database "@name": @error',
@@ -219,6 +221,7 @@ class ChadoDbForm extends FormBase {
         $buddy_conditions = ['db.db_id' => $values['db_id']];
         $this->dbxref_buddy->updateDb($buddy_values, $buddy_conditions, []);
         $this->messenger()->addStatus($this->t('The database "@name" has been updated.', ['@name' => $values['db_name']]));
+        $success = TRUE;
       }
       catch (ChadoBuddyException $e) {
         $this->messenger()->addError($this->t('Unable to update database "@name": @error',
@@ -226,13 +229,15 @@ class ChadoDbForm extends FormBase {
       }
     }
 
-    // Views caching can prevent seeing edits we just made.
-    $view = Views::getView('chado_databases');
-    $view->storage->invalidateCaches();
+    if ($success) {
+      // Views caching can prevent seeing edits we just made.
+      $view = Views::getView('chado_databases');
+      $view->storage->invalidateCaches();
 
-    // @todo This redirect loses any filters we may have applied.
-    $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_db')->toString());
-    $response->send();
+      // @todo This redirect loses any filters we may have applied.
+      $response = new RedirectResponse(Url::fromUserInput('/admin/tripal/terms/chado_db')->toString());
+      $response->send();
+    }
   }
 
 }
