@@ -208,7 +208,8 @@ class ChadoFormsTest extends ChadoTestKernelBase {
         $value = $value->getValue();
       }
       $this->assertArrayHasKey($key, $form,
-        "Expected the key \"$steps$key\" in the form array but it is not present");
+        "Expected the key \"$steps$key\" in the form array but it is not present. Keys found were: "
+        . print_r(array_keys($form), TRUE));
       $this->assertEquals($value, $form[$key],
         "We did not get the value we expected \"$value\" for \"$steps$key\".");
     }

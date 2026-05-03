@@ -1,0 +1,157 @@
+'Database cross reference add form with a new dbxref':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_database_cross_references'
+    'args':
+      - null
+    'form_expectations':
+      '#form_id': 'chado_dbxref_form'
+      'db_name':
+        '#title': 'External Database Name'
+        '#value': null
+      'dbxref_accession':
+        '#title': 'External Database Accession'
+      'dbxref_version':
+        '#title': 'External Database Accession Version'
+      'dbxref_description':
+        '#title': 'External Database Accession Description'
+      'submit':
+        '#value': 'Add'
+      'cancel':
+        '#markup': 'Cancel'
+    'submit_values':
+      'db_name': 'local (15)'
+      'dbxref_accession': '123456'
+    'submit_expectations':
+      'db_name': 'local (15)'
+    'submit_output':
+      - 'Redirecting to'
+    'submit_messages':
+      - 'status: The database crossreference "local (15):123456" has been added'
+    'chado_expectations':
+      - 'table': 'dbxref'
+        'conditions':
+          - 'column': 'accession'
+            'value': '123456'
+          - 'column': 'db_id'
+            'value': 15
+        'count': 1
+'Database cross reference add form with an existing term':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_database_cross_references'
+    'args':
+      - null
+    'form_expectations':
+      '#form_id': 'chado_dbxref_form'
+    'submit_values':
+      'db_name': 'local (15)'
+      'dbxref_accession': 'is_analysis'
+    'submit_expectations':
+      'db_name': 'local (15)'
+      'dbxref_accession': 'is_analysis'
+    'submit_fails': true
+    'submit_output':
+      - ''
+    'submit_messages':
+      - 'Unable to add the cross reference "local (15):is_analysis"'
+      - 'duplicate key value violates unique constraint'
+'Database cross reference edit form with an existing term':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_database_cross_references'
+    'args':
+      'dbxref_id': 58
+    'form_expectations':
+      '#form_id': 'chado_dbxref_form'
+      'db_name':
+        '#value': 'local (15)'
+      'dbxref_accession':
+        '#value': 'is_analysis'
+    'submit_values':
+      'dbxref_accession': 'was_analysis'
+    'submit_expectations':
+      'dbxref_accession': 'was_analysis'
+    'submit_output':
+      - 'Redirecting to'
+    'submit_messages':
+      - 'status: The database crossreference "local (15):was_analysis" has been updated'
+    'chado_expectations':
+      - 'table': 'dbxref'
+        'conditions':
+          - 'column': 'accession'
+            'value': 'is_analysis'
+          - 'column': 'db_id'
+            'value': 15
+        'count': 0
+      - 'table': 'dbxref'
+        'conditions':
+          - 'column': 'accession'
+            'value': 'was_analysis'
+          - 'column': 'db_id'
+            'value': 15
+        'count': 1
+'Database cross reference edit form with an invalid dbxref_id argument':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefForm'
+    'args':
+      'dbxref_id': 500000
+    'submit_fails': true
+    'submit_output':
+      - 'Invalid dbxref_id "500000" passed to chado_dbxref_form'
+'Database cross reference edit form with various invalid inputs':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefForm'
+    'args':
+      - null
+    'form_expectations':
+      '#form_id': 'chado_dbxref_form'
+    'submit_values':
+      'db_name':
+        '#value': 'bogus (900000)'
+    'submit_fails': true
+    'submit_output':
+      - ''
+    'submit_messages':
+      - 'error: External Database Name field is required.'
+      - 'error: External Database Accession field is required.'
+'Database cross reference delete form with foreign key in use':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefDeleteForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_database_cross_references'
+    'args':
+      'dbxref_id': 58
+    'form_expectations':
+      '#form_id': 'chado_dbxref_delete_form'
+      'dbxref_id':
+        '#value': 58
+      'description':
+        '#type': 'table'
+      'cancel':
+        '#value': 'Cancel'
+    'submit_expectations':
+      'dbxref_id': 58
+    'submit_output':
+      # Submit here executes the Cancel button.
+      - 'Redirecting to'
+    'submit_fails': true
+    'submit_messages':
+      - 'There are 1 foreign key references to this cross reference, it cannot be deleted'
+    'chado_expectations':
+      - 'table': 'dbxref'
+        'conditions':
+          - 'column': 'dbxref_id'
+            'value': 58
+        'count': 1
+'Database cross reference delete form with an invalid dbxref_id argument':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefDeleteForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_database_cross_references'
+    'args':
+      'dbxref_id': 900000
+    'submit_fails': true
+    'submit_output':
+      - 'Invalid dbxref_id "900000" passed to chado_dbxref_delete_form'
