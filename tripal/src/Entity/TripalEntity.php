@@ -866,8 +866,13 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @param bool $refresh_cache
    *   Indicates if this field should be skipped if it is already registered.
    *   TRUE indicates we should override any existing registration.
+   *
+   * @return bool
+   *   TRUE if this field is a TripalField and was registered, FALSE otherwise.
+   *
+   * @see TripalEntity::getTripalFieldInfo()
    */
-  public function registerTripalField(string $field_name, bool $refresh_cache = FALSE) {
+  public function registerTripalField(string $field_name, bool $refresh_cache = FALSE): bool {
 
     // Get some general info about this field to confirm it's a TripalField.
     $field_defn = $this->getFieldDefinition($field_name);
@@ -887,6 +892,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // TripalStorage Backend ID.
     $tsid = $settings['storage_plugin_id'];
+    $this->tripalfield_info[$field_name] ??= [];
 
     // Register information about this field from the field definition.
     // Note: Unless it already exists and we're not told to refresh the cache.
@@ -911,6 +917,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $plugin_definition = $manager->getDefinition($field_defn->getType());
       $this->tripalfield_info[$field_name]['field_class'] = $plugin_definition['class'];
       $this->tripalfield_info[$field_name]['field_label'] = $plugin_definition['label'];
+
+      // Now we have the class we can ask for some of the field-specific
+      // information like the main property name.
+      $this->tripalfield_info[$field_name]['main_property'] = $plugin_definition['class']::mainPropertyName();
+      $this->tripalfield_info[$field_name]['main_display_property'] = $plugin_definition['class']::mainDisplayPropertyName();
 
       // Now lets add information about it's property types.
       $property_info = [];
@@ -978,14 +989,46 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   /**
    * Returns Tripal-specific information about a specific field.
    *
+   * This is populated by TripalEntity::registerTripalField() and cached
+   * in the class variable $this->tripalfield_info for performance reasons.
+   *
+   * You can only request information about fields that define a TripalStorage
+   * backend (i.e. storage_plugin_id).
+   *
    * @param string $field_name
    *   The field that you want information about.
    * @param string $request_key
    *   The information you want. Specifically, the following are supported:
-   *   - fully_cached (bool): indicates whether all properties of this field
-   *     will be saved both in the storage backend and the Drupal field tables.
-   *   - main_property_name (string): the key name for the main property in this
-   *     field. This is set by TripalFieldItem::mainPropertyName().
+   *   - term (string): the term associated with this field in the format
+   *     'termIdSpace:termAccession'.
+   *   - tripalstorage_id (string): the TripalStorage plugin id for the
+   *     backend that manages this field.
+   *   - tripalstorage_settings (array): the settings for the TripalStorage
+   *     backend that manages this field.
+   *   - settings (array): the field settings defined in Drupal for this field.
+   *   - is_required (bool): indicates whether this field is required or not.
+   *   - cardinality (int): the cardinality of this field.
+   *   - field_type (string): the Drupal field type for this field.
+   *   - field_class (string): the class name for this field.
+   *   - field_label (string): the human readable label for this field.
+   *   - property_types (array): an array of the property types for this field,
+   *     keyed by the property key. Each element in the array is an array with
+   *     the following keys:
+   *     - id (string): the id of the property type (e.g. 'varchar').
+   *     - key (string): the property key set in the field class (e.g. 'value').
+   *     - cardinality (int): the cardinality of this property.
+   *     - cache_status (bool): the cache status of this property, where TRUE
+   *       indicates this property is cached in the Drupal field tables and
+   *       FALSE indicates it is not.
+   *     - storage_settings (array): the storage settings used by the backend
+   *       storage for this property.
+   *     - id_space (string): the term id space for this property type.
+   *     - accession (string): the term accession for this property type.
+   *   - main_property (string): the key name for the main property in this
+   *     field. This is set by TripalFieldItem::mainPropertyName() and is the
+   *     property used to test if the field is empty.
+   *   - main_display_property (string): the key name for the property used to
+   *     generate the field value for token replacement in title and URL.
    *
    * @return mixed
    *   The information indicated by $request_key for the field indicated. See
