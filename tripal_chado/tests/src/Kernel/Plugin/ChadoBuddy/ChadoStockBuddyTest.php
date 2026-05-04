@@ -297,17 +297,17 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
   }
 
   /**
-  * Test method for insertStock().
-  *
-  * @param array $values
-  *   An array of stock values to insert.
-  * @param array $options
-  *   An array of options to pass to insertStock().
-  * @param int $num_expected_records
-  *   The expected number of stock records to be created.
-  *
-  * @dataProvider provideInsertStockScenarios
-  */
+   * Test method for insertStock().
+   *
+   * @param array $values
+   *   An array of stock values to insert.
+   * @param array $options
+   *   An array of options to pass to insertStock().
+   * @param int $num_expected_records
+   *   The expected number of stock records to be created.
+   *
+   * @dataProvider provideInsertStockScenarios
+   */
   #[DataProvider('provideInsertStockScenarios')]
   public function testInsertStock(array $values, array $options, int $num_expected_records) {
 
@@ -346,6 +346,13 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     );
     $stock_id = $results['get']['stock.stock_id'];
     $this->assertTrue(is_numeric($stock_id), 'We did not retrieve a numeric stock_id for the new stock inserted via insertStock() method');
+
+    // Verify the stock names match.
+    $this->assertEquals(
+      $values['stock.name'],
+      $results['get']['stock.name'],
+      'The stock name we retrieved did not match the stock name we inserted.',
+    );
   }
 
   /**

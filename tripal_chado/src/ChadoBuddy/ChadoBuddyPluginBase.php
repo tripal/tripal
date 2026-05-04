@@ -611,7 +611,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *   - if the 'validate_foreign_keys' option contains the $valid_key but it
    *     does not have a boolean value.
    */
-  protected function parseValidateForeignKeysOption(array $options, string $valid_key) {
+  protected function parseValidateForeignKeysOption(array $options, string $valid_key): bool {
     if (array_key_exists('validate_foreign_keys', $options)) {
       $validate_foreign_keys = $options['validate_foreign_keys'];
       // If the option is a boolean, return that value for all keys.
@@ -670,7 +670,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     if ($lookup_columns) {
       // If any of these were specified, we disable the automatic lookup.
       foreach (array_keys($options) as $key) {
-        if (in_array($key, array_keys($defaults))) {
+        if (array_key_exists($key, $defaults)) {
           $lookup_columns = FALSE;
           break;
         }

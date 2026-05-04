@@ -759,7 +759,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
       // validate or retrieve the type_id.
       $cvterm_values = $this->subsetInput($values, ['cvterm', 'cv'], ['strict' => FALSE]);
       if ($cvterm_values) {
-        // Use the buddy manager to create an cvterm buddy instance.
+        // Use the buddy manager to create a cvterm buddy instance.
         if (!isset($this->cvterm_buddy)) {
           $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
         }
@@ -772,7 +772,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
           }
           $values['stock.type_id'] = $cvterm_records[0]->getValue('cvterm.cvterm_id', ['strict' => FALSE]);
         }
-        // If an cvterm could not be found, yet cvterm values were provided,
+        // If a cvterm could not be found, yet cvterm values were provided,
         // throw an exception.
         else {
           throw new ChadoBuddyException("ChadoBuddy validateStockType error, could not find a cvterm, but cvterm values were provided:\n" . print_r($cvterm_values, TRUE));
@@ -883,7 +883,6 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
       $query = $this->chado_connection->select('1:' . $linking_table, 'L');
       $query->condition('L.stock_id', $stock->getValue('stock.stock_id'), '=');
       $query->condition('L.' . $base_pkey_col, $record_id, '=');
-      $query->fields('L');
       $count = $query->countQuery()->execute()->fetchField();
 
       // If count is not zero, the record already exists, so skip insert.
