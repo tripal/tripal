@@ -122,8 +122,9 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'Stock "Stock1" updated with new dbxref',
       36
     );
-    $stock_id = $values['get']['stock.stock_id'];
-    $this->assertTrue(is_numeric($stock_id), 'We did not retrieve an integer stock_id for stock "Stock1" which should have been updated by upsertStock().');
+    $updated_stock_id = $values['get']['stock.stock_id'];
+    $this->assertTrue(is_numeric($updated_stock_id), 'We did not retrieve an integer stock_id for stock "Stock1" which should have been updated by upsertStock().');
+    $this->assertEquals($stock_id, $updated_stock_id, 'The stock_id for stock "Stock1" changed when we updated the stock record with a dbxref buddy record using upsertStock().');
 
     $retrieved_dbxref_id = $values['get']['stock.dbxref_id'];
     $this->assertEquals($dbxref_id, $retrieved_dbxref_id, 'The dbxref_id associated with the stock record did not match the dbxref_id of the dbxref buddy record we updated the stock with.');
@@ -159,8 +160,9 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'Stock "Stock1" updated with new cvterm type',
       36
     );
-    $stock_id = $values['get']['stock.stock_id'];
-    $this->assertTrue(is_numeric($stock_id), 'We did not retrieve an integer stock_id for stock "Stock1" which should have been updated by upsertStock().');
+    $updated_stock_id = $values['get']['stock.stock_id'];
+    $this->assertTrue(is_numeric($updated_stock_id), 'We did not retrieve an integer stock_id for stock "Stock1" which should have been updated by upsertStock().');
+    $this->assertEquals($stock_id, $updated_stock_id, 'The stock_id for stock "Stock1" changed when we updated the stock record with a cvterm buddy record using upsertStock().');
 
     $retrieved_cvterm_id = $values['get']['stock.type_id'];
     $this->assertEquals($cvterm_id, $retrieved_cvterm_id, 'The cvterm_id associated with the stock record did not match the cvterm_id of the cvterm buddy record we updated the stock with.');
