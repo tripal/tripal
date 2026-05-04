@@ -93,21 +93,27 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $stock_id = $values['get']['stock.stock_id'];
     $this->assertTrue(is_numeric($stock_id), 'We did not retrieve an integer stock_id for stock "Stock1" which should have been inserted by upsertStock().');
 
-    // TEST: Update an existing stock record to add a dbxref to it.
-    $update_stock_values = [
+    // TEST: Update an existing stock record to add a ChadoDbxrefBuddy record.
+    $simple_dbxref_values = [
+      'db.name' => 'local',
+      'dbxref.accession' => 'newAccession',
+    ];
+    $dbxref_buddy_record = $type->createInstance('chado_dbxref_buddy', [])->insertDbxref($simple_dbxref_values);
+    $dbxref_id = $dbxref_buddy_record->getValue('dbxref.dbxref_id');
+    $this->assertTrue(is_numeric($dbxref_id), 'We did not retrieve an integer dbxref_id for the dbxref record we inserted.');
+    $update_stock_dbxref_values = [
       'stock.uniquename' => 'stock1',
       'stock.type_id' => '3',
       'organism.genus' => 'Tripalus',
       'organism.species' => 'databasica',
-      'dbxref.accession' => 'newAccession',
-      'db.name' => 'local',
+      'buddy_record' => $dbxref_buddy_record,
     ];
     $options = [
       'create_dbxref' => TRUE,
     ];
     $test_records = [];
-    $test_records['set'] = $stock_instance->upsertStock($update_stock_values, $options);
-    $test_records['get'] = $stock_instance->getStock($update_stock_values);
+    $test_records['set'] = $stock_instance->upsertStock($update_stock_dbxref_values, $options);
+    $test_records['get'] = $stock_instance->getStock($update_stock_dbxref_values);
     $values = $this->multiAssert(
       'upsertStock',
       $test_records,
@@ -119,6 +125,49 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $stock_id = $values['get']['stock.stock_id'];
     $this->assertTrue(is_numeric($stock_id), 'We did not retrieve an integer stock_id for stock "Stock1" which should have been updated by upsertStock().');
 
+    $retrieved_dbxref_id = $values['get']['stock.dbxref_id'];
+    $this->assertEquals($dbxref_id, $retrieved_dbxref_id, 'The dbxref_id associated with the stock record did not match the dbxref_id of the dbxref buddy record we updated the stock with.');
+
+    // TEST: Update our stock's type using a ChadoCvtermBuddy record. Ensure
+    // that our stock.dbxref_id value is not changed by this update.
+    $simple_cvterm_values = [
+      'cvterm.name' => 'generated germplasm',
+      'cv.name' => 'germplasm_ontology',
+      'db.name' => 'CO_010',
+      'dbxref.accession' => '0000255',
+    ];
+    $cvterm_buddy_record = $type->createInstance('chado_cvterm_buddy', [])->getCvterm($simple_cvterm_values);
+    $cvterm_id = $cvterm_buddy_record[0]->getValue('cvterm.cvterm_id');
+    $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer cvterm_id for the cvterm record we inserted.');
+
+    $update_stock_cvterm_values = [
+      'stock.uniquename' => 'stock1',
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+      'stock.dbxref_id' => $dbxref_id,
+      'buddy_record' => $cvterm_buddy_record[0],
+    ];
+
+    $test_records = [];
+    $test_records['set'] = $stock_instance->upsertStock($update_stock_cvterm_values, $options);
+    $test_records['get'] = $stock_instance->getStock($update_stock_cvterm_values);
+    $values = $this->multiAssert(
+      'upsertStock',
+      $test_records,
+      'stock',
+      'stock.stock_id',
+      'Stock "Stock1" updated with new cvterm type',
+      36
+    );
+    $stock_id = $values['get']['stock.stock_id'];
+    $this->assertTrue(is_numeric($stock_id), 'We did not retrieve an integer stock_id for stock "Stock1" which should have been updated by upsertStock().');
+
+    $retrieved_cvterm_id = $values['get']['stock.type_id'];
+    $this->assertEquals($cvterm_id, $retrieved_cvterm_id, 'The cvterm_id associated with the stock record did not match the cvterm_id of the cvterm buddy record we updated the stock with.');
+
+    // Double check the dbxref_id value did not change with this update.
+    $retrieved_dbxref_id = $values['get']['stock.dbxref_id'];
+    $this->assertEquals($dbxref_id, $retrieved_dbxref_id, 'The dbxref_id associated with the stock record was updated when upsertStock() updated the stock.type_id using a cvterm buddy record.');
   }
 
   /**
