@@ -392,6 +392,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $subsetInput = $reflection->getMethod('subsetInput');
     $dereferenceBuddyRecord = $reflection->getMethod('dereferenceBuddyRecord');
     $validateOutput = $reflection->getMethod('validateOutput');
+    $parseValidateForeignKeysOption = $reflection->getMethod('parseValidateForeignKeysOption');
 
     // CASE: valid values passed to validateInput().
     $user_values = [
@@ -714,6 +715,35 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     }
     $this->assertTrue($exception_caught, "We should get an exception when calling validateOutput() with anything other than an array");
     $this->assertStringContainsString('more than one record', $exception_message, "We did not get the exception message we expected when calling validateOutput() with multiple records.");
+
+    // CASE: calling parseValidateForeignKeysOption() with valid input.
+    $options = ['validate_foreign_keys' => ['test key' => TRUE]];
+    $exception_caught = FALSE;
+    try {
+      $parseValidateForeignKeysOption->invoke($instance, $options, 'test key');
+    }
+    catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertFalse($exception_caught, "We shouldn't get an exception when calling parseValidateForeignKeysOption() with valid input, but we got: $exception_message");
+
+    // CASE: calling parseValidateForeignKeysOption() with an empty $valid_key.
+    $exception_caught = FALSE;
+    try {
+      $parseValidateForeignKeysOption->invoke($instance, $options, '');
+    }
+    catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, "We should get an exception when calling parseValidateForeignKeysOption() with an empty valid_key parameter");
+    $this->assertStringContainsString(
+      'ChadoBuddy parseValidateForeignKeysOption error, valid_key cannot be empty when validate_foreign_keys option is an array:',
+      $exception_message,
+      "We did not get the exception message we expected when calling parseValidateForeignKeysOption() with an empty valid_key parameter."
+    );
+
   }
 
   /**

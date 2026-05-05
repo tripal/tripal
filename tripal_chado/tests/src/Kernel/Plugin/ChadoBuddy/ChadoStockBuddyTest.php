@@ -616,6 +616,14 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       );
       $stock_id = $results['get']['stock.stock_id'];
       $this->assertTrue(is_numeric($stock_id), 'We did not retrieve a numeric stock_id for the new stock updated via updateStock() method');
+
+      foreach ($values as $field => $expected_value) {
+        $this->assertEquals(
+          $expected_value,
+          $results['get'][$field],
+          "The stock field '$field' we retrieved did not match the stock field value we updated.",
+        );
+      }
     }
   }
 
@@ -1184,7 +1192,25 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy parseValidateForeignKeysOption error, validate_foreign_keys option for key cvterm_id must be a boolean value:",
     ];
 
-    // #16: Provide an invalid base table to associateStock().
+    // #16: Trigger a parseValidateForeignKeysOption error by providing a string
+    // value for validate_foreign_keys instead of an array or boolean.
+    $scenarios[] = [
+      'upsertStock',
+      [
+        [
+          'stock.uniquename' => 'existingstock',
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'stock.type_id' => 3,
+        ],
+        [
+          'validate_foreign_keys' => 'notabooleanorarray',
+        ],
+      ],
+      "ChadoBuddy parseValidateForeignKeysOption error, validate_foreign_keys option must be a boolean value or an array:",
+    ];
+
+    // #17: Provide an invalid base table to associateStock().
     $scenarios[] = [
       'associateStock',
       [
@@ -1195,7 +1221,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy associateStock error, invalid base_table provided: madeupbasetable. Valid options are:",
     ];
 
-    // #17: Provide an invalid record_id to associateStock().
+    // #18: Provide an invalid record_id to associateStock().
     $scenarios[] = [
       'associateStock',
       [
@@ -1206,7 +1232,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy associateStock database error",
     ];
 
-    // #18: Try to associate a stock with a base table that requires a cvterm_id
+    // #19: Try to associate a stock with a base table that requires a cvterm_id
     // in the linking table but do not provide a cvterm_id in the options and
     // turn off looking it up.
     $scenarios[] = [

@@ -608,8 +608,12 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *   the validate_foreign_keys array, then return the default value of TRUE.
    *
    * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   - if the 'valid_key' parameter is empty when the 'validate_foreign_keys'
+   *     option is an array.
    *   - if the 'validate_foreign_keys' option contains the $valid_key but it
    *     does not have a boolean value.
+   *   - if the 'validate_foreign_keys' option is set but is not of type boolean
+   *     or array.
    */
   protected function parseValidateForeignKeysOption(array $options, string $valid_key): bool {
     if (array_key_exists('validate_foreign_keys', $options)) {
@@ -620,13 +624,22 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
       }
       // If the option is an array, look for the valid key in the array and
       // return its value if it's a boolean.
-      elseif (is_array($validate_foreign_keys) && array_key_exists($valid_key, $validate_foreign_keys)) {
-        if (is_bool($validate_foreign_keys[$valid_key])) {
-          return $validate_foreign_keys[$valid_key];
+      elseif (is_array($validate_foreign_keys)) {
+        if (empty($valid_key)) {
+          throw new ChadoBuddyException("ChadoBuddy parseValidateForeignKeysOption error, valid_key cannot be empty when validate_foreign_keys option is an array:\n" . print_r($options, TRUE));
         }
-        else {
-          throw new ChadoBuddyException("ChadoBuddy parseValidateForeignKeysOption error, validate_foreign_keys option for key $valid_key must be a boolean value:\n" . print_r($options, TRUE));
+        if (array_key_exists($valid_key, $validate_foreign_keys)) {
+          if (is_bool($validate_foreign_keys[$valid_key])) {
+            return $validate_foreign_keys[$valid_key];
+          }
+          else {
+            throw new ChadoBuddyException("ChadoBuddy parseValidateForeignKeysOption error, validate_foreign_keys option for key $valid_key must be a boolean value:\n" . print_r($options, TRUE));
+          }
         }
+      }
+      else {
+        // $validate_foreign_keys is set but is not of type bool or array.
+        throw new ChadoBuddyException("ChadoBuddy parseValidateForeignKeysOption error, validate_foreign_keys option must be a boolean value or an array:\n" . print_r($options, TRUE));
       }
     }
     // Otherwise, return the default value of TRUE.
