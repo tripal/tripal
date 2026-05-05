@@ -237,6 +237,14 @@ class TripalEntityChadoFieldMethodTest extends ChadoTestKernelBase {
       $storage = $created_entity->getFieldItemBackendStorage($field_name, $item);
       $this->assertEquals($expectations['expected_result'], $storage, "We expected getFieldItemBackendStorage() to return either FALSE or the storage plugin ID for the '$field_name' field for our " . $current_scenario['label'] . " scenario.");
     }
+
+    // TEST: getTripalFieldStorageInfo() returns what we expect.
+    foreach ($current_scenario['expectations']['getTripalFieldStorageInfo'] as $field_name => $expectations) {
+      foreach ($expectations as $request_key => $expected_value) {
+        $storage_info = $created_entity->getTripalFieldStorageInfo($field_name, $request_key);
+        $this->assertEquals($expected_value, $storage_info, "We expected to have retrieved the correct $request_key storage info for the '$field_name' field for our " . $current_scenario['label'] . " scenario.");
+      }
+    }
   }
 
   /**
@@ -252,6 +260,40 @@ class TripalEntityChadoFieldMethodTest extends ChadoTestKernelBase {
       ],
     ]);
     $entity->save();
+
+    // Test an invalid field name for getTripalFieldStorageInfo().
+    $exception_thrown = FALSE;
+    $exception_message = 'NOT THROWN';
+    try {
+      $entity->getTripalFieldStorageInfo('NOT_A_VALID_FIELD', 'field_type');
+    }
+    catch (\Exception $e) {
+      $exception_thrown = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_thrown, "We expected an exception to be thrown for an invalid field storageinfo request.");
+    $this->assertStringContainsString(
+      "You requested field storage information for a field (i.e. 'NOT_A_VALID_FIELD') that is either not attached to this entity or not a valid TripalField.",
+      $exception_message,
+      "We expected a specific exception message for an invalid field info request."
+    );
+
+    // Test an invalid request key for getTripalFieldStorageInfo().
+    $exception_thrown = FALSE;
+    $exception_message = 'NOT THROWN';
+    try {
+      $entity->getTripalFieldStorageInfo('project_name', 'NOT_A_VALID_KEY');
+    }
+    catch (\Exception $e) {
+      $exception_thrown = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_thrown, "We expected an exception to be thrown for an invalid field storage info request.");
+    $this->assertStringContainsString(
+      "The Request key 'NOT_A_VALID_KEY' is not supported by TripalEntity::getTripalFieldStorageInfo()",
+      $exception_message,
+      "We expected a specific exception message for an invalid field storage info request."
+    );
 
     // Test an invalid field name for getTripalFieldInfo().
     $exception_thrown = FALSE;

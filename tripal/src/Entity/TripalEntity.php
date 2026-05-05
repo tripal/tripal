@@ -892,7 +892,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // TripalStorage Backend ID.
     $tsid = $settings['storage_plugin_id'];
-    $this->tripalfield_info[$field_name] ??= [];
 
     // Register information about this field from the field definition.
     // Note: Unless it already exists and we're not told to refresh the cache.
@@ -1058,6 +1057,41 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Now we can use that TripalField information cache to retrieve the
     // requested information.
     return $this->tripalfield_info[$field_name][$request_key];
+  }
+
+  /**
+   * Returns TripalStorage-specific information about a specific field.
+   *
+   * @param string $field_name
+   *   The field that you want information about.
+   * @param string $request_key
+   *   The information you want. This will depend on the TripalStorage backend
+   *   used by this field, but some examples include:
+   *   - action (string): the action to use for storage backend.
+   *   - path (string): the path describing the column to save this property
+   *   to in the backend.
+   *   - table_alias_mapping (array): a mapping between the alias used in the
+   *   path and the real table name in the backend.
+   *
+   * @return mixed
+   *   The information indicated by $request_key for the field indicated.
+   */
+  public function getTripalFieldStorageInfo(string $field_name, string $request_key): mixed {
+
+    // Ensure this field is registered.
+    $this->registerTripalField($field_name);
+
+    if (!array_key_exists($field_name, $this->tripalfield_info)) {
+      throw new \Exception("You requested field storage information for a field (i.e. '$field_name') that is either not attached to this entity or not a valid TripalField.");
+    }
+
+    if (!array_key_exists($request_key, $this->tripalfield_info[$field_name]['tripalstorage_settings'])) {
+      throw new \Exception("The Request key '$request_key' is not supported by TripalEntity::getTripalFieldStorageInfo(). This error was encountered when information was requested for '$field_name' field.");
+    }
+
+    // Now we can use that TripalField information cache to retrieve the
+    // requested information.
+    return $this->tripalfield_info[$field_name]['tripalstorage_settings'][$request_key];
   }
 
   /**

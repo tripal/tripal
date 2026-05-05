@@ -156,6 +156,18 @@ scenarios:
             termIdSpace: 'schema'
             termAccession: 'description'
             debug: FALSE
+      getTripalFieldStorageInfo:
+        project_name:
+          base_table: 'project'
+          base_column: 'name'
+        metaphysical_props:
+            base_table: 'project'
+            base_column: 'description'
+        gemologist:
+          base_table: 'project'
+          linker_table: 'project_contact'
+          linker_fkey_column: 'contact_id'
+
   ## EXCEPTION SCENARIOS.
   - label: 'No Storage Exception expected'
     description: 'Entity with Tripal field given value but no storage backend'
