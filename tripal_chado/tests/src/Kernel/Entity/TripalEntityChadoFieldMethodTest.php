@@ -249,6 +249,8 @@ class TripalEntityChadoFieldMethodTest extends ChadoTestKernelBase {
 
   /**
    * Tests exceptions not thrown during create and easy to trigger.
+   *
+   * @see TripalEntityFieldMethodTest::testSimpleExceptions()
    */
   public function testSimpleExceptions() {
     $entity = TripalEntity::create([
@@ -312,6 +314,23 @@ class TripalEntityChadoFieldMethodTest extends ChadoTestKernelBase {
     $this->assertTrue($exception_thrown, "We expected an exception to be thrown for an invalid field property info request.");
     $this->assertStringContainsString(
       "You requested field property information for a field (i.e. 'NOT_A_VALID_FIELD') that is either not attached to this entity or not a valid TripalField.",
+      $exception_message,
+      "We expected a specific exception message for an invalid field property info request."
+    );
+
+    // Test an invalid property key for getTripalFieldPropertyInfo().
+    $exception_thrown = FALSE;
+    $exception_message = 'NOT THROWN';
+    try {
+      $entity->getTripalFieldPropertyInfo('project_name', 'NOT_A_VALID_PROPERTY', 'action');
+    }
+    catch (\Exception $e) {
+      $exception_thrown = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_thrown, "We expected an exception to be thrown for an invalid field property info request.");
+    $this->assertStringContainsString(
+      "You requested field property information for a property (i.e. 'NOT_A_VALID_PROPERTY') that is not part of the 'project_name' field.",
       $exception_message,
       "We expected a specific exception message for an invalid field property info request."
     );
