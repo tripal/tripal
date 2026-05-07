@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- * Provides an tripalStorage plugin manager.
+ * Provides a tripalStorage plugin manager.
  */
 class TripalFieldCollection implements ContainerInjectionInterface  {
 

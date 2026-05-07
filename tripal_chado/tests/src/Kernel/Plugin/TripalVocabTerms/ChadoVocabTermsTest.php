@@ -489,7 +489,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $this->assertTrue(in_array('biological process', array_keys($parent->getSynonyms())), 'The "biological_process" TripalTerm is missing a synonym.');
     $this->assertFalse(in_array('physiological process', array_keys($parent->getSynonyms())), 'The "biological_process" TripalTerm contains a synonym that should have been removed.');
     $this->assertTrue(in_array('single organism process', array_keys($parent->getSynonyms())), 'The "biological_process" TripalTerm is missing a synonym.');
-    $this->assertFalse(in_array('single-organism process', array_keys($parent->getSynonyms())), 'The "biological_process" TripalTerm contains a synonym that should ahve been removed.');
+    $this->assertFalse(in_array('single-organism process', array_keys($parent->getSynonyms())), 'The "biological_process" TripalTerm contains a synonym that should have been removed.');
     $this->assertTrue(in_array('GO:0000004', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
     $this->assertTrue(in_array('GO:0007582', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
     $this->assertTrue(in_array('GO:0044699', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
@@ -544,7 +544,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $this->assertTrue(in_array('biological process', array_keys($parent->getSynonyms())), 'The "biological_process" TripalTerm is missing a synonym.');
     $this->assertFalse(in_array('physiological process', array_keys($parent->getSynonyms())), 'The "biological_process" TripalTerm contains a synonym that should have been removed.');
     $this->assertTrue(in_array('single organism process', array_keys($parent->getSynonyms())), 'The "biological_process" TripalTerm is missing a synonym.');
-    $this->assertFalse(in_array('single-organism process', array_keys($parent->getSynonyms())), 'The "biological_process" TripalTerm contains a synonym that should ahve been removed.');
+    $this->assertFalse(in_array('single-organism process', array_keys($parent->getSynonyms())), 'The "biological_process" TripalTerm contains a synonym that should have been removed.');
     $this->assertTrue(in_array('GO:0000004', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
     $this->assertTrue(in_array('GO:0007582', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
     $this->assertTrue(in_array('GO:0044699', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');

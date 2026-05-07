@@ -45,7 +45,7 @@ content_types:
 
     -   label: Physical Map
         term: data:1280
-        help_text: Use the physical map page for a map of annotated with physical features or landmarks such as restriction sites, cloned DNA fragments, genes or genetic markers, along with the physical distances between them. Distance in a physical map is measured in base pairs. A physical map might be ordered relative to a reference map (typically a genetic map) in the process of genome sequencing.
+        help_text: Use the physical map page for a map annotated with physical features or landmarks such as restriction sites, cloned DNA fragments, genes or genetic markers, along with the physical distances between them. Distance in a physical map is measured in base pairs. A physical map might be ordered relative to a reference map (typically a genetic map) in the process of genome sequencing.
         category: Genomic
         id: physical_map
         title_format: "[physical_map_name]"
@@ -71,7 +71,7 @@ content_types:
 
     -   label: Genome Assembly
         term: operation:0525
-        help_text: Use the genome assembly page for an analyses specifcally for genome assembly. Such an analysis typically involves one or more workflows of bioinormatics tools to generate the assembly.
+        help_text: Use the genome assembly page for an analysis specifically for genome assembly. Such an analysis typically involves one or more workflows of bioinformatics tools to generate the assembly.
         category: Genomic
         id:  genome_assembly
         title_format: "[genome_assembly_name]"
@@ -85,7 +85,7 @@ content_types:
 
     -   label: Genome Annotation
         term: operation:0362
-        help_text: Use the genome annotation page for an analyses specifcally for genome annotation. Such an analysis typically involves one or more workflows of bioinormatics tools to generate the structural and functional annotations of the genome.
+        help_text: Use the genome annotation page for an analysis specifically for genome annotation. Such an analysis typically involves one or more workflows of bioinformatics tools to generate the structural and functional annotations of the genome.
         category: Genomic
         id: genome_annotation
         title_format: "[genome_annotation_name]"
