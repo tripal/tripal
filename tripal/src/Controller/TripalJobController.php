@@ -145,7 +145,7 @@ class TripalJobController extends ControllerBase{
   }
 
   /**
-   * Generates a renderagble array containing the job arguments.
+   * Generates a renderable array containing the job arguments.
    *
    * @param array $arguments
    */

@@ -7,7 +7,7 @@ use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Builds the form to delete an TripalLayoutDefaultView Config Entity.
+ * Builds the form to delete a TripalLayoutDefaultView Config Entity.
  */
 class TripalLayoutDefaultViewDeleteForm extends EntityConfirmFormBase {
 
