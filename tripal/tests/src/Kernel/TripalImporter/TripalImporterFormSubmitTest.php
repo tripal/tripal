@@ -194,7 +194,7 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
     $this->assertIsArray($messages,
       "We expect to have status messages to the user on submission of the form.");
     $this->assertArrayNotHasKey('error', $messages,
-      "There should not be any error messages from this form. Instead we recieved: " . print_r($messages, TRUE));
+      "There should not be any error messages from this form. Instead we received: " . print_r($messages, TRUE));
     // Now delete drupal messages so we start the next test clean.
     \Drupal::messenger()->deleteAll();
 
@@ -236,7 +236,7 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
       $this->assertStringContainsString('Cannot find the file', (string) $messages['error'][0],
         "The error did not match the one we expected for an file which doesn't exist for file_local.");
       $this->assertArrayNotHasKey('status', $messages,
-        "There should not be any success/status messages from this form. Instead we recieved: " . print_r($messages, TRUE));
+        "There should not be any success/status messages from this form. Instead we received: " . print_r($messages, TRUE));
       // Now delete drupal messages so we start the next test clean.
       \Drupal::messenger()->deleteAll();
     }
@@ -285,7 +285,7 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
     $this->assertIsArray($messages,
       "We expect to have status messages to the user on submission of the form.");
     $this->assertArrayNotHasKey('error', $messages,
-      "There should not be any error messages from this form. Instead we recieved: " . print_r($messages, TRUE));
+      "There should not be any error messages from this form. Instead we received: " . print_r($messages, TRUE));
     // Now delete drupal messages so we start the next test clean.
     \Drupal::messenger()->deleteAll();
 
@@ -329,7 +329,7 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
       $this->assertStringContainsString('not a valid URI', (string) $messages['error'][0],
         "The error did not match the one we expected for an invalid URL passed to file_remote.");
       $this->assertArrayNotHasKey('status', $messages,
-        "There should not be any success/status messages from this form. Instead we recieved: " . print_r($messages, TRUE));
+        "There should not be any success/status messages from this form. Instead we received: " . print_r($messages, TRUE));
       // Now delete drupal messages so we start the next test clean.
       \Drupal::messenger()->deleteAll();
     }
@@ -371,7 +371,7 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
       $this->assertStringContainsString('cannot be accessed', (string) $messages['error'][0],
         "The error did not match the one we expected for an invalid URL passed to file_remote.");
       $this->assertArrayNotHasKey('status', $messages,
-        "There should not be any success/status messages from this form. Instead we recieved: " . print_r($messages, TRUE));
+        "There should not be any success/status messages from this form. Instead we received: " . print_r($messages, TRUE));
       // Now delete drupal messages so we start the next test clean.
       \Drupal::messenger()->deleteAll();
     }
