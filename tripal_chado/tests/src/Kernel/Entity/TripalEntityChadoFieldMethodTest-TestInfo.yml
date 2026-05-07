@@ -167,7 +167,97 @@ scenarios:
           base_table: 'project'
           linker_table: 'project_contact'
           linker_fkey_column: 'contact_id'
-
+      getTripalFieldPropertyInfo:
+        project_name:
+          record_id:
+            id: 'int'
+            key: 'record_id'
+            cardinality: 1
+            cache_status: true
+            id_space: 'SIO'
+            accession: '000729'
+          value:
+            id: 'varchar'
+            key: 'value'
+            cardinality: 1
+            cache_status: true
+            id_space: 'schema'
+            accession: 'name'
+        metaphysical_props:
+          record_id:
+            id: 'int'
+            key: 'record_id'
+            cardinality: 1
+            cache_status: true
+            id_space: 'SIO'
+            accession: '000729'
+          value:
+            id: 'text'
+            key: 'value'
+            cardinality: 1
+            cache_status: true
+            id_space: 'schema'
+            accession: 'description'
+        gemologist:
+          record_id:
+            id: 'int'
+            key: 'record_id'
+            cardinality: 1
+            cache_status: true
+            id_space: 'SIO'
+            accession: '000729'
+          contact_id:
+            id: 'int'
+            key: 'contact_id'
+            cardinality: 1
+            cache_status: true
+            id_space: 'NCIT'
+            accession: 'C47954'
+            action: 'store'
+            drupal_store: true
+            path: 'project_contact.contact_id'
+            delete_if_empty: true
+            empty_value: 0
+          linker_id:
+            id: 'int'
+            key: 'linker_id'
+            cardinality: 1
+            cache_status: true
+            id_space: 'SIO'
+            accession: '000729'
+            action: 'store_pkey'
+            drupal_store: true
+            path: 'project_contact.project_contact_id'
+          link:
+            id: 'int'
+            key: 'link'
+            cardinality: 1
+            cache_status: true
+            id_space: 'NCIT'
+            accession: 'C47885'
+            action: 'store_link'
+            drupal_store: true
+            path: 'project.project_id>project_contact.project_id'
+          contact_name:
+            id: 'varchar'
+            key: 'contact_name'
+            cardinality: 1
+            cache_status: true
+            id_space: 'schema'
+            accession: 'name'
+            action: 'read_value'
+            drupal_store: false
+            path: 'project_contact.contact_id>contact.contact_id;name'
+          contact_description:
+            id: 'varchar'
+            key: 'contact_description'
+            cardinality: 1
+            cache_status: true
+            id_space: 'schema'
+            accession: 'description'
+            action: 'read_value'
+            drupal_store: false
+            path: 'project_contact.contact_id>contact.contact_id;description'
   ## EXCEPTION SCENARIOS.
   - label: 'No Storage Exception expected'
     description: 'Entity with Tripal field given value but no storage backend'

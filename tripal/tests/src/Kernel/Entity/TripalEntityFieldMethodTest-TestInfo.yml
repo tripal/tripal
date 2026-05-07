@@ -121,6 +121,23 @@ scenarios:
             termIdSpace: 'META'
             termAccession: 'properties'
             debug: FALSE
+      getTripalFieldPropertyInfo:
+        common_name:
+          value:
+            id: 'varchar'
+            key: 'value'
+            cardinality: 1
+            cache_status: true
+            id_space: 'FAKE'
+            accession: 'name'
+        metaphysical_props:
+          value:
+            id: 'text'
+            key: 'value'
+            cardinality: 1
+            cache_status: true
+            id_space: 'META'
+            accession: 'properties'
   ## EXCEPTION SCENARIOS.
   - label: 'No Storage Exception expected'
     description: 'Entity with Tripal field given value but no storage backend'

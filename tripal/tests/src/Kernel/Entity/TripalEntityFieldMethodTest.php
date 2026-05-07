@@ -215,6 +215,16 @@ class TripalEntityFieldMethodTest extends TripalTestKernelBase {
       $storage = $created_entity->getFieldItemBackendStorage($field_name, $item);
       $this->assertEquals($expectations['expected_result'], $storage, "We expected getFieldItemBackendStorage() to return either FALSE or the storage plugin ID for the '$field_name' field for our " . $current_scenario['label'] . " scenario.");
     }
+
+    // TEST: Confirm I can get back property information for tripal fields.
+    foreach ($current_scenario['expectations']['getTripalFieldPropertyInfo'] as $field_name => $field_properties) {
+      foreach ($field_properties as $property_key => $expectations) {
+        foreach ($expectations as $request_key => $expected_value) {
+          $property_info = $created_entity->getTripalFieldPropertyInfo($field_name, $property_key, $request_key);
+          $this->assertEquals($expected_value, $property_info, "We expected getTripalFieldPropertyInfo() to return the correct information for '$field_name [$property_key]' field for our " . $current_scenario['label'] . " scenario.");
+        }
+      }
+    }
   }
 
   /**
