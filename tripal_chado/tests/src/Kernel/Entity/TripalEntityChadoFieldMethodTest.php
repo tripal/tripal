@@ -261,6 +261,8 @@ class TripalEntityChadoFieldMethodTest extends ChadoTestKernelBase {
     ]);
     $entity->save();
 
+    // getTripalFieldStorageInfo()
+    // ----------------------------------------------------
     // Test an invalid field name for getTripalFieldStorageInfo().
     $exception_thrown = FALSE;
     $exception_message = 'NOT THROWN';
@@ -295,6 +297,44 @@ class TripalEntityChadoFieldMethodTest extends ChadoTestKernelBase {
       "We expected a specific exception message for an invalid field storage info request."
     );
 
+    // getTripalFieldPropertyInfo()
+    // ----------------------------------------------------
+    // Test an invalid field name for getTripalFieldPropertyInfo().
+    $exception_thrown = FALSE;
+    $exception_message = 'NOT THROWN';
+    try {
+      $entity->getTripalFieldPropertyInfo('NOT_A_VALID_FIELD', 'record_id', 'action');
+    }
+    catch (\Exception $e) {
+      $exception_thrown = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_thrown, "We expected an exception to be thrown for an invalid field property info request.");
+    $this->assertStringContainsString(
+      "You requested field property information for a field (i.e. 'NOT_A_VALID_FIELD') that is either not attached to this entity or not a valid TripalField.",
+      $exception_message,
+      "We expected a specific exception message for an invalid field property info request."
+    );
+
+    // Test an invalid request key for getTripalFieldPropertyInfo().
+    $exception_thrown = FALSE;
+    $exception_message = 'NOT THROWN';
+    try {
+      $entity->getTripalFieldPropertyInfo('project_name', 'record_id', 'NOT_A_VALID_KEY');
+    }
+    catch (\Exception $e) {
+      $exception_thrown = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_thrown, "We expected an exception to be thrown for an invalid field property info request.");
+    $this->assertStringContainsString(
+      "The Request key 'NOT_A_VALID_KEY' is not supported by TripalEntity::getTripalFieldPropertyInfo()",
+      $exception_message,
+      "We expected a specific exception message for an invalid field property info request."
+    );
+
+    // getTripalFieldInfo()
+    // ----------------------------------------------------
     // Test an invalid field name for getTripalFieldInfo().
     $exception_thrown = FALSE;
     $exception_message = 'NOT THROWN';

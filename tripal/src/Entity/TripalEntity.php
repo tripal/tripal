@@ -930,9 +930,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $property_info['key'] = $property_type->getKey();
         $property_info['cardinality'] = $property_type->getCardinality();
         $property_info['cache_status'] = $property_type->getCacheStatus();
-        $property_info['storage_settings'] = $property_type->getStorageSettings();
         $property_info['id_space'] = $property_type->getTermIdSpace();
         $property_info['accession'] = $property_type->getTermAccession();
+        $property_info = $property_info + $property_type->getStorageSettings();
         $this->tripalfield_info[$field_name]['property_types'][$property_type->getKey()] = $property_info;
       }
     }
@@ -1067,11 +1067,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @param string $request_key
    *   The information you want. This will depend on the TripalStorage backend
    *   used by this field, but some examples include:
-   *   - action (string): the action to use for storage backend.
-   *   - path (string): the path describing the column to save this property
-   *   to in the backend.
-   *   - table_alias_mapping (array): a mapping between the alias used in the
-   *   path and the real table name in the backend.
+   *   - base_table (string): the table to store this field in the backend.
+   *   - base_column (string): the column in the base table.
    *
    * @return mixed
    *   The information indicated by $request_key for the field indicated.
@@ -1092,6 +1089,50 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Now we can use that TripalField information cache to retrieve the
     // requested information.
     return $this->tripalfield_info[$field_name]['tripalstorage_settings'][$request_key];
+  }
+
+  /**
+   * Returns Tripal Property Type-specific information about a specific field.
+   *
+   * @param string $field_name
+   *   The field that you want information about.
+   * @param string $property_key
+   *   The property key for which you want information.
+   * @param string $request_key
+   *   The information you want. This will depend on the TripalStorage backend
+   *   used by this field, but some examples include:
+   *   - cache_status (bool): whether or not this property is cached in the
+   *     Drupal field tables. TRUE indicates this property is cached and
+   *     FALSE indicates it is not.
+   *   - action (string): the action to use for storage backend.
+   *   - path (string): the path describing the column to save this property
+   *   to in the backend.
+   *   - table_alias_mapping (array): a mapping between the alias used in the
+   *   path and the real table name in the backend.
+   *
+   * @return mixed
+   *   The information indicated by $request_key for the field indicated.
+   */
+  public function getTripalFieldPropertyInfo(string $field_name, string $property_key, string $request_key): mixed {
+
+    // Ensure this field is registered.
+    $this->registerTripalField($field_name);
+
+    if (!array_key_exists($field_name, $this->tripalfield_info)) {
+      throw new \Exception("You requested field property information for a field (i.e. '$field_name') that is either not attached to this entity or not a valid TripalField.");
+    }
+
+    if (!array_key_exists($property_key, $this->tripalfield_info[$field_name]['property_types'])) {
+      throw new \Exception("You requested field property information for a property (i.e. '$property_key') that is not part of the '$field_name' field.");
+    }
+
+    if (!array_key_exists($request_key, $this->tripalfield_info[$field_name]['property_types'][$property_key])) {
+      throw new \Exception("The Request key '$request_key' is not supported by TripalEntity::getTripalFieldPropertyInfo(). This error was encountered when information was requested for '$field_name [$property_key]' field property.");
+    }
+
+    // Now we can use that TripalField information cache to retrieve the
+    // requested information.
+    return $this->tripalfield_info[$field_name]['property_types'][$property_key][$request_key];
   }
 
   /**
