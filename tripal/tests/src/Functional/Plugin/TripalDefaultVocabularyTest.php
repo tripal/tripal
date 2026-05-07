@@ -174,14 +174,14 @@ class TripalDefaultVocabularyTest extends TripalTestBrowserBase {
     $edam_operation->setDescription($EDAM_operation_description);
     $edam_topic->setDescription($EDAM_topic_description);
 
-    // Make sure that all of the ID spaces have been aded to the vocabulary.
+    // Make sure that all of the ID spaces have been added to the vocabulary.
     $id_spaces = $edam->getIdSpaceNames();
     $this->assertTrue(in_array($EDAM_data_idspace, $id_spaces), "The EDAM data ID space is missing from the vocabulary ID spaces.");
     $this->assertTrue(in_array($EDAM_format_idspace, $id_spaces), "The EDAM format ID space is missing from the vocabulary ID spaces.");
     $this->assertTrue(in_array($EDAM_operation_idspace, $id_spaces), "The EDAM operation ID space is missing from the vocabulary ID spaces.");
     $this->assertTrue(in_array($EDAM_topic_idspace, $id_spaces), "The EDAM topic ID space is missing from the vocabulary ID spaces.");
 
-    // Just do a nother check to make sure the vocabularies and ID spaces got setup correctly.
+    // Just do another check to make sure the vocabularies and ID spaces got setup correctly.
     $this->assertTrue($edam->getLabel() == $EDAM_label, "The EDAM label was not correctly returned.");
     $this->assertTrue($edam->getURL() == $EDAM_url, "The EDAM URL was not correctly returned.");
     $this->assertTrue($edam->getNameSpace() == $EDAM_namespace, "The EDAM namespace was not correctly returned.");

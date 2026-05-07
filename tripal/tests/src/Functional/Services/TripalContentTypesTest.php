@@ -44,7 +44,7 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $good = [
       'label' => 'Organism',
       'term' => $term,
-      'help_text' => 'Use the organism page for an individual living system, such as animal, plant, bacteria or virus,',
+      'help_text' => 'Use the organism page for an individual living system, such as animal, plant, bacteria or virus.',
       'category' => 'General',
       'id' => 'organism',
       'title_format' => "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]",
