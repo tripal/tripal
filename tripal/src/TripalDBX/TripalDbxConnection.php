@@ -330,7 +330,7 @@ abstract class TripalDbxConnection extends PgConnection {
     }
     else {
       $type = gettype($database);
-      throw new ConnectionException("We expected a PostgreSQL database connection or Drupal database key string but instead recieved a $type.");
+      throw new ConnectionException("We expected a PostgreSQL database connection or Drupal database key string but instead received a $type.");
     }
 
     // Get a TripalDBX object.
