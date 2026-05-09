@@ -37,7 +37,7 @@
           - 'column': 'db_id'
             'value': 15
         'count': 1
-'Database cross reference add form with an existing term':
+'Database cross reference add form with an existing dbxref':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefForm'
     'setup':
       'views':
@@ -58,7 +58,7 @@
     'submit_messages':
       - 'Unable to add the cross reference "local (15):is_analysis"'
       - 'duplicate key value violates unique constraint'
-'Database cross reference edit form with an existing term':
+'Database cross reference edit form with an existing dbxref':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefForm'
     'setup':
       'views':
@@ -145,6 +145,37 @@
           - 'column': 'dbxref_id'
             'value': 58
         'count': 1
+'Database cross reference delete form with foreign key not in use':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefDeleteForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_database_cross_references'
+    'args':
+      'dbxref_id': 3494
+    'form_expectations':
+      '#form_id': 'chado_dbxref_delete_form'
+      'dbxref_id':
+        '#value': 3494
+      'description':
+        '#type': 'table'
+      'submit':
+        '#value': 'Delete'
+      'cancel':
+        '#value': 'Cancel'
+    'triggering_element':
+      '#value': 'Delete'
+    'submit_expectations':
+      'dbxref_id': 3494
+    'submit_output':
+      - 'Redirecting to'
+    'submit_messages':
+      - 'The database cross reference "null:dbxref with no foreign keys" has been deleted'
+    'chado_expectations':
+      - 'table': 'dbxref'
+        'conditions':
+          - 'column': 'dbxref_id'
+            'value': 3494
+        'count': 0
 'Database cross reference delete form with an invalid dbxref_id argument':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefDeleteForm'
     'setup':

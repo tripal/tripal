@@ -3658,6 +3658,7 @@ INSERT INTO chado.dbxref VALUES (3490, 8, '0007059', '', NULL);
 INSERT INTO chado.dbxref VALUES (3491, 8, '0005136', '', NULL);
 INSERT INTO chado.dbxref VALUES (3492, 12, '0002076', '', NULL);
 INSERT INTO chado.dbxref VALUES (3493, 41, '0000065', '', NULL);
+INSERT INTO chado.dbxref VALUES (3494, 1, 'dbxref with no foreign keys', '', NULL);
 INSERT INTO chado.cvterm VALUES (1, 1, 'null', NULL, 1, 0, 0);
 INSERT INTO chado.cvterm VALUES (2, 4, 'version', 'Chado schema version', 2, 0, 0);
 INSERT INTO chado.cvterm VALUES (3, 5, 'accession', '', 3, 0, 0);
@@ -16542,5 +16543,5 @@ SELECT pg_catalog.setval('chado.cvterm_relationship_cvterm_relationship_id_seq',
 SELECT pg_catalog.setval('chado.cvtermprop_cvtermprop_id_seq', 1346, true);
 SELECT pg_catalog.setval('chado.cvtermsynonym_cvtermsynonym_id_seq', 4559, true);
 SELECT pg_catalog.setval('chado.db_db_id_seq', 41, true);
-SELECT pg_catalog.setval('chado.dbxref_dbxref_id_seq', 3493, true);
+SELECT pg_catalog.setval('chado.dbxref_dbxref_id_seq', 3494, true);
 SELECT pg_catalog.setval('chado.pub_pub_id_seq', 1, true);

@@ -50,16 +50,19 @@ class ChadoFormsTest extends ChadoTestKernelBase {
   /**
    * Provides scenarios for testing configuration entities.
    *
-   * We use a separate yaml file for each form to simplify maintenance.
+   * We use a separate yaml file for each form to simplify maintenance,
+   * and to aid in organization, them they can be stored in sub-folders.
+   * The only condition is that the yaml file name matches /.+\.test\.yml$/i.
    *
    * @return array
    *   The provided scenarios.
    */
   public static function provideScenarios() {
     $all_scenarios = [];
-    $yaml_files = new \GlobIterator(__DIR__ . '/' . '*.test.yml');
-    self::assertNotEmpty($yaml_files, 'Did not find any yaml files for ChadoFormsTest');
-    foreach ($yaml_files as $yaml_file) {
+    $directory_iterator = new \RecursiveDirectoryIterator(__DIR__, \FilesystemIterator::SKIP_DOTS);
+    $iterator_iterator = new \RecursiveIteratorIterator($directory_iterator);
+    $regex_iterator = new \RegexIterator($iterator_iterator, '/.+\.test\.yml$/i');
+    foreach ($regex_iterator as $yaml_file) {
       $file_contents = file_get_contents($yaml_file->getPathName());
       self::assertNotEmpty($file_contents, "No information read from scenarios yaml file \"$yaml_file\"");
       try {
@@ -117,6 +120,12 @@ class ChadoFormsTest extends ChadoTestKernelBase {
       foreach ($scenario['form_expectations'] ?? [] as $key => $value) {
         $this->checkExpectations($key, $value, $form);
       }
+      // Check for expected Drupal messenger messages prior to submission,
+      // e.g. foreign key references.
+      $messages = $this->getFlattenedMessages();
+      foreach ($scenario['form_messages'] ?? [] as $message) {
+        $this->assertArrayContainsString($message, $messages, 'build');
+      }
 
       // Insert any values to be submitted.
       foreach ($scenario['submit_values'] ?? [] as $key => $value) {
@@ -139,7 +148,8 @@ class ChadoFormsTest extends ChadoTestKernelBase {
     // Verify either form redirect output, or an exception message.
     foreach ($scenario['submit_output'] ?? [] as $submit_output) {
       if (strlen($submit_output) > 0) {
-        $this->assertStringContainsString($submit_output, $output, 'Form build or submit output did not contain an expected string');
+        $this->assertStringContainsString($submit_output, $output, 'Form build or submit output did not contain an expected string in '
+        . print_r($output, TRUE));
       }
       else {
         $this->assertEquals($submit_output, $output, 'Form build or submit produced unexpected output');
@@ -159,6 +169,11 @@ class ChadoFormsTest extends ChadoTestKernelBase {
       }
     }
 
+    // Check for expected Drupal messenger messages.
+    foreach ($scenario['submit_messages'] ?? [] as $message) {
+      $this->assertArrayContainsString($message, $messages, 'submit');
+    }
+
     // Inspect the chado database for expected results.
     foreach ($scenario['chado_expectations'] ?? [] as $ce) {
       $query = $this->chado_connection->select('1:' . $ce['table'], 'T');
@@ -169,11 +184,6 @@ class ChadoFormsTest extends ChadoTestKernelBase {
         $count = $query->countQuery()->execute()->fetchField();
         $this->assertEquals($ce['count'], $count, 'Did not meet database count expectation for: ' . print_r($ce, TRUE));
       }
-    }
-
-    // Check for expected Drupal messenger messages.
-    foreach ($scenario['submit_messages'] ?? [] as $message) {
-      $this->assertArrayContainsString($message, $messages);
     }
   }
 
@@ -197,7 +207,8 @@ class ChadoFormsTest extends ChadoTestKernelBase {
     // or more steps further down in the array, so perform recursion.
     if (is_array($value)) {
       $this->assertArrayHasKey($key, $form,
-        "Expected the key \"$steps$key\" in the form array but it is not present");
+        "Expected the key \"$steps$key\" in the form array but it is not present. Form keys found: "
+        . print_r(array_keys($form), TRUE));
       $sub_form = $form[$key];
       foreach ($value as $next_key => $next_value) {
         $this->checkExpectations($next_key, $next_value, $sub_form, $steps . $key . ':');
@@ -211,7 +222,7 @@ class ChadoFormsTest extends ChadoTestKernelBase {
         "Expected the key \"$steps$key\" in the form array but it is not present. Keys found were: "
         . print_r(array_keys($form), TRUE));
       $this->assertEquals($value, $form[$key],
-        "We did not get the value we expected \"$value\" for \"$steps$key\".");
+        "We did not get the value we expected \"$value\" for \"$steps$key\", instead we got \"" . $form[$key] . "\".");
     }
   }
 
@@ -242,11 +253,13 @@ class ChadoFormsTest extends ChadoTestKernelBase {
    *   A substring to find in the array of messages.
    * @param array $messages
    *   An array of strings.
+   * @param string $context
+   *   The stage where the assertion is made.
    *
    * @return void
    *   No return value, just performs assertions.
    */
-  protected function assertArrayContainsString(string $expected, array $messages): void {
+  protected function assertArrayContainsString(string $expected, array $messages, string $context): void {
     $found = FALSE;
     foreach ($messages as $message) {
       if (str_contains($message, $expected)) {
@@ -255,7 +268,7 @@ class ChadoFormsTest extends ChadoTestKernelBase {
       }
     }
     if (!$found) {
-      $this->fail("Expected to find the string \"$expected\" in a drupal messenger message, but did not. Messages were: "
+      $this->fail("Expected to find the string \"$expected\" in a drupal messenger message during form $context, but did not. Messages were: "
         . print_r($messages, TRUE));
     }
   }
