@@ -39,9 +39,6 @@
         'count': 1
 'Database cross reference add form with an existing dbxref':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefForm'
-    'setup':
-      'views':
-        - 'config/install/views.view.chado_database_cross_references'
     'args':
       - null
     'form_expectations':
@@ -118,9 +115,6 @@
       - 'error: External Database Accession field is required.'
 'Database cross reference delete form with foreign key in use':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefDeleteForm'
-    'setup':
-      'views':
-        - 'config/install/views.view.chado_database_cross_references'
     'args':
       'dbxref_id': 58
     'form_expectations':
@@ -178,9 +172,6 @@
         'count': 0
 'Database cross reference delete form with an invalid dbxref_id argument':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefDeleteForm'
-    'setup':
-      'views':
-        - 'config/install/views.view.chado_database_cross_references'
     'args':
       'dbxref_id': 900000
     'submit_fails': true

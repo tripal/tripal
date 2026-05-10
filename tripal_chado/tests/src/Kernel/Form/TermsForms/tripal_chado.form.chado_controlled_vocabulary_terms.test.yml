@@ -57,9 +57,6 @@
         'count': 1
 'Controlled vocabulary term add form with an existing term':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermForm'
-    'setup':
-      'views':
-        - 'config/install/views.view.chado_controlled_vocabulary_terms'
     'args':
       - null
     'form_expectations':
@@ -188,9 +185,6 @@
         'count': 0
 'Controlled vocabulary term delete form with an invalid cvterm_id argument':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermDeleteForm'
-    'setup':
-      'views':
-        - 'config/install/views.view.chado_controlled_vocabulary_terms'
     'args':
       'cvterm_id': 900000
     'submit_fails': true

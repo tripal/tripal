@@ -48,9 +48,6 @@
         'count': 1
 'Database add form with an existing db':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbForm'
-    'setup':
-      'views':
-        - 'config/install/views.view.chado_databases'
     'args':
       - null
     'form_expectations':
@@ -79,14 +76,14 @@
         '#value': 15
     'submit_values':
       'db_name': 'update0'
-      'db_description' : 'update1'
-      'db_url' : 'update2'
-      'db_urlprefix' : 'update3'
+      'db_description': 'update1'
+      'db_url': 'update2'
+      'db_urlprefix': 'update3'
     'submit_expectations':
       'db_name': 'update0'
-      'db_description' : 'update1'
-      'db_url' : 'update2'
-      'db_urlprefix' : 'update3'
+      'db_description': 'update1'
+      'db_url': 'update2'
+      'db_urlprefix': 'update3'
     'submit_output':
       - 'Redirecting to'
     'submit_messages':
@@ -117,9 +114,6 @@
       - 'Invalid db_id "500000" passed to chado_db_form'
 'Database delete form with foreign key in use':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbDeleteForm'
-    'setup':
-      'views':
-        - 'config/install/views.view.chado_databases'
     'args':
       'db_id': 15
     'form_expectations':
@@ -174,9 +168,6 @@
         'count': 0
 'Database delete form with an invalid db_id argument':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbDeleteForm'
-    'setup':
-      'views':
-        - 'config/install/views.view.chado_databases'
     'args':
       'db_id': 900000
     'submit_fails': true

@@ -67,10 +67,10 @@
         '#value': 2
     'submit_values':
       'cv_name': 'update0'
-      'cv_definition' : 'update1'
+      'cv_definition': 'update1'
     'submit_expectations':
       'cv_name': 'update0'
-      'cv_definition' : 'update1'
+      'cv_definition': 'update1'
     'submit_output':
       - 'Redirecting to'
     'submit_messages':
@@ -97,9 +97,6 @@
       - 'Invalid cv_id "500000" passed to chado_cv_form'
 'Vocabulary delete form with foreign key in use':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvDeleteForm'
-    'setup':
-      'views':
-        - 'config/install/views.view.chado_controlled_vocabularies'
     'args':
       'cv_id': 2
     'form_expectations':
@@ -154,9 +151,6 @@
         'count': 0
 'Vocabulary delete form with an invalid cv_id argument':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvDeleteForm'
-    'setup':
-      'views':
-        - 'config/install/views.view.chado_controlled_vocabularies'
     'args':
       'cv_id': 900000
     'submit_fails': true
