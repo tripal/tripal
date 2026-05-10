@@ -105,8 +105,7 @@
     'form_expectations':
       '#form_id': 'chado_dbxref_form'
     'submit_values':
-      'db_name':
-        '#value': 'bogus (900000)'
+      'db_name': 'bogus (900000)'
     'submit_fails': true
     'submit_output':
       - ''

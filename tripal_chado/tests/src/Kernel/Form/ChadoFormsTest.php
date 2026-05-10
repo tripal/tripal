@@ -103,7 +103,7 @@ class ChadoFormsTest extends ChadoTestKernelBase {
       $form_builder = \Drupal::formBuilder();
       $form_class = $scenario['form_class'];
       $form_state = new FormState();
-      $args = $scenario['args'];
+      $args = $scenario['args'] ?? [];
       $form_state->addBuildInfo('args', $args);
       $form = $form_builder->buildForm($form_class, $form_state);
 
@@ -122,7 +122,7 @@ class ChadoFormsTest extends ChadoTestKernelBase {
         $this->assertArrayContainsString($message, $messages, 'build');
       }
 
-      // Insert any values to be submitted.
+      // Insert any user input values to be submitted.
       foreach ($scenario['submit_values'] ?? [] as $key => $value) {
         $form_state->setValue($key, $value);
       }

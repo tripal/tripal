@@ -146,11 +146,12 @@ class ChadoCvtermDeleteForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $triggering_element = $form_state->getTriggeringElement();
+    $user_input = $form_state->getUserInput();
 
     if ($triggering_element['#value'] == 'Delete') {
       $cvterm_id = $form_state->getValue('cvterm_id');
       $cvterm_name = $form_state->getValue('cvterm_name');
-      $drop_dbxref = $form_state->getValue('drop_dbxref');
+      $drop_dbxref = $user_input['drop_dbxref'];
       try {
         $this->cvterm_buddy->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id], ['drop_dbxref' => $drop_dbxref]);
         if ($drop_dbxref) {

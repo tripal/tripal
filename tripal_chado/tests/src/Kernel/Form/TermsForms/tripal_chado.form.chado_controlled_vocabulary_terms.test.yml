@@ -128,19 +128,17 @@
     'form_expectations':
       '#form_id': 'chado_cvterm_form'
     'submit_values':
-      'db_name':
-        '#value': 'bogus (900000)'
-      'cv_name':
-        '#value': 'alsobogus (900001)'
+      'db_name': 'bogus (900000)'
+      'cv_name': 'alsobogus (900001)'
     'submit_fails': true
     'submit_output':
       - ''
     'submit_messages':
-      - 'error: Controlled Vocabulary (Ontology) Name field is required.'
+      - 'error: The specified external database does not exist'
+      - 'error: The specified controlled vocabulary does not exist'
       - 'error: Controlled Vocabulary Term field is required.'
-      - 'error: External Database Name field is required.'
       - 'error: External Database Accession field is required.'
-'Controlled vocabulary term delete form':
+'Controlled vocabulary term delete form dropping dbxref also':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermDeleteForm'
     'setup':
       'views':
@@ -158,12 +156,13 @@
       'drop_dbxref':
         '#type': 'checkbox'
         '#title': 'Delete dbxref'
+        '#default_value': 1
       'submit':
         '#value': 'Delete'
       'cancel':
         '#value': 'Cancel'
     'submit_values':
-      'drop_dbxref': true
+      'drop_dbxref': 1
     'triggering_element':
       '#value': 'Delete'
     'submit_expectations':
@@ -180,9 +179,92 @@
         'count': 0
       - 'table': 'dbxref'
         'conditions':
+          - 'column': 'db_id'
+            'value': 2
           - 'column': 'accession'
-            'value': 'accession'
+            'value': '0000044'
         'count': 0
+'Controlled vocabulary term delete form not dropping dbxref':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermDeleteForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_controlled_vocabulary_terms'
+    'args':
+      'cvterm_id': 3
+    'form_expectations':
+      '#form_id': 'chado_cvterm_delete_form'
+      'cvterm_id':
+        '#value': 3
+      'cvterm_name':
+        '#value': 'accession'
+      'description':
+        '#type': 'table'
+      'drop_dbxref':
+        '#type': 'checkbox'
+        '#title': 'Delete dbxref'
+        '#default_value': 1
+      'submit':
+        '#value': 'Delete'
+      'cancel':
+        '#value': 'Cancel'
+    'submit_values':
+      'drop_dbxref': 0
+    'triggering_element':
+      '#value': 'Delete'
+    'submit_expectations':
+      'cvterm_id': 3
+    'submit_output':
+      - 'Redirecting to'
+    'submit_messages':
+      - 'status: The term "accession" has been deleted'
+    'chado_expectations':
+      - 'table': 'cvterm'
+        'conditions':
+          - 'column': 'cvterm_id'
+            'value': 3
+        'count': 0
+      - 'table': 'dbxref'
+        'conditions':
+          - 'column': 'db_id'
+            'value': 2
+          - 'column': 'accession'
+            'value': '0000044'
+        'count': 1
+'Controlled vocabulary term delete form dropping term with foreign keys':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermDeleteForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_controlled_vocabulary_terms'
+    'args':
+      'cvterm_id': 11
+    'form_expectations':
+      '#form_id': 'chado_cvterm_delete_form'
+      'cvterm_id':
+        '#value': 11
+      'cvterm_name':
+        '#value': 'Sequence'
+      'description':
+        '#type': 'table'
+      'submit':
+        '#value': 'Delete'
+      'cancel':
+        '#value': 'Cancel'
+    'triggering_element':
+      '#value': 'Delete'
+    'submit_fails': true
+    'submit_output':
+      - 'Redirecting to'
+    'chado_expectations':
+      - 'table': 'cvterm'
+        'conditions':
+          - 'column': 'cvterm_id'
+            'value': 11
+        'count': 1
+      - 'table': 'dbxref'
+        'conditions':
+          - 'column': 'accession'
+            'value': '2044'
+        'count': 1
 'Controlled vocabulary term delete form with an invalid cvterm_id argument':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermDeleteForm'
     'args':
