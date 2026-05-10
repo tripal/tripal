@@ -30,7 +30,7 @@ class ChadoFormsTest extends ChadoTestKernelBase {
   /**
    * The test chado connection.
    *
-   * @var ChadoConnection
+   * @var Drupal\tripal_chado\Database\ChadoConnection
    */
   protected ChadoConnection $chado_connection;
 
@@ -39,9 +39,6 @@ class ChadoFormsTest extends ChadoTestKernelBase {
    */
   protected function setUp() : void {
     parent::setUp();
-
-    $this->installConfig('system');
-    $this->installEntitySchema('user');
 
     // Open connection to a test Chado.
     $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
@@ -78,9 +75,7 @@ class ChadoFormsTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests the Tripal Terms forms.
-   *
-   * This tests the various forms involved in db and cv management.
+   * Tests form building and submission.
    *
    * @dataProvider provideScenarios
    *
@@ -88,7 +83,7 @@ class ChadoFormsTest extends ChadoTestKernelBase {
    *   No return value.
    */
   #[DataProvider('provideScenarios')]
-  public function testChadoTermsForms(array $scenario): void {
+  public function testChadoForms(array $scenario): void {
 
     // Install specific setup items for this particular form.
     if ($scenario['setup']['views'] ?? []) {
