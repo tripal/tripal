@@ -110,7 +110,7 @@
     'submit_output':
       - ''
     'submit_messages':
-      - 'error: External Database Name field is required.'
+      - 'error: The specified external database does not exist.'
       - 'error: External Database Accession field is required.'
 'Database cross reference delete form with foreign key in use':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefDeleteForm'
