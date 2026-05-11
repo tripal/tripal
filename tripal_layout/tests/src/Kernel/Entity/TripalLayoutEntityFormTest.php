@@ -142,7 +142,7 @@ class TripalLayoutEntityFormTest extends TripalTestKernelBase {
     $this->assertArrayNotHasKey(
       'error',
       $messages,
-      "There should not be any error messages from this form. Instead we recieved: " . print_r($messages, TRUE)
+      "There should not be any error messages from this form. Instead we received: " . print_r($messages, TRUE)
     );
 
     // Finally, confirm the config entity was deleted.
