@@ -128,6 +128,22 @@ scenarios:
         optional_fields:
         - 'metaphysical_props'
         - 'gemologist'
+      getTripalFieldPropertyKeys:
+        project_name:
+        - 'record_id'
+        - 'value'
+        metaphysical_props:
+        - 'record_id'
+        - 'value'
+        gemologist:
+        - 'record_id'
+        - 'linker_id'
+        - 'link'
+        - 'entity_id'
+        - 'contact_type'
+        - 'contact_name'
+        - 'contact_id'
+        - 'contact_description'
       getTripalFieldInfo:
         project_name:
           term: 'schema:name'

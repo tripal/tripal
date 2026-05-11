@@ -223,6 +223,12 @@ class TripalEntityChadoFieldMethodTest extends ChadoTestKernelBase {
     $no_tripal_fields = $created_entity->getTripalStorageFields('not_a_real_storage');
     $this->assertEmpty($no_tripal_fields, "We expected to have detected no tripal fields for a non-existent storage for our " . $current_scenario['label'] . " scenario.");
 
+    // TEST: property types for tripal fields are detected properly.
+    foreach ($current_scenario['expectations']['getTripalFieldPropertyKeys'] as $field_name => $expected_property_types) {
+      $property_types = $created_entity->getTripalFieldPropertyKeys($field_name);
+      $this->assertEqualsCanonicalizing($expected_property_types, $property_types, "We expected to have detected the correct property types for the '$field_name' field for our " . $current_scenario['label'] . " scenario.");
+    }
+
     // TEST: the correct information is being stored about tripal fields.
     foreach ($current_scenario['expectations']['getTripalFieldInfo'] as $field_name => $expected_info) {
       foreach ($expected_info as $request_key => $expected_value) {
@@ -392,6 +398,25 @@ class TripalEntityChadoFieldMethodTest extends ChadoTestKernelBase {
       "The Request key 'NOT_A_VALID_KEY' is not supported by TripalEntity::getTripalFieldInfo()",
       $exception_message,
       "We expected a specific exception message for an invalid field info request."
+    );
+
+    // getTripalFieldPropertyKeys()
+    // ----------------------------------------------------
+    // Test an invalid field name for getTripalFieldPropertyKeys().
+    $exception_thrown = FALSE;
+    $exception_message = 'NOT THROWN';
+    try {
+      $entity->getTripalFieldPropertyKeys('NOT_A_VALID_FIELD');
+    }
+    catch (\Exception $e) {
+      $exception_thrown = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_thrown, "We expected an exception to be thrown for an invalid field property key request.");
+    $this->assertStringContainsString(
+      "You requested field property keys for a field (i.e. 'NOT_A_VALID_FIELD') that is either not attached to this entity or not a valid TripalField.",
+      $exception_message,
+      "We expected a specific exception message for an invalid field property key request."
     );
   }
 

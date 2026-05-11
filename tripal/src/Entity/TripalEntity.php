@@ -1092,6 +1092,26 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Returns a list of property keys for a specific field.
+   *
+   * @param string $field_name
+   *   The name of the field we want to get the property keys for.
+   *
+   * @return array
+   *   A simple list of the property keys for this field.
+   */
+  public function getTripalFieldPropertyKeys(string $field_name): array {
+    // Ensure this field is registered.
+    $this->registerTripalField($field_name);
+
+    if (!array_key_exists($field_name, $this->tripalfield_info)) {
+      throw new \Exception("You requested field property keys for a field (i.e. '$field_name') that is either not attached to this entity or not a valid TripalField.");
+    }
+
+    return array_keys($this->tripalfield_info[$field_name]['property_types']);
+  }
+
+  /**
    * Returns Tripal Property Type-specific information about a specific field.
    *
    * @param string $field_name
