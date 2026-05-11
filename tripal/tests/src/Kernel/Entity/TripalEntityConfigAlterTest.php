@@ -89,7 +89,7 @@ class TripalEntityConfigAlterTest extends KernelTestBase {
     $this->assertArrayHasKey('mapping', $allowed_values_definition['sequence']);
     $this->assertArrayHasKey('value', $allowed_values_definition['sequence']['mapping']);
     $this->assertArrayHasKey('type', $allowed_values_definition['sequence']['mapping']['value']);
-    $this->assertEquals('float', $allowed_values_definition['sequence']['mapping']['value']['type'], 'allowed_values is correctly defined with more permissivefloat keys.');
+    $this->assertEquals('float', $allowed_values_definition['sequence']['mapping']['value']['type'], 'allowed_values is correctly defined with more permissive float keys.');
 
   }
 
