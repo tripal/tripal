@@ -261,6 +261,21 @@ class TripalEntityChadoFieldMethodTest extends ChadoTestKernelBase {
         }
       }
     }
+
+    // TEST: Confirm I can get back the path for a chado field.
+    foreach ($current_scenario['expectations']['getTripalFieldPropertyPath'] as $field_name => $field_properties) {
+      foreach ($field_properties as $property_key => $expectations) {
+
+        $unaliased_path = $created_entity->getTripalFieldPropertyPath($field_name, $property_key);
+        $this->assertEquals($expectations['unaliased_path'], $unaliased_path, "We expected getTripalFieldPropertyPath() to return the unaliased path for '$field_name [$property_key]' for our " . $current_scenario['label'] . " scenario.");
+
+        $path = $created_entity->getTripalFieldPropertyInfo($field_name, $property_key, 'path');
+        $this->assertEquals($expectations['path'], $path, "We expected getTripalFieldPropertyPath() to return the aliased path for '$field_name [$property_key]' for our " . $current_scenario['label'] . " scenario.");
+
+        $table_mapping = $created_entity->getTripalFieldPropertyInfo($field_name, $property_key, 'table_alias_mapping');
+        $this->assertEquals($expectations['table_alias_mapping'], $table_mapping, "We expected getTripalFieldPropertyPath() to return the correct table alias mapping for '$field_name [$property_key]' for our " . $current_scenario['label'] . " scenario.");
+      }
+    }
   }
 
   /**
@@ -417,6 +432,42 @@ class TripalEntityChadoFieldMethodTest extends ChadoTestKernelBase {
       "You requested field property keys for a field (i.e. 'NOT_A_VALID_FIELD') that is either not attached to this entity or not a valid TripalField.",
       $exception_message,
       "We expected a specific exception message for an invalid field property key request."
+    );
+
+    // getTripalFieldPropertyPath()
+    // ----------------------------------------------------
+    // Test an invalid field name for getTripalFieldPropertyPath().
+    $exception_thrown = FALSE;
+    $exception_message = 'NOT THROWN';
+    try {
+      $entity->getTripalFieldPropertyPath('NOT_A_VALID_FIELD', 'record_id');
+    }
+    catch (\Exception $e) {
+      $exception_thrown = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_thrown, "We expected an exception to be thrown for an invalid field property path request.");
+    $this->assertStringContainsString(
+      "You requested a property path for a field (i.e. 'NOT_A_VALID_FIELD') that is either not attached to this entity or not a valid TripalField.",
+      $exception_message,
+      "We expected a specific exception message for an invalid field property path request."
+    );
+
+    // Test an invalid request key for getTripalFieldPropertyPath().
+    $exception_thrown = FALSE;
+    $exception_message = 'NOT THROWN';
+    try {
+      $entity->getTripalFieldPropertyPath('project_name', 'NOT_A_VALID_KEY');
+    }
+    catch (\Exception $e) {
+      $exception_thrown = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_thrown, "We expected an exception to be thrown for an invalid field property path request.");
+    $this->assertStringContainsString(
+      "You requested a property path for a property (i.e. 'NOT_A_VALID_KEY') that is not part of the 'project_name' field.",
+      $exception_message,
+      "We expected a specific exception message for an invalid field property path request."
     );
   }
 

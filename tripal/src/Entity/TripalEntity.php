@@ -1157,6 +1157,41 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Returns the path for a specific property of a field.
+   *
+   * @param string $field_name
+   *   The field containing the property for which you want the path.
+   * @param string $property_key
+   *   The property key for which you want the path.
+   *
+   * @return ?string
+   *   The path describing the column to save this property to in the backend.
+   *   If the path is not defined for this property then NULL is returned.
+   */
+  public function getTripalFieldPropertyPath(string $field_name, string $property_key): string {
+    // Ensure this field is registered.
+    $this->registerTripalField($field_name);
+
+    if (!array_key_exists($field_name, $this->tripalfield_info)) {
+      throw new \Exception("You requested a property path for a field (i.e. '$field_name') that is either not attached to this entity or not a valid TripalField.");
+    }
+
+    if (!array_key_exists($property_key, $this->tripalfield_info[$field_name]['property_types'])) {
+      throw new \Exception("You requested a property path for a property (i.e. '$property_key') that is not part of the '$field_name' field.");
+    }
+
+    $path = $this->getTripalFieldPropertyInfo($field_name, $property_key, 'path');
+    $mapping = $this->getTripalFieldPropertyInfo($field_name, $property_key, 'table_alias_mapping');
+    if (is_array($mapping)) {
+      foreach ($mapping as $alias => $real_table) {
+        $path = str_replace($alias . '.', $real_table . '.', $path);
+      }
+    }
+
+    return $path;
+  }
+
+  /**
    * Returns an associative array of property type values for the entity.
    *
    * The array is keyed in the following levels:

@@ -59,6 +59,22 @@ system-under-test:
         base_table: 'project'
         linker_table: 'project_contact'
         linker_fkey_column: 'contact_id'
+  - name: 'genus_property'
+    type: 'chado_property_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPropertyTypeDefault'
+    widget: 'chado_property_widget_default'
+    formatter: 'chado_property_formatter_default'
+    termIdSpace: 'TAXRANK'
+    termAccession: '0000005'
+    cardinality: 5
+    required: false
+    settings:
+      termIdSpace: 'TAXRANK'
+      termAccession: '0000005'
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+        base_table: 'project'
+        prop_table: 'projectprop'
   - name: 'drupal_description'
     type: 'string_long'
     type_class: 'Drupal\Core\Field\Plugin\Field\FieldType\StringLongItem'
@@ -120,12 +136,14 @@ scenarios:
           - 'chado_storage'
       getStorageFields:
         all_fields:
+        - 'genus_property'
         - 'gemologist'
         - 'metaphysical_props'
         - 'project_name'
         required_fields:
         - 'project_name'
         optional_fields:
+        - 'genus_property'
         - 'metaphysical_props'
         - 'gemologist'
       getTripalFieldPropertyKeys:
@@ -274,6 +292,18 @@ scenarios:
             action: 'read_value'
             drupal_store: false
             path: 'project_contact.contact_id>contact.contact_id;description'
+      getTripalFieldPropertyPath:
+        gemologist:
+          contact_type:
+            path: 'project_contact.contact_id>contact.contact_id;contact.type_id>cvterm.cvterm_id;name'
+            table_alias_mapping: NULL
+            unaliased_path: 'project_contact.contact_id>contact.contact_id;contact.type_id>cvterm.cvterm_id;name'
+        genus_property:
+          value:
+            path: 'project.project_id>projectprop_taxrank0000005.project_id;value'
+            table_alias_mapping:
+              projectprop_taxrank0000005: 'projectprop'
+            unaliased_path: 'project.project_id>projectprop.project_id;value'
   ## EXCEPTION SCENARIOS.
   - label: 'No Storage Exception expected'
     description: 'Entity with Tripal field given value but no storage backend'
