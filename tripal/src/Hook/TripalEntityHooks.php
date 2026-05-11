@@ -112,13 +112,6 @@ class TripalEntityHooks {
   #[Hook('config_schema_info_alter')]
   public function configSchemaInfoAlter(&$definitions) {
 
-<<<<<<< tv4g10-2195-methods
-    // print_r(array_keys($definitions));
-    // Temporary fix for Issue #1999.
-    // We will collect the storage settings for all non-tripal fields and
-    // manually add them to the field storage definition for tripal_entity.
-    // -- on tripal_entity.
-=======
     // Temporary fix for Issue #1999.
     // We will collect the storage settings for all non-tripal fields and
     // manually add them to the field storage definition for tripal_entity.
@@ -127,7 +120,6 @@ class TripalEntityHooks {
     // settings which are known to be different.
     $skipped_settings = [];
     // Now, for each field storage definition, we will check for settings...
->>>>>>> 4.x
     foreach ($definitions as $key => $field_settings) {
       if (str_starts_with($key, 'field.storage_settings.') && !str_starts_with($key, 'field.storage.tripal_entity.')) {
         // If this field doesn't have any settings, we can skip it.
@@ -143,21 +135,6 @@ class TripalEntityHooks {
             // -- on field collection yaml.
             $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping'][$setting_key] = $setting;
           }
-<<<<<<< tv4g10-2195-methods
-          else {
-            // If the setting already exists, we should check to make sure it
-            // is the same. If not, we should log a warning.
-            if ($definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key] != $setting) {
-              \Drupal::logger('tripal')->warning(
-                'The field storage setting @setting_key for field @field_name is different in the tripal_entity field storage definition than in the field storage definition for @field_name. This may cause issues with field storage and retrieval. Please check the field storage definitions for both tripal_entity and @field_name to ensure they are consistent.',
-                ['@setting_key' => $setting_key, '@field_name' => str_replace('field.storage_settings.', '', $key)]
-              );
-            }
-          }
-        }
-      }
-    }
-=======
           elseif ($setting_key == 'allowed_values') {
             // There are two conflicting Drupal field definitions for this
             // setting. One uses integer keys and the other uses float keys.
@@ -181,7 +158,6 @@ class TripalEntityHooks {
       }
     }
 
->>>>>>> 4.x
   }
 
 }
