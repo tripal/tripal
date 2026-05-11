@@ -101,4 +101,63 @@ class TripalEntityHooks {
     }
   }
 
+  /**
+   * Implements hook_config_schema_info_alter().
+   *
+   * Specifically, we are altering config schema set in the tripal module.
+   * We use this approach to ensure we are extending the existing schema
+   * which makes these changes available to extension modules defining their
+   * own yml files.
+   */
+  #[Hook('config_schema_info_alter')]
+  public function configSchemaInfoAlter(&$definitions) {
+
+    // Temporary fix for Issue #1999.
+    // We will collect the storage settings for all non-tripal fields and
+    // manually add them to the field storage definition for tripal_entity.
+    // NOTE: there are some conflicts between drupal field settings, which is
+    // why this is only a temporary fix. For now, we will manually skip any
+    // settings which are known to be different.
+    $skipped_settings = [];
+    // Now, for each field storage definition, we will check for settings...
+    foreach ($definitions as $key => $field_settings) {
+      if (str_starts_with($key, 'field.storage_settings.') && !str_starts_with($key, 'field.storage.tripal_entity.')) {
+        // If this field doesn't have any settings, we can skip it.
+        if (!array_key_exists('mapping', $field_settings)) {
+          continue;
+        }
+        // For each setting this field defines, see if we have it in our
+        // tripal_entity field storage definition. If not, add it.
+        foreach ($field_settings['mapping'] as $setting_key => $setting) {
+          if (!isset($definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key])) {
+            // -- on entity.
+            $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key] = $setting;
+            // -- on field collection yaml.
+            $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping'][$setting_key] = $setting;
+          }
+          elseif ($setting_key == 'allowed_values') {
+            // There are two conflicting Drupal field definitions for this
+            // setting. One uses integer keys and the other uses float keys.
+            // Here we choose float as that should work in both cases.
+            // -- on entity.
+            $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key]['sequence']['mapping']['value']['type'] = 'float';
+            // -- on field collection yaml.
+            $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping'][$setting_key]['sequence']['mapping']['value']['type'] = 'float';
+          }
+          elseif (!in_array($setting_key, $skipped_settings)) {
+            // If the setting already exists, we should check to make sure it
+            // is the same. If not, we should log a warning.
+            if ($definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key] != $setting) {
+              $field_name = str_replace('field.storage_settings.', '', $setting_key);
+              throw new \Exception(
+                "The field storage setting $setting_key for field $field_name is different in the tripal_entity field storage definition than in the field storage definition for $field_name. This may cause issues with field storage and retrieval. Please check the field storage definitions for both tripal_entity and $field_name to ensure they are consistent. Tripal Entity definition: " . print_r($definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key], TRUE) . " Field definition: " . print_r($setting, TRUE)
+              );
+            }
+          }
+        }
+      }
+    }
+
+  }
+
 }

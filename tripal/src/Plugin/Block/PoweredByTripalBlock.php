@@ -29,7 +29,7 @@ class PoweredByTripalBlock extends BlockBase implements BlockPluginInterface {
     $image_path = base_path() . \Drupal::service('extension.list.module')->getPath('tripal') . '/images/' . $image;
 
     return [
-      '#markup' => '<a href="http://tripal.info"><img border="0" src="' . $image_path . '"></a>',
+      '#markup' => '<a href="https://tripal.info"><img border="0" src="' . $image_path . '"></a>',
     ];
   }
 
