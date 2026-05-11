@@ -260,7 +260,6 @@ class TripalChadoHooks {
 
   /**
    * Implements hook_views_data().
-   *
    */
   #[Hook('views_data')]
   public function viewsData() {

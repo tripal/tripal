@@ -3,7 +3,6 @@
 namespace Drupal\tripal_chado\Plugin\views\field;
 
 use Drupal\Core\Url;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
