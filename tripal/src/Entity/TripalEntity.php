@@ -1112,6 +1112,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *
    * @return mixed
    *   The information indicated by $request_key for the field indicated.
+   *   If the request_key is not defined then NULL is returned.
    */
   public function getTripalFieldPropertyInfo(string $field_name, string $property_key, string $request_key): mixed {
 
@@ -1127,7 +1128,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
 
     if (!array_key_exists($request_key, $this->tripalfield_info[$field_name]['property_types'][$property_key])) {
-      throw new \Exception("The Request key '$request_key' is not supported by TripalEntity::getTripalFieldPropertyInfo(). This error was encountered when information was requested for '$field_name [$property_key]' field property.");
+      return NULL;
     }
 
     // Now we can use that TripalField information cache to retrieve the

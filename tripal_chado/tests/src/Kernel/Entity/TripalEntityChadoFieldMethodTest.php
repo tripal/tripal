@@ -349,18 +349,14 @@ class TripalEntityChadoFieldMethodTest extends ChadoTestKernelBase {
     $exception_thrown = FALSE;
     $exception_message = 'NOT THROWN';
     try {
-      $entity->getTripalFieldPropertyInfo('project_name', 'record_id', 'NOT_A_VALID_KEY');
+      $result = $entity->getTripalFieldPropertyInfo('project_name', 'record_id', 'NOT_A_VALID_KEY');
     }
     catch (\Exception $e) {
       $exception_thrown = TRUE;
       $exception_message = $e->getMessage();
     }
-    $this->assertTrue($exception_thrown, "We expected an exception to be thrown for an invalid field property info request.");
-    $this->assertStringContainsString(
-      "The Request key 'NOT_A_VALID_KEY' is not supported by TripalEntity::getTripalFieldPropertyInfo()",
-      $exception_message,
-      "We expected a specific exception message for an invalid field property info request."
-    );
+    $this->assertFalse($exception_thrown, "We DO NOT expected an exception to be thrown for an invalid field property info request.");
+    $this->assertEquals(NULL, $result, "We expected to get NULL for an invalid request key for getTripalFieldPropertyInfo().");
 
     // getTripalFieldInfo()
     // ----------------------------------------------------
