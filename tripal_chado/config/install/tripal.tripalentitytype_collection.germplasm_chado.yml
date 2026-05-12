@@ -5,7 +5,7 @@ content_types:
 
     -   label: 'Germplasm Accession'
         term: 'EFO:0007059'
-        help_text: 'Use the germplasm accession page for a living genetic resources such as seeds or tissues that are maintained for the purpose of animal and plant breeding, and preservation.'
+        help_text: 'Use the germplasm accession page for a living genetic resource such as seeds or tissues that are maintained for the purpose of animal and plant breeding, and preservation.'
         category: 'Germplasm'
         id: 'germplasm'
         title_format: '[germplasm_name]'
