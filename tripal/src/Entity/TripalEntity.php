@@ -1168,7 +1168,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   The path describing the column to save this property to in the backend.
    *   If the path is not defined for this property then NULL is returned.
    */
-  public function getTripalFieldPropertyPath(string $field_name, string $property_key): string {
+  public function getTripalFieldPropertyPath(string $field_name, string $property_key): ?string {
     // Ensure this field is registered.
     $this->registerTripalField($field_name);
 

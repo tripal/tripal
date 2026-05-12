@@ -172,7 +172,7 @@ class TripalEntityChadoFieldMethodTest extends ChadoTestKernelBase {
   public function testTripalEntityFieldMethods(int $current_scenario_key, string $current_scenario_label) {
     $current_scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
 
-    // SETUP:Create the entity with that value set.
+    // SETUP: Create the entity with that value set.
     $submitted_title = $this->randomString();
     $entity = TripalEntity::create([
       'title' => $submitted_title,
