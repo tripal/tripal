@@ -228,7 +228,7 @@ class TripalEntityFieldMethodTest extends TripalTestKernelBase {
   }
 
   /**
-   * Tests exceptions not thrown during create and easy to trigger.
+   * Tests easy to trigger exceptions on an existing tripal entity.
    *
    * @see TripalEntityChadoFieldMethodTest::testSimpleExceptions()
    */
