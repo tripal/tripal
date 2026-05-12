@@ -176,7 +176,7 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     catch (\Exception $e) {
       $exception_message = $e->getMessage();
     }
-    $this->assertStringContainsString('other records reference it', $exception_message, "We did not get the exception message expected deleting a cv that has a foreign key");
+    $this->assertStringContainsString('records from the following tables reference the cv record', $exception_message, "We did not get the exception message expected deleting a cv that has a foreign key");
     $n = $this->chado_connection->select('1:cv')
       ->condition('cv_id', $cv_id, '=')
       ->countQuery()
@@ -477,8 +477,15 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $this->assertEquals(1, $n, "The dbxref was incorrectly deleted in the database");
 
     // TEST: we can delete a cvterm and its dbxref.
-    $records = $instance->getCvterm(['cvterm.name' => 'newCvterm003']);
-    $this->assertNotEmpty($records, 'Failed getting cvterm created earlier');
+    $instance->insertCvterm([
+      'cvterm.name' => 'newCvterm007',
+      'cvterm.definition' => 'def007',
+      'cv.name' => 'local',
+      'db.name' => 'local',
+      'dbxref.accession' => 'newAcc007',
+    ]);
+    $records = $instance->getCvterm(['cvterm.name' => 'newCvterm007']);
+    $this->assertNotEmpty($records, 'Failed getting cvterm just created');
     $cvterm_id = $records[0]->getValue('cvterm.cvterm_id');
     $dbxref_id = $records[0]->getValue('dbxref.dbxref_id');
     $result = $instance->deleteCvterm(['cvterm.cvterm_id' => $cvterm_id], ['drop_dbxref' => TRUE]);

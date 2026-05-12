@@ -1089,37 +1089,23 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     if (count($existing_records) > 0) {
       $this->throwIfMultipleRecords($existing_records, 'cv.cv_id', 'deleteCv', $conditions);
       $cv_id = $existing_records[0]->getValue('cv.cv_id');
-      // Determine if there are referencing records.
-      $table_def = $this->chado_connection->schema()->getTableDef('cv', ['source' => 'database', 'format' => 'default']);
-      // Format is [referencing_table =>
-      // [cv column (cv_id) => referencing_table column], ].
-      $foreign_keys = $table_def['referenced_by'] ?? [];
-      $total_references = 0;
-      foreach ($foreign_keys as $referencing_table => $keydef) {
-        foreach ($keydef as $refkey) {
-          $query = $this->chado_connection->select('1:' . $referencing_table);
-          $query->condition($refkey, $cv_id, '=');
-          $n = $query->countQuery()->execute()->fetchField();
-          $total_references += $n;
-        }
+
+      // Throw an exception if there are referencing records and cascade
+      // is not set.
+      if (!($options['cascade'] ?? FALSE)) {
+        $this->throwIfReferencingRecords('cv', $cv_id, 'deleteCv');
       }
 
-      // If there are referencing records and cascade is not set.
-      if ($total_references && !($options['cascade'] ?? FALSE)) {
-        throw new ChadoBuddyException('ChadoBuddy deleteCv error, cannot delete the cv, other records reference it');
+      // Perform the record deletion. This might fail if
+      // a foreign key is not defined as ON DELETE CASCADE.
+      $query = $this->chado_connection->delete('1:cv');
+      $query->condition('cv_id', $cv_id, '=');
+      try {
+        $query->execute();
+        return self::SUCCESS;
       }
-      else {
-        // Perform the record deletion. This might fail if
-        // a foreign key is not defined as ON DELETE CASCADE.
-        $query = $this->chado_connection->delete('1:cv');
-        $query->condition('cv_id', $cv_id, '=');
-        try {
-          $query->execute();
-          return self::SUCCESS;
-        }
-        catch (\Exception $e) {
-          throw new ChadoBuddyException('ChadoBuddy deleteCv database error ' . $e->getMessage());
-        }
+      catch (\Exception $e) {
+        throw new ChadoBuddyException('ChadoBuddy deleteCv database error ' . $e->getMessage());
       }
     }
     else {
@@ -1191,51 +1177,36 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $cvterm_id = $existing_records[0]->getValue('cvterm.cvterm_id');
       $dbxref_id = $existing_records[0]->getValue('dbxref.dbxref_id');
 
-      // Determine if there are referencing records.
-      $table_def = $this->chado_connection->schema()->getTableDef('cv', ['source' => 'database', 'format' => 'default']);
-      // Format is [referencing_table =>
-      // [cvterm column (cvterm_id) => referencing_table column], ].
-      $foreign_keys = $table_def['referenced_by'] ?? [];
-      $total_references = 0;
-      foreach ($foreign_keys as $referencing_table => $keydef) {
-        foreach ($keydef as $refkey) {
-          $query = $this->chado_connection->select('1:' . $referencing_table);
-          $query->condition($refkey, $cvterm_id, '=');
-          $n = $query->countQuery()->execute()->fetchField();
-          $total_references += $n;
-        }
+      // Throw an exception if there are referencing records and cascade
+      // is not set.
+      if (!($options['cascade'] ?? FALSE)) {
+        $this->throwIfReferencingRecords('cvterm', $cvterm_id, 'deleteCvterm');
       }
 
-      // If there are referencing records and cascade is not set.
-      if ($total_references && !($options['cascade'] ?? FALSE)) {
-        throw new ChadoBuddyException('ChadoBuddy deleteCvterm error, cannot delete the cvterm, other records reference it');
+      $transaction = $this->chado_connection->startTransaction();
+      try {
+        // Perform the record deletion. This might fail if
+        // a foreign key is not defined as ON DELETE CASCADE.
+        $query = $this->chado_connection->delete('1:cvterm');
+        $query->condition('cvterm_id', $cvterm_id, '=');
+        $query->execute();
       }
-      else {
-        $transaction = $this->chado_connection->startTransaction();
+      catch (\Exception $e) {
+        throw new ChadoBuddyException('ChadoBuddy deleteCvterm database error deleting cvterm: ' . $e->getMessage());
+      }
+      // If drop_dbxref is set, delete the dbxref.
+      if ($options['drop_dbxref'] ?? FALSE) {
         try {
-          // Perform the record deletion. This might fail if
-          // a foreign key is not defined as ON DELETE CASCADE.
-          $query = $this->chado_connection->delete('1:cvterm');
-          $query->condition('cvterm_id', $cvterm_id, '=');
+          $query = $this->chado_connection->delete('1:dbxref');
+          $query->condition('dbxref_id', $dbxref_id, '=');
           $query->execute();
         }
         catch (\Exception $e) {
-          throw new ChadoBuddyException('ChadoBuddy deleteCvterm database error deleting cvterm: ' . $e->getMessage());
+          $transaction->rollback();
+          throw new ChadoBuddyException('ChadoBuddy deleteCvterm database error deleting dbxref: ' . $e->getMessage());
         }
-        // If drop_dbxref is set, delete the dbxref.
-        if ($options['drop_dbxref'] ?? FALSE) {
-          try {
-            $query = $this->chado_connection->delete('1:dbxref');
-            $query->condition('dbxref_id', $dbxref_id, '=');
-            $query->execute();
-          }
-          catch (\Exception $e) {
-            $transaction->rollback();
-            throw new ChadoBuddyException('ChadoBuddy deleteCvterm database error deleting dbxref: ' . $e->getMessage());
-          }
-        }
-        return self::SUCCESS;
       }
+      return self::SUCCESS;
     }
     else {
       return self::NON_EXISTING;

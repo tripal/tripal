@@ -306,7 +306,7 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     catch (\Exception $e) {
       $exception_message = $e->getMessage();
     }
-    $this->assertStringContainsString('other records reference it', $exception_message, "We did not get the exception message expected deleting a db that has a foreign key");
+    $this->assertStringContainsString('records from the following tables reference the db record', $exception_message, "We did not get the exception message expected deleting a db that has a foreign key");
     $n = $this->chado_connection->select('1:db')
       ->condition('name', 'newDb006', '=')
       ->countQuery()
@@ -353,7 +353,7 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     catch (\Exception $e) {
       $exception_message = $e->getMessage();
     }
-    $this->assertStringContainsString('other records reference it', $exception_message, "We did not get the exception message expected deleting a dbxref that has a foreign key");
+    $this->assertStringContainsString('records from the following tables reference the dbxref record', $exception_message, "We did not get the exception message expected deleting a dbxref that has a foreign key");
     $n = $this->chado_connection->select('1:dbxref')
       ->condition('accession', 'newDbxref008', '=')
       ->countQuery()

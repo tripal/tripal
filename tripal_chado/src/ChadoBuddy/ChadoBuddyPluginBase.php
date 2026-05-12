@@ -597,7 +597,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *   No return value.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If there are more than one records.
+   *   If there is more than one record.
    */
   protected function throwIfMultipleRecords(array $records, string $key, string $message, array $conditions): void {
     if (count($records) > 1) {
@@ -609,6 +609,46 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
         . implode(', ', $values)
         . ") matched the specified conditions\n"
         . print_r($conditions, TRUE));
+    }
+  }
+
+  /**
+   * Generates an exception if a record is referenced through a foreign key.
+   *
+   * @param string $table
+   *   The chado table of interest.
+   * @param int $pkey
+   *   The primary key value of the record in table $table.
+   * @param string $context
+   *   The context in which this was called, e.g. "deleteDb", "deleteCv".
+   *
+   * @return void
+   *   No return value.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If there is one or more referencing records.
+   */
+  protected function throwIfReferencingRecords(string $table, int $pkey, string $context): void {
+    $table_def = $this->chado_connection->schema()->getTableDef($table, ['source' => 'database', 'format' => 'default']);
+    // Format is [referencing_table =>
+    // [table column (xx_id) => referencing_table column], ].
+    $foreign_keys = $table_def['referenced_by'] ?? [];
+    $references = [];
+    foreach ($foreign_keys as $referencing_table => $keydef) {
+      foreach ($keydef as $refkey) {
+        $query = $this->chado_connection->select('1:' . $referencing_table);
+        $query->condition($refkey, $pkey, '=');
+        $n = $query->countQuery()->execute()->fetchField();
+        if ($n) {
+          $references[] = "$n record(s) in table \"$referencing_table\"";
+        }
+      }
+    }
+
+    // If there are any referencing records then throw an exeption.
+    if ($references) {
+      throw new ChadoBuddyException("ChadoBuddy $context error, records from the following tables reference the $table record $pkey: "
+        . implode(', ', $references) . '.');
     }
   }
 

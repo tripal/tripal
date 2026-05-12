@@ -700,36 +700,22 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $this->throwIfMultipleRecords($existing_records, 'db.db_id', 'deleteDb', $conditions);
       $db_id = $existing_records[0]->getValue('db.db_id');
 
-      // Determine if there are referencing records.
-      $table_def = $this->chado_connection->schema()->getTableDef('db', ['source' => 'database', 'format' => 'default']);
-      // Format is [referencing_table =>
-      // [db column (db_id) => referencing_table column], ].
-      $foreign_keys = $table_def['referenced_by'] ?? [];
-      $total_references = 0;
-      foreach ($foreign_keys as $referencing_table => $keydef) {
-        foreach ($keydef as $refkey) {
-          $query = $this->chado_connection->select('1:' . $referencing_table);
-          $query->condition($refkey, $db_id, '=');
-          $n = $query->countQuery()->execute()->fetchField();
-          $total_references += $n;
-        }
+      // Throw an exception if there are referencing records and cascade
+      // is not set.
+      if (!($options['cascade'] ?? FALSE)) {
+        $this->throwIfReferencingRecords('db', $db_id, 'deleteDb');
       }
-      // If there are referencing records and cascade is not set.
-      if ($total_references && !($options['cascade'] ?? FALSE)) {
-        throw new ChadoBuddyException('ChadoBuddy deleteDb error, cannot delete the db, other records reference it');
+
+      // Perform the record deletion. This might fail if
+      // a foreign key is not defined as ON DELETE CASCADE.
+      $query = $this->chado_connection->delete('1:db');
+      $query->condition('db_id', $db_id, '=');
+      try {
+        $query->execute();
+        return self::SUCCESS;
       }
-      else {
-        // Perform the record deletion. This might fail if
-        // a foreign key is not defined as ON DELETE CASCADE.
-        $query = $this->chado_connection->delete('1:db');
-        $query->condition('db_id', $db_id, '=');
-        try {
-          $query->execute();
-          return self::SUCCESS;
-        }
-        catch (\Exception $e) {
-          throw new ChadoBuddyException('ChadoBuddy deleteDb database error ' . $e->getMessage());
-        }
+      catch (\Exception $e) {
+        throw new ChadoBuddyException('ChadoBuddy deleteDb database error ' . $e->getMessage());
       }
     }
     else {
@@ -785,37 +771,22 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $this->throwIfMultipleRecords($existing_records, 'dbxref.dbxref_id', 'deleteDbxref', $conditions);
       $dbxref_id = $existing_records[0]->getValue('dbxref.dbxref_id');
 
-      // Determine if there are referencing records.
-      $table_def = $this->chado_connection->schema()->getTableDef('dbxref',
-        ['source' => 'database', 'format' => 'default']);
-      // Format is [referencing_table =>
-      // [dbxref column (dbxref_id) => referencing_table column], ].
-      $foreign_keys = $table_def['referenced_by'] ?? [];
-      $total_references = 0;
-      foreach ($foreign_keys as $referencing_table => $keydef) {
-        foreach ($keydef as $refkey) {
-          $query = $this->chado_connection->select('1:' . $referencing_table);
-          $query->condition($refkey, $dbxref_id, '=');
-          $n = $query->countQuery()->execute()->fetchField();
-          $total_references += $n;
-        }
+      // Throw an exception if there are referencing records and cascade
+      // is not set.
+      if (!($options['cascade'] ?? FALSE)) {
+        $this->throwIfReferencingRecords('dbxref', $dbxref_id, 'deleteDbxref');
       }
-      // If there are referencing records and cascade is not set.
-      if ($total_references && !($options['cascade'] ?? FALSE)) {
-        throw new ChadoBuddyException('ChadoBuddy deleteDbxref error, cannot delete the dbxref, other records reference it');
+
+      // Perform the record deletion. This might fail if
+      // a foreign key is not defined as ON DELETE CASCADE.
+      $query = $this->chado_connection->delete('1:dbxref');
+      $query->condition('dbxref_id', $dbxref_id, '=');
+      try {
+        $query->execute();
+        return self::SUCCESS;
       }
-      else {
-        // Perform the record deletion. This might fail if
-        // a foreign key is not defined as ON DELETE CASCADE.
-        $query = $this->chado_connection->delete('1:dbxref');
-        $query->condition('dbxref_id', $dbxref_id, '=');
-        try {
-          $query->execute();
-          return self::SUCCESS;
-        }
-        catch (\Exception $e) {
-          throw new ChadoBuddyException('ChadoBuddy deleteDbxref database error ' . $e->getMessage());
-        }
+      catch (\Exception $e) {
+        throw new ChadoBuddyException('ChadoBuddy deleteDbxref database error ' . $e->getMessage());
       }
     }
     else {
