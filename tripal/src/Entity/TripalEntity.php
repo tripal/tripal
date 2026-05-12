@@ -911,7 +911,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $this->tripalfield_info[$field_name]['cardinality'] = $field_storage_defn->getCardinality();
       $this->tripalfield_info[$field_name]['field_type'] = $field_defn->getType();
 
-      // It would be nice to know it's class as well.
+      // It would be nice to know its class as well.
       $manager = \Drupal::service('plugin.manager.field.field_type');
       $plugin_definition = $manager->getDefinition($field_defn->getType());
       $this->tripalfield_info[$field_name]['field_class'] = $plugin_definition['class'];
@@ -922,7 +922,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $this->tripalfield_info[$field_name]['main_property'] = $plugin_definition['class']::mainPropertyName();
       $this->tripalfield_info[$field_name]['main_display_property'] = $plugin_definition['class']::mainDisplayPropertyName();
 
-      // Now lets add information about it's property types.
+      // Now lets add information about its property types.
       $property_info = [];
       foreach ($this->tripalfield_info[$field_name]['field_class']::tripalTypes($field_defn) as $property_type) {
         $property_info = [];

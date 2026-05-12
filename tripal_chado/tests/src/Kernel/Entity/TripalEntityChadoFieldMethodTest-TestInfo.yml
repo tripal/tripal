@@ -112,8 +112,6 @@ scenarios:
           value: 'soothing, calming, healing from grief'
         drupal_description:
         - value: 'This is a really long description if you use your imagination.'
-        # missing_storage:
-        # - value: 'Meh, this has no where to be stored anyway.'
       expected_field_values:
         project_name:
         - record_id: 1
@@ -313,7 +311,7 @@ scenarios:
       metaphysical_props:
       - value: 'soothing, calming, healing from grief'
       drupal_description:
-      - value: 'This is a really long descriptio if you use your imagination.'
+      - value: 'This is a really long description if you use your imagination.'
       missing_storage:
       - value: 'Meh, this has nowhere to be stored anyway.'
     exception_message: "The Tripal-based field 'missing_storage' on this content type must indicate a TripalStorage backend and currently does not."
