@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
@@ -356,8 +357,6 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    *   An array of options to pass to insertStock().
    * @param int $num_expected_records
    *   The expected number of stock records to be created.
-   *
-   * @dataProvider provideInsertStockScenarios
    */
   #[DataProvider('provideInsertStockScenarios')]
   public function testInsertStock(array $values, array $options, int $num_expected_records) {
@@ -558,8 +557,6 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
   *   An array of options to pass to updateStock().
   * @param int $num_expected_records
   *   The expected number of stock records to be created.
-  *
-  * @dataProvider provideUpdateStockScenarios
   */
   #[DataProvider('provideUpdateStockScenarios')]
   public function testUpdateStock(array $values, array $conditions, array $options, int $num_expected_records) {
@@ -815,8 +812,6 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    *   relationship between the stock record and base table.
    * @param array $options
    *   An array of options to pass to associateStock().
-   *
-   * @dataProvider provideAssociateStockScenarios
    */
   #[DataProvider('provideAssociateStockScenarios')]
   public function testAssociateStock(string $base_table, array $base_table_values, array $foreign_table_values, string $linking_table, array $options) {
@@ -1269,8 +1264,6 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    *   - options (array)
    * @param string $expected_exception_message
    *   The expected exception message.
-   *
-   * @dataProvider provideStockBuddyExceptionScenarios
    */
   #[DataProvider('provideStockBuddyExceptionScenarios')]
   public function testStockBuddyExceptions(string $method_name, array $method_input, string $expected_exception_message) {
