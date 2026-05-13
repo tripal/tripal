@@ -817,7 +817,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    *   An array of options to pass to associateStock().
    *
    * @dataProvider provideAssociateStockScenarios
-  */
+   */
   #[DataProvider('provideAssociateStockScenarios')]
   public function testAssociateStock(string $base_table, array $base_table_values, array $foreign_table_values, string $linking_table, array $options) {
 
