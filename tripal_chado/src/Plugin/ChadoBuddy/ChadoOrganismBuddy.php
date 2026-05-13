@@ -310,9 +310,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     if (count($existing_records) < 1) {
       return FALSE;
     }
-    if (count($existing_records) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy updateOrganism error, more than one record matched the conditions specified:\n" . print_r($conditions, TRUE));
-    }
+    $this->throwIfMultipleRecords($existing_records, 'organism.organism_id', 'updateOrganism', $conditions);
 
     // Validate the organism rank.
     $values = $this->validateOrganismRankCvterm($values, $options);
@@ -390,9 +388,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
 
     $existing_records = $this->getOrganism($conditions, $options);
     if (count($existing_records) > 0) {
-      if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy upsertOrganism error, more than one record matched the specified values:\n" . print_r($values, TRUE));
-      }
+      $this->throwIfMultipleRecords($existing_records, 'organism.organism_id', 'upsertOrganism', $values);
       $new_record = $this->updateOrganism($values, $conditions, $options);
     }
     else {
@@ -427,9 +423,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     if (count($organism_records) < 1) {
       throw new ChadoBuddyException("ChadoBuddy getOrganismScientificName error, could not find an organism record that matches the specified conditions:\n" . print_r($conditions, TRUE));
     }
-    elseif (count($organism_records) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy getOrganismScientificName error, more than one organism record matches the specified conditions:\n" . print_r($conditions, TRUE));
-    }
+    $this->throwIfMultipleRecords($organism_records, 'organism.organism_id', 'getOrganismScientificName', $conditions);
     // Grab the genus and species.
     $organism_values = $organism_records[0]->getValues();
     $organism_name = $organism_values['organism.genus'] . ' ' . $organism_values['organism.species'];
@@ -621,9 +615,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
         // If a cvterm was retrieved, set organism.type_id to the cvterm_id.
         if ($cvterm_records) {
           // Ensure that we didn't retrieve multiple possible cvterms.
-          if (count($cvterm_records) > 1) {
-            throw new ChadoBuddyException("ChadoBuddy validateOrganismRankCvterm error, more than one record matched the values specified:\n" . print_r($cvterm_values, TRUE));
-          }
+          $this->throwIfMultipleRecords($cvterm_records, 'cvterm.cvterm_id', 'validateOrganismRankCvterm', $cvterm_values);
           $values['organism.type_id'] = $cvterm_records[0]->getValue('cvterm.cvterm_id', ['strict' => FALSE]);
         }
         // If a cvterm could not be found, try to create it if the required
