@@ -804,28 +804,24 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   The primary key of the base_table to associate the stock with.
    * @param \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord $stock
    *   A stock object returned by any of the *Stock() methods in this service.
+   * @param array $values
+   *   (Optional) An associative array defining the values to be associated with
+   *   the stock. These values will be inserted into the linking table along
+   *   with the foreign keys to the stock and the base table. The keys should
+   *   be the name of the column in this specific linking table and the value
+   *   should be the value to insert for that column. This is optional because
+   *   most of these columns have default values defined in chado that can
+   *   be looked up. See the table below for a list of columns used by various
+   *   linking tables.
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
    *   - pkey (string): The name of the primary key column in the base table.
    *     Looking up the primary key for the base table is costly. If it is
    *     known, then pass it in using this option for better performance.
-   *   - pub_id (string): The name of the column linking to the publication.
-   *   - is_current (string): The name of the column indicating whether
-   *     the linked dbxref is the current official dbxref for the linked stock.
-   *   - is_not (string): The name of the column indicating if the cvterm
-   *     association is a NOT association.
-   *   - rank (string): The name of the column indicating the rank.
-   *   - cvterm_type_id (string): The name of the column indicating the type of
-   *     cvterm association being made via foreign key to cvterm.cvterm_id.
    *   - lookup_columns (bool): Whether to look up any additional columns that
    *     are not specified in the options. FALSE will disable looking up any
    *     additional columns, which may cause the insert to fail if any NOT NULL
    *     columns are not specified. Default TRUE.
-   *
-   *   While the column name options above are optional, they will incur a
-   *   slight performance hit if not included due to needing to look them up
-   *   via the schema. See the table below for which columns apply to which
-   *   linking tables so you know which ones to include.
    *
    *   phpcs:disable
    *   Chado 1.3 defines these columns in the various linking tables:
@@ -853,7 +849,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   - If an invalid base_table is provided.
    *   - If an error is encountered during insert.
    */
-  public function associateStock(string $base_table, int $record_id, ChadoBuddyRecord $stock, array $options = []): int {
+  public function associateStock(string $base_table, int $record_id, ChadoBuddyRecord $stock, array $values = [], array $options = []): int {
     $possible_linking_tables = [
       'project' => 'project_stock',
       'stockcollection' => 'stockcollection_stock',
@@ -887,10 +883,9 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
 
       // If count is not zero, the record already exists, so skip insert.
       if (!$count) {
-        $fields = [
-          'stock_id' => $stock->getValue('stock.stock_id'),
-          $base_pkey_col => $record_id,
-        ];
+        $fields = $values;
+        $fields['stock_id'] = $stock->getValue('stock.stock_id');
+        $fields[$base_pkey_col] = $record_id;
 
         // Set the default values for any of the optional columns that apply to
         // any of the stock linking tables.
@@ -901,12 +896,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
           'cvterm_type_id' => 1,
         ];
         // Add in any of the other columns for the linking table.
-        $options = $this->addLinkingColumns($linking_table, $defaults, $options);
-        foreach ($options as $key => $value) {
-          if (($key != 'pkey') and ($key != 'lookup_columns')) {
-            $fields[$key] = $value;
-          }
-        }
+        $fields = $this->addLinkingColumns($linking_table, $fields, $defaults, $options);
         $query = $this->chado_connection->insert('1:' . $linking_table);
         $query->fields($fields);
         $query->execute();

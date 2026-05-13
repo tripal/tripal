@@ -655,6 +655,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
        [],
       'project_stock',
       [],
+      [],
     ];
 
     // #1: Associate with stockcollection table.
@@ -667,6 +668,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       ],
       [],
       'stockcollection_stock',
+      [],
       [],
     ];
 
@@ -687,6 +689,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [
         'type_id' => 1,
       ],
+      [],
     ];
 
     // #3: Associate with the cvterm table.
@@ -708,6 +711,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
         'is_not' => TRUE,
         'rank' => 1,
       ],
+      [],
     ];
 
     // #4: Associate with the dbxref table.
@@ -720,6 +724,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       ],
       [],
       'stock_dbxref',
+      [],
       [],
     ];
 
@@ -737,6 +742,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [
         'type_id' => 1,
       ],
+      [],
     ];
 
     // #6: Associate with the featuremap table.
@@ -750,6 +756,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [
         'type_id' => 1,
       ],
+      [],
     ];
 
     // #7: Associate with the genotype table.
@@ -761,6 +768,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       ],
       [],
       'stock_genotype',
+      [],
       [],
     ];
 
@@ -776,6 +784,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [],
       'stock_library',
       [],
+      [],
     ];
 
     // #9: Associate with the pub table.
@@ -787,6 +796,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       ],
       [],
       'stock_pub',
+      [],
       [],
     ];
 
@@ -810,11 +820,13 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    * @param string $linking_table
    *   A string indicating the linking table that is used to create the
    *   relationship between the stock record and base table.
+   * @param array $insert_values
+   *   Specific values to insert into the linking table.
    * @param array $options
    *   An array of options to pass to associateStock().
    */
   #[DataProvider('provideAssociateStockScenarios')]
-  public function testAssociateStock(string $base_table, array $base_table_values, array $foreign_table_values, string $linking_table, array $options) {
+  public function testAssociateStock(string $base_table, array $base_table_values, array $foreign_table_values, string $linking_table, array $insert_values, array $options) {
 
     // Insert an organism needed for our chado stock buddy record.
     $type = \Drupal::service('tripal_chado.chado_buddy');
@@ -860,7 +872,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
 
     // Associate the stock record with the base table record for the first time.
     $expected_status = 1;
-    $status = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $options);
+    $status = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $insert_values, $options);
     $this->assertIsInt($status, "We did not retrieve an integer when associating a stock with the base table \"$base_table\"");
     $this->assertEquals($expected_status, $status, "We did not retrieve the expected status when associating a stock with the base table \"$base_table\"");
 
@@ -882,7 +894,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
 
     // Repeat the same association, it should not create a new one.
     $expected_status = 2;
-    $status = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $options);
+    $status = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $insert_values, $options);
     $this->assertIsInt($status, "We did not retrieve an integer when associating a stock with the base table \"$base_table\"");
     $this->assertEquals($expected_status, $status, "We did not retrieve the expected status when associating a stock with the base table \"$base_table\"");
     $linking_table_query = $this->chado_connection->select('1:' . $linking_table, 'lt')
