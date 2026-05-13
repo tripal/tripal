@@ -74,7 +74,7 @@ class TripalBooleanTypeItem extends TripalFieldItemBase {
     }
 
     return [
-      new BoolStoragePropertyType($entity_type_id, self::$id, "value", $term),
+      new BoolStoragePropertyType($entity_type_id, self::$id, "value", $term, [], 'tripal_default_id_space'),
     ];
   }
 
