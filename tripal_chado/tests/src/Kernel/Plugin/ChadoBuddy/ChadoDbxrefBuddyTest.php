@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
@@ -132,6 +133,17 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     // TEST: case insensitive override should work.
     $chado_buddy_records = $instance->getDb(['db.name' => 'NEWdb003'], ['case_insensitive' => 'db.name']);
     $this->assertEquals(1, count($chado_buddy_records), "We did not receive case insensitive results for getDb when we should have");
+
+    // TEST: we can delete a db.
+    $db_id = $chado_buddy_records[0]->getValue('db.db_id');
+    $result = $instance->deleteDb(['db.db_id' => $db_id]);
+    $this->assertEquals(ChadoBuddyPluginBase::SUCCESS, $result, "We did not delete a db using its pkey");
+    $n = $this->chado_connection->select('1:db')
+      ->condition('db_id', $db_id, '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The db was not deleted in the database");
   }
 
   /**
@@ -255,8 +267,8 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
       ->execute();
     $linking_table = $base_table . '_dbxref';
     $status = $instance->associateDbxref($base_table, 1, $chado_buddy_records[0], []);
-    $this->assertIsBool($status, "We did not retrieve a boolean when associating a dbxref with the base table \"$base_table\"");
-    $this->assertTrue($status, "We did not retrieve TRUE when associating a dbxref with the base table \"$base_table\"");
+    $this->assertIsInt($status, "We did not retrieve an integer when associating a dbxref with the base table \"$base_table\"");
+    $this->assertEquals(1, $status, "We did not retrieve 1 when associating a dbxref with the base table \"$base_table\"");
     $query = $this->chado_connection->select('1:' . $linking_table, 'lt')
       ->fields('lt', ['dbxref_id'])
       ->execute();
@@ -271,8 +283,93 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     // TEST: associate a dbxref with a base table but record already exists.
     // To do so, we just associate the same record a second time.
     $status = $instance->associateDbxref($base_table, 1, $chado_buddy_records[0], []);
-    $this->assertIsBool($status, "We did not retrieve a boolean when associating a dbxref with the base table \"$base_table\"");
-    $this->assertTrue($status, "We did not retrieve TRUE when associating a dbxref with the base table \"$base_table\"");
+    $this->assertIsInt($status, "We did not retrieve an integer when associating a dbxref with the base table \"$base_table\"");
+    $this->assertEquals(2, $status, "We did not retrieve 2 when reassociating a dbxref with the base table \"$base_table\"");
+
+    // TEST: delete a db or dbxref that does not exist.
+    $result = $instance->deleteDb(['db.name' => 'zzzzzzzzz']);
+    $this->assertEquals(ChadoBuddyPluginBase::NON_EXISTING, $result, 'Unexpected result deleting a non-existing DB');
+    $result = $instance->deleteDbxref(['dbxref.accession' => 'zzzzzzzzz']);
+    $this->assertEquals(ChadoBuddyPluginBase::NON_EXISTING, $result, 'Unexpected result deleting a non-existing dbxref');
+
+    // TEST: we can not delete a db if it is in use by a dbxref.
+    // Note that cascade won't handle continuing on to a cvterm,
+    // so this test is limited to just db + dbxref.
+    $result = $instance->insertDb(['db.name' => 'newDb006', 'db.description' => 'desc006']);
+    $this->assertIsObject($result, 'Failed setup for test inserting db newDb006');
+    $result = $instance->insertDbxref(['dbxref.accession' => 'newDbxref006', 'db.name' => 'newDb006']);
+    $this->assertIsObject($result, 'Failed setup for test inserting dbxref newDbxref006');
+    $exception_message = '';
+    try {
+      $result = $instance->deleteDb(['db.name' => 'newDb006'], []);
+    }
+    catch (\Exception $e) {
+      $exception_message = $e->getMessage();
+    }
+    $this->assertStringContainsString('records from the following tables reference the db record', $exception_message, "We did not get the exception message expected deleting a db that has a foreign key");
+    $n = $this->chado_connection->select('1:db')
+      ->condition('name', 'newDb006', '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(1, $n, "The db newDb006 was incorrectly deleted from the database");
+
+    // TEST: we can delete a db if we set cascade.
+    $result = $instance->deleteDb(['db.name' => 'newDb006'], ['cascade' => TRUE]);
+    $this->assertEquals(ChadoBuddyPluginBase::SUCCESS, $result, "We did not delete a db that is in use by a dbxref with cascade set");
+    $n = $this->chado_connection->select('1:db')
+      ->condition('name', 'newDb006', '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The db newDb006 was not deleted from the database");
+
+    // TEST: delete a dbxref with no foreign keys should succeed.
+    $result = $instance->insertDb(['db.name' => 'newDb007-8', 'db.description' => 'desc007']);
+    $this->assertIsObject($result, 'Failed setup for test inserting db newDb007');
+    $result = $instance->insertDbxref(['dbxref.accession' => 'newDbxref007', 'db.name' => 'newDb007-8']);
+    $this->assertIsObject($result, 'Failed setup for test inserting dbxref newDbxref007');
+    $result = $instance->deleteDbxref(['dbxref.accession' => 'newDbxref007']);
+    $this->assertEquals(ChadoBuddyPluginBase::SUCCESS, $result, "We deleted a dbxref that has no foreign keys");
+    $n = $this->chado_connection->select('1:dbxref')
+      ->condition('accession', 'newDbxref007', '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The dbxref newDbxref007 was incorrectly retained in the database");
+
+    // TEST: delete a dbxref with a foreign key should fail.
+    $result = $instance->insertDbxref(['dbxref.accession' => 'newDbxref008', 'db.name' => 'newDb007-8']);
+    $this->assertIsObject($result, 'Failed setup for test inserting dbxref newDbxref008');
+    $dbxref_id = $result->getValue('dbxref.dbxref_id');
+    $n = $this->chado_connection->insert('1:biomaterial')
+      ->fields(['dbxref_id' => $dbxref_id])
+      ->execute();
+    $this->assertEquals(1, $n, "The test biomaterial was not inserted");
+    $exception_message = '';
+    try {
+      $result = $instance->deleteDbxref(['dbxref.accession' => 'newDbxref008'], []);
+    }
+    catch (\Exception $e) {
+      $exception_message = $e->getMessage();
+    }
+    $this->assertStringContainsString('records from the following tables reference the dbxref record', $exception_message, "We did not get the exception message expected deleting a dbxref that has a foreign key");
+    $n = $this->chado_connection->select('1:dbxref')
+      ->condition('accession', 'newDbxref008', '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(1, $n, "The dbxref newDbxref008 was incorrectly deleted from the database");
+
+    // TEST: delete a dbxref with a foreign key but cascade set should succeed.
+    $result = $instance->deleteDbxref(['dbxref.accession' => 'newDbxref008'], ['cascade' => TRUE]);
+    $this->assertEquals(ChadoBuddyPluginBase::SUCCESS, $result, "We failed to delete a dbxref that has a foreign key with cascade set");
+    $n = $this->chado_connection->select('1:dbxref')
+      ->condition('accession', 'newDbxref008', '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEquals(0, $n, "The dbxref newDbxref008 was incorrectly retained in the database");
   }
 
 }

@@ -4,7 +4,7 @@
     "dockerfile": "Dockerfile",
     "args": {
       "drupalversion": "11.x-dev",
-      "phpversion": "8.4",
+      "phpversion": "8.5",
       "postgresqlversion": "18",
       "chadoschema": "teapot"
     }

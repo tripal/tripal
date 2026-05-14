@@ -15,6 +15,26 @@ use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInterface, ContainerFactoryPluginInterface {
 
   /**
+   * Indicates an association was newly created.
+   */
+  const NEW = 1;
+
+  /**
+   * Indicates an association already existed.
+   */
+  const EXISTING = 2;
+
+  /**
+   * Indicates a record did not exist.
+   */
+  const NON_EXISTING = 3;
+
+  /**
+   * Indicates an operation, e.g. delete, succeeded.
+   */
+  const SUCCESS = 4;
+
+  /**
    * Provides the TripalDBX connection to chado.
    *
    * @var Drupal\tripal_chado\Database\ChadoConnection
@@ -79,7 +99,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * @param string $table_name
    *   The table name to query.
    *
-   * @return array|NULL
+   * @return array|null
    *   The table schema, or NULL if the table does not exist.
    */
   public function getChadoTableDef(string $table_name): ?array {
@@ -558,6 +578,77 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     if (!array_key_exists(0, $output_records) or !($output_records[0] instanceof ChadoBuddyRecord)) {
       $calling_function = debug_backtrace()[1]['function'];
       throw new ChadoBuddyException("ChadoBuddy $calling_function error, the array passed to validateOutput does not contain a ChadoBuddyRecord");
+    }
+  }
+
+  /**
+   * Generates an exception when more than one record is retrieved.
+   *
+   * @param array $records
+   *   An array of buddy records.
+   * @param string $key
+   *   The key to retrieve from each record for the exception message.
+   * @param string $message
+   *   Text to include in the exception message.
+   * @param array $conditions
+   *   The query conditions that retrieved the records.
+   *
+   * @return void
+   *   No return value.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If there is more than one record.
+   */
+  protected function throwIfMultipleRecords(array $records, string $key, string $message, array $conditions): void {
+    if (count($records) > 1) {
+      $values = [];
+      foreach ($records as $record) {
+        $values[] = $record->getValue($key);
+      }
+      throw new ChadoBuddyException("ChadoBuddy $message error, more than one record ("
+        . implode(', ', $values)
+        . ") matched the specified conditions\n"
+        . print_r($conditions, TRUE));
+    }
+  }
+
+  /**
+   * Generates an exception if a record is referenced through a foreign key.
+   *
+   * @param string $table
+   *   The chado table of interest.
+   * @param int $pkey
+   *   The primary key value of the record in table $table.
+   * @param string $context
+   *   The context in which this was called, e.g. "deleteDb", "deleteCv".
+   *
+   * @return void
+   *   No return value.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If there is one or more referencing records.
+   */
+  protected function throwIfReferencingRecords(string $table, int $pkey, string $context): void {
+    $table_def = $this->chado_connection->schema()->getTableDef($table, ['source' => 'database', 'format' => 'default']);
+    // Format is [referencing_table =>
+    // [table column (xx_id) => referencing_table column], ].
+    $foreign_keys = $table_def['referenced_by'] ?? [];
+    $references = [];
+    foreach ($foreign_keys as $referencing_table => $keydef) {
+      foreach ($keydef as $refkey) {
+        $query = $this->chado_connection->select('1:' . $referencing_table);
+        $query->condition($refkey, $pkey, '=');
+        $n = $query->countQuery()->execute()->fetchField();
+        if ($n) {
+          $references[] = "$n record(s) in table \"$referencing_table\"";
+        }
+      }
+    }
+
+    // If there are any referencing records then throw an exeption.
+    if ($references) {
+      throw new ChadoBuddyException("ChadoBuddy $context error, records from the following tables reference the $table record $pkey: "
+        . implode(', ', $references) . '.');
     }
   }
 

@@ -14,6 +14,9 @@ tripal.content_type.*:
     termAccession:
       type: string
       label: 'Term Accession'
+    formatterSettingsTerm:
+      type: string
+      label: 'Term used for storage of formatter settings'
     help_text:
       type: text
       label: 'Help Text'

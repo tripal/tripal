@@ -47,6 +47,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
     $this->sortable = TRUE;
     $this->readOnly_ = FALSE;
     $this->required = FALSE;
+    $this->cache_status = TRUE;
     $this->storage_settings = $storage_settings;
   }
 
