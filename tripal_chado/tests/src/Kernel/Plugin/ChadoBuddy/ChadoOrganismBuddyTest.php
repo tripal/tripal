@@ -327,6 +327,8 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
    *   An array of options to pass to insertOrganism().
    * @param int $num_expected_records
    *   The expected number of organism records to be created.
+   *
+   * @dataProvider provideInsertOrganismScenarios
    */
   #[DataProvider('provideInsertOrganismScenarios')]
   public function testInsertOrganism(array $values, array $options, int $num_expected_records) {
@@ -545,6 +547,8 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
    *   required.
    * @param string $expected_exception_message
    *   The expected exception message.
+   *
+   * @dataProvider provideOrganismBuddyExceptionScenarios
    */
   #[DataProvider('provideOrganismBuddyExceptionScenarios')]
   public function testOrganismBuddyExceptions(string $method_name, array $method_input, string $expected_exception_message) {
@@ -771,6 +775,8 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
    *   An array of options to pass to getOrganismFromScientificName().
    * @param int $expected_num_records
    *   The expected number of organism records to be returned.
+   *
+   * @dataProvider provideOrganismFromScientificNameScenarios
    */
   #[DataProvider('provideOrganismFromScientificNameScenarios')]
   public function testGetOrganismFromScientificName($organism_values, $query_scientific_name, $options, $expected_num_records) {
