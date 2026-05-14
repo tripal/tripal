@@ -680,7 +680,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *     Looking up the primary key for the base table is costly. If it is
    *     known, then pass it in using this option for better performance.
    *   - lookup_columns (bool): Whether to look up any additional columns that
-   *     are not specified in the options. FALSE will disable looking up any
+   *     are not specified in the defaults. FALSE will disable looking up any
    *     additional columns, which may cause the insert to fail if any NOT NULL
    *     columns are not specified. Default TRUE.
    *
