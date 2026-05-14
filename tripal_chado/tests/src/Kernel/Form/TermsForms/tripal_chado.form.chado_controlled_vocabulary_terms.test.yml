@@ -236,17 +236,15 @@
       'views':
         - 'config/install/views.view.chado_controlled_vocabulary_terms'
     'args':
-      'cvterm_id': 11
+      'cvterm_id': 233
     'form_expectations':
       '#form_id': 'chado_cvterm_delete_form'
       'cvterm_id':
-        '#value': 11
+        '#value': 233
       'cvterm_name':
-        '#value': 'Sequence'
+        '#value': 'is_a'
       'description':
         '#type': 'table'
-      'submit':
-        '#value': 'Delete'
       'cancel':
         '#value': 'Cancel'
     'triggering_element':
@@ -258,12 +256,12 @@
       - 'table': 'cvterm'
         'conditions':
           - 'column': 'cvterm_id'
-            'value': 11
+            'value': 233
         'count': 1
       - 'table': 'dbxref'
         'conditions':
-          - 'column': 'accession'
-            'value': '2044'
+          - 'column': 'dbxref_id'
+            'value': 233
         'count': 1
 'Controlled vocabulary term delete form with an invalid cvterm_id argument':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermDeleteForm'

@@ -144,11 +144,11 @@
       'views':
         - 'config/install/views.view.chado_database_cross_references'
     'args':
-      'dbxref_id': 3494
+      'dbxref_id': 3495
     'form_expectations':
       '#form_id': 'chado_dbxref_delete_form'
       'dbxref_id':
-        '#value': 3494
+        '#value': 3495
       'description':
         '#type': 'table'
       'submit':
@@ -158,7 +158,7 @@
     'triggering_element':
       '#value': 'Delete'
     'submit_expectations':
-      'dbxref_id': 3494
+      'dbxref_id': 3495
     'submit_output':
       - 'Redirecting to'
     'submit_messages':
@@ -167,7 +167,7 @@
       - 'table': 'dbxref'
         'conditions':
           - 'column': 'dbxref_id'
-            'value': 3494
+            'value': 3495
         'count': 0
 'Database cross reference delete form with an invalid dbxref_id argument':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefDeleteForm'
