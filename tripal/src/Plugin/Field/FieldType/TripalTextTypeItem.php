@@ -76,7 +76,7 @@ class TripalTextTypeItem extends TripalFieldItemBase {
     }
 
     return [
-      new TextStoragePropertyType($entity_type_id, self::$id, "value", $term),
+      new TextStoragePropertyType($entity_type_id, self::$id, "value", $term, [], 'tripal_default_id_space'),
     ];
   }
 

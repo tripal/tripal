@@ -120,7 +120,7 @@ class TripalStringTypeItem extends TripalFieldItemBase {
     }
 
     return [
-      new VarCharStoragePropertyType($entity_type_id, self::$id, "value", $term, $max_length),
+      new VarCharStoragePropertyType($entity_type_id, self::$id, "value", $term, $max_length, [], 'tripal_default_id_space'),
     ];
   }
 

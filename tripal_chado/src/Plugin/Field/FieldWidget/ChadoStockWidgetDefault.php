@@ -53,18 +53,18 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $link,
     ];
-    // pass the foreign key name through the form for massageFormValues()
+    // Pass the foreign key name through the form for massageFormValues().
     $elements['linker_fkey_column'] = [
       '#type' => 'value',
       '#default_value' => $linker_fkey_column,
     ];
-    // pass the field machine name through the form for massageFormValues()
+    // Pass the field machine name through the form for massageFormValues().
     $elements['field_name'] = [
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
 
-    // Create a select element specific to this content type
+    // Create a select element specific to this content type.
     $options = [
       'base_table' => 'stock',
       'column_name' => 'name',
@@ -87,7 +87,7 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
       }
     }
 
-    // Save some initial values to allow later handling of the "Remove" button
+    // Save some initial values to allow later handling of the "Remove" button.
     $this->saveInitialValues($delta, $field_name, $linker_id, $form_state);
 
     return $elements;
@@ -121,4 +121,5 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
   public function settingsSummary() {
     return $this->selectSettingsSummary() + parent::settingsSummary();
   }
+
 }

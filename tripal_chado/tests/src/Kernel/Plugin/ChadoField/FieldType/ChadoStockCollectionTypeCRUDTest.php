@@ -1,31 +1,53 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel\Entity;
+namespace Drupal\Tests\tripal_chado\Kernel\ChadoField\FieldType;
 
-use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
+use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * Tests the TripalEntity Class.
+ * Tests the ChadoStockCollectionTypeDefault Field Type.
  *
- * @group TripalEntity
- * @group TripalTokenParser
+ * Specifically focused on create + update actions performed on the entity
+ * directly. Both TripalEntity, ChadoStorage and the field will be covered.
+ *
+ * @group TripalField
+ * @group ChadoField
  */
-#[Group('tripal-content')]
-#[Group('service-token-parser')]
+#[Group('tripal-field')]
+#[Group('chado-field')]
 #[RunTestsInSeparateProcesses]
-class TripalEntityFieldTest extends TripalTestKernelBase {
+class ChadoStockCollectionTypeCRUDTest extends ChadoTestKernelBase {
 
-  use TripalEntityFieldTestTrait;
+  use ChadoFieldTestTrait;
 
   /**
-   * {@inheritdoc}
+   * The theme to use when rendering content in the test environment.
+   *
+   * @var string
    */
-  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'datetime', 'tripal'];
+  protected $defaultTheme = 'stark';
+
+  /**
+   * The modules that this test depends on.
+   *
+   * NOTE: since this is a kernel test, these modules are not being installed
+   * but are available to be installed.
+   *
+   * @var array
+   */
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'datetime', 'tripal', 'tripal_chado'];
+
+  /**
+   * The test chado connection. It is also set in the container.
+   *
+   * @var ChadoConnection
+   */
+  protected object $chado_connection;
 
   /**
    * The test drupal connection. It is also set in the container.
@@ -39,13 +61,14 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
    *
    * @var string
    */
-  protected string $yaml_info_file = __DIR__ . '/TripalEntityFieldTest-TestInfo.yml';
+  protected string $yaml_info_file = __DIR__ . '/ChadoStockCollectionType-TestInfo.yml';
 
   /**
    * Describes the environment to setup for this test.
    *
    * @var array
    *   An array with the following keys:
+   *   - chado_version: the version of chado to test under.
    *   - bundle: an array defining the tripal entity type to create.
    *   - fields: a list of fields to be attached the above bundle.
    */
@@ -69,7 +92,7 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
    *  A list of scenarios where each one has the following keys:
    *  - label: A human-readable label for the scenario to be used in assert
    *    messages.
-   *  - description: A description of the scenario and what you are wanting to
+   *  - descrition: A description of the scenario and what you are wanting to
    *    test. This will not be used in the test but is rather there to help
    *    people reading the YAML file and to make it easier to maintain.
    *  - create: An array of the values to be provided when creating a
@@ -97,7 +120,24 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
     [$this->system_under_test, $this->scenarios] = $this->getTestInfoFromYaml($this->yaml_info_file);
     $this->bundle_name = $this->system_under_test['bundle']['id'];
 
-    $this->setupEntityFieldTestEnvironment($this->system_under_test);
+    // Create the test Chado installation we will be using.
+    if (!array_key_exists('chado_version', $this->system_under_test)) {
+      $this->system_under_test['chado_version'] = '1.3';
+    }
+    $this->chado_connection = $this->getTestSchema(
+      ChadoTestKernelBase::PREPARE_TEST_CHADO,
+      $this->system_under_test['chado_version']
+    );
+
+    $this->chado_connection->insert('1:organism')
+      ->fields([
+        'genus' => 'Tripalus',
+        'species' => 'databasica',
+      ])
+      ->execute();
+
+    // Next setup the environment according to the system under test.
+    $this->setupChadoEntityFieldTestEnvironment($this->system_under_test);
   }
 
   /**
@@ -112,24 +152,36 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
 
     $scenarios[] = [
       0,
-      "Use format for title + URL",
-    ];
-
-    $scenarios[] = [
-      1,
-      "Use format for title + URL with HTML included",
-    ];
-
-    $scenarios[] = [
-      2,
-      "User submitted alias when creating",
+      "Base Fields Only",
     ];
 
     return $scenarios;
   }
 
   /**
-   * Tests that TripalEntity::save() handles URL alias' with substitutions.
+   * Retrieves the current scenario based on the data provider.
+   *
+   * NOTE: Also ensures the type_ids match what is currently in the database.
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   *
+   * @return array
+   *   The scenario to be tested as defined in the YAML.
+   */
+  public function retrieveCurrentScenario(int $current_scenario_key, string $current_scenario_label) {
+
+    // Retrieve the correct scenario.
+    $current_scenario = $this->scenarios[$current_scenario_key];
+    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+
+    return $current_scenario;
+  }
+
+  /**
+   * Tests the ChadoPropertyType field through TripalEntity->save().
    *
    * @param int $current_scenario_key
    *   The key of the scenario in the YAML.
@@ -139,30 +191,22 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
    * @dataProvider provideScenarios
    */
   #[DataProvider('provideScenarios')]
-  public function testTripalEntitySaveTitleUrlBasic(int $current_scenario_key, string $current_scenario_label) {
-    $current_scenario = $this->getYamlScenario($current_scenario_key, $current_scenario_label);
+  public function testChadoStockCollectionTypeEntityCrud(int $current_scenario_key, string $current_scenario_label) {
+    $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
 
     // 1. Create the entity with that value set.
-    $submitted_title = $this->randomString();
     $entity = TripalEntity::create([
-      'title' => $submitted_title,
+      'title' => $this->randomString(),
       'type' => $this->bundle_name,
     ] + $current_scenario['create']['user_input']);
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
     $status = $entity->save();
     $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
 
+    // @debug print_r($entity->toArray());
     // 2. Load the entity we just created so we can check the values.
     $created_entity = TripalEntity::load($entity->id());
-    $this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, '"' . $current_scenario['label'] . '" being created. ');
-    // -- Title.
-    $this->assertNotEquals($submitted_title, $created_entity->getTitle(), "The submitted title should never be used but it was when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
-    $this->assertEquals($current_scenario['create']['title'], $created_entity->getTitle(), "We did not get the title we expected when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
-    // -- URL.
-    $retrieved_alias = $created_entity->getAlias();
-    $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
-    $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
-    $this->assertEquals($current_scenario['create']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, $current_scenario['label'] . ' CREATE ');
 
     // 3. Make changes and then save again.
     foreach ($current_scenario['edit']['user_input'] as $field_name => $new_values) {
@@ -175,15 +219,7 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
     // 4. Load the entity we just updated so we can check the values.
     $updated_entity = TripalEntity::load($created_entity->id());
     // @debug print_r($updated_entity->toArray());
-    $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, '"' . $current_scenario['label'] . '" being updated. ');
-    // -- Title.
-    $this->assertNotEquals($submitted_title, $updated_entity->getTitle(), "The submitted title should never be used but it was when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
-    $this->assertEquals($current_scenario['edit']['title'], $updated_entity->getTitle(), "We did not get the title we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
-    // -- URL.
-    $retrieved_alias = $created_entity->getAlias();
-    $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
-    $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
-    $this->assertEquals($current_scenario['edit']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, $current_scenario['label'] . ' EDIT ');
   }
 
 }

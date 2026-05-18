@@ -1,5 +1,11 @@
 services:
   tripal.command:
     class: '\Drupal\tripal\Commands\TripalCommands'
+    arguments:
+      - '@account_switcher'
+      - '@entity_type.manager'
+      - '@tripal.tripalentitytype_collection'
+      - '@tripal.tripalfield_collection'
+      - '@tripal.sync_tripal_field_storage'
     tags:
       - { name: 'drush.command' }

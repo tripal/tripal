@@ -152,7 +152,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $base_tables[''] = '- Select -';
       $chado = \Drupal::service('tripal_chado.database');
       $schema = $chado->schema();
-      $tables = $schema->getTables(['type' => 'table', 'status' => 'base']);
+      $tables = $schema->getTables(['type' => 'table', 'status' => 'table']);
       foreach (array_keys($tables) as $table) {
         $base_tables[$table] = $table;
       }
@@ -555,7 +555,10 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
     $table_schema_def = self::getChadoTableDef($table_name);
     foreach ($table_schema_def['fields'] as $field => $properties) {
-      if (!$column_types or in_array($properties['type'], $column_types)) {
+      // We use pgsql_type in preference, because for example a boolean
+      // will have pgsql_type=boolean but type=text.
+      $type = $properties['pgsql_type'] ?? $properties['type'];
+      if (!$column_types or in_array($type, $column_types)) {
         $table_columns[] = $field;
       }
     }
