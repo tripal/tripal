@@ -595,15 +595,16 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * Parses the 'validate_foreign_keys' option given to some buddy methods.
    *
    * This method is used by some insert, update and upsert methods to determine
-   * whether to validate foreign keys for the record. If the option is not set,
-   * then we return the default value of TRUE. If the option is set, then we
-   * check if it's an array and look for the valid key to determine whether to
-   * validate foreign keys for that key. If the option is a boolean value, then
-   * we return that value regardless of the valid key since it applies to all
-   * keys.
+   * whether to validate foreign keys for the record. If the option:
+   * - is not set, then we return the default value of TRUE.
+   * - is set, then we check if it's an array and look for the valid key to
+   *   determine whether to validate foreign keys for that key.
+   * - is a boolean value, then we return that value regardless of the valid key
+   *   since it applies to all keys.
    *
    * @param array $options
-   *   Associative array of options supplied to a ChadoBuddy method.
+   *   Associative array of options supplied to a ChadoBuddy method. This method
+   *   only looks at the `validate_foreign_keys` key in this array.
    * @param string $valid_key
    *   The key to look for in the 'validate_foreign_keys' option if it's an
    *   array. This should be the column name of the PRIMARY KEY in the foreign
