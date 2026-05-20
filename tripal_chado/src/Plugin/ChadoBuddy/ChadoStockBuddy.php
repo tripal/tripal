@@ -269,7 +269,10 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   behaviour, then use the upsert version of this method.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If an error is encountered.
+   *   - If a stock record matching the values passed in already exists.
+   *   - If the values fail validation.
+   *   - If a buddy_record is passed in that is not valid.
+   *   - If a database exception is encountered when inserting the stock.
    */
   public function insertStock(array $values, array $options = []) {
     $valid_columns = $this->getTableColumns($this->valid_tables);
@@ -379,7 +382,10 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   returned if no record was found to update.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If an error is encountered.
+   *   - If more than one stock record matches the values passed in.
+   *   - If the values fail validation.
+   *   - If a buddy_record is passed in that is not valid.
+   *   - If a database exception is encountered when updating the stock.
    */
   public function updateStock(array $values, array $conditions, array $options = []) {
     $valid_columns = $this->getTableColumns($this->valid_tables);
@@ -494,21 +500,22 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   The inserted/updated ChadoBuddyRecord will be returned on success.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If an error is encountered.
+   *   - If more than one stock record matches the values passed in.
+   *   - If the values fail validation.
+   *   - If a buddy_record is passed in that is not valid.
+   *   - If a database exception is encountered when inserting/updating.
    */
   public function upsertStock(array $values, array $options = []) {
     $valid_columns = $this->getTableColumns($this->valid_tables);
     $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
-    // For upsert, the query conditions are a subset consisting of
-    // only the columns that are part of a unique constraint:
-    // organism_id + uniquename + type_id.
-    // However, tables cv, cvterm, db, and dbxref are also included in the valid
-    // tables since they apply to the type_id column, but it should be possible
-    // to add a dbxref_id to an existing stock if we want to.
-    // So, we will exclude all db and dbxref columns from the conditions since
-    // stock.dbxref_id is not part of the unique constaint.
+    // For upsert, the query conditions are a subset consisting of only the
+    // columns that are part of a unique constraint
+    // (stock.organism_id + stock.uniquename + stock.type_id) and their
+    // referring tables (cv, cvterm, organism).
+    // Note: The stock.dbxref_id is not part of the unique key and should be
+    // available to update, thus, it is not part of the query conditions.
     $key_columns = $this->getTableColumns(['cv', 'cvterm', 'organism', 'stock'], 'unique');
     $conditions = $this->makeUpsertConditions($values, $key_columns);
     $existing_records = $this->getStock($conditions, $options);
