@@ -90,12 +90,15 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'stock',
       'stock.stock_id',
       'Stock "Stock1"',
+      // Total # of fields in tables cv, cvterm, db, dbxref, organism, stock.
       36
     );
     $stock_id = $values['get']['stock.stock_id'];
     $this->assertTrue(is_numeric($stock_id), 'We did not retrieve an integer stock_id for stock "Stock1" which should have been inserted by upsertStock().');
 
     // TEST: Update an existing stock record to add a ChadoDbxrefBuddy record.
+    // Note: 'create_dbxref' option is set to TRUE as an added check to ensure
+    // that this option won't fail the test since the dbxref already exists.
     $simple_dbxref_values = [
       'db.name' => 'local',
       'dbxref.accession' => 'newAccession',
@@ -399,12 +402,14 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $stock_id = $results['get']['stock.stock_id'];
     $this->assertTrue(is_numeric($stock_id), 'We did not retrieve a numeric stock_id for the new stock inserted via insertStock() method');
 
-    // Verify the stock names match.
-    $this->assertEquals(
-      $values['stock.name'],
-      $results['get']['stock.name'],
-      'The stock name we retrieved did not match the stock name we inserted.',
-    );
+    // Verify that insert stock values match what is retrieved.
+    foreach ($values as $field => $expected_value) {
+      $this->assertEquals(
+        $expected_value,
+        $results['get'][$field],
+        "The stock field '$field' we retrieved did not match the stock field value we inserted.",
+      );
+    }
   }
 
   /**
@@ -475,7 +480,8 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
-    // #3: Update an existing stock with a valid dbxref and db.
+    // #3: Update an existing stock that doesn't already have a stock.dbxref_id
+    // with a valid dbxref and db.
     $scenarios[] = [
       [
         'db.name' => 'CO_010',
@@ -645,6 +651,8 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    *     values to insert into those tables.
    *   - linking_table: A string of the linking table that is used to create the
    *     relationship between the stock record and base table.
+   *   - linking_table_values: An array of values to insert into the linking
+   *     table.
    *   - options: An array of options to pass to associateStock().
    */
   public static function provideAssociateStockScenarios() {
@@ -824,15 +832,15 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
    * @param string $linking_table
    *   A string indicating the linking table that is used to create the
    *   relationship between the stock record and base table.
-   * @param array $insert_values
-   *   Specific values to insert into the linking table.
+   * @param array $linking_table_values
+   *   An array of values to insert into the linking table.
    * @param array $options
    *   An array of options to pass to associateStock().
    *
    * @dataProvider provideAssociateStockScenarios
    */
   #[DataProvider('provideAssociateStockScenarios')]
-  public function testAssociateStock(string $base_table, array $base_table_values, array $foreign_table_values, string $linking_table, array $insert_values, array $options) {
+  public function testAssociateStock(string $base_table, array $base_table_values, array $foreign_table_values, string $linking_table, array $linking_table_values, array $options) {
 
     // Insert an organism needed for our chado stock buddy record.
     $type = \Drupal::service('tripal_chado.chado_buddy');
@@ -878,7 +886,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
 
     // Associate the stock record with the base table record for the first time.
     $expected_status = 1;
-    $status = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $insert_values, $options);
+    $status = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $linking_table_values, $options);
     $this->assertIsInt($status, "We did not retrieve an integer when associating a stock with the base table \"$base_table\"");
     $this->assertEquals($expected_status, $status, "We did not retrieve the expected status when associating a stock with the base table \"$base_table\"");
 
@@ -900,7 +908,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
 
     // Repeat the same association, it should not create a new one.
     $expected_status = 2;
-    $status = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $insert_values, $options);
+    $status = $stock_instance->associateStock($base_table, $base_table_pkey, $test_chado_stock_record, $linking_table_values, $options);
     $this->assertIsInt($status, "We did not retrieve an integer when associating a stock with the base table \"$base_table\"");
     $this->assertEquals($expected_status, $status, "We did not retrieve the expected status when associating a stock with the base table \"$base_table\"");
     $linking_table_query = $this->chado_connection->select('1:' . $linking_table, 'lt')
