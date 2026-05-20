@@ -19,7 +19,7 @@ use Drupal\tripal\TripalField\TripalWidgetBase;
     'tripal_datetime_type',
   ],
 )]
-class TripalDatetimeTextTypeWidget extends TripalWidgetBase {
+class TripalDatetimeTypeWidget extends TripalWidgetBase {
 
   /**
    * {@inheritdoc}
