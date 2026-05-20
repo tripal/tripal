@@ -3,8 +3,9 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
+use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
@@ -94,13 +95,16 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertIsObject(
       $instance,
       "We did not have an object created when trying to create an ChadoBuddy instance.");
-    $this->assertIsObject(
-      $instance->chado_connection,
-      "The chado connection should have been set by the plugin manager but the value is NOT AN OBJECT."
+    $schema_name = $this->chado_connection->getSchemaName();
+    $this->assertEquals(
+      $schema_name,
+      $instance->getSchemaName(),
+      "The chado connection schema should have been set by the plugin manager but the values do not match."
     );
     $this->assertInstanceOf(
-      ChadoConnection::class, $instance->chado_connection,
-      "The chado connection should have been set by the plugin manager but the value is NOT A CHADOCONNECTION OBJECT."
+      ChadoCvtermBuddy::class,
+      $instance,
+      "The cvterm buddy instance should have been set by the plugin manager but the value is NOT A CHADOCVTERMBUDDY OBJECT."
     );
   }
 

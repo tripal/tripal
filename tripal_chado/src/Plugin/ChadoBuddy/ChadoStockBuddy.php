@@ -4,14 +4,14 @@ namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
-use Drupal\tripal_chado\Database\ChadoConnection;
-use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
-use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
-use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
+use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
+use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
+use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the Chado stock buddy.
@@ -28,26 +28,26 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *
    * @var \Drupal\tripal_chado\Database\ChadoConnection
    */
-  public ChadoConnection $chado_connection;
+  protected ChadoConnection $chado_connection;
 
   /**
    * Used to store the manager so we can create a buddy.
    *
    * @var \Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
    */
-  public ChadoBuddyPluginManager $buddy_manager;
+  protected ChadoBuddyPluginManager $buddy_manager;
 
   /**
    * Used to store the dbxref ChadoBuddy instance.
    *
-   * @var ChadoDbxrefBuddy
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoDbxrefBuddy
    */
   protected ChadoDbxrefBuddy $dbxref_buddy;
 
   /**
    * Used to store the organism ChadoBuddy instance.
    *
-   * @var ChadoOrganismBuddy
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy
    */
   protected ChadoOrganismBuddy $organism_buddy;
 

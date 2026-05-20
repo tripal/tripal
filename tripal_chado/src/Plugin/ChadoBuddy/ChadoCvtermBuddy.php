@@ -28,17 +28,21 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *
    * @var \Drupal\tripal_chado\Database\ChadoConnection
    */
-  public ChadoConnection $chado_connection;
+  protected ChadoConnection $chado_connection;
 
   /**
    * Used to store the manager so we can create a buddy.
+   *
+   * @var \Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
    */
-  protected object $buddy_manager;
+  protected ChadoBuddyPluginManager $buddy_manager;
 
   /**
-   * Provide the dbxref instance.
+   * Used to store the dbxref ChadoBuddy instance.
+   *
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoDbxrefBuddy
    */
-  protected object $dbxref_instance;
+  protected ChadoDbxrefBuddy $dbxref_instance;
 
   /**
    * Implements ContainerFactoryPluginInterface->create().

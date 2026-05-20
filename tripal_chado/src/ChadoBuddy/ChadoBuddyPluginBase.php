@@ -4,10 +4,10 @@ namespace Drupal\tripal_chado\ChadoBuddy;
 
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Base class for chado_buddy plugins.
@@ -39,7 +39,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *
    * @var Drupal\tripal_chado\Database\ChadoConnection
    */
-  public ChadoConnection $chado_connection;
+  protected ChadoConnection $chado_connection;
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
