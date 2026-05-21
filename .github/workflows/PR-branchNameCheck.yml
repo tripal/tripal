@@ -9,11 +9,12 @@ jobs:
     steps:
 
       - name: "Validate branch name matches our standards"
+        env:
+          BRANCH_NAME: '${{ github.head_ref }}'
         run: |
-          BRANCH_NAME="${{ github.head_ref }}"
           STANDARD='^tv4g[0-9]+-(issue){0,1}[0-9]+-?[a-zA-Z0-9_-]*$'
 
-          if [[ ! $BRANCH_NAME =~ $STANDARD ]] && [[ ! $BRANCH_NAME == '4.x' ]]; then
+          if [[ ! "$BRANCH_NAME" =~ $STANDARD ]] && [[ ! "$BRANCH_NAME" == '4.x' ]]; then
             echo "::error::Branch name '$BRANCH_NAME' does not match our standard '$STANDARD'"
             exit 1
           fi
