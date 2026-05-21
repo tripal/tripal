@@ -498,7 +498,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
-    // #4: Update an existing stock with a valid dbxref.dbxref_id and skip
+    // #4: Update an existing stock by adding a valid dbxref.dbxref_id and skip
     // validating foreign keys for dbxref_id only.
     $scenarios[] = [
       [
@@ -519,7 +519,29 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
-    // #5: Provide info to create a dbxref record for an existing stock.
+    // #5: Update an existing stock with a valid stock.dbxref_id to have a new
+    // dbxref.dbxref_id and skip validating foreign keys for dbxref_id only.
+    $scenarios[] = [
+      [
+        'dbxref.dbxref_id' => 5,
+      ],
+      [
+        'stock.name' => 'Stock1',
+        'stock.uniquename' => 'stock1',
+        'stock.type_id' => 3,
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+        'stock.dbxref_id' => 4,
+      ],
+      [
+        'validate_foreign_keys' => [
+          'dbxref_id' => FALSE,
+        ],
+      ],
+      1,
+    ];
+
+    // #6: Provide info to create a dbxref record for an existing stock.
     $scenarios[] = [
       [
         'dbxref.accession' => 'newAccession',
@@ -532,13 +554,30 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
         'organism.genus' => 'Tripalus',
         'organism.species' => 'databasica',
       ],
-      [
-        'create_dbxref' => TRUE,
-      ],
+      [],
       1,
     ];
 
-    // #6: Attempt to update a non-existing stock.
+    // #7: Provide info to create a dbxref record for an existing stock that
+    // already has a stock.dbxref_id.
+    $scenarios[] = [
+      [
+        'dbxref.accession' => 'newAccession',
+        'db.name' => 'local',
+      ],
+      [
+        'stock.name' => 'Stock1',
+        'stock.uniquename' => 'stock1',
+        'stock.type_id' => 3,
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+        'stock.dbxref_id' => 4,
+      ],
+      [],
+      1,
+    ];
+
+    // #8: Attempt to update a non-existing stock.
     $scenarios[] = [
       [
         'stock.name' => 'NonExistingStock',
@@ -588,49 +627,33 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $type = \Drupal::service('tripal_chado.chado_buddy');
     $stock_instance = $type->createInstance('chado_stock_buddy', []);
 
-    // Insert a test stock record.
-    $stock_instance->insertStock([
-      'stock.name' => 'Stock1',
-      'stock.uniquename' => 'stock1',
-      // Cvterm ID for 'accession'.
-      'stock.type_id' => 3,
-      'organism.genus' => 'Tripalus',
-      'organism.species' => 'databasica',
-    ]);
+    // Insert our test stock record.
+    if ($num_expected_records > 0) {
+      $stock_instance->insertStock($conditions);
+    }
 
     // Update the stock record.
-    $test_records['set'] = $stock_instance->updateStock($values, $conditions, $options);
-
-    // Now try retrieving the stock record we just updated.
-    $test_records['get'] = $stock_instance->getStock($values + $conditions);
-
-    // Verify we retrieved the expected number of records.
-    $this->assertCount(
-      $num_expected_records,
-      $test_records['get'],
-      "Did not retrieve the expected number of stock records after updating.",
-    );
+    $updated_record = $stock_instance->updateStock($values, $conditions, $options);
 
     if ($num_expected_records > 0) {
-      // Verify the updated and retrieved records match.
-      $results = $this->multiAssert(
-        'updateStock',
-        $test_records,
-        'stock',
-        'stock.stock_id',
-        'Stock updated via updateStock() method',
-        36
-      );
-      $stock_id = $results['get']['stock.stock_id'];
+      // Make sure we have a ChadoBuddyRecord.
+      $this->assertObjectHasProperty('base_table', $updated_record, 'We were not returned a ChadoBuddyRecord object when we called updateStock() and expected at least one record.');
+
+      // Make sure we have a stock_id.
+      $stock_id = $updated_record->getValue('stock.stock_id');
       $this->assertTrue(is_numeric($stock_id), 'We did not retrieve a numeric stock_id for the new stock updated via updateStock() method');
 
+      // Verify the expected values and updated records match.
       foreach ($values as $field => $expected_value) {
         $this->assertEquals(
           $expected_value,
-          $results['get'][$field],
+          $updated_record->getValue($field),
           "The stock field '$field' we retrieved did not match the stock field value we updated.",
         );
       }
+    }
+    else {
+      $this->assertFalse($updated_record, 'updateStock() did not return FALSE when provided a non-existing stock to update.');
     }
   }
 

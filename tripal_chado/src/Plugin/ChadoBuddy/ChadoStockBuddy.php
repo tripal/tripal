@@ -573,7 +573,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
     // if it is not set for key 'dbxref_id'.
     $validate_dbxref = $this->parseValidateForeignKeysOption($options, 'dbxref_id');
 
-    // Check if we already have an stock.dbxref_id AND a dbxref.dbxref_id, and
+    // Check if we already have a stock.dbxref_id AND a dbxref.dbxref_id, and
     // ensure they match.
     if (array_key_exists('stock.dbxref_id', $values)) {
       if (array_key_exists('dbxref.dbxref_id', $values)) {
