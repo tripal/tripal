@@ -243,13 +243,14 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *       in addition to other keys (but NOT additional buddy records).
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
-   *   - create_dbxref - set to TRUE (default FALSE) if you specified the
-   *     necessary fields and want to create the dbxref for stock.dbxref_id when
-   *     creating this stock, if it does not already exist.
-   *     NOTE: This is NOT recommended. We suggest you import ontologies first.
-   *     To add more than one stock_dbxref record for this stock, you will need
-   *     to create them using the ChadoDbxrefBuddy and then use
-   *     ::associateStock() to link this stock using the stock_dbxref table.
+   *   - create_dbxref - when TRUE, the unique identifier for a stock will be
+   *     created based on the necessary fields from the dbxref table and stored
+   *     in the stock.dbxref_id. This is the default, pass in FALSE if you do
+   *     NOT want the dbxref to be created for this stock.
+   *     NOTE: If you want to annotate this stock with multiple dbxref
+   *     associations stored in the stock_dbxref table, then you will need to
+   *     create them using the ChadoDbxrefBuddy and associate them using
+   *     ::associateStock().
    *   - validate_foreign_keys - specifies whether to validate foreign keys.
    *     Default is TRUE for all foreign keys. If you specify a boolean value,
    *     then that value is used for validating all potential foreign keys.
@@ -358,13 +359,14 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   The same keys are supported as those indicated for $values.
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
-   *   - create_dbxref - set to TRUE (default FALSE) if you specified the
-   *     necessary fields and want to create the dbxref for stock.dbxref_id when
-   *     updating this stock, if it does not already exist.
-   *     NOTE: This is NOT recommended. We suggest you import ontologies first.
-   *     To add more than one stock_dbxref record for an existing stock, you
-   *     will need to create them using the ChadoDbxrefBuddy and then use
-   *     ::associateStock() to link this stock using the stock_dbxref table.
+   *   - create_dbxref - when TRUE, the unique identifier for a stock will be
+   *     created based on the necessary fields from the dbxref table and stored
+   *     in the stock.dbxref_id. This is the default, pass in FALSE if you do
+   *     NOT want the dbxref to be created for this stock.
+   *     NOTE: If you want to annotate this stock with multiple dbxref
+   *     associations stored in the stock_dbxref table, then you will need to
+   *     create them using the ChadoDbxrefBuddy and associate them using
+   *     ::associateStock().
    *   - validate_foreign_keys - specifies whether to validate foreign keys.
    *     Default is TRUE for all foreign keys. If you specify a boolean value,
    *     then that value is used for validating all potential foreign keys.
@@ -477,13 +479,14 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *       in addition to other keys (but NOT additional buddy records).
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
-   *   - create_dbxref - set to TRUE (default FALSE) if you specified the
-   *     necessary fields and want to create the dbxref for stock.dbxref_id when
-   *     creating/updating this stock, if it does not already exist.
-   *     NOTE: This is NOT recommended. We suggest you import ontologies first.
-   *     To add more than one stock_dbxref record for this stock, you will need
-   *     to create them using the ChadoDbxrefBuddy and then use
-   *     ::associateStock() to link this stock using the stock_dbxref table.
+   *   - create_dbxref - when TRUE, the unique identifier for a stock will be
+   *     created based on the necessary fields from the dbxref table and stored
+   *     in the stock.dbxref_id. This is the default, pass in FALSE if you do
+   *     NOT want the dbxref to be created for this stock.
+   *     NOTE: If you want to annotate this stock with multiple dbxref
+   *     associations stored in the stock_dbxref table, then you will need to
+   *     create them using the ChadoDbxrefBuddy and associate them using
+   *     ::associateStock().
    *   - validate_foreign_keys - specifies whether to validate foreign keys.
    *     Default is TRUE for all foreign keys. If you specify a boolean value,
    *     then that value is used for validating all potential foreign keys.
@@ -542,10 +545,11 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   @see ::updateStock()
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
-   *   - create_dbxref - set to TRUE (default FALSE) if you specified the
-   *     necessary fields and want to create the dbxref for stock.dbxref_id when
-   *     creating/updating this stock, if it does not already exist. This option
-   *     is passed internally from insertStock() or updateStock().
+   *   - create_dbxref - This option is passed internally from insertStock() or
+   *     updateStock(). When TRUE, the unique identifier for a stock will be
+   *     created based on the necessary fields from the dbxref table and stored
+   *     in the stock.dbxref_id. This is the default, pass in FALSE if you do
+   *     NOT want the dbxref to be created for this stock.
    *   - validate_foreign_keys - This option is passed internally from
    *     insertStock() or updateStock(). This method will check for the key
    *     'dbxref_id' to determine whether to validate it.
@@ -603,14 +607,13 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
           }
           $values['stock.dbxref_id'] = $dbxref_records[0]->getValue('dbxref.dbxref_id', ['strict' => FALSE]);
         }
-        // If a dbxref could not be found, try to create it if the required
-        // fields were included. For safety, this is an opt-in setting.
-        elseif ($options['create_dbxref'] ?? FALSE) {
+        // If a dbxref could not be found, try to create it.
+        elseif ($options['create_dbxref'] ?? TRUE) {
           $new_dbxref_record = $this->dbxref_buddy->upsertDbxref($dbxref_values, $options);
           $values['stock.dbxref_id'] = $new_dbxref_record->getValue('dbxref.dbxref_id');
         }
-        // If we could not find or create a dbxref for stock.dbxref_id, yet
-        // dbxref values were provided, throw an exception.
+        // If we could not find or weren't allowed to create a dbxref for
+        // stock.dbxref_id, yet dbxref values were provided, throw an exception.
         // Note: if the user didn't want to provide a dbxref_id, they wouldn't
         // have provided dbxref values in the first place.
         else {

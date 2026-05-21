@@ -1011,8 +1011,8 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy validateStockDbxref error, more than one record matched the values specified:",
     ];
 
-    // #4: insertStock() where dbxref values are provided but could not find or
-    // create a matching dbxref record.
+    // #4: insertStock() where dbxref values are provided but could not find a
+    // matching dbxref record, and the option to create one is turned off.
     $scenarios[] = [
       'insertStock',
       [
@@ -1023,6 +1023,9 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
           'organism.genus' => 'Tripalus',
           'organism.species' => 'databasica',
           'dbxref.accession' => 'noSuchAccession',
+        ],
+        [
+          'create_dbxref' => FALSE,
         ],
       ],
       "ChadoBuddy validateStockDbxref error, could not find or create a dbxref, but dbxref values were provided:",
