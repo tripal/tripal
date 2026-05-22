@@ -572,6 +572,7 @@ class TripalChadoHooks {
       'field' => 'db_id',
       'title' => $this->t('Chado table: db'),
       'help' => $this->t('External databases'),
+      'query_id' => 'tripal_chado_views_connection',
     ];
     $data['db']['table']['join']['dbxref'] = [
       'left_field' => 'db_id',
