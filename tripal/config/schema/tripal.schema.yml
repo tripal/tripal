@@ -584,6 +584,10 @@ field.formatter.settings.*:
       type: integer
       label: 'Word wrap setting'
       nullable: true
+    date_format:
+      type: string
+      label: 'PHP date format string for datetime display'
+      nullable: true
 
 field.widget.settings.*:
   type: mapping
