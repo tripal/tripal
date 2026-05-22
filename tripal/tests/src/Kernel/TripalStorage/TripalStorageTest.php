@@ -207,7 +207,7 @@ class TripalStorageTest extends TripalTestKernelBase {
     ];
 
     $propertyTyleClass_namespace = 'Drupal\tripal\TripalStorage\\';
-    $propertyTypeClasses = ['BoolStoragePropertyType', 'DateTimeStoragePropertyType',
+    $propertyTypeClasses = ['BoolStoragePropertyType', 'DatetimeStoragePropertyType',
       'IntStoragePropertyType', 'RealStoragePropertyType', 'TextStoragePropertyType',
     ];
 
