@@ -48,7 +48,7 @@ class ChadoFormsTest extends ChadoTestKernelBase {
    * Provides scenarios for testing configuration entities.
    *
    * We use a separate yaml file for each form to simplify maintenance,
-   * and to aid in organization, them they can be stored in sub-folders.
+   * and to aid in organization, they can be stored in sub-folders.
    * The only condition is that the yaml file name matches /.+\.test\.yml$/i.
    *
    * @return array
