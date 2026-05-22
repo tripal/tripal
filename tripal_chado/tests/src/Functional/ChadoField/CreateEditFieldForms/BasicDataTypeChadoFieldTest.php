@@ -34,6 +34,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     'chado_boolean_type_default',
     'chado_string_type_default',
     'chado_text_type_default',
+    'chado_datetime_type_default',
   ];
 
   /**
@@ -149,6 +150,11 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     $sets[] = [
       'chado_text_type_default',
       ['uniquename', 'residues'],
+    ];
+
+    $sets[] = [
+      'chado_datetime_type_default',
+      ['timeaccessioned', 'timelastmodified'],
     ];
 
     return $sets;
