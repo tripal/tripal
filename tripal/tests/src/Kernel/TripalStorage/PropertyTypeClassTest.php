@@ -6,7 +6,7 @@ use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 use Drupal\tripal\TripalStorage\RealStoragePropertyType;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
-use Drupal\tripal\TripalStorage\DateTimeStoragePropertyType;
+use Drupal\tripal\TripalStorage\DatetimeStoragePropertyType;
 use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
@@ -190,7 +190,7 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
    *
    * Specifically:
    *  - BoolStoragePropertyType
-   *  - DateTimeStoragePropertyType
+   *  - DatetimeStoragePropertyType
    *  - IntStoragePropertyType
    *  - RealStoragePropertyType
    *  - TextStoragePropertyType
@@ -211,10 +211,10 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
 
-    // DateTimeStoragePropertyType.
-    $type = 'DateTimeStoragePropertyType';
+    // DatetimeStoragePropertyType.
+    $type = 'DatetimeStoragePropertyType';
     $instance = '\Drupal\tripal\TripalStorage\\' . $type;
-    $propertyType = new DateTimeStoragePropertyType($entityType, $fieldType, $key, $term_id);
+    $propertyType = new DatetimeStoragePropertyType($entityType, $fieldType, $key, $term_id);
     $this->assertIsObject($propertyType, "We were not able to create an object for $type.");
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
