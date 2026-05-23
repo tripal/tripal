@@ -503,7 +503,7 @@ class TripalChadoHooks {
     // Comment.
     $data['tripal_mviews']['comment'] = [
       'title' => $this->t('Description'),
-      'help' => $this->t('A descption of this view.'),
+      'help' => $this->t('A description of this view.'),
       'field' => [
         'id' => 'standard',
       ],
@@ -521,7 +521,7 @@ class TripalChadoHooks {
     // Last update.
     $data['tripal_mviews']['last_update'] = [
       'title' => $this->t('Last Update'),
-      'help' => $this->t('A descption of this view.'),
+      'help' => $this->t('A description of this view.'),
       'field' => [
         'id' => 'date',
       ],
@@ -561,6 +561,9 @@ class TripalChadoHooks {
    *
    * We include a relationship so that we can make the double-hop
    * from cvterm, through dbxref, to the db table.
+   *
+   * To access chado tables, we need a chado connection. This is provided
+   * by specifying the 'query_id' to point to our views connection class.
    *
    * @param array &$data
    *   Description to pass to hook_views_data.
@@ -641,6 +644,7 @@ class TripalChadoHooks {
       'field' => 'cv_id',
       'title' => $this->t('Chado table: cv'),
       'help' => $this->t('Controlled vocabularies'),
+      'query_id' => 'tripal_chado_views_connection',
     ];
     $data['cv']['table']['join']['cvterm'] = [
       'left_field' => 'cv_id',
@@ -695,6 +699,7 @@ class TripalChadoHooks {
       'field' => 'dbxref_id',
       'title' => $this->t('Chado table: dbxref'),
       'help' => $this->t('Database cross-reference'),
+      'query_id' => 'tripal_chado_views_connection',
     ];
     $data['dbxref']['table']['join']['cvterm'] = [
       'left_field' => 'dbxref_id',
@@ -769,6 +774,7 @@ class TripalChadoHooks {
       'field' => 'cvterm_id',
       'title' => $this->t('Chado table: cvterm'),
       'help' => $this->t('Controlled vocabulary terms'),
+      'query_id' => 'tripal_chado_views_connection',
     ];
     $data['cvterm']['table']['join']['dbxref'] = [
       'left_field' => 'dbxref_id',
