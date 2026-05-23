@@ -87,8 +87,10 @@ class TripalChadoRebuildService {
       // Only load the view if it does not already exist.
       if (!$view) {
         $config = $fileStorage->read('config/install/views.view.' . $view_id);
-        $view = $storage->create($config);
-        $view->save();
+        if ($config) {
+          $view = $storage->create($config);
+          $view->save();
+        }
       }
     }
 
