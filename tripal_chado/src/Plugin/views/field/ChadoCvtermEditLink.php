@@ -27,7 +27,6 @@ class ChadoCvtermEditLink extends FieldPluginBase {
    * {@inheritdoc}
    */
   public function render(ResultRow $values) {
-    // Return the text, so the code never thinks the value is empty.
     $cvterm_id = $values->cvterm_id;
     $url = Url::fromUserInput('/admin/tripal/storage/chado/cvterm/' . $cvterm_id)->toString();
     $html = '<a href="' . $url . '">Edit</a>';

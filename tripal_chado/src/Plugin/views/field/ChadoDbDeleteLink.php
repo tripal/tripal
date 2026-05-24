@@ -27,7 +27,6 @@ class ChadoDbDeleteLink extends FieldPluginBase {
    * {@inheritdoc}
    */
   public function render(ResultRow $values) {
-    // Return the text, so the code never thinks the value is empty.
     $db_id = $values->db_id;
     $url = Url::fromUserInput('/admin/tripal/storage/chado/db_delete/' . $db_id)->toString();
     $html = '<a href="' . $url . '">Delete</a>';

@@ -27,7 +27,6 @@ class ChadoCvDeleteLink extends FieldPluginBase {
    * {@inheritdoc}
    */
   public function render(ResultRow $values) {
-    // Return the text, so the code never thinks the value is empty.
     $cv_id = $values->cv_id;
     $url = Url::fromUserInput('/admin/tripal/storage/chado/cv_delete/' . $cv_id)->toString();
     $html = '<a href="' . $url . '">Delete</a>';
