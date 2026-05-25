@@ -727,7 +727,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [],
     ];
 
-    // #3: Associate with the cvterm table.
+    // #3: Associate with the cvterm table and provide values.
     $scenarios[] = [
       'cvterm',
       [
@@ -749,7 +749,44 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [],
     ];
 
-    // #4: Associate with the dbxref table.
+    // #4: Associate with the cvterm table and use default values.
+    $scenarios[] = [
+      'cvterm',
+      [
+        'name' => 'Test Cvterm',
+        'cv_id' => 1,
+      ],
+      [
+        'dbxref' => [
+          'accession' => 'test_accession_for_cvterm',
+          'db_id' => 1,
+        ],
+      ],
+      'stock_cvterm',
+      // 'is_not' and 'rank' should be set to default '0'
+      [
+        'pub_id' => 1,
+      ],
+      [],
+    ];
+
+    // #5: Associate with the dbxref table, set a value for 'is_current'.
+    $scenarios[] = [
+      'dbxref',
+      [
+        'accession' => 'Test Accession',
+        'db_id' => 1,
+        'version' => '1.0',
+      ],
+      [],
+      'stock_dbxref',
+      [
+        'is_current' => FALSE,
+      ],
+      [],
+    ];
+
+    // #6: Associate with the dbxref table, use default value for 'is_current'.
     $scenarios[] = [
       'dbxref',
       [
@@ -763,7 +800,25 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [],
     ];
 
-    // #5: Associate with the feature table.
+    // #7: Associate with the feature table, set a value for 'rank'.
+    $scenarios[] = [
+      'feature',
+      [
+        'uniquename' => 'Test Feature',
+        // The ID of the organism created within our test.
+        'organism_id' => 1,
+        'type_id' => 1,
+      ],
+      [],
+      'stock_feature',
+      [
+        'type_id' => 1,
+        'rank' => 1,
+      ],
+      [],
+    ];
+
+    // #8: Associate with the feature table, use default value for 'rank'.
     $scenarios[] = [
       'feature',
       [
@@ -780,7 +835,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [],
     ];
 
-    // #6: Associate with the featuremap table.
+    // #9: Associate with the featuremap table.
     $scenarios[] = [
       'featuremap',
       [
@@ -794,7 +849,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [],
     ];
 
-    // #7: Associate with the genotype table.
+    // #10: Associate with the genotype table.
     $scenarios[] = [
       'genotype',
       [
@@ -807,7 +862,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [],
     ];
 
-    // #8: Associate with the library table.
+    // #11: Associate with the library table.
     $scenarios[] = [
       'library',
       [
@@ -822,7 +877,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [],
     ];
 
-    // #9: Associate with the pub table.
+    // #12: Associate with the pub table.
     $scenarios[] = [
       'pub',
       [
@@ -928,6 +983,15 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $retrieved_base_table_id = $results[0]->{$base_table . '_id'};
     $this->assertEquals($base_table_pkey, $retrieved_base_table_id,
       "We did not get the correct base table primary key from \"$linking_table\" that should have been set by associateStock()");
+
+    // Verify that all columns in our linking table have the expected values.
+    foreach ($linking_table_values as $field => $expected_value) {
+      $this->assertEquals(
+        $expected_value,
+        $results->$field,
+        "The '$linking_table' field '$field' we retrieved did not match the expected input",
+      );
+    }
 
     // Repeat the same association, it should not create a new one.
     $expected_status = 2;

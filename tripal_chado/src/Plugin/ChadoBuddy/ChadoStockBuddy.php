@@ -899,11 +899,13 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
 
         // Set the default values for any of the optional columns that apply to
         // any of the stock linking tables.
-        // Defaults: 'is_not' FALSE (encoded as zero), rank zero, null cvterm.
+        // Defaults: 'is_not' FALSE (encoded as zero), rank zero, null cvterm,
+        // 'is_current' TRUE
         $defaults = [
           'is_not' => 0,
           'rank' => 0,
           'cvterm_type_id' => 1,
+          'is_current' => TRUE,
         ];
         // Add in any of the other columns for the linking table.
         $fields = $this->addLinkingColumns($linking_table, $fields, $defaults, $options);
