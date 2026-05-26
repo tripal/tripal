@@ -4,6 +4,7 @@ namespace Drupal\tripal_chado\Plugin\views\query;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\views\Attribute\ViewsQuery;
+use Drupal\views\Plugin\views\join\JoinPluginBase;
 use Drupal\views\Plugin\views\query\Sql;
 
 /**
@@ -28,6 +29,22 @@ class TripalChadoViewsQuery extends Sql {
   public function getConnection() {
     $chado_connection = \Drupal::service('tripal_chado.database');
     return $chado_connection;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function ensureTable($table, $relationship = NULL, ?JoinPluginBase $join = NULL) {
+
+    // Drupal gets confused by the '1:' prefixing style use for chado
+    // because a colon is not a valid alias character. Remove the
+    // colon from the returned alias.
+    $alias = parent::ensureTable($table, $relationship, $join);
+    if (isset($alias)) {
+      $alias = preg_replace('/:/', '', $alias);
+    }
+
+    return $alias;
   }
 
 }

@@ -27,7 +27,7 @@ class ChadoDbItemsLink extends FieldPluginBase {
    * {@inheritdoc}
    */
   public function render(ResultRow $values) {
-    $db_name = $values->db_name;
+    $db_name = $values->{'1db_name'};
     $url = Url::fromUserInput('/admin/tripal/terms/chado_dbxref?name=' . $db_name)->toString();
     $html = '<a href="' . $url . '">Items</a>';
     $markup = new Markup();

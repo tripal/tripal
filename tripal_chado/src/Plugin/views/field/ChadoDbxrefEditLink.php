@@ -27,7 +27,7 @@ class ChadoDbxrefEditLink extends FieldPluginBase {
    * {@inheritdoc}
    */
   public function render(ResultRow $values) {
-    $dbxref_id = $values->dbxref_id;
+    $dbxref_id = $values->{'1dbxref_dbxref_id'};
     $url = Url::fromUserInput('/admin/tripal/storage/chado/dbxref/' . $dbxref_id)->toString();
     $html = '<a href="' . $url . '">Edit</a>';
     $markup = new Markup();

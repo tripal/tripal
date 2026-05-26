@@ -11,7 +11,7 @@ label: 'Chado Database Cross References'
 module: views
 description: 'Allows viewing references to external databases stored in chado'
 tag: ''
-base_table: dbxref
+base_table: '1:dbxref'
 base_field: dbxref_id
 display:
   default:
@@ -24,7 +24,7 @@ display:
       fields:
         dbxref_id:
           id: dbxref_id
-          table: dbxref
+          table: '1:dbxref'
           field: dbxref_id
           relationship: none
           group_type: group
@@ -75,7 +75,7 @@ display:
           hide_alter_empty: true
         name:
           id: name
-          table: db
+          table: '1:db'
           field: name
           relationship: none
           group_type: group
@@ -124,7 +124,7 @@ display:
           hide_alter_empty: true
         description:
           id: description
-          table: db
+          table: '1:db'
           field: description
           relationship: none
           group_type: group
@@ -173,7 +173,7 @@ display:
           hide_alter_empty: true
         accession:
           id: accession
-          table: dbxref
+          table: '1:dbxref'
           field: accession
           relationship: none
           group_type: group
@@ -222,7 +222,7 @@ display:
           hide_alter_empty: true
         version:
           id: version
-          table: dbxref
+          table: '1:dbxref'
           field: version
           relationship: none
           group_type: group
@@ -271,7 +271,7 @@ display:
           hide_alter_empty: true
         urlprefix:
           id: urlprefix
-          table: db
+          table: '1:db'
           field: urlprefix
           relationship: none
           group_type: group
@@ -320,7 +320,7 @@ display:
           hide_alter_empty: true
         dbxref_urlprefix_link:
           id: dbxref_urlprefix_link
-          table: dbxref
+          table: '1:dbxref'
           field: dbxref_urlprefix_link
           relationship: none
           group_type: group
@@ -423,7 +423,7 @@ display:
       filters:
         name:
           id: name
-          table: db
+          table: '1:db'
           field: name
           relationship: none
           group_type: group
@@ -462,7 +462,7 @@ display:
             group_items: {  }
         accession:
           id: accession
-          table: dbxref
+          table: '1:dbxref'
           field: accession
           relationship: none
           group_type: group

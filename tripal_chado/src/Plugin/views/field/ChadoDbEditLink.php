@@ -27,7 +27,7 @@ class ChadoDbEditLink extends FieldPluginBase {
    * {@inheritdoc}
    */
   public function render(ResultRow $values) {
-    $db_id = $values->db_id;
+    $db_id = $values->{'1db_db_id'};
     $url = Url::fromUserInput('/admin/tripal/storage/chado/db/' . $db_id)->toString();
     $html = '<a href="' . $url . '">Edit</a>';
     $markup = new Markup();

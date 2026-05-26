@@ -27,7 +27,7 @@ class ChadoCvItemsLink extends FieldPluginBase {
    * {@inheritdoc}
    */
   public function render(ResultRow $values) {
-    $cv_name = $values->cv_name;
+    $cv_name = $values->{'1cv_name'};
     $url = Url::fromUserInput('/admin/tripal/terms/chado_cvterm?name=' . $cv_name)->toString();
     $html = '<a href="' . $url . '">Items</a>';
     $markup = new Markup();

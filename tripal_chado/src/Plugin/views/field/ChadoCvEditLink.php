@@ -27,7 +27,7 @@ class ChadoCvEditLink extends FieldPluginBase {
    * {@inheritdoc}
    */
   public function render(ResultRow $values) {
-    $cv_id = $values->cv_id;
+    $cv_id = $values->{'1cv_cv_id'};
     $url = Url::fromUserInput('/admin/tripal/storage/chado/cv/' . $cv_id)->toString();
     $html = '<a href="' . $url . '">Edit</a>';
     $markup = new Markup();

@@ -1,0 +1,12 @@
+'Chado database view':
+  'view': 'config/install/views.view.chado_databases'
+  'fields':
+    'db_id': 1
+    'name': 'xxx'
+#    'db_name': 'db_name'
+#    '1db_name': '1db_name'
+#    '1:db_name': '1:db_name'
+#    'ChadoDbEditLink': 'tripal_chado/src/Plugin/views/field/ChadoDbEditLink.php'
+#    'ChadoDbItemsLink': 'tripal_chado/src/Plugin/views/field/ChadoDbItemsLink.php'
+#    'ChadoDbDeleteLink': 'tripal_chado/src/Plugin/views/field/ChadoDbDeleteLink.php'
+

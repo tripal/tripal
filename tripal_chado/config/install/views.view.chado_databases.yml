@@ -11,7 +11,7 @@ label: 'Chado Databases'
 module: views
 description: 'Allows viewing, adding, editing, and deleting external databases stored in chado'
 tag: ''
-base_table: db
+base_table: '1:db'
 base_field: db_id
 display:
   default:
@@ -24,7 +24,7 @@ display:
       fields:
         db_id:
           id: db_id
-          table: db
+          table: '1:db'
           field: db_id
           relationship: none
           group_type: group
@@ -75,7 +75,7 @@ display:
           hide_alter_empty: true
         name:
           id: name
-          table: db
+          table: '1:db'
           field: name
           relationship: none
           group_type: group
@@ -124,7 +124,7 @@ display:
           hide_alter_empty: true
         description:
           id: description
-          table: db
+          table: '1:db'
           field: description
           relationship: none
           group_type: group
@@ -173,7 +173,7 @@ display:
           hide_alter_empty: true
         url:
           id: url
-          table: db
+          table: '1:db'
           field: url
           relationship: none
           group_type: group
@@ -222,12 +222,12 @@ display:
           hide_alter_empty: true
         urlprefix:
           id: urlprefix
-          table: db
+          table: '1:db'
           field: urlprefix
           plugin_id: standard
         db_edit_link:
           id: db_edit_link
-          table: db
+          table: '1:db'
           field: db_edit_link
           relationship: none
           group_type: group
@@ -276,7 +276,7 @@ display:
           hide_alter_empty: false
         db_items_link:
           id: db_items_link
-          table: db
+          table: '1:db'
           field: db_items_link
           relationship: none
           group_type: group
@@ -325,7 +325,7 @@ display:
           hide_alter_empty: false
         db_delete_link:
           id: db_delete_link
-          table: db
+          table: '1:db'
           field: db_delete_link
           relationship: none
           group_type: group
@@ -487,7 +487,7 @@ display:
       filters:
         name:
           id: name
-          table: db
+          table: '1:db'
           field: name
           relationship: none
           group_type: group
@@ -526,7 +526,7 @@ display:
             group_items: {  }
         description:
           id: description
-          table: db
+          table: '1:db'
           field: description
           relationship: none
           group_type: group
