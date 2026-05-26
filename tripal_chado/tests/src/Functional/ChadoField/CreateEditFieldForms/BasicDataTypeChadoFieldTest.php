@@ -14,7 +14,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * property --these are fields that act on individual columns in the base table
  * and require their column to be set in the field storage settings.
  *
- * @group ChadoField
+ * @group form
+ * @group chado-field
  */
 #[Group('form')]
 #[Group('chado-field')]

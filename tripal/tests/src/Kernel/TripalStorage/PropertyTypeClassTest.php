@@ -19,9 +19,10 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 /**
  * Tests for Tripal Storage Base class.
  *
- * @group Tripal
- * @group TripalStorage
+ * @group tripal
+ * @group tripal-storage
  */
+#[Group('tripal')]
 #[Group('tripal-storage')]
 #[RunTestsInSeparateProcesses]
 class PropertyTypeClassTest extends TripalTestKernelBase {

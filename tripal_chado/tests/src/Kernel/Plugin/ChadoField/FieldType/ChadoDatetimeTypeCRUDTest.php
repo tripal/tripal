@@ -16,8 +16,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * and the field plugin layer. Uses chado.analysis.timeexecuted as the backing
  * column since it is the simplest Chado table with a timestamp column.
  *
- * @group TripalField
- * @group ChadoField
+ * @group tripal-field
+ * @group chado-field
  */
 #[Group('tripal-field')]
 #[Group('chado-field')]
@@ -67,7 +67,7 @@ class ChadoDatetimeTypeCRUDTest extends ChadoTestKernelBase {
   public static function provideScenarios(): array {
     return [
       [0, 'Create and load a datetime value'],
-      [1, 'Datetime with sub-second precision'],
+      [1, 'Datetime with sub-second precision'], # largely useless for our purpose
     ];
   }
 
