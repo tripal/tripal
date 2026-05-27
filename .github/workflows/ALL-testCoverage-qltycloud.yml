@@ -1,4 +1,4 @@
-name: 'Test Coverage on Drupal 11.3.x-dev + PHP 8.5'
+name: 'Test Coverage on Drupal 11.3.x + PHP 8.5'
 
 on:
   push:
@@ -27,5 +27,5 @@ jobs:
           dockerfile: 'Dockerfile'
           php-version: 8.5
           pgsql-version: 18
-          drupal-version: 11.3.x-dev
+          drupal-version: 11.3.x
           qltycloud-reporter-id: ${{ secrets.QLTY_COVERAGE_TOKEN }}
