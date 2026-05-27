@@ -44,15 +44,15 @@ class TripalDatetimeTypeWidget extends TripalWidgetBase {
       '#type' => 'textfield',
       '#default_value' => $items[$delta]->value ?? '',
       '#placeholder' => 'YYYY-MM-DD HH:MM:SS',
-      '#description' => $this->t(
-        'Enter a date and time using the format <code>YYYY-MM-DD HH:MM:SS</code> '
-        . '(e.g., <code>2025-01-15 10:30:00</code>). '
-        . 'The time portion is optional and defaults to <code>00:00:00</code> when omitted. '
-        . 'Sub-second precision is also accepted (e.g., <code>2025-01-15 10:30:00.123456</code>).'
-      ),
       '#attributes' => ['class' => ['js-text-full', 'text-full']],
       '#element_validate' => [[$this, 'validateDatetimeValue']],
     ];
+    $element['value']['#description'] = $this->t(
+      'Enter a date and time using the format <code>YYYY-MM-DD HH:MM:SS</code> '
+      . '(e.g., <code>2025-01-15 10:30:00</code>). '
+      . 'The time portion is optional and defaults to <code>00:00:00</code> when omitted. '
+      . 'Sub-second precision is also accepted (e.g., <code>2025-01-15 10:30:00.123456</code>).'
+    );
     return $element;
   }
 
