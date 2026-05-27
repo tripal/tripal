@@ -187,6 +187,7 @@ RUN composer create-project drupal/recommended-project:${drupalversion} --stabil
   && rm composer.lock \
   && packages="${requiredcomposerpackages} ${composerpackages}" \
   && composer require --dev $packages \
+&& composer require "symfony/polyfill-intl-idn:1.38.1 as 1.37.0" \
   && composer install
 
 ## Set files directory permissions
