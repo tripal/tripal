@@ -1,0 +1,7 @@
+field.field_settings.tripal_test_text_type:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.tripal_test_text_type:
+  type: mapping
+  mapping: {}
