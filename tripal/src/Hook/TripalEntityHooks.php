@@ -150,6 +150,35 @@ class TripalEntityHooks {
     $field_widget_settings = $definitions['tripal.core.field_widget_settings']['mapping'] ?? [];
     $field_formatter_settings = $definitions['tripal.core.field_formatter_settings']['mapping'] ?? [];
 
+    // Add in any additional Tripal-specific schema definitions provided by
+    // other modules. In your own module, define additional settings in
+    // your_module_name.schema.yml with a key like
+    // `tripal.your_module_name.field_settings` and then they will be
+    // automatically merged in here.
+    foreach (['field_storage_settings', 'field_settings', 'field_widget_settings', 'field_formatter_settings'] as $specific_setting) {
+      $keys = preg_grep('/^tripal\..*\.' . $specific_setting . '$/', array_keys($definitions));
+      foreach ($keys as $key) {
+        $specific_mapping = $definitions[$key]['mapping'] ?? [];
+        switch ($specific_setting) {
+          case 'field_storage_settings':
+            $field_storage_settings = array_replace_recursive($field_storage_settings, $specific_mapping);
+            break;
+
+          case 'field_settings':
+            $field_settings = array_replace_recursive($field_settings, $specific_mapping);
+            break;
+
+          case 'field_widget_settings':
+            $field_widget_settings = array_replace_recursive($field_widget_settings, $specific_mapping);
+            break;
+
+          case 'field_formatter_settings':
+            $field_formatter_settings = array_replace_recursive($field_formatter_settings, $specific_mapping);
+            break;
+        }
+      }
+    }
+
     // Now loop through all schema definitions and merge the Tripal-specific
     // settings into the appropriate field-related definitions.
     // NOTE: This will apply to all field types, not just those used by Tripal,
@@ -157,16 +186,16 @@ class TripalEntityHooks {
     // entity types.
     foreach ($definitions as $key => &$definition) {
       if (str_starts_with($key, 'field.storage_settings.') && isset($definition['mapping'])) {
-        $definition['mapping'] += $field_storage_settings;
+        $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_storage_settings);
       }
       elseif (str_starts_with($key, 'field.field_settings.') && isset($definition['mapping'])) {
-        $definition['mapping'] += $field_settings;
+        $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_settings);
       }
       elseif (str_starts_with($key, 'field.widget.settings.') && isset($definition['mapping'])) {
-        $definition['mapping'] += $field_widget_settings;
+        $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_widget_settings);
       }
       elseif (str_starts_with($key, 'field.formatter.settings.') && isset($definition['mapping'])) {
-        $definition['mapping'] += $field_formatter_settings;
+        $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_formatter_settings);
       }
     }
 
