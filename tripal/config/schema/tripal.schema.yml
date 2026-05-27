@@ -25,9 +25,6 @@ tripal.core.field_storage_settings:
     termAccession:
       type: string
       label: 'Term Accession'
-    # max_length:
-    #   type: integer
-    #   label: 'Maximum length'
     debug:
       type: boolean
       label: 'Flag to Enable field debugging'
@@ -38,10 +35,6 @@ tripal.core.field_storage_settings:
     storage_plugin_settings:
       type: mapping
       label: 'Tripal Storage-specific Settings'
-      mapping:
-        object_table:
-          type: string
-          label: "name of table joined through a linking table"
 
 ## Tripal Field Settings.
 ## @scope Applied to ALL Fields (due to limitation in Drupal).
@@ -58,25 +51,14 @@ tripal.core.field_settings:
     termAccession:
       type: string
       label: 'Term Accession'
-    # formatterSettingsTerm:
-    #   type: string
-    #   label: 'Term used for storage of formatter settings'
     debug:
       type: boolean
       label: 'Flag to Enable field debugging'
       nullable: true
-    # fixed_value:
-    #   type: string
-    #   label: "A fixed value for the field that cannot be changed."
-    #   nullable: true
-    # markup:
-    #   type: mapping
-    #   label: 'Static markup to be rendered'
-    #   mapping:
-    #     value:
-    #       type: string
-    #     format:
-    #       type: string
+    fixed_value:
+      type: string
+      label: "A fixed value to use for the term Id Space and Accession for this field (e.g. data:1278)."
+      nullable: true
 
 ## Tripal Field Widget Settings.
 ## @scope Applied to ALL Field Widgets (due to limitation in Drupal).
@@ -87,12 +69,12 @@ tripal.core.field_widget_settings:
   type: mapping
   label: 'Field Widget settings associated with Tripal fields'
   mapping:
-    # filter_format:
-    #   type: string
-    #   label: 'Filter format for a filtered text field'
-    # num_rows:
-    #   type: integer
-    #   label: 'Number of Rows to display in the text widget'
+    filter_format:
+      type: string
+      label: 'Filter format for a filtered text field'
+    num_rows:
+      type: integer
+      label: 'Number of Rows to display in the text widget'
     widget_select_limit:
       type: integer
       label: 'Maximum number of records for a select'
@@ -102,12 +84,12 @@ tripal.core.field_widget_settings:
     match_limit:
       type: integer
       label: 'Maximum number of records to display for an autocomplete'
-    # size:
-    #   type: integer
-    #   label: 'Number of characters for a text field'
-    # placeholder:
-    #   type: string
-    #   label: 'Placeholder value for an empty text field'
+    size:
+      type: integer
+      label: 'Number of characters for a text field'
+    placeholder:
+      type: string
+      label: 'Placeholder value for an empty text field'
 
 ## Tripal Field Formatter Settings.
 ## @scope Applied to ALL Fields (due to limitation in Drupal).
@@ -225,32 +207,58 @@ tripal.core.field_formatter_settings:
 ##
 ## Specific Tripal Fields
 ##
+## Only add field-specific settings here. All global settings will be added
+## automatically.
 ##
 ## Field settings...
 field.field_settings.tripal_boolean_type:
-  type: tripal.core.field_settings
+  type: mapping
+  mapping: {}
 
 field.field_settings.tripal_integer_type:
-  type: tripal.core.field_settings
+  type: mapping
+  mapping: {}
 
 field.field_settings.tripal_markup:
-  type: tripal.core.field_settings
+  type: mapping
+  mapping:
+    markup:
+      type: mapping
+      label: 'Static markup to be rendered'
+      mapping:
+        value:
+          type: string
+        format:
+          type: string
 
 field.field_settings.tripal_string_type:
-  type: tripal.core.field_settings
+  type: mapping
+  mapping: {}
 
 field.field_settings.tripal_text_type:
-  type: tripal.core.field_settings
+  type: mapping
+  mapping: {}
 
 ## Field storage settings...
 field.storage_settings.tripal_boolean_type:
-  type: tripal.core.field_storage_settings
+  type: mapping
+  mapping: {}
 
 field.storage_settings.tripal_integer_type:
-  type: tripal.core.field_storage_settings
+  type: mapping
+  mapping: {}
 
 field.storage_settings.tripal_markup:
-  type: tripal.core.field_storage_settings
+  type: mapping
+  mapping:
+    markup:
+      type: mapping
+      label: 'Static markup to be rendered'
+      mapping:
+        value:
+          type: string
+        format:
+          type: string
 
 field.storage_settings.tripal_string_type:
   type: mapping
@@ -268,35 +276,45 @@ field.storage_settings.tripal_text_type:
 
 ## Field widget settings...
 field.widget.settings.default_tripal_boolean_type_widget:
-  type: tripal.core.field_widget_settings
+  type: mapping
+  mapping: {}
 
 field.widget.settings.default_tripal_integer_type_widget:
-  type: tripal.core.field_widget_settings
+  type: mapping
+  mapping: {}
 
 field.widget.settings.tripal_markup_widget:
-  type: tripal.core.field_widget_settings
+  type: mapping
+  mapping: {}
 
 field.widget.settings.default_tripal_string_type_widget:
-  type: tripal.core.field_widget_settings
+  type: mapping
+  mapping: {}
 
 field.widget.settings.default_tripal_text_type_widget:
-  type: tripal.core.field_widget_settings
+  type: mapping
+  mapping: {}
 
 ## Field formatter settings...
 field.formatter.settings.default_tripal_boolean_type_formatter:
-  type: tripal.core.field_formatter_settings
+  type: mapping
+  mapping: {}
 
 field.formatter.settings.default_tripal_integer_type_formatter:
-  type: tripal.core.field_formatter_settings
+  type: mapping
+  mapping: {}
 
 field.formatter.settings.tripal_markup_formatter:
-  type: tripal.core.field_formatter_settings
+  type: mapping
+  mapping: {}
 
 field.formatter.settings.default_tripal_string_type_formatter:
-  type: tripal.core.field_formatter_settings
+  type: mapping
+  mapping: {}
 
 field.formatter.settings.default_tripal_text_type_formatter:
-  type: tripal.core.field_formatter_settings
+  type: mapping
+  mapping: {}
 
 
 ##
