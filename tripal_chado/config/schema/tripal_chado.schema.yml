@@ -26,7 +26,7 @@ tripal.chado.field_storage_settings:
 ## Re-usable Field Specific settings...
 ##
 ## Specific for base table focused fields.
-tripal_chado.base_table.storage_settings:
+tripal_chado.base_table_storage_settings:
   type: mapping
   mapping:
     storage_plugin_settings:
@@ -39,7 +39,7 @@ tripal_chado.base_table.storage_settings:
           nullable: FALSE
 
 ## Specific for linking table focused fields.
-tripal_chado.linking_table.storage_settings:
+tripal_chado.linking_table_storage_settings:
   type: mapping
   mapping:
     storage_plugin_settings:
@@ -75,6 +75,12 @@ tripal_chado.linking_table.storage_settings:
 ## Only add field-specific settings here. All global settings will be added
 ## automatically.
 ##
+##
+## Embedded Entity View
+field.formatter.settings.embedded_entity_view:
+  type: mapping
+  mapping: {}
+
 ## Type Field.
 field.field_settings.chado_additional_type_type_default:
   type: mapping
@@ -100,13 +106,30 @@ field.storage_settings.chado_additional_type_type_default:
           label: 'Column Linking to CVTerm table'
           nullable: FALSE
 
+field.widget.settings.chado_additional_type_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_additional_type_formatter_default:
+  type: mapping
+  mapping: {}
+
 ## Analysis Linker Field.
 field.field_settings.chado_analysis_type_default:
   type: mapping
   mapping: {}
 
 field.storage_settings.chado_analysis_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_analysis_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_analysis_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Array Design Linker Field.
 field.field_settings.chado_array_design_type_default:
@@ -114,7 +137,16 @@ field.field_settings.chado_array_design_type_default:
   mapping: {}
 
 field.storage_settings.chado_array_design_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_array_design_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_array_design_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Assay Linker Field.
 field.field_settings.chado_assay_type_default:
@@ -122,7 +154,16 @@ field.field_settings.chado_assay_type_default:
   mapping: {}
 
 field.storage_settings.chado_assay_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_assay_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_assay_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Biomaterial Linker Field.
 field.field_settings.chado_biomaterial_type_default:
@@ -130,7 +171,16 @@ field.field_settings.chado_biomaterial_type_default:
   mapping: {}
 
 field.storage_settings.chado_biomaterial_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_biomaterial_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_biomaterial_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Boolean Base Table Field.
 field.field_settings.chado_boolean_type_default:
@@ -138,7 +188,16 @@ field.field_settings.chado_boolean_type_default:
   mapping: {}
 
 field.storage_settings.chado_boolean_type_default:
-  type: 'tripal_chado.base_table.storage_settings'
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_boolean_type_widget:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_boolean_type_formatter:
+  type: mapping
+  mapping: {}
 
 ## Contact By Role Linker Field.
 field.field_settings.chado_contact_by_role_type_default:
@@ -146,7 +205,8 @@ field.field_settings.chado_contact_by_role_type_default:
   mapping: {}
 
 field.storage_settings.chado_contact_by_role_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
 
 ## Contact Linker Field.
 field.field_settings.chado_contact_type_default:
@@ -154,7 +214,16 @@ field.field_settings.chado_contact_type_default:
   mapping: {}
 
 field.storage_settings.chado_contact_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_contact_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_contact_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## DBXREF Linker Field.
 field.field_settings.chado_dbxref_type_default:
@@ -162,7 +231,16 @@ field.field_settings.chado_dbxref_type_default:
   mapping: {}
 
 field.storage_settings.chado_dbxref_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_dbxref_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_dbxref_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Feature Map Linker Field.
 field.field_settings.chado_featuremap_type_default:
@@ -170,7 +248,16 @@ field.field_settings.chado_featuremap_type_default:
   mapping: {}
 
 field.storage_settings.chado_featuremap_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_featuremap_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_featuremap_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Feature Linker Field.
 field.field_settings.chado_feature_type_default:
@@ -178,7 +265,16 @@ field.field_settings.chado_feature_type_default:
   mapping: {}
 
 field.storage_settings.chado_feature_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_feature_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_feature_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Integer Base Table Field.
 field.field_settings.chado_integer_type_default:
@@ -186,7 +282,16 @@ field.field_settings.chado_integer_type_default:
   mapping: {}
 
 field.storage_settings.chado_integer_type_default:
-  type: 'tripal_chado.base_table.storage_settings'
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_integer_type_widget:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_integer_type_formatter:
+  type: mapping
+  mapping: {}
 
 ## Organism Linker Field.
 field.field_settings.chado_organism_type_default:
@@ -194,7 +299,16 @@ field.field_settings.chado_organism_type_default:
   mapping: {}
 
 field.storage_settings.chado_organism_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_organism_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_organism_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Phylogenetic Tree Visualization Field.
 field.field_settings.chado_phylotreevis_type_default:
@@ -205,7 +319,16 @@ field.field_settings.chado_phylotreevis_type_default:
       label: 'Term used for storage of formatter settings as a phylotree property in chado.'
 
 field.storage_settings.chado_phylotreevis_type_default:
-  type: 'tripal_chado.base_table.storage_settings'
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_phylotreevis_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_phylotreevis_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Project Linker Field.
 field.field_settings.chado_project_type_default:
@@ -213,7 +336,16 @@ field.field_settings.chado_project_type_default:
   mapping: {}
 
 field.storage_settings.chado_project_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_project_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_project_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Property Field.
 field.field_settings.chado_property_type_default:
@@ -223,10 +355,30 @@ field.field_settings.chado_property_type_default:
 field.storage_settings.chado_property_type_default:
   type: mapping
   mapping:
-    prop_table:
-      type: 'string'
-      label: 'Table containing property columns'
-      nullable: FALSE
+    storage_plugin_settings:
+      type: mapping
+      label: 'Tripal Storage-specific Settings'
+      mapping:
+        prop_table:
+          type: 'string'
+          label: 'Table containing property columns'
+          nullable: FALSE
+
+field.widget.settings.chado_property_select_widget_default:
+  type: mapping
+  mapping: {}
+
+field.widget.settings.chado_property_string_widget_default:
+  type: mapping
+  mapping: {}
+
+field.widget.settings.chado_property_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_property_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Protocol Linking Field.
 field.field_settings.chado_protocol_type_default:
@@ -234,7 +386,16 @@ field.field_settings.chado_protocol_type_default:
   mapping: {}
 
 field.storage_settings.chado_protocol_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_protocol_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_protocol_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Publication Linking Field.
 field.field_settings.chado_pub_type_default:
@@ -242,7 +403,16 @@ field.field_settings.chado_pub_type_default:
   mapping: {}
 
 field.storage_settings.chado_pub_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_pub_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_pub_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Relationship Field.
 field.field_settings.chado_relationship_type_default:
@@ -269,13 +439,21 @@ field.storage_settings.chado_relationship_type_default:
           label: 'The table linking two versions of the base table together (e.g. contact_relationship).'
           nullable: TRUE
         subject_column:
-          type: string'
-          label: The column in the relationship table which is a foreign key for the relationship subject pointing to the base table.'
+          type: 'string'
+          label: 'The column in the relationship table which is a foreign key for the relationship subject pointing to the base table.'
           nullable: TRUE
         object_column:
-          type: string'
-          label: The column in the relationship table which is a foreign key for the relationship object pointing to the base table.'
+          type: 'string'
+          label: 'The column in the relationship table which is a foreign key for the relationship object pointing to the base table.'
           nullable: TRUE
+
+field.widget.settings.chado_relationship_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_relationship_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Feature Sequence Checksum Field.
 field.field_settings.chado_sequence_checksum_type_default:
@@ -283,7 +461,16 @@ field.field_settings.chado_sequence_checksum_type_default:
   mapping: {}
 
 field.storage_settings.chado_sequence_checksum_type_default:
-  type: 'tripal_chado.base_table.storage_settings'
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_sequence_checksum_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_sequence_checksum_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Feature Sequence Coordinates Field.
 field.field_settings.chado_sequence_coordinates_default:
@@ -291,7 +478,20 @@ field.field_settings.chado_sequence_coordinates_default:
   mapping: {}
 
 field.storage_settings.chado_sequence_coordinates_default:
-  type: 'tripal_chado.base_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_sequence_coordinates_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_sequence_coordinates_formatter_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_sequence_coordinates_formatter_table:
+  type: mapping
+  mapping: {}
 
 ## Feature Sequence Length Field.
 field.field_settings.chado_sequence_length_type_default:
@@ -299,7 +499,16 @@ field.field_settings.chado_sequence_length_type_default:
   mapping: {}
 
 field.storage_settings.chado_sequence_length_type_default:
-  type: 'tripal_chado.base_table.storage_settings'
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_sequence_length_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_sequence_length_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Feature Sequence Residues Field.
 field.field_settings.chado_sequence_type_default:
@@ -307,7 +516,16 @@ field.field_settings.chado_sequence_type_default:
   mapping: {}
 
 field.storage_settings.chado_sequence_type_default:
-  type: 'tripal_chado.base_table.storage_settings'
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_sequence_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_sequence_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Analysis Source Data Field.
 field.field_settings.chado_source_data_type_default:
@@ -315,7 +533,16 @@ field.field_settings.chado_source_data_type_default:
   mapping: {}
 
 field.storage_settings.chado_source_data_type_default:
-  type: 'tripal_chado.base_table.storage_settings'
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_source_data_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_source_data_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Stock Collection Database Field.
 field.field_settings.chado_stockcollection_db_type_default:
@@ -323,7 +550,16 @@ field.field_settings.chado_stockcollection_db_type_default:
   mapping: {}
 
 field.storage_settings.chado_stockcollection_db_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_stockcollection_db_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_stockcollection_db_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Stock Collection Linking Field.
 field.field_settings.chado_stockcollection_type_default:
@@ -331,7 +567,16 @@ field.field_settings.chado_stockcollection_type_default:
   mapping: {}
 
 field.storage_settings.chado_stockcollection_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_stockcollection_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_stockcollection_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Stock Linking Field.
 field.field_settings.chado_stock_type_default:
@@ -339,7 +584,16 @@ field.field_settings.chado_stock_type_default:
   mapping: {}
 
 field.storage_settings.chado_stock_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_stock_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_stock_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## String Base Table Field.
 field.field_settings.chado_string_type_default:
@@ -360,13 +614,30 @@ field.storage_settings.chado_string_type_default:
           label: 'Field Base Chado Column'
           nullable: FALSE
 
+field.widget.settings.chado_string_type_widget:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_string_type_formatter:
+  type: mapping
+  mapping: {}
+
 ## Study Linking Field.
 field.field_settings.chado_study_type_default:
   type: mapping
   mapping: {}
 
 field.storage_settings.chado_study_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_study_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_study_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Synonym Linking Field.
 field.field_settings.chado_synonym_type_default:
@@ -374,7 +645,16 @@ field.field_settings.chado_synonym_type_default:
   mapping: {}
 
 field.storage_settings.chado_synonym_type_default:
-  type: 'tripal_chado.linking_table.storage_settings'
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_synonym_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_synonym_formatter_default:
+  type: mapping
+  mapping: {}
 
 ## Text Base Table Field.
 field.field_settings.chado_text_type_default:
@@ -394,6 +674,14 @@ field.storage_settings.chado_text_type_default:
           type: 'string'
           label: 'Field Base Chado Column'
           nullable: FALSE
+
+field.widget.settings.chado_text_type_widget:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_text_type_formatter:
+  type: mapping
+  mapping: {}
 
 ## Feature Map Unit Field.
 field.field_settings.chado_unit_type_default:
@@ -419,6 +707,14 @@ field.storage_settings.chado_unit_type_default:
           type: 'string'
           label: 'Column Linking to CVTerm table'
           nullable: FALSE
+
+field.widget.settings.chado_unit_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_unit_formatter_default:
+  type: mapping
+  mapping: {}
 
 ##
 ## Tripal Configuration Entities!
