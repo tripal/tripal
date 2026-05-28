@@ -357,6 +357,58 @@ fields:
               region: content
               weight: 98
 
+    -   name: gene_timeaccessioned
+        content_type: gene
+        label: Time Accessioned
+        type: chado_datetime_type_default
+        description: The date and time at which this record was first added to the database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: timeaccessioned
+        settings:
+            termIdSpace: local
+            termAccession: timeaccessioned
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 100
+          form:
+            default:
+              region: content
+              weight: 100
+
+    -   name: gene_timelastmodified
+        content_type: gene
+        label: Time Last Modified
+        type: chado_datetime_type_default
+        description: The date and time at which this record was last modified.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: timelastmodified
+        settings:
+            termIdSpace: local
+            termAccession: timelastmodified
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 102
+          form:
+            default:
+              region: content
+              weight: 102
+
     -   name: gene_synonym
         content_type: gene
         label: Synonyms
@@ -818,6 +870,58 @@ fields:
             default:
               region: content
               weight: 90
+
+    -   name: mrna_timeaccessioned
+        content_type: mrna
+        label: Time Accessioned
+        type: chado_datetime_type_default
+        description: The date and time at which this record was first added to the database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: timeaccessioned
+        settings:
+            termIdSpace: local
+            termAccession: timeaccessioned
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 92
+          form:
+            default:
+              region: content
+              weight: 92
+
+    -   name: mrna_timelastmodified
+        content_type: mrna
+        label: Time Last Modified
+        type: chado_datetime_type_default
+        description: The date and time at which this record was last modified.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: timelastmodified
+        settings:
+            termIdSpace: local
+            termAccession: timelastmodified
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 94
+          form:
+            default:
+              region: content
+              weight: 94
 
     -   name: mrna_synonym
         content_type: mrna
@@ -1522,6 +1626,58 @@ fields:
             default:
               region: content
               weight: 90
+
+    -   name: library_timeaccessioned
+        content_type: dna_library
+        label: Time accessioned
+        type: chado_datetime_type_default
+        description: The date and time at which this record was first added to the database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                base_column: timeaccessioned
+        settings:
+            termIdSpace: local
+            termAccession: timeaccessioned
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 92
+          form:
+            default:
+              region: content
+              weight: 92
+
+    -   name: library_timelastmodified
+        content_type: dna_library
+        label: Time last modified
+        type: chado_datetime_type_default
+        description: The date and time at which this record was last modified.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                base_column: timelastmodified
+        settings:
+            termIdSpace: local
+            termAccession: timelastmodified
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 94
+          form:
+            default:
+              region: content
+              weight: 94
 
 ## Genome Assembly ##
 

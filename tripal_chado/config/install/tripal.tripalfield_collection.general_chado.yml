@@ -433,7 +433,31 @@ fields:
 ## Related: analysis_cvterm, analysis_dbxref, analysis_pub, analysis_relationship, analysisprop,
 ##          phylotree, quantification,
 ##          analysisfeature, nd_experiment_analysis, project_analysis
-## MISSING FIELD: Timestamp
+    -   name: analysis_timeexecuted
+        content_type: analysis
+        label: Time Executed
+        type: chado_datetime_type_default
+        description: The date and time at which this analysis was performed.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: timeexecuted
+        settings:
+            termIdSpace: local
+            termAccession: timeexecuted
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 50
+          form:
+            default:
+              region: content
+              weight: 50
 
     -   name: analysis_name
         content_type: analysis
