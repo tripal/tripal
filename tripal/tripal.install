@@ -1030,6 +1030,8 @@ function tripal_update_10401() {
       $schema['tripal_pub_library_query'] = tripal_tripal_pub_library_query_schema();
       $db->schema()->createTable('tripal_pub_library_query', $schema['tripal_pub_library_query']);
     }
+
+    $transaction->commitOrRelease();
   }
   catch (\PDOException $e) {
     $transaction->rollback();

@@ -177,6 +177,8 @@ function tripal_run_importer_run($loader, $logger) {
   try {
     $loader->run();
     $logger->notice("Done.");
+
+    $transactions->commitOrRelease();
   }
   catch (\Exception $e) {
     // Rollback and re-throw the error.
@@ -204,6 +206,8 @@ function tripal_run_importer_post_run($loader, $logger) {
   $transactions = $loader->startTransactions();
   try {
     $loader->postRun();
+
+    $transactions->commitOrRelease();
   }
   catch (\Exception $e) {
     // Rollback and re-throw the error.
