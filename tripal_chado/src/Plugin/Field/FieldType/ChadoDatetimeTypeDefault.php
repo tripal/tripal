@@ -101,4 +101,56 @@ class ChadoDatetimeTypeDefault extends ChadoFieldItemBase {
     return count($this->getTableColumns($base_table, self::$valid_base_column_types)) > 0;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
+    $field_list = [];
+
+    $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
+    if (!$base_table) {
+      return $field_list;
+    }
+
+    // Human-readable labels for known Chado timestamp columns from the various
+    // Chado tables that have timestamp columns. 
+    $known_labels = [
+      'acquisitiondate'  => 'Acquisition Date',
+      'assaydate'        => 'Assay Date',
+      'quantificationdate' => 'Quantification Date', // Just in case ;)
+      'timeaccessioned'  => 'Time Accessioned',
+      'timelastmodified' => 'Time Last Modified',
+      'timeexecuted'     => 'Time Executed',
+    ];
+
+    // Find all timestamp/date columns in the base table.
+    $table_def = self::getChadoTableDef($base_table);
+    foreach ($table_def['fields'] as $column => $col_def) {
+      $col_type = $col_def['pgsql_type'] ?? $col_def['type'];
+      if (!in_array($col_type, self::$valid_base_column_types)) {
+        continue;
+      }
+
+      $term = self::getColumnTermId($base_table, $column, 'NCIT:C25164');
+      [$termIdSpace, $termAccession] = explode(':', $term, 2);
+
+      $label = $known_labels[$column] ?? ucwords(str_replace('_', ' ', $column));
+
+      $col_options = $options + [
+        'id' => self::$id,
+        'base_column' => $column,
+        'label' => $label,
+        'termIdSpace' => $termIdSpace,
+        'termAccession' => $termAccession,
+        'description' => 'A date/time value stored in the ' . $column . ' column.',
+      ];
+
+      $discovered = parent::discover($bundle, $field_id, $field_types, $field_instances, $col_options);
+      $field_list = array_merge($field_list, $discovered);
+    }
+
+    return $field_list;
+  }
+
 }
