@@ -5,3 +5,11 @@ field.field_settings.tripal_test_text_type:
 field.storage_settings.tripal_test_text_type:
   type: mapping
   mapping: {}
+
+field.widget.settings.tripal_test_text_type:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.tripal_test_text_type:
+  type: mapping
+  mapping: {}
