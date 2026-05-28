@@ -134,7 +134,7 @@ class TripalEntityHooks {
    * This approach:
    * - Preserves Drupal core and contrib schema definitions
    * - Avoids overriding polymorphic schema resolution
-   * - Allows Tripal to define a shared set of settings form many field types
+   * - Allows Tripal to define a shared set of settings for many field types
    * - Ensures proper schema validation in strict contexts (e.g., tests)
    *
    * Note that this modification applies to all field types of a given plugin,
@@ -185,17 +185,19 @@ class TripalEntityHooks {
     // because Drupal's schema system does not allow scoping to specific
     // entity types.
     foreach ($definitions as $key => &$definition) {
-      if (str_starts_with($key, 'field.storage_settings.') && isset($definition['mapping'])) {
-        $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_storage_settings);
-      }
-      elseif (str_starts_with($key, 'field.field_settings.') && isset($definition['mapping'])) {
-        $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_settings);
-      }
-      elseif (str_starts_with($key, 'field.widget.settings.') && isset($definition['mapping'])) {
-        $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_widget_settings);
-      }
-      elseif (str_starts_with($key, 'field.formatter.settings.') && isset($definition['mapping'])) {
-        $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_formatter_settings);
+      if (isset($definition['mapping'])) {
+        if (str_starts_with($key, 'field.storage_settings.')) {
+          $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_storage_settings);
+        }
+        elseif (str_starts_with($key, 'field.field_settings.')) {
+          $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_settings);
+        }
+        elseif (str_starts_with($key, 'field.widget.settings.')) {
+          $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_widget_settings);
+        }
+        elseif (str_starts_with($key, 'field.formatter.settings.')) {
+          $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_formatter_settings);
+        }
       }
     }
 

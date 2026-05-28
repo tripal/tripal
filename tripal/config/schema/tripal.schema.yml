@@ -7,7 +7,7 @@
 ## Pattern: tripal.YOURMODULE.SPECIFICSETTING
 ## In your own YOURMODULE.schema.yml file define a block similar to the one you
 ## want to add more settings to but replace `core` with the machine name of
-## your module. All your custom settings will then be merged with cores.
+## your module. All your custom settings will then be merged with core's.
 ## DO NOT redefine the same settings as Tripal core!
 
 ## TripalStorage Field Storage Settings.
@@ -57,7 +57,7 @@ tripal.core.field_settings:
       nullable: true
     fixed_value:
       type: string
-      label: "A fixed value to use for the term Id Space and Accession for this field (e.g. data:1278)."
+      label: 'A fixed value to use for the term Id Space and Accession for this field (e.g. data:1278).'
       nullable: true
 
 ## Tripal Field Widget Settings.
@@ -284,8 +284,7 @@ field.formatter.settings.default_tripal_text_type_formatter:
 ##
 ## Tripal Configuration Entities!
 ##
-##
-## Described the config entity used for YML-file loading of
+## Describes the config entity used for YML-file loading of
 ## Tripal Vocabularies, ID Spaces and Terms.
 tripal.tripal_content_terms.*:
   type: config_entity
