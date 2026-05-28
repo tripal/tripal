@@ -328,7 +328,7 @@ EOD;
         }
       }
       catch (\Exception $e) {
-        $transaction->rollBack();
+        $transaction->rollback();
         throw $e;
       }
 
