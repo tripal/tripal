@@ -31,7 +31,6 @@ class ChadoOrganismAutocompleteController extends ChadoGenericAutocompleteContro
    */
   public function __construct() {
     self::deprecate();
-    parent::__construct();
   }
 
   /**
