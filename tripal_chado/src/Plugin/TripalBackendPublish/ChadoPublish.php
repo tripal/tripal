@@ -1750,6 +1750,8 @@ class ChadoPublish extends TripalBackendPublishBase {
             $total_republished_field_items += $num_updated;
           }
         }
+
+        $transaction_drupal->commitOrRelease();
       }
       catch (Exception $e) {
         $transaction_drupal->rollback();

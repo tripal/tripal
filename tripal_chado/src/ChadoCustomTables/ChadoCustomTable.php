@@ -313,6 +313,8 @@ class ChadoCustomTable {
       $update->condition('table_id', $this->table_id);
       $update->condition('chado', $chado->getSchemaName());
       $update->execute();
+
+      $transaction_chado->commitOrRelease();
     }
     catch (Exception $e) {
       $transaction_chado->rollback();
@@ -425,6 +427,8 @@ class ChadoCustomTable {
         $logger->error('Could not delete the ' . $this->table_name . ' table. Check the database server logs.');
         return FALSE;
       }
+
+      $transaction_chado->commitOrRelease();
     }
     catch (Exception $e) {
       $transaction_chado->rollback();
