@@ -516,9 +516,11 @@ tripal.tripalfield_collection.*:
                  label: 'Required'
                  nullable: false
                settings:
-                 type: tripal.field_settings
+                 type: ignore
+                 label: 'Field Settings'
                storage_settings:
-                 type: tripal.field_storage_settings
+                 type: ignore
+                 label: 'Field Storage settings'
                display:
                  type: mapping
                  label: 'Display'
@@ -546,7 +548,8 @@ tripal.tripalfield_collection.*:
                            label: 'Weight'
                            nullable: false
                          settings:
-                           type: tripal.core.field_formatter_settings
+                           type: ignore
+                           label: 'Formatter Settings'
                    form:
                      type: sequence
                      label: 'Edit'
@@ -574,4 +577,5 @@ tripal.tripalfield_collection.*:
                            label: 'Widget Type'
                            nullable: true
                          settings:
-                           type: tripa.core.field_widget_settings
+                           type: ignore
+                           label: 'Field Widget Settings'
