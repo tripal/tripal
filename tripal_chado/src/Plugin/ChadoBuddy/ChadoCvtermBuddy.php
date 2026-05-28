@@ -1191,7 +1191,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
         $query->condition('cvterm_id', $cvterm_id, '=');
         $query->execute();
 
-        $transaction->commitOrRelease();
+        if (method_exists($transaction, 'commitOrRelease')) {
+          $transaction->commitOrRelease();
+        }
       }
       catch (\Exception $e) {
         throw new ChadoBuddyException('ChadoBuddy deleteCvterm database error deleting cvterm: ' . $e->getMessage());

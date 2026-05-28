@@ -1140,7 +1140,9 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
     // with the details in the $options array.
     chado_phylogeny_import_tree($tree, $phylotree, $options, [], NULL, $schema_name);
 
-    $transaction_chado->commitOrRelease();
+    if (method_exists($transaction_chado, 'commitOrRelease')) {
+      $transaction_chado->commitOrRelease();
+    }
   }
   catch (Exception $e) {
     $transaction_chado->rollback();

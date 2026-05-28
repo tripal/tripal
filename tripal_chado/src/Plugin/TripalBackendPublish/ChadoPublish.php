@@ -1751,7 +1751,9 @@ class ChadoPublish extends TripalBackendPublishBase {
           }
         }
 
-        $transaction_drupal->commitOrRelease();
+        if (method_exists($transaction_drupal, 'commitOrRelease')) {
+          $transaction_drupal->commitOrRelease();
+        }
       }
       catch (Exception $e) {
         $transaction_drupal->rollback();

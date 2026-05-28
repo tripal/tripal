@@ -314,7 +314,9 @@ class ChadoCustomTable {
       $update->condition('chado', $chado->getSchemaName());
       $update->execute();
 
-      $transaction_chado->commitOrRelease();
+      if (method_exists($transaction_chado, 'commitOrRelease')) {
+        $transaction_chado->commitOrRelease();
+      }
     }
     catch (Exception $e) {
       $transaction_chado->rollback();
@@ -428,7 +430,9 @@ class ChadoCustomTable {
         return FALSE;
       }
 
-      $transaction_chado->commitOrRelease();
+      if (method_exists($transaction_chado, 'commitOrRelease')) {
+        $transaction_chado->commitOrRelease();
+      }
     }
     catch (Exception $e) {
       $transaction_chado->rollback();
