@@ -298,8 +298,8 @@ abstract class TripalDbxSchema extends PgSchema {
         'blob_fields' => [],
         'sequences' => [],
       ];
-      $this->connection
-        ->addSavepoint();
+
+      $transaction = $this->connection->startTransaction();
       try {
 
         // The bytea columns and sequences for a table can be found in
@@ -322,14 +322,15 @@ EOD;
           ->query($sql, [
             ':key' => $key,
           ]);
+
+        if (method_exists($transaction, 'commitOrRelease')) {
+          $transaction->commitOrRelease();
+        }
       }
       catch (\Exception $e) {
-        $this->connection
-          ->rollbackSavepoint();
+        $transaction->rollBack();
         throw $e;
       }
-      $this->connection
-        ->releaseSavepoint();
 
       // If the table information does not yet exist in the PostgreSQL
       // metadata, then return the default table information here, so that it
