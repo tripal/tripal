@@ -1031,7 +1031,9 @@ function tripal_update_10401() {
       $db->schema()->createTable('tripal_pub_library_query', $schema['tripal_pub_library_query']);
     }
 
-    $transaction->commitOrRelease();
+    if (method_exists($transaction, 'commitOrRelease')) {
+      $transaction->commitOrRelease();
+    }
   }
   catch (\PDOException $e) {
     $transaction->rollback();
