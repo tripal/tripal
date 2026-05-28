@@ -69,12 +69,6 @@ tripal.core.field_widget_settings:
   type: mapping
   label: 'Field Widget settings associated with Tripal fields'
   mapping:
-    filter_format:
-      type: string
-      label: 'Filter format for a filtered text field'
-    num_rows:
-      type: integer
-      label: 'Number of Rows to display in the text widget'
     widget_select_limit:
       type: integer
       label: 'Maximum number of records for a select'
@@ -100,109 +94,10 @@ tripal.core.field_formatter_settings:
   type: mapping
   label: 'Field Formatter settings associated with Tripal fields'
   mapping:
-    case_setting:
-      type: string
-      label: 'Case setting'
-      nullable: true
-    false_string:
-      type: string
-      label: 'Text to display for a boolean FALSE value'
-      nullable: false
-    true_string:
-      type: string
-      label: 'Text to display for a boolean TRUE value'
-      nullable: false
-    field_prefix:
-      type: string
-      label: 'Field prefix'
-      nullable: true
-    field_suffix:
-      type: string
-      label: 'Field suffix'
-      nullable: true
-    hide_condition:
-      type: string
-      label: 'Hide condition'
-      nullable: true
-    hide_value:
-      type: string
-      label: 'Hide value'
-      nullable: true
-    phylogram_width:
-      type: integer
-      label: 'Width of the rendered phylogram'
-      nullable: true
-    phylogram_height:
-      type: integer
-      label: 'Height of the rendered phylogram'
-      nullable: true
-    phylogram_scale:
-      type: string
-      label: 'Scaling transformation for the X-axis of a phylogenetic tree'
-      nullable: true
-    phylogram_layout:
-      type: string
-      label: 'Whether tree layout is linear or radial'
-      nullable: true
-    phylogram_font_size:
-      type: string
-      label: 'Font size to use when rendering a tree, defaults to 12'
-      nullable: true
-    phylogram_skip_ticks:
-      type: integer
-      label: 'Tick marks are not displayed if truthy'
-      nullable: true
-    phylogram_root_node_size:
-      type: integer
-      label: 'Diameter of the root node of a phylogenetic tree'
-      nullable: true
-    phylogram_root_node_color:
-      type: string
-      label: 'Color of the root node of a phylogenetic tree'
-      nullable: true
-    phylogram_interior_node_size:
-      type: integer
-      label: 'Diameter of the interior nodes of a phylogenetic tree'
-      nullable: true
-    phylogram_interior_node_color:
-      type: string
-      label: 'Color of the interior nodes of a phylogenetic tree'
-      nullable: true
-    phylogram_leaf_node_size:
-      type: integer
-      label: 'Diameter of the terminal nodes of a phylogenetic tree'
-      nullable: true
-    phylogram_leaf_node_color:
-      type: string
-      label: 'Color of the terminal nodes of a phylogenetic tree'
-      nullable: true
-    phylogram_colors:
-      type: mapping
-      label: 'Color mapping to apply to nodes in a phylogenetic tree'
-      nullable: true
-      mapping:
-        index:
-          type: 'integer'
-          label: 'array key'
-          mapping:
-            organism:
-              type: string
-              label: 'Organism'
-            color:
-              type: string
-              label: 'Color specification'
-    thousand_separator:
-      type: string
-      label: 'Thousand marker'
-      nullable: true
     token_string:
       type: string
       label: 'Token string for field display'
       nullable: false
-    wrap_setting:
-      type: integer
-      label: 'Word wrap setting'
-      nullable: true
 
 ##
 ## Specific Tripal Fields
@@ -293,16 +188,54 @@ field.widget.settings.default_tripal_string_type_widget:
 
 field.widget.settings.default_tripal_text_type_widget:
   type: mapping
-  mapping: {}
+  mapping:
+    filter_format:
+      type: string
+      label: 'Filter format for a filtered text field'
+    num_rows:
+      type: integer
+      label: 'Number of Rows to display in the text widget'
 
 ## Field formatter settings...
 field.formatter.settings.default_tripal_boolean_type_formatter:
   type: mapping
-  mapping: {}
+  mapping:
+    false_string:
+      type: string
+      label: 'Text to display for a boolean FALSE value'
+      nullable: false
+    true_string:
+      type: string
+      label: 'Text to display for a boolean TRUE value'
+      nullable: false
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
 
 field.formatter.settings.default_tripal_integer_type_formatter:
   type: mapping
-  mapping: {}
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+    thousand_separator:
+      type: string
+      label: 'Thousand marker'
+      nullable: true
 
 field.formatter.settings.tripal_markup_formatter:
   type: mapping
@@ -310,12 +243,43 @@ field.formatter.settings.tripal_markup_formatter:
 
 field.formatter.settings.default_tripal_string_type_formatter:
   type: mapping
-  mapping: {}
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
 
 field.formatter.settings.default_tripal_text_type_formatter:
   type: mapping
-  mapping: {}
-
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
 
 ##
 ## Tripal Configuration Entities!

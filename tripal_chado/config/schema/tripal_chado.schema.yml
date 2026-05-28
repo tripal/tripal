@@ -197,7 +197,19 @@ field.widget.settings.chado_boolean_type_widget:
 
 field.formatter.settings.chado_boolean_type_formatter:
   type: mapping
-  mapping: {}
+  mapping:
+    false_string:
+      type: string
+      label: 'Text to display for a boolean FALSE value'
+      nullable: false
+    true_string:
+      type: string
+      label: 'Text to display for a boolean TRUE value'
+      nullable: false
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
 
 ## Contact By Role Linker Field.
 field.field_settings.chado_contact_by_role_type_default:
@@ -291,7 +303,27 @@ field.widget.settings.chado_integer_type_widget:
 
 field.formatter.settings.chado_integer_type_formatter:
   type: mapping
-  mapping: {}
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+    thousand_separator:
+      type: string
+      label: 'Thousand marker'
+      nullable: true
 
 ## Organism Linker Field.
 field.field_settings.chado_organism_type_default:
@@ -328,7 +360,70 @@ field.widget.settings.chado_phylotreevis_widget_default:
 
 field.formatter.settings.chado_phylotreevis_formatter_default:
   type: mapping
-  mapping: {}
+  mapping:
+    phylogram_width:
+      type: integer
+      label: 'Width of the rendered phylogram'
+      nullable: true
+    phylogram_height:
+      type: integer
+      label: 'Height of the rendered phylogram'
+      nullable: true
+    phylogram_scale:
+      type: string
+      label: 'Scaling transformation for the X-axis of a phylogenetic tree'
+      nullable: true
+    phylogram_layout:
+      type: string
+      label: 'Whether tree layout is linear or radial'
+      nullable: true
+    phylogram_font_size:
+      type: string
+      label: 'Font size to use when rendering a tree, defaults to 12'
+      nullable: true
+    phylogram_skip_ticks:
+      type: integer
+      label: 'Tick marks are not displayed if truthy'
+      nullable: true
+    phylogram_root_node_size:
+      type: integer
+      label: 'Diameter of the root node of a phylogenetic tree'
+      nullable: true
+    phylogram_root_node_color:
+      type: string
+      label: 'Color of the root node of a phylogenetic tree'
+      nullable: true
+    phylogram_interior_node_size:
+      type: integer
+      label: 'Diameter of the interior nodes of a phylogenetic tree'
+      nullable: true
+    phylogram_interior_node_color:
+      type: string
+      label: 'Color of the interior nodes of a phylogenetic tree'
+      nullable: true
+    phylogram_leaf_node_size:
+      type: integer
+      label: 'Diameter of the terminal nodes of a phylogenetic tree'
+      nullable: true
+    phylogram_leaf_node_color:
+      type: string
+      label: 'Color of the terminal nodes of a phylogenetic tree'
+      nullable: true
+    phylogram_colors:
+      type: mapping
+      label: 'Color mapping to apply to nodes in a phylogenetic tree'
+      nullable: true
+      mapping:
+        index:
+          type: 'integer'
+          label: 'array key'
+          mapping:
+            organism:
+              type: string
+              label: 'Organism'
+            color:
+              type: string
+              label: 'Color specification'
 
 ## Project Linker Field.
 field.field_settings.chado_project_type_default:
@@ -374,7 +469,13 @@ field.widget.settings.chado_property_string_widget_default:
 
 field.widget.settings.chado_property_widget_default:
   type: mapping
-  mapping: {}
+  mapping:
+    filter_format:
+      type: string
+      label: 'Filter format for a filtered text field'
+    num_rows:
+      type: integer
+      label: 'Number of Rows to display in the text widget'
 
 field.formatter.settings.chado_property_formatter_default:
   type: mapping
@@ -470,7 +571,11 @@ field.widget.settings.chado_sequence_checksum_widget_default:
 
 field.formatter.settings.chado_sequence_checksum_formatter_default:
   type: mapping
-  mapping: {}
+  mapping:
+    case_setting:
+      type: string
+      label: 'Case setting'
+      nullable: true
 
 ## Feature Sequence Coordinates Field.
 field.field_settings.chado_sequence_coordinates_default:
@@ -508,7 +613,27 @@ field.widget.settings.chado_sequence_length_widget_default:
 
 field.formatter.settings.chado_sequence_length_formatter_default:
   type: mapping
-  mapping: {}
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+    thousand_separator:
+      type: string
+      label: 'Thousand marker'
+      nullable: true
 
 ## Feature Sequence Residues Field.
 field.field_settings.chado_sequence_type_default:
@@ -525,7 +650,11 @@ field.widget.settings.chado_sequence_widget_default:
 
 field.formatter.settings.chado_sequence_formatter_default:
   type: mapping
-  mapping: {}
+  mapping:
+    wrap_setting:
+      type: integer
+      label: 'Word wrap setting'
+      nullable: true
 
 ## Analysis Source Data Field.
 field.field_settings.chado_source_data_type_default:
@@ -620,7 +749,23 @@ field.widget.settings.chado_string_type_widget:
 
 field.formatter.settings.chado_string_type_formatter:
   type: mapping
-  mapping: {}
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
 
 ## Study Linking Field.
 field.field_settings.chado_study_type_default:
@@ -677,11 +822,33 @@ field.storage_settings.chado_text_type_default:
 
 field.widget.settings.chado_text_type_widget:
   type: mapping
-  mapping: {}
+  mapping:
+    filter_format:
+      type: string
+      label: 'Filter format for a filtered text field'
+    num_rows:
+      type: integer
+      label: 'Number of Rows to display in the text widget'
 
 field.formatter.settings.chado_text_type_formatter:
   type: mapping
-  mapping: {}
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
 
 ## Feature Map Unit Field.
 field.field_settings.chado_unit_type_default:
