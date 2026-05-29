@@ -104,56 +104,99 @@ class TripalEntityHooks {
   /**
    * Implements hook_config_schema_info_alter().
    *
-   * Specifically, we are altering config schema set in the tripal module.
-   * We use this approach to ensure we are extending the existing schema
-   * which makes these changes available to extension modules defining their
-   * own yml files.
+   * Adds Tripal-specific field, storage, and formatter settings to Drupal's
+   * field schema definitions.
+   *
+   * Drupal's config schema system for fields is *type-based* and *polymorphic*.
+   * Settings for fields, field storage, and field formatters are not defined
+   * directly on the field config objects, but instead delegated to schema types
+   * such as:
+   *
+   * - field.settings.[field_type]
+   * - field.storage_settings.[field_type]
+   * - field.formatter.settings.[formatter_plugin]
+   *
+   * These base schema definitions are resolved dynamically based on the field
+   * or formatter type. Because of this, it is NOT safe to override the generic
+   * wildcard definitions (e.g. `field.settings.*` or
+   * `field.formatter.settings.*`) with a custom mapping, as doing so would
+   * replace Drupal core's schema and remove validation for existing settings.
+   *
+   * Additionally, Drupal's schema system does not support composition or reuse
+   * of mapping definitions within YAML (i.e., there is no way to "inject" a
+   * shared schema definition into an existing mapping via configuration alone).
+   *
+   * To work around this limitation, Tripal defines reusable schema fragments
+   * (`tripal.field_settings`, `tripal.field_storage_settings`, etc.) and then
+   * programmatically merges those definitions into the appropriate Drupal
+   * field-type-specific schema definitions here.
+   *
+   * This approach:
+   * - Preserves Drupal core and contrib schema definitions
+   * - Avoids overriding polymorphic schema resolution
+   * - Allows Tripal to define a shared set of settings for many field types
+   * - Ensures proper schema validation in strict contexts (e.g., tests)
+   *
+   * Note that this modification applies to all field types of a given plugin,
+   * as Drupal's schema system does not allow scoping schema changes to a
+   * specific entity type (such as tripal_entity).
    */
   #[Hook('config_schema_info_alter')]
   public function configSchemaInfoAlter(&$definitions) {
 
-    // Temporary fix for Issue #1999.
-    // We will collect the storage settings for all non-tripal fields and
-    // manually add them to the field storage definition for tripal_entity.
-    // NOTE: there are some conflicts between drupal field settings, which is
-    // why this is only a temporary fix. For now, we will manually skip any
-    // settings which are known to be different.
-    $skipped_settings = [];
-    // Now, for each field storage definition, we will check for settings...
-    foreach ($definitions as $key => $field_settings) {
-      if (str_starts_with($key, 'field.storage_settings.') && !str_starts_with($key, 'field.storage.tripal_entity.')) {
-        // If this field doesn't have any settings, we can skip it.
-        if (!array_key_exists('mapping', $field_settings)) {
-          continue;
+    // Get the core Tripal-specific schema definitions.
+    $field_storage_settings = $definitions['tripal.core.field_storage_settings']['mapping'] ?? [];
+    $field_settings = $definitions['tripal.core.field_settings']['mapping'] ?? [];
+    $field_widget_settings = $definitions['tripal.core.field_widget_settings']['mapping'] ?? [];
+    $field_formatter_settings = $definitions['tripal.core.field_formatter_settings']['mapping'] ?? [];
+
+    // Add in any additional Tripal-specific schema definitions provided by
+    // other modules. In your own module, define additional settings in
+    // your_module_name.schema.yml with a key like
+    // `tripal.your_module_name.field_settings` and then they will be
+    // automatically merged in here.
+    foreach (['field_storage_settings', 'field_settings', 'field_widget_settings', 'field_formatter_settings'] as $specific_setting) {
+      $keys = preg_grep('/^tripal\..*\.' . $specific_setting . '$/', array_keys($definitions));
+      foreach ($keys as $key) {
+        $specific_mapping = $definitions[$key]['mapping'] ?? [];
+        switch ($specific_setting) {
+          case 'field_storage_settings':
+            $field_storage_settings = array_replace_recursive($field_storage_settings, $specific_mapping);
+            break;
+
+          case 'field_settings':
+            $field_settings = array_replace_recursive($field_settings, $specific_mapping);
+            break;
+
+          case 'field_widget_settings':
+            $field_widget_settings = array_replace_recursive($field_widget_settings, $specific_mapping);
+            break;
+
+          case 'field_formatter_settings':
+            $field_formatter_settings = array_replace_recursive($field_formatter_settings, $specific_mapping);
+            break;
         }
-        // For each setting this field defines, see if we have it in our
-        // tripal_entity field storage definition. If not, add it.
-        foreach ($field_settings['mapping'] as $setting_key => $setting) {
-          if (!isset($definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key])) {
-            // -- on entity.
-            $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key] = $setting;
-            // -- on field collection yaml.
-            $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping'][$setting_key] = $setting;
-          }
-          elseif ($setting_key == 'allowed_values') {
-            // There are two conflicting Drupal field definitions for this
-            // setting. One uses integer keys and the other uses float keys.
-            // Here we choose float as that should work in both cases.
-            // -- on entity.
-            $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key]['sequence']['mapping']['value']['type'] = 'float';
-            // -- on field collection yaml.
-            $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping'][$setting_key]['sequence']['mapping']['value']['type'] = 'float';
-          }
-          elseif (!in_array($setting_key, $skipped_settings)) {
-            // If the setting already exists, we should check to make sure it
-            // is the same. If not, we should log a warning.
-            if ($definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key] != $setting) {
-              $field_name = str_replace('field.storage_settings.', '', $setting_key);
-              throw new \Exception(
-                "The field storage setting $setting_key for field $field_name is different in the tripal_entity field storage definition than in the field storage definition for $field_name. This may cause issues with field storage and retrieval. Please check the field storage definitions for both tripal_entity and $field_name to ensure they are consistent. Tripal Entity definition: " . print_r($definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping'][$setting_key], TRUE) . " Field definition: " . print_r($setting, TRUE)
-              );
-            }
-          }
+      }
+    }
+
+    // Now loop through all schema definitions and merge the Tripal-specific
+    // settings into the appropriate field-related definitions.
+    // NOTE: This will apply to all field types, not just those used by Tripal,
+    // because Drupal's schema system does not allow scoping to specific
+    // entity types.
+    foreach ($definitions as $key => &$definition) {
+      if (isset($definition['mapping'])) {
+        if (str_starts_with($key, 'field.storage_settings.')) {
+          $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_storage_settings);
+        }
+        elseif (str_starts_with($key, 'field.field_settings.')) {
+          $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_settings);
+        }
+        elseif (str_starts_with($key, 'field.widget.settings.')) {
+          $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_widget_settings);
+        }
+        elseif (str_starts_with($key, 'field.formatter.settings.')) {
+          $definition['mapping'] = array_replace_recursive($definition['mapping'], $field_formatter_settings);
         }
       }
     }

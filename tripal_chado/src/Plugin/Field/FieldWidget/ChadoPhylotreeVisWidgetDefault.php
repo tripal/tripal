@@ -8,7 +8,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
-use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
+use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
@@ -310,7 +310,7 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
     $element_parents = $element['#parents'];
     $element_value = $element['#value'];
     if ($element_value != '') {
-      $organism_autocomplete = new ChadoOrganismAutocompleteController();
+      $organism_autocomplete = new ChadoOrganismFormElementController();
       $organism_id = $organism_autocomplete->getPkeyId($element_value);
       if (!$organism_id) {
         $form_state->setErrorByName(implode('][', $element_parents),
