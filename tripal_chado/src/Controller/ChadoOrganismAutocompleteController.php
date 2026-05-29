@@ -2,8 +2,7 @@
 
 namespace Drupal\tripal_chado\Controller;
 
-@trigger_error('The ' . __NAMESPACE__ . '\ChadoOrganismAutocompleteController is deprecated in tripal:4.0.0-alpha3 and is removed from tripal:4.1.0. Instead, use \Drupal\tripal_chado\Controller\ChadoOrganismFormElement. All the methods in ChadoOrganismAutocompleteController now exist in ChadoOrganismFormElement class with the same functionality. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/organism_autocomplete.html', E_USER_DEPRECATED);
-
+use Drupal\pgsql\Driver\Database\pgsql\Select;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -19,10 +18,25 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  * @see https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/organism_autocomplete.html
  */
 class ChadoOrganismAutocompleteController extends ChadoGenericAutocompleteController {
+
+  /**
+   * Single method to trigger deprecation notice for the entire class.
+   */
+  private static function deprecate() {
+    @trigger_error('The ' . __NAMESPACE__ . '\ChadoOrganismAutocompleteController is deprecated in tripal:4.0.0-alpha3 and is removed from tripal:4.1.0. Instead, use \Drupal\tripal_chado\Controller\ChadoOrganismFormElement. All the methods in ChadoOrganismAutocompleteController now exist in ChadoOrganismFormElement class with the same functionality. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/organism_autocomplete.html', E_USER_DEPRECATED);
+  }
+
+  /**
+   * Constructor.
+   */
+  public function __construct() {
+    self::deprecate();
+  }
+
   /**
    * Controller method, autocomplete organism name.
    *
-   * @param Request request
+   * @param \Symfony\Component\HttpFoundation\Request request
    *
    * @param int $match_limit
    *   Desired number of matching organism names to suggest.
@@ -38,7 +52,7 @@ class ChadoOrganismAutocompleteController extends ChadoGenericAutocompleteContro
     // Array to hold matching records.
     $response = [];
 
-    // The string to autocomplete from the form input
+    // The string to autocomplete from the form input.
     $string = trim($request->query->get('q'));
 
     $options = [
@@ -48,7 +62,7 @@ class ChadoOrganismAutocompleteController extends ChadoGenericAutocompleteContro
 
     $query = $this->getQuery($string, $options);
     if ($query) {
-      // Perform the database query
+      // Perform the database query.
       $results = $query->execute();
 
       if ($results) {
@@ -60,8 +74,10 @@ class ChadoOrganismAutocompleteController extends ChadoGenericAutocompleteContro
           // create two organisms with the exact same name.
           $value .= ' (' . $record->pkey . ')';
           $response[] = [
-            'value' => $value, // Value returned and value displayed by textfield.
-            'label' => $value, // Value shown in the list of options.
+          // Value returned and value displayed by textfield.
+            'value' => $value,
+          // Value shown in the list of options.
+            'label' => $value,
           ];
         }
       }
@@ -85,12 +101,14 @@ class ChadoOrganismAutocompleteController extends ChadoGenericAutocompleteContro
    *     match_limit - Desired number of autocomplete matching names to suggest, default 10.
    *                   If zero, there is no limit.
    *
-   * @return ?\Drupal\pgsql\Driver\Database\pgsql\Select $query
+   * @return ?\Drupal\pgsql\Driver\Database\pgsql\Select
    *   A database query object
    */
-  public static function getQuery(string $string, array $options): ?\Drupal\pgsql\Driver\Database\pgsql\Select {
+  public static function getQuery(string $string, array $options): ?Select {
 
-    // Set defaults
+    self::deprecate();
+
+    // Set defaults.
     $options['match_operator'] ??= 'CONTAINS';
     $options['match_limit'] ??= 10;
 
@@ -134,7 +152,7 @@ class ChadoOrganismAutocompleteController extends ChadoGenericAutocompleteContro
    *
    * @param string $value
    *   A value from an autocomplete with the ID in parentheses at the end,
-   *   e.g. "Tripalus bogusii (ignored) (123)"
+   *   e.g. "Tripalus bogusii (ignored) (123)".
    *
    * @return int
    *   Primary key ID number of the record, or 0 if an unparsable $value was
@@ -142,6 +160,9 @@ class ChadoOrganismAutocompleteController extends ChadoGenericAutocompleteContro
    *   supply a value.
    */
   public static function getPkeyId(string $value): int {
+
+    self::deprecate();
+
     $id = 0;
 
     $matches = [];
@@ -151,4 +172,5 @@ class ChadoOrganismAutocompleteController extends ChadoGenericAutocompleteContro
 
     return $id;
   }
+
 }
