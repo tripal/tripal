@@ -178,9 +178,9 @@ function tripal_run_importer_run($loader, $logger) {
     $loader->run();
     $logger->notice("Done.");
 
-    if (method_exists($transactions, 'commitOrRelease')) {
-      $transactions->commitOrRelease();
-    }
+    // if (method_exists($transactions, 'commitOrRelease')) {
+    //   $transactions->commitOrRelease();
+    // }
   }
   catch (\Exception $e) {
     // Rollback and re-throw the error.
@@ -209,9 +209,9 @@ function tripal_run_importer_post_run($loader, $logger) {
   try {
     $loader->postRun();
 
-    if (method_exists($transactions, 'commitOrRelease')) {
-      $transactions->commitOrRelease();
-    }
+    // if (method_exists($transactions, 'commitOrRelease')) {
+    //   $transactions->commitOrRelease();
+    // }
   }
   catch (\Exception $e) {
     // Rollback and re-throw the error.
