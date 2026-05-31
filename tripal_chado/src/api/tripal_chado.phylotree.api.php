@@ -1139,6 +1139,10 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
     // Iterate through the tree nodes and add them to Chado in accordance
     // with the details in the $options array.
     chado_phylogeny_import_tree($tree, $phylotree, $options, [], NULL, $schema_name);
+
+    if (method_exists($transaction_chado, 'commitOrRelease')) {
+      $transaction_chado->commitOrRelease();
+    }
   }
   catch (Exception $e) {
     $transaction_chado->rollback();

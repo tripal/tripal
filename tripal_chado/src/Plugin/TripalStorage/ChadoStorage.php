@@ -228,6 +228,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
       // Now that we've done the inserts, set the property values.
       $this->setPropValues($values, $this->records);
+
+      if (method_exists($transaction_chado, 'commitOrRelease')) {
+        $transaction_chado->commitOrRelease();
+      }
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
@@ -277,6 +281,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
       // Now that we've done the updates, set the property values.
       $this->setPropValues($values, $this->records);
+
+      if (method_exists($transaction_chado, 'commitOrRelease')) {
+        $transaction_chado->commitOrRelease();
+      }
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
@@ -333,6 +341,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         }
       }
       $this->setPropValues($values, $this->records);
+
+      if (method_exists($transaction_chado, 'commitOrRelease')) {
+        $transaction_chado->commitOrRelease();
+      }
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
@@ -376,6 +388,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         $this->records->deleteRecords($base_table, $base_table);
       }
 
+      if (method_exists($transaction_chado, 'commitOrRelease')) {
+        $transaction_chado->commitOrRelease();
+      }
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
@@ -474,6 +489,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           }
           $found_list[] = $new_values;
         }
+      }
+
+      if (method_exists($transaction_chado, 'commitOrRelease')) {
+        $transaction_chado->commitOrRelease();
       }
     }
     catch (\Exception $e) {
