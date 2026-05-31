@@ -11,7 +11,7 @@ label: 'Chado Controlled Vocabulary Terms'
 module: views
 description: 'Allows viewing, adding, editing, and deleting controlled vocabulary terms stored in chado'
 tag: ''
-base_table: '1:cvterm'
+base_table: cvterm
 base_field: cvterm_id
 display:
   default:
@@ -24,7 +24,7 @@ display:
       fields:
         cvterm_id:
           id: cvterm_id
-          table: '1:cvterm'
+          table: cvterm
           field: cvterm_id
           relationship: none
           group_type: group
@@ -73,7 +73,7 @@ display:
           hide_alter_empty: true
         name:
           id: name
-          table: '1:cv'
+          table: cv
           field: name
           relationship: none
           group_type: group
@@ -122,7 +122,7 @@ display:
           hide_alter_empty: true
         name_1:
           id: name_1
-          table: '1:cvterm'
+          table: cvterm
           field: name
           relationship: none
           group_type: group
@@ -171,7 +171,7 @@ display:
           hide_alter_empty: true
         definition:
           id: definition
-          table: '1:cvterm'
+          table: cvterm
           field: definition
           relationship: none
           group_type: group
@@ -220,7 +220,7 @@ display:
           hide_alter_empty: true
         name_2:
           id: name_2
-          table: '1:db'
+          table: db
           field: name
           relationship: rel
           group_type: group
@@ -269,7 +269,7 @@ display:
           hide_alter_empty: true
         accession:
           id: accession
-          table: '1:dbxref'
+          table: dbxref
           field: accession
           relationship: none
           group_type: group
@@ -318,7 +318,7 @@ display:
           hide_alter_empty: true
         is_relationshiptype:
           id: is_relationshiptype
-          table: '1:cvterm'
+          table: cvterm
           field: is_relationshiptype
           relationship: none
           group_type: group
@@ -367,7 +367,7 @@ display:
           hide_alter_empty: true
         is_obsolete:
           id: is_obsolete
-          table: '1:cvterm'
+          table: cvterm
           field: is_obsolete
           relationship: none
           group_type: group
@@ -416,7 +416,7 @@ display:
           hide_alter_empty: true
         cvterm_edit_link:
           id: cvterm_edit_link
-          table: '1:cvterm'
+          table: cvterm
           field: cvterm_edit_link
           relationship: none
           group_type: group
@@ -465,7 +465,7 @@ display:
           hide_alter_empty: false
         cvterm_delete_link:
           id: cvterm_delete_link
-          table: '1:cvterm'
+          table: cvterm
           field: cvterm_delete_link
           relationship: none
           group_type: group
@@ -628,7 +628,7 @@ display:
       filters:
         name:
           id: name
-          table: '1:cv'
+          table: cv
           field: name
           relationship: none
           group_type: group
@@ -679,7 +679,7 @@ display:
                 value: ''
         name_1:
           id: name_1
-          table: '1:cvterm'
+          table: cvterm
           field: name
           relationship: none
           group_type: group
@@ -718,7 +718,7 @@ display:
             group_items: {  }
         definition:
           id: definition
-          table: '1:cvterm'
+          table: cvterm
           field: definition
           relationship: none
           group_type: group
@@ -757,7 +757,7 @@ display:
             group_items: {  }
         name_2:
           id: name_2
-          table: '1:db'
+          table: db
           field: name
           relationship: rel
           group_type: group
@@ -796,7 +796,7 @@ display:
             group_items: {  }
         accession:
           id: accession
-          table: '1:dbxref'
+          table: dbxref
           field: accession
           relationship: none
           group_type: group
@@ -953,7 +953,7 @@ display:
       relationships:
         rel:
           id: rel
-          table: '1:dbxref'
+          table: dbxref
           field: rel
           relationship: none
           group_type: group

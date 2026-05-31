@@ -11,7 +11,7 @@ label: 'Chado Controlled Vocabularies'
 module: views
 description: 'Allows viewing, adding, editing, and deleting controlled vocabularies stored in chado'
 tag: ''
-base_table: '1:cv'
+base_table: cv
 base_field: cv_id
 display:
   default:
@@ -24,7 +24,7 @@ display:
       fields:
         cv_id:
           id: cv_id
-          table: '1:cv'
+          table: cv
           field: cv_id
           relationship: none
           group_type: group
@@ -75,7 +75,7 @@ display:
           hide_alter_empty: true
         name:
           id: name
-          table: '1:cv'
+          table: cv
           field: name
           relationship: none
           group_type: group
@@ -124,7 +124,7 @@ display:
           hide_alter_empty: true
         definition:
           id: definition
-          table: '1:cv'
+          table: cv
           field: definition
           relationship: none
           group_type: group
@@ -173,7 +173,7 @@ display:
           hide_alter_empty: true
         cv_edit_link:
           id: cv_edit_link
-          table: '1:cv'
+          table: cv
           field: cv_edit_link
           relationship: none
           group_type: group
@@ -222,7 +222,7 @@ display:
           hide_alter_empty: false
         cv_items_link:
           id: cv_items_link
-          table: '1:cv'
+          table: cv
           field: cv_items_link
           relationship: none
           group_type: group
@@ -271,7 +271,7 @@ display:
           hide_alter_empty: false
         cv_delete_link:
           id: cv_delete_link
-          table: '1:cv'
+          table: cv
           field: cv_delete_link
           relationship: none
           group_type: group
@@ -431,7 +431,7 @@ display:
       filters:
         name:
           id: name
-          table: '1:cv'
+          table: cv
           field: name
           relationship: none
           group_type: group
@@ -470,7 +470,7 @@ display:
             group_items: {  }
         definition:
           id: definition
-          table: '1:cv'
+          table: cv
           field: definition
           relationship: none
           group_type: group
