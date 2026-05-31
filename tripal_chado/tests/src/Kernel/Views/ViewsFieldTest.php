@@ -49,8 +49,29 @@ class ViewsFieldTest extends ChadoTestKernelBase {
     // Test values for the db table.
     $query = $this->chado_connection->insert('1:db');
     $query->fields(['db_id', 'name', 'description', 'url', 'urlprefix']);
-    $query->values([2, 'db1', '', '', '']);
-    $query->values([3, 'db2', 'has_description', 'https://test', 'https://test/{db}/{accession}']);
+    $query->values([2, '1db1', '', '', '']);
+    $query->values([3, '1db2', 'non-blank-db-description', 'https://test', 'https://test/{db}/{accession}']);
+    $query->execute();
+
+    // Test values for the dbxref table.
+    $query = $this->chado_connection->insert('1:dbxref');
+    $query->fields(['dbxref_id', 'db_id', 'accession', 'version', 'description']);
+    $query->values([3, 2, '1a001', '', '']);
+    $query->values([4, 3, '1b002', 'ver2', 'non-blank-dbxref-description']);
+    $query->execute();
+
+    // Test values for the cv table.
+    $query = $this->chado_connection->insert('1:cv');
+    $query->fields(['cv_id', 'name', 'definition']);
+    $query->values([5, '1cv1', '']);
+    $query->values([6, '1cv2', 'non-blank-cv-definition']);
+    $query->execute();
+
+    // Test values for the cvterm table.
+    $query = $this->chado_connection->insert('1:cvterm');
+    $query->fields(['cvterm_id', 'cv_id', 'name', 'definition', 'dbxref_id', 'is_obsolete', 'is_relationshiptype']);
+    $query->values([3, 5, '1t001', '', 3, 0, 0]);
+    $query->values([4, 6, '1t002', 'non-blank-cvterm-definition', 4, 1, 1]);
     $query->execute();
   }
 
@@ -87,23 +108,22 @@ class ViewsFieldTest extends ChadoTestKernelBase {
       // Verify expected output.
       $result = $viewExecutable->result;
       foreach ($scenario['rows'] as $row => $expect) {
-        if ($expect['isnull'] ?? FALSE) {
-          $this->assertArrayNotHasKey($row, $result, "Expect no values for row \"$row\"");
+        if ($expect['is_null'] ?? FALSE) {
+          $this->assertArrayNotHasKey($row, $result, "Expect no values for row \"$row\" scenario \"$id\"");
         }
         else {
-          $this->assertArrayHasKey($row, $result, "Expect to have values for row \"$row\"");
+          $this->assertArrayHasKey($row, $result, "Expect to have values for row \"$row\" scenario \"$id\"");
           foreach ($expect['fields'] as $field_id => $value) {
+            $this->assertArrayHasKey($field_id, $viewExecutable->field, "Yaml config error, missing key in view executable from scenario \"$id\". Avaliable keys: " . print_r(array_keys($viewExecutable->field), TRUE));
             $output = $viewExecutable->field[$field_id]->render($result[$row]);
             if (is_object($output)) {
               $output = (string) $output;
             }
-            $this->assertEquals($value, $output, "Row \"$row\" field \"$field_id\" output is not as expected");
+            $this->assertEquals($value, $output, "Row \"$row\" field \"$field_id\" scenario \"$id\" output is not as expected");
           }
         }
       }
-
     }
-
   }
 
 }
