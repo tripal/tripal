@@ -42,8 +42,8 @@ class TripalChadoViewsQuery extends Sql {
   public function execute(ViewExecutable $view) {
     // Instruct TripalDbx to also prefix tables without a 1: prefix,
     // e.g. "{db}" will be prefixed as "chado.db", since this class is
-    // intended strictly for chado table views, and drupal does play
-    // well with our 1: prefixing notation.
+    // intended strictly for chado table views, and drupal does not
+    // play well with our 1: prefixing notation.
     $chado_connection = $this->getConnection();
     $chado_connection->useTripalDbxSchemaFor('Drupal\Core\Database\Query\Query');
 
