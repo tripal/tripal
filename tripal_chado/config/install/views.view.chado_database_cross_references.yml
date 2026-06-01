@@ -473,7 +473,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: dropbutton
-          label: ''
+          label: Actions
           exclude: false
           alter:
             alter_text: false
@@ -525,7 +525,6 @@ display:
             version: '0'
             urlprefix: '0'
             dbxref_urlprefix_link: '0'
-            dropbutton: '0'
       pager:
         type: full
         options:
