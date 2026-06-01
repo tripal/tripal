@@ -248,6 +248,10 @@ class ChadoMview extends ChadoCustomTable {
       $num_rows = $results->fetchField();
       $this->setStatus("Populated with " . $num_rows . " rows");
       $this->setLastUpdate(time());
+
+      if (method_exists($transaction, 'commitOrRelease')) {
+        $transaction->commitOrRelease();
+      }
     }
     catch (Exception $e) {
       $transaction_chado->rollback();
