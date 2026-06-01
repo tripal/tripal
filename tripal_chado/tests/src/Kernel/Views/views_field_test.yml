@@ -36,6 +36,8 @@
         'description': ''
         'urlprefix': ''
         'dbxref_urlprefix_link': 'not available'
+        'dbxref_edit_link': '<a href="/admin/tripal/storage/chado/dbxref/3">Edit</a>'
+        'dbxref_delete_link': '<a href="/admin/tripal/storage/chado/dbxref_delete/3">Delete</a>'
     1:
       'fields':
         'dbxref_id': 4
@@ -44,6 +46,8 @@
         'description': 'non-blank-db-description'
         'urlprefix': 'https://test/{db}/{accession}'
         'dbxref_urlprefix_link': '<a href="https://test/1db2/1b002" target="_blank">🔗1db2:1b002</a>'
+        'dbxref_edit_link': '<a href="/admin/tripal/storage/chado/dbxref/4">Edit</a>'
+        'dbxref_delete_link': '<a href="/admin/tripal/storage/chado/dbxref_delete/4">Delete</a>'
     4:
       'is_null': true
 
