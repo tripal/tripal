@@ -313,6 +313,10 @@ class ChadoCustomTable {
       $update->condition('table_id', $this->table_id);
       $update->condition('chado', $chado->getSchemaName());
       $update->execute();
+
+      if (method_exists($transaction_chado, 'commitOrRelease')) {
+        $transaction_chado->commitOrRelease();
+      }
     }
     catch (Exception $e) {
       $transaction_chado->rollback();
@@ -424,6 +428,10 @@ class ChadoCustomTable {
       if ($chado->schema()->tableExists($this->table_name)) {
         $logger->error('Could not delete the ' . $this->table_name . ' table. Check the database server logs.');
         return FALSE;
+      }
+
+      if (method_exists($transaction_chado, 'commitOrRelease')) {
+        $transaction_chado->commitOrRelease();
       }
     }
     catch (Exception $e) {
