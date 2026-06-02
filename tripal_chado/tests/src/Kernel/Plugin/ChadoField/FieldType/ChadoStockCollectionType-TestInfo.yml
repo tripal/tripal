@@ -62,7 +62,7 @@ system-under-test:
       storage_plugin_id: 'chado_storage'
       storage_plugin_settings:
           base_table: 'stock'
-          type_column: 'organism_id'
+          base_column: 'organism_id'
   - name: 'stock_coll1'
     type: 'chado_stockcollection_type_default'
     type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStockCollectionTypeDefault'

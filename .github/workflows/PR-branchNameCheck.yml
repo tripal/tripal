@@ -7,7 +7,16 @@ jobs:
   branch-naming-rules:
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: 'deepakputhraya/action-branch-name@v1.0.0'
-        with:
-          regex: 'tv4g\d+-(issue){0,1}\d+-{0,1}\w*' # Regex the branch should match.
-          ignore: '4.x' # Ignore exactly matching branch names from convention
+
+      - name: "Validate branch name matches our standards"
+        env:
+          BRANCH_NAME: '${{ github.head_ref }}'
+        run: |
+          STANDARD='^tv4g[0-9]+-(issue){0,1}[0-9]+-?[a-zA-Z0-9_-]*$'
+
+          if [[ ! "$BRANCH_NAME" =~ $STANDARD ]] && [[ ! "$BRANCH_NAME" == '4.x' ]]; then
+            echo "::error::Branch name '$BRANCH_NAME' does not match our standard '$STANDARD'"
+            exit 1
+          fi
+
+          echo "✅ Branch name '$BRANCH_NAME' matches our standard '$STANDARD' 🎉"

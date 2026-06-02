@@ -108,6 +108,10 @@ class OboImporterTest extends ChadoTestKernelBase {
     '/a lookup will be performed with the EBI Ontology Lookup Service/' => 'normal',
     '/Cannot find the ontology via an EBI OLS lookup/' => 'skip',
     '/Service Temporarily Unavailable/' => 'skip',
+    '/Invalid hostname in URL/' => 'skip',
+    '/Unable to get response from/' => 'skip',
+    '/502 Bad Gateway/' => 'skip',
+    '/504 Gateway Time-out/' => 'skip',
   ];
 
   /**
