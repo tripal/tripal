@@ -435,7 +435,7 @@ fields:
 ##          analysisfeature, nd_experiment_analysis, project_analysis
     -   name: analysis_timeexecuted
         content_type: analysis
-        label: Time Executed
+        label: Date and Time Executed
         type: chado_datetime_type_default
         description: The date and time at which this analysis was performed.
         cardinality: 1

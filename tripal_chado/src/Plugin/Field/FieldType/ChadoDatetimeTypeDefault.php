@@ -121,7 +121,7 @@ class ChadoDatetimeTypeDefault extends ChadoFieldItemBase {
       'quantificationdate' => 'Quantification Date', // Just in case ;)
       'timeaccessioned'  => 'Time Accessioned',
       'timelastmodified' => 'Time Last Modified',
-      'timeexecuted'     => 'Time Executed',
+      'timeexecuted'     => 'Date and Time Executed',
     ];
 
     // Find all timestamp/date columns in the base table.
