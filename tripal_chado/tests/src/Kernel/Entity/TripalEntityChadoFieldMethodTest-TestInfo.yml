@@ -1,0 +1,317 @@
+system-under-test:
+  bundle:
+    label: 'Gemstones'
+    termIdSpace: 'NCIT'
+    termAccession: 'C47885'
+    id: 'test_gemstone'
+    title_format: 'TEST [TripalEntityType__label] <em>[project_name]</em> Entity #[TripalEntity__entity_id][ acquired by [gemologist]]'
+    url_format: 'test/[TripalEntityType__entity_id][/[gemologist]]/[project_name]/[TripalEntity__entity_id]'
+    settings:
+      chado_base_table: 'project'
+  fields:
+  - name: 'project_name'
+    type: 'chado_string_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+    widget: 'chado_string_type_widget'
+    formatter: 'chado_string_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'name'
+    cardinality: 1
+    required: true
+    settings:
+      termIdSpace: 'schema'
+      termAccession: 'name'
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'project'
+          base_column: 'name'
+      max_length: 255
+  - name: 'metaphysical_props'
+    type: 'chado_text_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
+    widget: 'chado_text_type_widget'
+    formatter: 'chado_text_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'description'
+    cardinality: 1
+    required: false
+    settings:
+      termIdSpace: 'schema'
+      termAccession: 'description'
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'project'
+          base_column: 'description'
+  - name: 'gemologist'
+    type: 'chado_contact_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoContactTypeDefault'
+    widget: 'chado_contact_widget_default'
+    formatter: 'chado_contact_formatter_default'
+    termIdSpace: 'TCONTACT'
+    termAccession: '0000003'
+    cardinality: 5
+    required: false
+    settings:
+      termIdSpace: 'TCONTACT'
+      termAccession: '0000003'
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+        base_table: 'project'
+        linker_table: 'project_contact'
+        linker_fkey_column: 'contact_id'
+  - name: 'genus_property'
+    type: 'chado_property_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPropertyTypeDefault'
+    widget: 'chado_property_widget_default'
+    formatter: 'chado_property_formatter_default'
+    termIdSpace: 'TAXRANK'
+    termAccession: '0000005'
+    cardinality: 5
+    required: false
+    settings:
+      termIdSpace: 'TAXRANK'
+      termAccession: '0000005'
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+        base_table: 'project'
+        prop_table: 'projectprop'
+  - name: 'drupal_description'
+    type: 'string_long'
+    type_class: 'Drupal\Core\Field\Plugin\Field\FieldType\StringLongItem'
+    widget: 'string_textarea'
+    formatter: 'string'
+    termIdSpace: 'META'
+    termAccession: 'description'
+    cardinality: 1
+    required: false
+    settings:
+      storage_plugin_id: NULL
+  - name: 'missing_storage'
+    type: 'tripal_text_type'
+    type_class: 'Drupal\tripal\Plugin\Field\FieldType\TripalTextTypeItem'
+    widget: 'default_tripal_text_type_widget'
+    formatter: 'default_tripal_text_type_formatter'
+    termIdSpace: 'BROKEN'
+    termAccession: 'storage'
+    cardinality: 1
+    required: false
+    settings:
+      termIdSpace: 'BROKEN'
+      termAccession: 'storage'
+      storage_plugin_id: NULL
+scenarios:
+  - label: 'Simple Entity'
+    description: 'Create a page where every field has one value and the title/path are left empty.'
+    create:
+      user_input:
+        project_name:
+        - record_id: 0
+          value: 'amazonite'
+        metaphysical_props:
+        - record_id: 0
+          value: 'soothing, calming, healing from grief'
+        drupal_description:
+        - value: 'This is a really long description if you use your imagination.'
+      expected_field_values:
+        project_name:
+        - record_id: 1
+          value: 'amazonite'
+        metaphysical_props:
+        - record_id: 1
+          value: 'soothing, calming, healing from grief'
+    expectations:
+      registerField:
+        - field_name: 'field_that_doesnt_exist_at_all'
+          expected_result: false
+        - field_name: 'project_name'
+          expected_result: true
+      getFieldItemBackendStorage:
+        drupal_description:
+          expected_result: false
+        project_name:
+          expected_result:
+          - 0
+          - 'chado_storage'
+      getStorageFields:
+        all_fields:
+        - 'genus_property'
+        - 'gemologist'
+        - 'metaphysical_props'
+        - 'project_name'
+        required_fields:
+        - 'project_name'
+        optional_fields:
+        - 'genus_property'
+        - 'metaphysical_props'
+        - 'gemologist'
+      getTripalFieldPropertyKeys:
+        project_name:
+        - 'record_id'
+        - 'value'
+        metaphysical_props:
+        - 'record_id'
+        - 'value'
+        gemologist:
+        - 'record_id'
+        - 'linker_id'
+        - 'link'
+        - 'entity_id'
+        - 'contact_type'
+        - 'contact_name'
+        - 'contact_id'
+        - 'contact_description'
+      getTripalFieldInfo:
+        project_name:
+          term: 'schema:name'
+          tripalstorage_id: 'chado_storage'
+          is_required: true
+          cardinality: 1
+          field_type: 'chado_string_type_default'
+          tripalstorage_settings:
+            base_table: 'project'
+            base_column: 'name'
+          settings:
+            max_length: 255
+            termIdSpace: 'schema'
+            termAccession: 'name'
+            debug: FALSE
+        metaphysical_props:
+          term: 'schema:description'
+          tripalstorage_id: 'chado_storage'
+          is_required: false
+          cardinality: 1
+          field_type: 'chado_text_type_default'
+          tripalstorage_settings:
+            base_table: 'project'
+            base_column: 'description'
+          settings:
+            termIdSpace: 'schema'
+            termAccession: 'description'
+            debug: FALSE
+      getTripalFieldStorageInfo:
+        project_name:
+          base_table: 'project'
+          base_column: 'name'
+        metaphysical_props:
+            base_table: 'project'
+            base_column: 'description'
+        gemologist:
+          base_table: 'project'
+          linker_table: 'project_contact'
+          linker_fkey_column: 'contact_id'
+      getTripalFieldPropertyInfo:
+        project_name:
+          record_id:
+            id: 'int'
+            key: 'record_id'
+            cardinality: 1
+            cache_status: true
+            id_space: 'SIO'
+            accession: '000729'
+          value:
+            id: 'varchar'
+            key: 'value'
+            cardinality: 1
+            cache_status: true
+            id_space: 'schema'
+            accession: 'name'
+        metaphysical_props:
+          record_id:
+            id: 'int'
+            key: 'record_id'
+            cardinality: 1
+            cache_status: true
+            id_space: 'SIO'
+            accession: '000729'
+          value:
+            id: 'text'
+            key: 'value'
+            cardinality: 1
+            cache_status: true
+            id_space: 'schema'
+            accession: 'description'
+        gemologist:
+          record_id:
+            id: 'int'
+            key: 'record_id'
+            cardinality: 1
+            cache_status: true
+            id_space: 'SIO'
+            accession: '000729'
+          contact_id:
+            id: 'int'
+            key: 'contact_id'
+            cardinality: 1
+            cache_status: true
+            id_space: 'NCIT'
+            accession: 'C47954'
+            action: 'store'
+            drupal_store: true
+            path: 'project_contact.contact_id'
+            delete_if_empty: true
+            empty_value: 0
+          linker_id:
+            id: 'int'
+            key: 'linker_id'
+            cardinality: 1
+            cache_status: true
+            id_space: 'SIO'
+            accession: '000729'
+            action: 'store_pkey'
+            drupal_store: true
+            path: 'project_contact.project_contact_id'
+          link:
+            id: 'int'
+            key: 'link'
+            cardinality: 1
+            cache_status: true
+            id_space: 'NCIT'
+            accession: 'C47885'
+            action: 'store_link'
+            drupal_store: true
+            path: 'project.project_id>project_contact.project_id'
+          contact_name:
+            id: 'varchar'
+            key: 'contact_name'
+            cardinality: 1
+            cache_status: true
+            id_space: 'schema'
+            accession: 'name'
+            action: 'read_value'
+            drupal_store: false
+            path: 'project_contact.contact_id>contact.contact_id;name'
+          contact_description:
+            id: 'varchar'
+            key: 'contact_description'
+            cardinality: 1
+            cache_status: true
+            id_space: 'schema'
+            accession: 'description'
+            action: 'read_value'
+            drupal_store: false
+            path: 'project_contact.contact_id>contact.contact_id;description'
+      getTripalFieldPropertyPath:
+        gemologist:
+          contact_type:
+            path: 'project_contact.contact_id>contact.contact_id;contact.type_id>cvterm.cvterm_id;name'
+            table_alias_mapping: NULL
+            unaliased_path: 'project_contact.contact_id>contact.contact_id;contact.type_id>cvterm.cvterm_id;name'
+        genus_property:
+          value:
+            path: 'project.project_id>projectprop_taxrank0000005.project_id;value'
+            table_alias_mapping:
+              projectprop_taxrank0000005: 'projectprop'
+            unaliased_path: 'project.project_id>projectprop.project_id;value'
+  ## EXCEPTION SCENARIOS.
+  - label: 'No Storage Exception expected'
+    description: 'Entity with Tripal field given value but no storage backend'
+    user_input:
+      project_name:
+      - value: 'amazonite'
+      metaphysical_props:
+      - value: 'soothing, calming, healing from grief'
+      drupal_description:
+      - value: 'This is a really long description if you use your imagination.'
+      missing_storage:
+      - value: 'Meh, this has nowhere to be stored anyway.'
+    exception_message: "The Tripal-based field 'missing_storage' on this content type must indicate a TripalStorage backend and currently does not."

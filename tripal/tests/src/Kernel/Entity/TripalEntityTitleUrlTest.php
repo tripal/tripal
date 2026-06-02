@@ -18,7 +18,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('tripal-content')]
 #[Group('service-token-parser')]
 #[RunTestsInSeparateProcesses]
-class TripalEntityFieldTest extends TripalTestKernelBase {
+class TripalEntityTitleUrlTest extends TripalTestKernelBase {
 
   use TripalEntityFieldTestTrait;
 
@@ -39,7 +39,7 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
    *
    * @var string
    */
-  protected string $yaml_info_file = __DIR__ . '/TripalEntityFieldTest-TestInfo.yml';
+  protected string $yaml_info_file = __DIR__ . '/TripalEntityTitleUrlTest-TestInfo.yml';
 
   /**
    * Describes the environment to setup for this test.

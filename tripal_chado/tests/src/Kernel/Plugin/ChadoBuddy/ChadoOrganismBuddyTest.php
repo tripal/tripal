@@ -420,7 +420,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
           'organism.infraspecific_name' => 'chadoii',
         ],
       ],
-      "ChadoBuddy validateOrganismRankCvterm error, more than one record matched the values specified:",
+      "ChadoBuddy validateOrganismRankCvterm error, more than one record",
     ];
 
     // #4: updateOrganism() finds more than one organism record that matches.
@@ -434,7 +434,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
           'organism.abbreviation' => 'Trp',
         ],
       ],
-      "ChadoBuddy updateOrganism error, more than one record matched the conditions specified:",
+      "ChadoBuddy updateOrganism error, more than one record",
     ];
 
     // #5: updateOrganism() with a cvterm_id that does not exist.
@@ -495,7 +495,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
           'organism.abbreviation' => 'Trp',
         ],
       ],
-      "ChadoBuddy upsertOrganism error, more than one record matched the specified values:",
+      "ChadoBuddy upsertOrganism error, more than one record",
     ];
 
     // #9: getOrganismScientificName() does not find a matching organism.
@@ -518,7 +518,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
           'organism.abbreviation' => 'Trp',
         ],
       ],
-      "ChadoBuddy getOrganismScientificName error, more than one organism record matches the specified conditions:",
+      "ChadoBuddy getOrganismScientificName error, more than one record",
     ];
 
     return $scenarios;

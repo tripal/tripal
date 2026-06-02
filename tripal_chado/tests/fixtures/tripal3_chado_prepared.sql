@@ -6264,7 +6264,7 @@ INSERT INTO chado.cvterm VALUES (3026, 15, 'Analysis', 'Apply analytical methods
 INSERT INTO chado.cvterm VALUES (3027, 15, 'Phylogenetic tree', 'The raw data (not just an image) from which a phylogenetic tree is directly generated or plotted, such as topology, lengths (in time or in expected amounts of variance) and a confidence interval for each length.', 3349, 0, 0);
 INSERT INTO chado.cvterm VALUES (3028, 15, 'Species tree', 'A phylogenetic tree that reflects phylogeny of the taxa from which the characters (used in calculating the tree) were sampled.', 3350, 0, 0);
 INSERT INTO chado.cvterm VALUES (3029, 15, 'Gene tree', 'A phylogenetic tree that is an estimate of the character''s phylogeny.', 3351, 0, 0);
-INSERT INTO chado.cvterm VALUES (3030, 15, 'Phylogenetic tree visualisation', 'A phylogenetic tree that is an estimate of the character''s phylogeny.', 3352, 0, 0);
+INSERT INTO chado.cvterm VALUES (3030, 15, 'Phylogenetic tree visualisation', 'tripal_chado/tests/fixtures/tripal3_chado_prepared.sql', 3352, 0, 0);
 INSERT INTO chado.cvterm VALUES (3031, 15, 'Sequence visualisation', 'Visualise, format or render a molecular sequence or sequences such as a sequence alignment, possibly with sequence features or properties shown.', 3353, 0, 0);
 INSERT INTO chado.cvterm VALUES (3032, 15, 'genome assembly', '', 3354, 0, 0);
 INSERT INTO chado.cvterm VALUES (3033, 15, 'Genome annotation ', '', 3355, 0, 0);

@@ -395,6 +395,18 @@ function tripal_tripal_entity_storage_load(&$entities) {
 }
 
 /**
+ * Implements hook_config_schema_info_alter().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalEntityHooks in
+ * tripal/src/Hook/TripalEntityHooks.php.
+ */
+#[LegacyHook]
+function tripal_config_schema_info_alter(&$definitions) {
+  \Drupal::service('tripal.entity_hooks')->configSchemaInfoAlter($definitions);
+}
+
+/**
  * Implements hook_views_query_alter().
  *
  * This legacy hook is only run for Drupal < 11, and is replaced by class

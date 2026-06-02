@@ -117,8 +117,8 @@ class ChadoMviewsManager extends ChadoCustomTableManager {
    *   no schema is specified then the default schema is used.
    *
    * @return array
-   *   An associatve array of the materialized views with the key being the id
-   *   and the value the table name.
+   *   An associative array of the materialized views with the key being the id
+   *   and the value being the table name.
    */
   public function getTables(?string $chado_schema = NULL) {
     $tables = [];
