@@ -398,9 +398,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       if ($entities) {
 
         // Reset the internal path field.
-        $path_item = $this->path->first();
-        $path_item->set('alias', '');
-        $path_item->set('pid', NULL);
+        $path_item = $this->get('path')->first();
+        if ($path_item) {
+          $path_item->set('alias', '');
+          $path_item->set('pid', NULL);
+        }
 
         // Keep track of the duplicates here but DO NOT throw the exception
         // until the end so we can still remove previous alias' if that applies.
@@ -416,8 +418,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       // The field will create the alias for us so we just need to ensure
       // its set to the new one here.
       if ($during_save) {
-        $path_item = $this->path->first();
-        $path_item->set('alias', $new_alias);
+        $path_item = $this->get('path')->first();
+        if ($path_item) {
+          $path_item->set('alias', $new_alias);
+        }
       }
       // We have to create the path alias ourselves.
       else {
@@ -431,9 +435,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         }
         $new_alias_object->save();
         // And update the internal path field.
-        $path_item = $this->path->first();
-        $path_item->set('alias', $new_alias);
-        $path_item->set('pid', $new_alias_object->id());
+        $path_item = $this->get('path')->first();
+        if ($path_item) {
+          $path_item->set('alias', $new_alias);
+          $path_item->set('pid', $new_alias_object->id());
+        }
       }
     }
     // If an alias already exists, and is different...
@@ -448,17 +454,21 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       if (empty($duplicates)) {
         $existing_alias_object->setAlias($new_alias);
         $existing_alias_object->save();
-        $path_item = $this->path->first();
-        $path_item->set('alias', $new_alias);
-        $path_item->set('pid', $existing_alias['id']);
+        $path_item = $this->get('path')->first();
+        if ($path_item) {
+          $path_item->set('alias', $new_alias);
+          $path_item->set('pid', $existing_alias['id']);
+        }
       }
       // If there are duplcates then we just remove the alias.
       // An exception will be thrown below to inform the user what happened.
       else {
         $existing_alias_object->delete();
-        $path_item = $this->path->first();
-        $path_item->set('alias', '');
-        $path_item->set('pid', NULL);
+        $path_item = $this->get('path')->first();
+        if ($path_item) {
+          $path_item->set('alias', '');
+          $path_item->set('pid', NULL);
+        }
       }
     }
 
