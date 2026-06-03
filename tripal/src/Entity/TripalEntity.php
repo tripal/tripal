@@ -417,14 +417,16 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     if (!$existing_alias and $new_alias and empty($duplicates)) {
       // The field will create the alias for us so we just need to ensure
       // its set to the new one here.
+      $alias_set = FALSE;
       if ($during_save) {
         $path_item = $this->get('path')->first();
         if ($path_item) {
           $path_item->set('alias', $new_alias);
+          $alias_set = TRUE;
         }
       }
       // We have to create the path alias ourselves.
-      else {
+      if (!$alias_set) {
         $system_path = '/bio_data/' . $this->getID();
         $new_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
           'path' => $system_path,
