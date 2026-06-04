@@ -433,7 +433,7 @@ fields:
 ## Related: analysis_cvterm, analysis_dbxref, analysis_pub, analysis_relationship, analysisprop,
 ##          phylotree, quantification,
 ##          analysisfeature, nd_experiment_analysis, project_analysis
-    -   name: analysis_timeexecuted
+    -   name: analysis_timeexec
         content_type: analysis
         label: Date and Time Executed
         type: chado_datetime_type_default
