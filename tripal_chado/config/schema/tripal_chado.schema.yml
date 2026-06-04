@@ -237,6 +237,50 @@ field.formatter.settings.chado_contact_formatter_default:
   type: mapping
   mapping: {}
 
+## Datetime Field.
+field.field_settings.chado_datetime_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_datetime_type_default:
+  type: mapping
+  mapping:
+    storage_plugin_settings:
+      type: mapping
+      mapping:
+        base_column:
+          type: string
+          label: 'Field Base Chado Column'
+          nullable: FALSE
+
+field.widget.settings.chado_datetime_type_widget:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_datetime_type_formatter:
+  type: mapping
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+    date_format:
+      type: string
+      label: 'PHP date format string for datetime display'
+      nullable: false
+
 ## DBXREF Linker Field.
 field.field_settings.chado_dbxref_type_default:
   type: mapping
