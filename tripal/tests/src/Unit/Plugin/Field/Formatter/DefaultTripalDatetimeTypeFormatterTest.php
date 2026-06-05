@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal\Unit\Plugin\Field\Formatter;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\TypedData\Plugin\DataType\ItemList;
 use Drupal\Core\TypedData\TypedDataInterface;
 use Drupal\Tests\UnitTestCase;
@@ -46,6 +47,9 @@ class DefaultTripalDatetimeTypeFormatterTest extends UnitTestCase {
     // NULL after newInstanceWithoutConstructor(). Seed it with defaults so
     // getSetting() works for any test that doesn't call setSetting() first.
     $this->formatter->setSettings(DefaultTripalDatetimeTypeFormatter::defaultSettings());
+
+    // We use t() a lot, let's make sure we can test functions that use it.
+    $this->formatter->setStringTranslation($this->getStringTranslationStub());
 
     $this->formatTimestamp = new \ReflectionMethod(
       DefaultTripalDatetimeTypeFormatter::class,
@@ -113,6 +117,12 @@ class DefaultTripalDatetimeTypeFormatterTest extends UnitTestCase {
       ],
       'empty string returns empty' => [
         '', 'Y-m-d H:i:s', '',
+      ],
+      'unparseable string returns original raw string' => [
+        'not-a-date', 'Y-m-d H:i:s', 'not-a-date',
+      ],
+      'date not correct for format passes PHPs default parser' => [
+        '15 January 2025', 'Y-m-d', '2025-01-15',
       ],
     ];
   }
@@ -214,4 +224,34 @@ class DefaultTripalDatetimeTypeFormatterTest extends UnitTestCase {
     $this->assertSame('January 15, 2025', $elements[0]['#markup']);
   }
 
+  /**
+   * The settings form (via settingsForm) gets built correctly.
+   */
+  public function testSettingsFormBuild(): void {
+    $form_state = $this->createMock(FormStateInterface::class);
+    $form = $this->formatter->settingsForm([], $form_state);
+
+    // All keys are present.
+    $keys = ['date_format', 'field_prefix', 'field_suffix', 'hide_condition', 'hide_value'];
+    foreach ($keys as $key) {
+      $this->assertArrayHasKey($key, $form);
+    }
+
+    // date_format is required and seeded with the default.
+    $this->assertSame('textfield', $form['date_format']['#type']);
+    $this->assertSame('Y-m-d H:i:s', $form['date_format']['#default_value']);
+    $this->assertTrue($form['date_format']['#required']);
+
+    // hide_condition is a radios element with the expected options.
+    $this->assertSame('radios', $form['hide_condition']['#type']);
+    $this->assertArrayHasKey('', $form['hide_condition']['#options']);
+    $this->assertArrayHasKey('never', $form['hide_condition']['#options']);
+    $this->assertArrayHasKey('if_value', $form['hide_condition']['#options']);
+
+    // Prefix and suffix are optional.
+    $this->assertSame('textfield', $form['field_prefix']['#type']);
+    $this->assertFalse($form['field_prefix']['#required']);
+    $this->assertSame('textfield', $form['field_suffix']['#type']);
+    $this->assertFalse($form['field_suffix']['#required']);
+  }
 }
