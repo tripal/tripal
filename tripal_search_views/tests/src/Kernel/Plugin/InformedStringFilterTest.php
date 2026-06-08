@@ -31,6 +31,7 @@ class InformedStringFilterTest extends ChadoTestKernelBase {
     'tripal',
     'tripal_chado',
     'views',
+    'filter',
     'field',
     'tripal_search_views',
     'tripal_search_views_test_views',
@@ -63,6 +64,7 @@ class InformedStringFilterTest extends ChadoTestKernelBase {
     $this->prepareEnvironment(['TripalTerm', 'TripalEntity']);
     // -- additionally we need tripal_chado config to access the yaml files.
     $this->installConfig([
+      'tripal',
       'tripal_chado',
       'tripal_search_views',
       'tripal_search_views_test_views',

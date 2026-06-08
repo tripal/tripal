@@ -164,7 +164,10 @@ class InformedStringFilter extends StringFilter {
    */
   public function submitExposeForm($form, FormStateInterface $form_state) {
     $selected = $form_state->getValue(['options', 'group_button', 'radios', 'radios']);
-    $this->options['filter_type'] = $selected;
+    $this->options['filter_type'] = (int) $selected;
+    if ($selected == 2) {
+      $this->options['plugin_id'] = 'dynamic_filter';
+    }
   }
 
 }

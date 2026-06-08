@@ -1,11 +1,10 @@
+uuid: 041ef09c-0f2f-4dba-b0e7-2cef192fc9a2
 langcode: en
 status: true
 dependencies:
   config:
     - field.storage.tripal_entity.organism_genus
     - field.storage.tripal_entity.organism_species
-    - system.menu.admin
-    - tripal.content_type.analysis
   module:
     - tripal
     - tripal_chado
@@ -196,15 +195,6 @@ display:
       sorts: {  }
       arguments: {  }
       filters:
-        type:
-          id: type
-          table: tripal_entity
-          field: type
-          entity_type: tripal_entity
-          entity_field: type
-          plugin_id: bundle
-          value:
-            analysis: analysis
         organism_species_value:
           id: organism_species_value
           table: tripal_entity__organism_species
@@ -212,7 +202,7 @@ display:
           relationship: none
           group_type: group
           admin_label: ''
-          plugin_id: string
+          plugin_id: dynamic_filter
           operator: '='
           value: ''
           group: 1
@@ -244,6 +234,7 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
+          filter_type: 2
       style:
         type: default
       row:
@@ -278,11 +269,6 @@ display:
     display_options:
       display_extenders: {  }
       path: test-search-view
-      menu:
-        type: normal
-        title: 'Test search view'
-        menu_name: admin
-        parent: ''
     cache_metadata:
       max-age: -1
       contexts:

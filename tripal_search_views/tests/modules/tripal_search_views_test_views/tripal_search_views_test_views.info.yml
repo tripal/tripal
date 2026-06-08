@@ -6,7 +6,7 @@ php: 8.2
 package: 'Tripal'
 version: '4.0.alpha4'
 dependencies:
-  - 'drupal:views'
   - 'tripal:tripal'
   - 'tripal:tripal_chado'
+  - 'tripal:tripal_layout'
   - 'tripal:tripal_search_views'

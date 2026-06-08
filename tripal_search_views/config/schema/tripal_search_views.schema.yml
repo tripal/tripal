@@ -1,0 +1,13 @@
+views.filter.*:
+  type: views_filter
+  label: 'Informed string filter'
+  mapping:
+    filter_type:
+      type: integer
+      label: 'Filter type'
+    expose:
+      type: mapping
+      label: 'Expose options'
+      mapping:
+        placeholder:
+          type: string
