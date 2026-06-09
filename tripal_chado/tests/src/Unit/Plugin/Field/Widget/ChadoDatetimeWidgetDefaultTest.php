@@ -126,4 +126,52 @@ class ChadoDatetimeWidgetDefaultTest extends UnitTestCase {
       'Whitespace-only input on an existing record should trigger a form error.');
   }
 
+  /**
+   * Build the form element correctly.
+   * 
+   * 
+   */
+  #[DataProvider('provideDataForTestFormElementBuild')]
+  public function testFormElementBuild(): void {
+    $item = $this->createMock(\Drupal\Core\Field\FieldItemInterface::class);
+      $item->method('getValue')->willReturn($item_values);
+
+      $items = $this->createMock(\Drupal\Core\Field\FieldItemListInterface::class);
+      $items->method('offsetGet')->with(0)->willReturn($item);
+  
+      $field_def = $this->createMock(\Drupal\Core\Field\FieldDefinitionInterface::class);
+      $field_def->method('getSetting')
+          ->with('storage_plugin_settings')
+          ->willReturn(['base_table' => '', 'base_column' => '']);
+
+      (new \ReflectionProperty(\Drupal\Core\Field\WidgetBase::class, 'fieldDefinition'))
+          ->setValue($this->widget, $field_def);
+  
+      $form = [];
+      $result = $this->widget->formElement($items, 0, [], $form, new FormState());
+
+      $this->assertArrayHasKey('record_id', $result);
+      $this->assertSame('value', $result['record_id']['#type']);
+      $this->assertSame($expected_record_id, $result['record_id']['#default_value']);
+  }
+
+  /**
+   * Provide data for testFormElementBuild() method.
+   * 
+   * @return array
+   *   An array containing the test scenario data.
+   */
+  public static function provideDataForTestFormElementBuild(): array {
+    return [
+      'new record with no stored value' => [
+        'item_values' => ['value' => '', 'record_id' => 0],
+        'expected_record_id' => 0,
+      ],
+      'existing record with stored value' => [
+        'item_values' => ['value' => '2025-01-15 10:30:00', 'record_id' => 42],
+        'expected_record_id' => 42,
+      ],
+    ];
+  }
+
 }
