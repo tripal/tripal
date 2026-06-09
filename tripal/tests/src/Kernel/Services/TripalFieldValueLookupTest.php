@@ -192,6 +192,7 @@ class TripalFieldValueLookupTest extends ChadoTestKernelBase {
       [
         'scenario' => 'no filters',
         'field_name' => 'organism_species',
+        'real_field' => 'organism_species_value',
         'filters' => [],
         'options' => [],
         'expected_values' => [
@@ -203,6 +204,7 @@ class TripalFieldValueLookupTest extends ChadoTestKernelBase {
       [
         'scenario' => 'with bundles filter',
         'field_name' => 'organism_species',
+        'real_field' => 'organism_species_value',
         'filters' => ['bundles' => ['organism']],
         'options' => [],
         'expected_values' => [
@@ -214,6 +216,7 @@ class TripalFieldValueLookupTest extends ChadoTestKernelBase {
       [
         'scenario' => 'with non-matching bundles filter',
         'field_name' => 'organism_species',
+        'real_field' => 'organism_species_value',
         'filters' => ['bundles' => ['analysis']],
         'options' => [],
         'expected_values' => [],
@@ -221,6 +224,7 @@ class TripalFieldValueLookupTest extends ChadoTestKernelBase {
       [
         'scenario' => 'with refresh cache option',
         'field_name' => 'organism_species',
+        'real_field' => 'organism_species_value',
         'filters' => [],
         'options' => ['refresh_cache' => TRUE],
         'expected_values' => [
@@ -239,6 +243,8 @@ class TripalFieldValueLookupTest extends ChadoTestKernelBase {
    *   A description of the test scenario.
    * @param string $field_name
    *   The name of the field to look up.
+   * @param string $real_field
+   *   The property name of the field value to return.
    * @param array $filters
    *   Optional filters restricting the values returned.
    *   Supported keys include:
@@ -262,7 +268,7 @@ class TripalFieldValueLookupTest extends ChadoTestKernelBase {
    * @dataProvider provideDataForGetUniqueFieldValues
    */
   #[DataProvider('provideDataForGetUniqueFieldValues')]
-  public function testGetUniqueFieldValues(string $scenario, string $field_name, array $filters, array $options, array $expected_values) {
+  public function testGetUniqueFieldValues(string $scenario, string $field_name, string $real_field, array $filters, array $options, array $expected_values) {
     // Get the service and call the method.
     $lookup = \Drupal::service('tripal.fieldvalue.lookup');
     $bundles = $filters['bundles'] ?? [];
@@ -273,7 +279,7 @@ class TripalFieldValueLookupTest extends ChadoTestKernelBase {
     // Check that the entity type ID is set as expected.
     $entity_type = $lookup->getEntityTypeId();
     $this->assertEquals('tripal_entity', $entity_type, 'The service has the expected entity type ID set.');
-    $values = $lookup->getUniqueFieldValues($field_name, ['bundles' => $bundles], []);
+    $values = $lookup->getUniqueFieldValues($field_name, $real_field, ['bundles' => $bundles], []);
 
     // Check that we got the expected values.
     foreach ($expected_values as $expected) {
@@ -289,7 +295,7 @@ class TripalFieldValueLookupTest extends ChadoTestKernelBase {
     $lookup->setEntityTypeId('tripal_entity');
 
     try {
-      $lookup->getUniqueFieldValues('invalid_field_name', [], ['validate_field' => TRUE]);
+      $lookup->getUniqueFieldValues('invalid_field_name', 'invalid_field_name_value', [], ['validate_field' => TRUE]);
     }
     catch (\InvalidArgumentException $e) {
       $this->assertStringContainsString("Invalid field name: invalid_field_name", $e->getMessage(), 'The expected exception message was not found.');

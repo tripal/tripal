@@ -70,6 +70,8 @@ class TripalFieldValueLookup {
    *
    * @param string $field_name
    *   The machine name of the field you are interested in.
+   * @param string $real_field
+   *   The property name of the field value to return.
    * @param array $filters
    *   Optional filters restricting the values returned.
    *   Supported keys include:
@@ -95,6 +97,7 @@ class TripalFieldValueLookup {
    */
   public function getUniqueFieldValues(
     string $field_name,
+    string $real_field,
     array $filters = [],
     array $options = [],
   ): array {
@@ -134,23 +137,25 @@ class TripalFieldValueLookup {
     $definition = $this->entityTypeManager->getDefinition($this->entity_type_id);
     $bundle_key = $definition->getKey('bundle');
 
+    $property = str_replace($field_name . '_', '', $real_field);
+
     $query = $this->entityTypeManager
       ->getStorage($this->entity_type_id)
       ->getAggregateQuery();
 
     $query->accessCheck(FALSE);
-    $query->groupBy("$field_name.value");
+    $query->groupBy("$field_name.$property");
 
     if (!empty($bundles) && $bundle_key) {
       $query->condition($bundle_key, $bundles, 'IN');
     }
 
     if ($filters['remove_null'] ?? TRUE) {
-      $query->condition("$field_name.value", NULL, 'IS NOT NULL');
+      $query->condition("$field_name.$property", NULL, 'IS NOT NULL');
     }
 
     if ($filters['remove_empty'] ?? TRUE) {
-      $query->condition("$field_name.value", '', '<>');
+      $query->condition("$field_name.$property", '', '<>');
     }
 
     $results = $query->execute();

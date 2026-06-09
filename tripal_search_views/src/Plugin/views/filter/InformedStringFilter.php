@@ -45,13 +45,13 @@ class InformedStringFilter extends StringFilter {
     $field_name = $this->definition['field_name'];
 
     // Get the field value property from the definition.
-    $field_val = $this->realField;
+    $real_field = $this->realField;
 
     // Get the unique values for this field and build options for the select.
-    $results = \Drupal::service('tripal.fieldvalue.lookup')->getUniqueFieldValues($field_name, [], []);
+    $results = \Drupal::service('tripal.fieldvalue.lookup')->getUniqueFieldValues($field_name, $real_field, [], []);
     $options = ['' => $this->t('- Any -')];
     foreach ($results as $row) {
-      $value = $row[$field_val];
+      $value = $row[$real_field];
       $options[$value] = $value;
     }
 
