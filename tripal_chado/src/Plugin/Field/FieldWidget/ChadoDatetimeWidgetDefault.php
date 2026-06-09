@@ -61,7 +61,7 @@ class ChadoDatetimeWidgetDefault extends TripalDatetimeTypeWidget {
     }
 
     // Resolve the sibling record_id from the same delta in form state.
-    $parents = $element['#parents'];   // e.g. ['field_foo', 0, 'value']
+    $parents = $element['#parents'];    // e.g. ['field_foo', 0, 'value']
     array_pop($parents);               // → ['field_foo', 0]
     $parents[] = 'record_id';         // → ['field_foo', 0, 'record_id']
     $record_id = (int) $form_state->getValue($parents, 0);
