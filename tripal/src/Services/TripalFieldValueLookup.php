@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal\Services;
 
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
@@ -25,6 +26,13 @@ class TripalFieldValueLookup {
   protected EntityFieldManagerInterface $entityFieldManager;
 
   /**
+   * The Drupal cache backend interface.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected CacheBackendInterface $cacheBackend;
+
+  /**
    * The entity type ID.
    */
   protected string $entity_type_id = 'tripal_entity';
@@ -36,13 +44,17 @@ class TripalFieldValueLookup {
    *   The Drupal entity type manager service.
    * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
    *   The Drupal entity field manager service.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
+   *   Cache backend instance to use.
    */
   public function __construct(
     EntityTypeManagerInterface $entityTypeManager,
     EntityFieldManagerInterface $entityFieldManager,
+    CacheBackendInterface $cache_backend,
   ) {
     $this->entityTypeManager = $entityTypeManager;
     $this->entityFieldManager = $entityFieldManager;
+    $this->cacheBackend = $cache_backend;
   }
 
   /**
@@ -70,8 +82,9 @@ class TripalFieldValueLookup {
    *
    * @param string $field_name
    *   The machine name of the field you are interested in.
-   * @param string $real_field
-   *   The property name of the field value to return.
+   * @param string $property
+   *   The field property for which to retrieve unique values (e.g. value,
+   *   target_id, etc.).
    * @param array $filters
    *   Optional filters restricting the values returned.
    *   Supported keys include:
@@ -97,10 +110,14 @@ class TripalFieldValueLookup {
    */
   public function getUniqueFieldValues(
     string $field_name,
-    string $real_field,
+    string $property = 'value',
     array $filters = [],
     array $options = [],
   ): array {
+
+    if (empty($field_name)) {
+      return [];
+    }
 
     $validate = $options['validate_field'] ?? TRUE;
     $refresh = $options['refresh_cache'] ?? FALSE;
@@ -136,8 +153,6 @@ class TripalFieldValueLookup {
     // Build query.
     $definition = $this->entityTypeManager->getDefinition($this->entity_type_id);
     $bundle_key = $definition->getKey('bundle');
-
-    $property = str_replace($field_name . '_', '', $real_field);
 
     $query = $this->entityTypeManager
       ->getStorage($this->entity_type_id)
@@ -206,8 +221,7 @@ class TripalFieldValueLookup {
    *   The cached data or NULL if not found.
    */
   protected function retrieveFromCache(string $cache_id): mixed {
-    $cache = \Drupal::cache();
-    $item = $cache->get($cache_id);
+    $item = $this->cacheBackend->get($cache_id);
     return $item ? $item->data : NULL;
   }
 
@@ -220,7 +234,7 @@ class TripalFieldValueLookup {
    *   The data to store in cache.
    */
   protected function setCache(string $cache_id, mixed $data): void {
-    \Drupal::cache()->set($cache_id, $data);
+    $this->cacheBackend->set($cache_id, $data);
   }
 
   /**

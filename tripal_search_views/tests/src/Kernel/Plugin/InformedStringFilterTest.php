@@ -189,8 +189,9 @@ class InformedStringFilterTest extends ChadoTestKernelBase {
     // Check that the form has the expected select element and expected options.
     $this->assertArrayHasKey('organism_species_value', $form, 'The exposed form does not have the filter for organism_species_value.');
     $this->assertEquals('select', $form['organism_species_value']['#type'], 'The exposed filter is not a select element.');
+    $this->assertEquals('', $form['organism_species_value']['#empty_value'], 'The exposed filter does not have the expected empty value.');
+    $this->assertEquals('- Any -', $form['organism_species_value']['#empty_option'], 'The exposed filter does not have the expected empty option.');
     $expected_options = [
-      '' => '- Any -',
       'bogusii' => 'bogusii',
       'databasica' => 'databasica',
       'fictus' => 'fictus',

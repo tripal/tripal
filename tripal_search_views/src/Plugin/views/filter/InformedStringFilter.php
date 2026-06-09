@@ -47,9 +47,12 @@ class InformedStringFilter extends StringFilter {
     // Get the field value property from the definition.
     $real_field = $this->realField;
 
+    // The property obtained from the real field.
+    $property = str_replace($field_name . '_', '', $real_field);
+
     // Get the unique values for this field and build options for the select.
-    $results = \Drupal::service('tripal.fieldvalue.lookup')->getUniqueFieldValues($field_name, $real_field, [], []);
-    $options = ['' => $this->t('- Any -')];
+    $results = \Drupal::service('tripal.fieldvalue.lookup')->getUniqueFieldValues($field_name, $property, [], []);
+    $options = [];
     foreach ($results as $row) {
       $value = $row[$real_field];
       $options[$value] = $value;
@@ -59,6 +62,8 @@ class InformedStringFilter extends StringFilter {
     $form[$identifier] = [
       '#type' => 'select',
       '#title' => $this->options['expose']['label'],
+      '#empty_option' => $this->t('- Any -'),
+      '#empty_value' => '',
       '#options' => $options,
       '#default_value' => '',
     ];
