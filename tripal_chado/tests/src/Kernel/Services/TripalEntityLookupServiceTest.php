@@ -278,6 +278,29 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     $ids = $query->execute();
     $this->assertEquals(1, count($ids), "Expected exactly one match from array_design manufacturer query");
 
+    // Test getBundleFromCvTerm().
+    $bundle = $lookup_manager->getBundleFromCvTerm($this->project_termIdSpace, $this->project_Accession);
+    $this->assertEquals('project', $bundle, "Expected the bundle 'project' from ' . $this->project_termIdSpace . ' cvterm");
+
+    // Test getBundles().
+    $bundle_setup = [
+      'project' => ['project'],
+      'analysis' => ['analysis'],
+      'contact' => ['contact'],
+      'array_design' => [],
+    ];
+
+    foreach ($bundle_setup as $base_table => $expected_bundles) {
+      $this->assertEquals(
+        $expected_bundles,
+        $lookup_manager->getBundles($base_table),
+        'Failed to return the expected bundles for base table ' . $base_table,
+      );
+    }
+
+    // Test getEntityIdFromRecordId().
+    $entity_ids = $lookup_manager->getEntityIdFromRecordId(1, 'project', 'tripal_entity');
+    $this->assertEquals([1 => '1'], $entity_ids, 'Expected the record id array to contain the id #1');
   }
 
 }
