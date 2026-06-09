@@ -783,7 +783,9 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [
         'is_current' => FALSE,
       ],
-      [],
+      [
+        'lookup_columns' => FALSE,
+      ],
     ];
 
     // #6: Associate with the dbxref table, use default value for 'is_current'.
@@ -970,8 +972,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
 
     // Lookup the associated record in its linking table.
     $linking_table_query = $this->chado_connection->select('1:' . $linking_table, 'lt')
-      ->fields('lt', ['stock_id'])
-      ->fields('lt', [$base_table . '_id'])
+      ->fields('lt')
       ->execute();
     $results = $linking_table_query->fetchAll();
     $this->assertIsArray($results, "We should have been able to select from the \"$linking_table\" table");
@@ -988,7 +989,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     foreach ($linking_table_values as $field => $expected_value) {
       $this->assertEquals(
         $expected_value,
-        $results->$field,
+        $results[0]->{$field},
         "The '$linking_table' field '$field' we retrieved did not match the expected input",
       );
     }
