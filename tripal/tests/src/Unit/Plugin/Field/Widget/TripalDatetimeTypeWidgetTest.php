@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\tripal\Unit\Plugin\Field\Widget;
 
+use Drupal\Core\Field\FieldItemInterface;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\tripal\Plugin\Field\FieldWidget\TripalDatetimeTypeWidget;
@@ -38,6 +40,31 @@ class TripalDatetimeTypeWidgetTest extends UnitTestCase {
     // as FormatterBase), so seed it to avoid NULL errors in getSetting().
     $this->widget->setSettings([]);
     $this->widget->setStringTranslation($this->getStringTranslationStub());
+  }
+
+  // ---------------------------------------------------------------------------
+  // formElement()
+  // ---------------------------------------------------------------------------
+
+  /**
+   * formElement() returns the expected textfield structure with the validator.
+   */
+  public function testFormElementStructure(): void {
+    $item = $this->createMock(FieldItemInterface::class);
+    $items = $this->createMock(FieldItemListInterface::class);
+    $items->method('offsetGet')->with(0)->willReturn($item);
+
+    $form = [];
+    $result = $this->widget->formElement($items, 0, [], $form, $this->createMock(FormStateInterface::class));
+
+    $this->assertArrayHasKey('value', $result);
+    $this->assertSame('textfield', $result['value']['#type']);
+    $this->assertSame('YYYY-MM-DD HH:MM:SS', $result['value']['#placeholder']);
+    $this->assertContains('js-text-full', $result['value']['#attributes']['class']);
+    $this->assertContains('text-full', $result['value']['#attributes']['class']);
+    $this->assertNotEmpty((string) $result['value']['#description']);
+    $validator_methods = array_column($result['value']['#element_validate'], 1);
+    $this->assertContains('validateDatetimeValue', $validator_methods);
   }
 
   // ---------------------------------------------------------------------------
