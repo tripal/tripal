@@ -137,10 +137,10 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     // TEST: Update our stock's type using a ChadoCvtermBuddy record. Ensure
     // that our stock.dbxref_id value is not changed by this update.
     $simple_cvterm_values = [
-      'cvterm.name' => 'generated germplasm',
-      'cv.name' => 'germplasm_ontology',
-      'db.name' => 'CO_010',
-      'dbxref.accession' => '0000255',
+      'cvterm.name' => 'cultivar',
+      'cv.name' => 'efo',
+      'db.name' => 'EFO',
+      'dbxref.accession' => '0005136',
     ];
     $cvterm_buddy_record = $type->createInstance('chado_cvterm_buddy', [])->getCvterm($simple_cvterm_values);
     $this->assertEquals(1, count($cvterm_buddy_record), 'Did not retrieve exactly one cvterm buddy record for the cvterm values we provided to update the stock type.');
