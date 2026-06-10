@@ -6,6 +6,7 @@ use Drupal\Core\Form\FormState;
 use Drupal\Tests\UnitTestCase;
 use Drupal\tripal_chado\Plugin\Field\FieldWidget\ChadoDatetimeWidgetDefault;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -132,7 +133,7 @@ class ChadoDatetimeWidgetDefaultTest extends UnitTestCase {
    * 
    */
   #[DataProvider('provideDataForTestFormElementBuild')]
-  public function testFormElementBuild(): void {
+  public function testFormElementBuild(array $item_values, int $expected_record_id): void {
     $item = $this->createMock(\Drupal\Core\Field\FieldItemInterface::class);
       $item->method('getValue')->willReturn($item_values);
 
