@@ -280,7 +280,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
 
     // Test getBundleFromCvTerm().
     $bundle = $lookup_manager->getBundleFromCvTerm($this->project_termIdSpace, $this->project_Accession);
-    $this->assertEquals('project', $bundle, "Expected the bundle 'project' from ' . $this->project_termIdSpace . ' cvterm");
+    $this->assertEquals('project', $bundle, "Expected the bundle 'project' from " . $this->project_termIdSpace . " cvterm");
 
     // Test getBundles().
     $bundle_setup = [
