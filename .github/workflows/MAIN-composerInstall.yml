@@ -28,33 +28,23 @@ jobs:
           - '14'
           - '18'
         drupal-version:
-          - '10.5.x'
           - '10.6.x'
-          - '11.2.x'
           - '11.3.x'
+          - '11.4.x'
         exclude:
-          # Only Drupal 11.x supports PHP 8.4
-          - php-version: '8.4'
-            drupal-version: '10.5.x'
-          - php-version: '8.4'
-            drupal-version: '10.6.x'
           # Only Drupal 11.3+ supports PHP 8.5
           - php-version: '8.5'
-            drupal-version: '10.5.x'
-          - php-version: '8.5'
             drupal-version: '10.6.x'
-          - php-version: '8.5'
-            drupal-version: '11.2.x'
           # Drupal 11.x requires PHP 8.3+
           - php-version: '8.2'
-            drupal-version: '11.2.x'
-          - php-version: '8.2'
             drupal-version: '11.3.x'
+          - php-version: '8.2'
+            drupal-version: '11.4.x'
           # Drupal 11.x requires PostgreSQL 16+
           - pgsql-version: '14'
-            drupal-version: '11.2.x'
-          - pgsql-version: '14'
             drupal-version: '11.3.x'
+          - pgsql-version: '14'
+            drupal-version: '11.4.x'
     steps:
       # Spin up docker container with Drupal pre-requisites installed but not Tripal yet.
       - name: 'Setup Drupal docker container'

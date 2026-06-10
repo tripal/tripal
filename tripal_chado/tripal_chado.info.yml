@@ -1,7 +1,7 @@
 name: 'Tripal Chado'
 type: 'module'
 description: 'Chado integration for Tripal.'
-core_version_requirement: '^10.5 || ^11.2'
+core_version_requirement: '^10.6 || ^11.3'
 php: 8.2
 package: 'Tripal'
 version: '4.0.alpha5'
