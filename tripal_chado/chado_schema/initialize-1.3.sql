@@ -22,7 +22,8 @@ INSERT INTO cvterm (name, cv_id, dbxref_id) VALUES (
   (SELECT dbxref_id FROM dbxref WHERE accession = 'local:null')
 ) ON CONFLICT DO NOTHING;
 
-INSERT INTO pub (miniref, uniquename, type_id) VALUES (
+INSERT INTO pub (title, miniref, uniquename, type_id) VALUES (
+  'No publication',
   'null',
   'null',
   (SELECT cvterm_id FROM cvterm WHERE name = 'null')

@@ -28,6 +28,21 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
   protected string $mock_error = '';
 
   /**
+   * Messages encountered when NCBI is down or broken.
+   *
+   * @var array
+   *   A list of error messages encountered when the external
+   *   web site is down or not functioning normally are tagged
+   *   with 'skip', messages normally encountered are tagged
+   *   with 'normal'.
+   */
+  protected array $message_actions = [
+    '/Error contacting NCBI/' => 'skip',
+    '/Invalid XML returned/' => 'skip',
+    '/500 Internal Server Error/' => 'skip',
+  ];
+
+  /**
    *
    */
   protected function setUp() :void {
@@ -130,11 +145,27 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
    */
   protected function checkForNetworkError() {
     if ($this->mock_error) {
-      if (preg_match('/Error contacting NCBI/', $this->mock_error) || preg_match('/Invalid XML returned/', $this->mock_error)) {
-        $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
+      // If we get a specific known message due to the NCBI external
+      // database being down, then mark this test as skipped.
+      $matched_any = FALSE;
+      // For each expected external message...
+      foreach ($this->message_actions as $pattern => $action) {
+        // If it's in our list with an action of skip
+        // then we indicate the test should be skipped.
+        if (preg_match($pattern, $this->mock_error) && $action == 'skip') {
+          $matched_any = TRUE;
+        }
+      }
+      if ($matched_any) {
+        $this->markTestSkipped("We received only known external error messages and chose to ignore them. Specifically:\n"
+          . $this->mock_error);
+      }
+      else {
+        // If it doesn't match any of our pattern then it is a new
+        // unanticipated error and we want to immediately fail.
+        $this->fail('Unanticipated error: ' . $this->mock_error);
       }
     }
-    $this->assertEmpty($this->mock_error, 'Unexpected error: ' . $this->mock_error);
   }
 
 }
