@@ -110,6 +110,7 @@ class OboImporterTest extends ChadoTestKernelBase {
     '/Service Temporarily Unavailable/' => 'skip',
     '/Invalid hostname in URL/' => 'skip',
     '/Unable to get response from/' => 'skip',
+    '/404 Not Found/' => 'skip',
     '/502 Bad Gateway/' => 'skip',
     '/504 Gateway Time-out/' => 'skip',
   ];
