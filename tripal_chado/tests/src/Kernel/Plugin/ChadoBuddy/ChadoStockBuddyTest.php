@@ -727,7 +727,8 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [],
     ];
 
-    // #3: Associate with the cvterm table and provide values.
+    // #3: Associate with the cvterm table and provide values for 'is_not' (true
+    // encoded as 1) and 'rank' in the linking table.
     $scenarios[] = [
       'cvterm',
       [
@@ -743,7 +744,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       'stock_cvterm',
       [
         'pub_id' => 1,
-        'is_not' => TRUE,
+        'is_not' => 1,
         'rank' => 1,
       ],
       [],
@@ -770,7 +771,8 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [],
     ];
 
-    // #5: Associate with the dbxref table, set a value for 'is_current'.
+    // #5: Associate with the dbxref table, set a value of false (encoded as 0)
+    // for 'is_current'.
     $scenarios[] = [
       'dbxref',
       [
@@ -781,11 +783,9 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       [],
       'stock_dbxref',
       [
-        'is_current' => FALSE,
+        'is_current' => 0,
       ],
-      [
-        'lookup_columns' => FALSE,
-      ],
+      [],
     ];
 
     // #6: Associate with the dbxref table, use default value for 'is_current'.
@@ -986,12 +986,31 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "We did not get the correct base table primary key from \"$linking_table\" that should have been set by associateStock()");
 
     // Verify that all columns in our linking table have the expected values.
-    foreach ($linking_table_values as $field => $expected_value) {
-      $this->assertEquals(
-        $expected_value,
-        $results[0]->{$field},
-        "The '$linking_table' field '$field' we retrieved did not match the expected input",
-      );
+    $defaults = [
+      'is_not' => 0,
+      'rank' => 0,
+      'type_id' => 1,
+      'is_current' => 1,
+    ];
+    foreach ($results[0] as $field => $value) {
+      // If the test scenario specified expected values for the linking table,
+      // then verify those.
+      if (array_key_exists($field, $linking_table_values)) {
+        $this->assertEquals(
+          $linking_table_values[$field],
+          $value,
+          "The '$linking_table' field '$field' we retrieved did not match the expected input",
+        );
+      }
+      // Otherwise, if the field is not the stock_id, base table foreign key, or
+      // linking table primary key, then it should be set to its default value.
+      elseif ($field != 'stock_id' && $field != $base_table . '_id' && $field != $linking_table . '_id') {
+        $this->assertEquals(
+          $defaults[$field],
+          $value,
+          "The '$linking_table' field '$field' we retrieved did not match the default value of '" . $defaults[$field] . "'",
+        );
+      }
     }
 
     // Repeat the same association, it should not create a new one.

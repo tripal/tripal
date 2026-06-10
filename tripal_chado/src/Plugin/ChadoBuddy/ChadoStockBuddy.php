@@ -819,10 +819,11 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   the stock. These values will be inserted into the linking table along
    *   with the foreign keys to the stock and the base table. The keys should
    *   be the name of the column in this specific linking table and the value
-   *   should be the value to insert for that column. This is optional because
-   *   most of these columns have default values defined in chado that can
-   *   be looked up. See the table below for a list of columns used by various
-   *   linking tables.
+   *   should be the value to insert for that column. If values are boolean,
+   *   they should be encoded as 1 (TRUE) or 0 (FALSE).
+   *   This is optional because most of these columns have default values
+   *   defined in chado that can be looked up. See the table below for a list of
+   *   columns used by various linking tables.
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
    *   - pkey (string): The name of the primary key column in the base table.
@@ -900,12 +901,12 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
         // Set the default values for any of the optional columns that apply to
         // any of the stock linking tables.
         // Defaults: 'is_not' FALSE (encoded as zero), rank zero, null cvterm,
-        // 'is_current' TRUE.
+        // 'is_current' TRUE (encoded as one).
         $defaults = [
           'is_not' => 0,
           'rank' => 0,
           'cvterm_type_id' => 1,
-          'is_current' => TRUE,
+          'is_current' => 1,
         ];
         // Add in any of the other columns for the linking table.
         $fields = $this->addLinkingColumns($linking_table, $fields, $defaults, $options);
