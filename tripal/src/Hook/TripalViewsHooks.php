@@ -58,6 +58,10 @@ class TripalViewsHooks {
       return;
     }
 
+    if ($view->display_handler->getPlugin('access')->getPluginId() !== 'tripal_content_views_access') {
+      return;
+    }
+
     $permissions = TripalEntityAccessControlHandler::getTripalContentPermissionsList('view');
 
     // Determine which entity types the user has permission to view.
@@ -70,7 +74,12 @@ class TripalViewsHooks {
         $allowed_types[] = $entity_id;
       }
     }
-
+    if (empty($allowed_types)) {
+      // If the user has no permissions to view any content types, then
+      // add a where clause that will return no results.
+      $query->addWhere('AND', "tripal_entity.type", 'none', '=');
+      return;
+    }
     $query->addWhere('AND', "tripal_entity.type", $allowed_types, 'IN');
   }
 
