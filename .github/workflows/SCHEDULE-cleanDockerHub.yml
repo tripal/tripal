@@ -6,6 +6,7 @@ on:
   # schedule:
     # Run at 5am every night, 1 hour after images are built.
     # - cron: '0 5 * * *'
+  pull_request:
 
 permissions: 'read-all'
 
