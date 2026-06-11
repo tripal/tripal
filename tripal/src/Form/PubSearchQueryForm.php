@@ -114,7 +114,9 @@ class PubSearchQueryForm extends FormBase {
 
     // Save the previous user input
     $_SESSION['previous_user_input'] = [];
-    $_SESSION['previous_user_input'][$this->pub_import_id] = $this->form_state_previous_user_input;
+    if ($this->pub_import_id) {
+      $_SESSION['previous_user_input'][$this->pub_import_id] = $this->form_state_previous_user_input;
+    }
 
     return $form;
   }
