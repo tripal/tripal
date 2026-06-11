@@ -3,7 +3,7 @@ name: 'Remove stale images from DockerHub'
 on:
   # To allow manual run.
   workflow_dispatch:
-  schedule:
+  # schedule:
     # Run at 5am every night, 1 hour after images are built.
     # - cron: '0 5 * * *'
 
