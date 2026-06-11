@@ -1,0 +1,30 @@
+name: 'Remove stale images from DockerHub'
+
+on:
+  # To allow manual run.
+  workflow_dispatch:
+  schedule:
+    # Run at 5am every night, 1 hour after images are built.
+    # - cron: '0 5 * * *'
+
+permissions: 'read-all'
+
+jobs:
+  clean_dockerhub:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: 'actions/checkout@v4'
+
+      - name: 'Docker Hub Cleanup'
+        uses: 'lostlink/docker-cleanup@v1'
+        with:
+          username: '${{ secrets.DOCKERHUB_USERNAME }}'
+          password: '${{ secrets.DOCKERHUB_PASSWORD }}'
+          repositories: 'tripaldocker-drupal,tripaldocker'
+          dry-run: true
+          pr-retention-days: 60
+          sha-retention-days: 60
+          verbose: true
+          # protected-tags: 'abc,latest'
+          # custom-patterns: '{"^feature-.*": 7, "^hotfix-.*": 3}'  # Custom patterns with retention days
+          # registry: 'docker.io'
