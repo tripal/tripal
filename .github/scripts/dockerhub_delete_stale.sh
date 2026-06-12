@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-source env.sh  #@@@
 
 # Docker Hub Untagged Image Cleanup Script.
 # Finds and deletes untagged Docker images from Docker Hub repositories.
