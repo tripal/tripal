@@ -247,10 +247,7 @@ find_untagged_manifests() {
         fi
     done <<<"$all_manifests"
 
-echo "CP1"
     echo "$untagged_manifests" | tr ' ' '\n' | grep -v '^$'
-echo "CP2"; exit
-
 }
 
 # Function to show usage
