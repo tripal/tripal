@@ -4,28 +4,31 @@ on:
   # To allow manual run.
   workflow_dispatch:
   # schedule:
-    # Run at 5am every night, 1 hour after images are built.
+    # Run at 5am every morning, 1 hour after images are built.
     # - cron: '0 5 * * *'
   pull_request:
 
 permissions: 'read-all'
 
 jobs:
-  clean_dockerhub:
+  execute-script:
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: 'actions/checkout@v4'
+      - name: 'Checkout Repository'
+        uses: 'actions/checkout@v4'
 
-      - name: 'Docker Hub Cleanup'
-        uses: 'lostlink/docker-cleanup@v1.0.1'
-        with:
-          username: '${{ secrets.DOCKERHUB_USERNAME }}'
-          password: '${{ secrets.DOCKERHUB_PASSWORD }}'
-          repositories: 'tripaldocker-drupal,tripaldocker'
-          dry-run: true
-          pr-retention-days: 60
-          sha-retention-days: 60
-          verbose: true
-          # protected-tags: 'abc,latest'
-          # custom-patterns: '{"^feature-.*": 7, "^hotfix-.*": 3}'  # Custom patterns with retention days
-          # registry: 'docker.io'
+      - name: 'Docker Hub Cleanup Script Drupal Dockers'
+        env:
+          USERNAME: '${{ secrets.DOCKERHUB_USERNAME }}'
+          PASSWORD: '${{ secrets.DOCKERHUB_PASSWORD }}'
+          DOCKER_HUB_COOKIE: '${{ secrets.DOCKERHUB_COOKIE }}'
+          REPO: 'tripalproject/tripaldocker-drupal'
+        run: bash ./dockerhub_delete_stale.sh list-untagged
+
+      - name: 'Docker Hub Cleanup Script Tripal Dockers'
+        env:
+          USERNAME: '${{ secrets.DOCKERHUB_USERNAME }}'
+          PASSWORD: '${{ secrets.DOCKERHUB_PASSWORD }}'
+          DOCKER_HUB_COOKIE: '${{ secrets.DOCKERHUB_COOKIE }}'
+          REPO: 'tripalproject/tripaldocker'
+        run: bash ./dockerhub_delete_stale.sh list-untagged
