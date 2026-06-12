@@ -247,6 +247,7 @@ find_untagged_manifests() {
         fi
     done <<<"$all_manifests"
 
+    # This command is sometimes triggering an error, so don't fail.
     set +e
     echo "$untagged_manifests" | tr ' ' '\n' | grep -v '^$'
     set -e
