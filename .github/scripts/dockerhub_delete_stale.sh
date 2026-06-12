@@ -247,7 +247,9 @@ find_untagged_manifests() {
         fi
     done <<<"$all_manifests"
 
+    set +e
     echo "$untagged_manifests" | tr ' ' '\n' | grep -v '^$'
+    set -e
 }
 
 # Function to show usage
