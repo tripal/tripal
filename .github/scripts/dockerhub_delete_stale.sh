@@ -247,7 +247,8 @@ find_untagged_manifests() {
         fi
     done <<<"$all_manifests"
 
-    # This command is sometimes triggering an error, so don't fail.
+    # With pipefail set this can trigger an error if there are
+    # no untagged manifests, so temporarily turn off error checking.
     set +e
     echo "$untagged_manifests" | tr ' ' '\n' | grep -v '^$'
     set -e
