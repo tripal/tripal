@@ -9,10 +9,9 @@ set -e
 # USERNAME: '${{ secrets.DOCKERHUB_USERNAME }}'
 # PASSWORD: '${{ secrets.DOCKERHUB_PASSWORD }}'
 # DOCKER_HUB_COOKIE: '${{ secrets.DOCKERHUB_COOKIE }}'
+# and REPO is set in the YAML.
 
 # Configuration
-REPO='tripalproject/tripaldocker-drupal tripalproject/tripaldocker'
-#REPO='tripalproject/tripaldocker'
 MAX_UNTAGGED_LIMIT=250
 MAX_PAGINATION_REQUESTS=30
 
@@ -248,7 +247,10 @@ find_untagged_manifests() {
         fi
     done <<<"$all_manifests"
 
+echo "CP1"
     echo "$untagged_manifests" | tr ' ' '\n' | grep -v '^$'
+echo "CP2"; exit
+
 }
 
 # Function to show usage
