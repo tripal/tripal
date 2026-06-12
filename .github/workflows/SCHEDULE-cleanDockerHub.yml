@@ -15,7 +15,7 @@ jobs:
     runs-on: 'ubuntu-latest'
     steps:
       - name: 'Checkout Repository'
-        uses: 'actions/checkout@v4'
+        uses: 'actions/checkout@v6'
 
       - name: 'Docker Hub Cleanup Script Drupal Dockers'
         env:
@@ -23,7 +23,7 @@ jobs:
           PASSWORD: '${{ secrets.DOCKERHUB_PASSWORD }}'
           DOCKER_HUB_COOKIE: '${{ secrets.DOCKERHUB_COOKIE }}'
           REPO: 'tripalproject/tripaldocker-drupal'
-        run: bash ./dockerhub_delete_stale.sh list-untagged
+        run: bash .github/scripts/dockerhub_delete_stale.sh list-untagged
 
       - name: 'Docker Hub Cleanup Script Tripal Dockers'
         env:
@@ -31,4 +31,4 @@ jobs:
           PASSWORD: '${{ secrets.DOCKERHUB_PASSWORD }}'
           DOCKER_HUB_COOKIE: '${{ secrets.DOCKERHUB_COOKIE }}'
           REPO: 'tripalproject/tripaldocker'
-        run: bash ./dockerhub_delete_stale.sh list-untagged
+        run: bash .github/scripts/dockerhub_delete_stale.sh list-untagged
