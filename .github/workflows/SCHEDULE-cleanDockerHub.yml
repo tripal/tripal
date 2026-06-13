@@ -17,6 +17,9 @@ jobs:
     steps:
       - uses: 'actions/checkout@v6'
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: 'Docker Hub Cleanup'
         uses: 'lostlink/docker-cleanup@v1.0.1'
         with:
