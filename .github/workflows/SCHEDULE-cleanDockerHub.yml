@@ -28,4 +28,4 @@ jobs:
           sha-retention-days: 90
           verbose: true
           # The action uses the first regex pattern that matches.
-          custom-patterns: '{".*latest.*": 90, ".*drupal.*": 90, ".*BUILT.*": 0}'
+          custom-patterns: '{invalid::json:::forsure--- ".*latest.*": 90, ".*drupal.*": 90, ".*BUILT.*": 0}'
