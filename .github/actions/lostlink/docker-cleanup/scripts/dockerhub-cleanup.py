@@ -488,6 +488,7 @@ class DockerHubCleaner:
 
 
 def main():
+    print(f"CP0 All arguments: {sys.argv}", file=sys.stderr)
     parser = argparse.ArgumentParser(description="Clean up old Docker Hub tags")
     parser.add_argument("--dry-run", action="store_true", help="Preview what would be deleted")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
@@ -499,6 +500,7 @@ def main():
     parser.add_argument("--custom-patterns", type=str, help="JSON string of custom patterns and retention days")
     
     args = parser.parse_args()
+    print(f"CP1 args: {args}", file=sys.stderr)
     
     # Get credentials from environment
     username = os.environ.get("DOCKERHUB_USERNAME")
@@ -517,8 +519,7 @@ def main():
     # Parse custom patterns if provided
     custom_patterns = {}
     # @@@
-    print(f"CP1 custom_patterns: {custom_patterns}", file=sys.stderr)
-    print(f"CP2 args: {args}", file=sys.stderr)
+    print(f"CP2 custom_patterns: {custom_patterns}", file=sys.stderr)
     if args.custom_patterns:
         try:
             custom_patterns = json.loads(args.custom_patterns)
