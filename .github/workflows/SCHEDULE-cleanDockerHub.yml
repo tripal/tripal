@@ -23,9 +23,8 @@ jobs:
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
           password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
           repositories: 'tripaldocker-drupal,tripaldocker'
-          dry-run: true
+          custom-patterns: '{invalid::json:::forsure--- ".*latest.*": 90, ".*drupal.*": 90, ".*BUILT.*": 0}'
           pr-retention-days: 90
           sha-retention-days: 90
           verbose: true
-          # The action uses the first regex pattern that matches.
-          custom-patterns: '{invalid::json:::forsure--- ".*latest.*": 90, ".*drupal.*": 90, ".*BUILT.*": 0}'
+          dry-run: true
