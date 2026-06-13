@@ -15,12 +15,12 @@ jobs:
   clean_dockerhub:
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: 'actions/checkout@v4'
+      - uses: 'actions/checkout@v6'
 
       - name: 'Docker Hub Cleanup'
         uses: 'lostlink/docker-cleanup@v1.0.1'
         with:
-          custom-patterns: '{:::invalidjson "latest": 90, "drupal": 90, "BUILT": 1}'
+          xcustom-patterns: '{:::invalidjson "latest": 90, "drupal": 90, "BUILT": 1}'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
           password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
           repositories: 'tripaldocker-drupal,tripaldocker'
