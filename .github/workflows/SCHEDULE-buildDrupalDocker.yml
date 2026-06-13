@@ -31,11 +31,12 @@ jobs:
           - '17'
           - '18'
         drupal-version:
-          - '10.5.x'
-          - '10.6.x'
-          - '11.2.x'
+# Temp for debugging, only run one version.
+#          - '10.5.x'
+#          - '10.6.x'
+#          - '11.2.x'
           - '11.3.x'
-          - '11.x-dev'
+#          - '11.x-dev'
         exclude:
           # Only Drupal 11.3+ supports PHP 8.5
           - php-version: '8.5'
@@ -68,16 +69,21 @@ jobs:
     steps:
       - uses: 'actions/checkout@v6'
         name: 'Check out code'
+      - name: 'Get date workflow was run'
+        id: date
+        run: echo "WORKFLOW_DATE=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
       ## Build images tagged drupal{VER}-php{VER}-pgsql{VER}
       - uses: 'mr-smithers-excellent/docker-build-push@v7'
         name: 'Build & push Full matrix of Docker images'
         with:
           image: 'tripalproject/tripaldocker-drupal'
-          tags: 'drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}'
+          tags: |
+            'drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}'
+            'drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}-BUILT${{ env.WORKFLOW_DATE }}'
           dockerfile: 'tripaldocker/drupal.Dockerfile'
           registry: 'docker.io'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
-          password: '${{ secrets.DOCKERHUB_PASSWORD }}'
+          password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
           buildArgs: 'drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}'
           labels: 'drupal.version.label=${{ matrix.drupal-version }},php.version.label=${{ matrix.php-version }}, postgresql.version.label=${{ matrix.pgsql-version }}'
       ## Build Images tagged drupal{VER} focused on php 8.5 + postgresql 18
@@ -86,11 +92,13 @@ jobs:
         if: ${{ matrix.php-version == '8.5' && matrix.pgsql-version == '18' }}
         with:
           image: 'tripalproject/tripaldocker-drupal'
-          tags: 'drupal${{ matrix.drupal-version }}'
+          tags: |
+            'drupal${{ matrix.drupal-version }}'
+            'drupal${{ matrix.drupal-version }}-BUILT${{ env.WORKFLOW_DATE }}'
           dockerfile: 'tripaldocker/drupal.Dockerfile'
           registry: 'docker.io'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
-          password: '${{ secrets.DOCKERHUB_PASSWORD }}'
+          password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
           buildArgs: 'drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}'
           labels: 'drupal.version.label=${{ matrix.drupal-version }},php.version.label=${{ matrix.php-version }}, postgresql.version.label=${{ matrix.pgsql-version }}'
       ## Build the image tagged as latest which is the highest version combo that we feel is well supported.
@@ -99,10 +107,12 @@ jobs:
         if: ${{ matrix.drupal-version == '11.3.x' && matrix.php-version == '8.5' && matrix.pgsql-version == '18' }}
         with:
           image: 'tripalproject/tripaldocker-drupal'
-          tags: 'latest'
+          tags: |
+            'latest'
+            'latest-BUILT${{ env.WORKFLOW_DATE }}'
           dockerfile: 'tripaldocker/drupal.Dockerfile'
           registry: 'docker.io'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
-          password: '${{ secrets.DOCKERHUB_PASSWORD }}'
+          password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
           buildArgs: 'drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}'
           labels: 'drupal.version.label=${{ matrix.drupal-version }},php.version.label=${{ matrix.php-version }}, postgresql.version.label=${{ matrix.pgsql-version }}'

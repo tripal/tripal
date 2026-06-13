@@ -6,28 +6,26 @@ on:
   schedule:
     # Run at 5am every morning, 1 hour after images are built.
     - cron: '0 5 * * *'
+  # This next trigger is temporary for testing!
+  pull_request:
 
 permissions: 'read-all'
 
 jobs:
-  execute-script:
+  clean_dockerhub:
     runs-on: 'ubuntu-latest'
     steps:
-      - name: 'Checkout Repository'
-        uses: 'actions/checkout@v6'
+      - uses: 'actions/checkout@v4'
 
-      - name: 'Cleanup Docker Hub Stale Drupal Images'
-        env:
-          USERNAME: '${{ secrets.DOCKERHUB_USERNAME }}'
-          PASSWORD: '${{ secrets.DOCKERHUB_PASSWORD }}'
-          DOCKER_HUB_COOKIE: '${{ secrets.DOCKERHUB_COOKIE }}'
-          REPO: 'tripalproject/tripaldocker-drupal'
-        run: bash .github/scripts/dockerhub_delete_stale.sh delete-untagged
-
-      - name: 'Cleanup Docker Hub Stale Tripal Images'
-        env:
-          USERNAME: '${{ secrets.DOCKERHUB_USERNAME }}'
-          PASSWORD: '${{ secrets.DOCKERHUB_PASSWORD }}'
-          DOCKER_HUB_COOKIE: '${{ secrets.DOCKERHUB_COOKIE }}'
-          REPO: 'tripalproject/tripaldocker'
-        run: bash .github/scripts/dockerhub_delete_stale.sh delete-untagged
+      - name: 'Docker Hub Cleanup'
+        uses: 'lostlink/docker-cleanup@v1.0.1'
+        with:
+          username: '${{ secrets.DOCKERHUB_USERNAME }}'
+          password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_CLEANUP }}'
+          repositories: 'tripaldocker-drupal,tripaldocker'
+          dry-run: true
+          pr-retention-days: 90
+          sha-retention-days: 90
+          verbose: true
+          # The action uses the first regex pattern that matches.
+          custom-patterns: '{"latest": 90, "drupal": 90, "BUILT": 0}'
