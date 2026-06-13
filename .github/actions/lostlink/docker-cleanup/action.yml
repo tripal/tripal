@@ -124,6 +124,7 @@ runs:
           --repositories $REPO_LIST \
           --pr-retention "$PR_RETENTION" \
           --sha-retention "$SHA_RETENTION" \
+          --custom-patterns "$CUSTOM_PATTERNS" \
           $DRY_RUN_FLAG \
           $VERBOSE_FLAG \
           --output-json > cleanup-results.json
