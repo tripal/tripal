@@ -20,8 +20,8 @@ jobs:
       - name: 'Docker Hub Cleanup'
         uses: 'lostlink/docker-cleanup@v1.0.1'
         with:
-          username: '${{ secrets.DOCKERHUB_USERNAME }}'
-          password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_CLEANUP }}'
+          DOCKERHUB_USERNAME: '${{ secrets.DOCKERHUB_USERNAME }}'
+          DOCKERHUB_PASSWORD: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_CLEANUP }}'
           repositories: 'tripaldocker-drupal,tripaldocker'
           dry-run: true
           pr-retention-days: 90
