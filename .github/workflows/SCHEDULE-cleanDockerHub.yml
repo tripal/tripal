@@ -20,10 +20,10 @@ jobs:
       - name: 'Docker Hub Cleanup'
         uses: 'lostlink/docker-cleanup@v1.0.1'
         with:
+          custom-patterns: '{:::invalidjson "latest": 90, "drupal": 90, "BUILT": 1}'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
           password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
           repositories: 'tripaldocker-drupal,tripaldocker'
-          custom-patterns: '{invalid::json:::forsure--- ".*latest.*": 90, ".*drupal.*": 90, ".*BUILT.*": 0}'
           pr-retention-days: 90
           sha-retention-days: 90
           verbose: true
