@@ -522,7 +522,7 @@ def main():
     if args.custom_patterns:
         try:
             custom_patterns = json.loads(args.custom_patterns)
-    print(f"CP3 custom_patterns: {custom_patterns}", file=sys.stderr)
+            print(f"CP3 custom_patterns: {custom_patterns}", file=sys.stderr)
         except json.JSONDecodeError as e:
             print(f"❌ Error: Invalid JSON for custom patterns: {e}", file=sys.stderr)
             sys.exit(2)
