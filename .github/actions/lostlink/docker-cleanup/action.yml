@@ -1,0 +1,177 @@
+name: 'Docker Hub Cleanup'
+description: 'Clean up old Docker tags from Docker Hub repositories to manage storage and keep repositories organized'
+author: 'Nuno Souto <nsouto@lostlink.net>'
+
+branding:
+  icon: 'trash-2'
+  color: 'blue'
+
+inputs:
+  username:
+    description: 'Docker Hub username'
+    required: true
+  
+  password:
+    description: 'Docker Hub password or Personal Access Token'
+    required: true
+  
+  organization:
+    description: 'Docker Hub organization/namespace (defaults to username if not specified)'
+    required: false
+    default: ''
+  
+  repositories:
+    description: 'Comma-separated list of repository names to clean up'
+    required: true
+  
+  pr-retention-days:
+    description: 'Number of days to retain PR tags (pr-*)'
+    required: false
+    default: '30'
+  
+  sha-retention-days:
+    description: 'Number of days to retain branch SHA tags (main-*, develop-*, etc.)'
+    required: false
+    default: '14'
+  
+  dry-run:
+    description: 'If true, only show what would be deleted without actually deleting'
+    required: false
+    default: 'true'
+  
+  verbose:
+    description: 'Enable verbose output for debugging'
+    required: false
+    default: 'false'
+  
+  protected-tags:
+    description: 'Comma-separated list of additional tags to protect from deletion'
+    required: false
+    default: ''
+  
+  custom-patterns:
+    description: 'JSON string of custom tag patterns and their retention days'
+    required: false
+    default: '{}'
+
+outputs:
+  deleted-count:
+    description: 'Total number of tags deleted'
+    value: ${{ steps.cleanup.outputs.deleted-count }}
+  
+  identified-count:
+    description: 'Total number of tags identified for deletion'
+    value: ${{ steps.cleanup.outputs.identified-count }}
+  
+  protected-count:
+    description: 'Number of tags protected from deletion'
+    value: ${{ steps.cleanup.outputs.protected-count }}
+  
+  summary:
+    description: 'JSON summary of the cleanup operation'
+    value: ${{ steps.cleanup.outputs.summary }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+    
+    - name: Run Docker Hub cleanup
+      id: cleanup
+      shell: bash
+      env:
+        DOCKERHUB_USERNAME: ${{ inputs.username }}
+        DOCKERHUB_PASSWORD: ${{ inputs.password }}
+        DOCKER_NAMESPACE: ${{ inputs.organization }}
+        REPOSITORIES: ${{ inputs.repositories }}
+        PR_RETENTION: ${{ inputs.pr-retention-days }}
+        SHA_RETENTION: ${{ inputs.sha-retention-days }}
+        DRY_RUN: ${{ inputs.dry-run }}
+        VERBOSE: ${{ inputs.verbose }}
+        PROTECTED_TAGS: ${{ inputs.protected-tags }}
+        CUSTOM_PATTERNS: ${{ inputs.custom-patterns }}
+      run: |
+        # Determine the namespace (organization or username)
+        if [ -z "$DOCKER_NAMESPACE" ]; then
+          export DOCKER_NAMESPACE="$DOCKERHUB_USERNAME"
+        fi
+        
+        # Set flags based on inputs
+        DRY_RUN_FLAG=""
+        if [ "$DRY_RUN" = "true" ]; then
+          DRY_RUN_FLAG="--dry-run"
+        fi
+        
+        VERBOSE_FLAG=""
+        if [ "$VERBOSE" = "true" ]; then
+          VERBOSE_FLAG="--verbose"
+        fi
+        
+        # Convert comma-separated repositories to space-separated for the script
+        REPO_LIST=$(echo "$REPOSITORIES" | tr ',' ' ')
+        
+        # Run the cleanup script
+        python ${{ github.action_path }}/scripts/dockerhub-cleanup.py \
+          --repositories $REPO_LIST \
+          --pr-retention "$PR_RETENTION" \
+          --sha-retention "$SHA_RETENTION" \
+          $DRY_RUN_FLAG \
+          $VERBOSE_FLAG \
+          --output-json > cleanup-results.json
+        
+        # Parse results for outputs
+        if [ -f cleanup-results.json ]; then
+          DELETED_COUNT=$(jq -r '.deleted_count // 0' cleanup-results.json)
+          IDENTIFIED_COUNT=$(jq -r '.identified_count // 0' cleanup-results.json)
+          PROTECTED_COUNT=$(jq -r '.protected_count // 0' cleanup-results.json)
+          SUMMARY=$(jq -c '.' cleanup-results.json)
+          
+          echo "deleted-count=$DELETED_COUNT" >> $GITHUB_OUTPUT
+          echo "identified-count=$IDENTIFIED_COUNT" >> $GITHUB_OUTPUT
+          echo "protected-count=$PROTECTED_COUNT" >> $GITHUB_OUTPUT
+          echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Generate cleanup summary
+      if: always()
+      shell: bash
+      run: |
+        echo "## Docker Hub Cleanup Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ inputs.dry-run }}" = "true" ]; then
+          echo "**Mode**: Dry Run (Preview Only)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "**Mode**: Live Deletion" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Configuration" >> $GITHUB_STEP_SUMMARY
+        echo "- **Repositories**: ${{ inputs.repositories }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **PR Tag Retention**: ${{ inputs.pr-retention-days }} days" >> $GITHUB_STEP_SUMMARY
+        echo "- **SHA Tag Retention**: ${{ inputs.sha-retention-days }} days" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f cleanup-results.json ]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Results" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tags Identified**: ${{ steps.cleanup.outputs.identified-count }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tags Deleted**: ${{ steps.cleanup.outputs.deleted-count }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tags Protected**: ${{ steps.cleanup.outputs.protected-count }}" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Protected Tags (Never Deleted)" >> $GITHUB_STEP_SUMMARY
+        echo "- \`latest\`, \`main\`, \`master\`, \`develop\`" >> $GITHUB_STEP_SUMMARY
+        echo "- Semantic version tags (e.g., \`v1.0.0\`, \`1.0\`, \`1\`)" >> $GITHUB_STEP_SUMMARY
+        if [ -n "${{ inputs.protected-tags }}" ]; then
+          echo "- Custom protected: \`${{ inputs.protected-tags }}\`" >> $GITHUB_STEP_SUMMARY
+        fi

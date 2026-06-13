@@ -1,0 +1,172 @@
+# Example workflow for using the Docker Hub Cleanup Action
+# Copy this file to .github/workflows/ in your repository and customize as needed
+
+name: Docker Hub Cleanup
+
+on:
+  # Run weekly on Sunday at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * 0'
+  
+  # Allow manual trigger with parameters
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run mode (preview only)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      retention_days:
+        description: 'Days to retain tags'
+        required: false
+        default: '30'
+        type: string
+
+jobs:
+  cleanup:
+    name: Clean Docker Hub Tags
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      # Basic usage - single repository
+      - name: Clean up Docker Hub repository
+        uses: lostlink/docker-cleanup@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repositories: 'my-docker-image'
+          pr-retention-days: 30
+          sha-retention-days: 14
+          dry-run: ${{ github.event.inputs.dry_run || 'false' }}
+
+  # Example: Matrix strategy for multiple repositories
+  cleanup-matrix:
+    name: Clean ${{ matrix.repo }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false  # Continue even if one fails
+      matrix:
+        include:
+          - repo: app-frontend
+            pr-retention: 30
+            sha-retention: 14
+          - repo: app-backend
+            pr-retention: 60
+            sha-retention: 30
+          - repo: app-worker
+            pr-retention: 14
+            sha-retention: 7
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Clean ${{ matrix.repo }}
+        uses: lostlink/docker-cleanup@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repositories: ${{ matrix.repo }}
+          pr-retention-days: ${{ matrix.pr-retention }}
+          sha-retention-days: ${{ matrix.sha-retention }}
+          dry-run: ${{ github.event.inputs.dry_run || 'false' }}
+
+  # Example: Using outputs for notifications
+  cleanup-with-notification:
+    name: Cleanup with Notification
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Clean Docker Hub
+        id: cleanup
+        uses: lostlink/docker-cleanup@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repositories: 'my-app,my-api,my-worker'
+          pr-retention-days: 30
+          sha-retention-days: 14
+          dry-run: false
+      
+      - name: Check results
+        run: |
+          echo "### Docker Hub Cleanup Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Identified**: ${{ steps.cleanup.outputs.identified-count }} tags" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deleted**: ${{ steps.cleanup.outputs.deleted-count }} tags" >> $GITHUB_STEP_SUMMARY
+          echo "- **Protected**: ${{ steps.cleanup.outputs.protected-count }} tags" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Send Slack notification (if many deletions)
+        if: steps.cleanup.outputs.deleted-count > 100
+        run: |
+          # Example: Send notification when large cleanup occurs
+          echo "Large cleanup: ${{ steps.cleanup.outputs.deleted-count }} tags deleted"
+          # Add your notification logic here (Slack, email, etc.)
+
+  # Example: Organization with custom patterns
+  cleanup-organization:
+    name: Organization Cleanup
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Clean organization repositories
+        uses: lostlink/docker-cleanup@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          organization: 'my-org'  # Specify organization
+          repositories: 'service-a,service-b,service-c'
+          pr-retention-days: 30
+          sha-retention-days: 14
+          protected-tags: 'staging,production,stable'  # Additional protected tags
+          custom-patterns: |
+            {
+              "^feature-.*": 7,
+              "^hotfix-.*": 3,
+              "^release-.*": 90,
+              "^test-.*": 1,
+              "^exp-.*": 14
+            }
+          dry-run: false
+          verbose: true  # Enable detailed logging
+
+  # Example: Daily cleanup for high-volume repositories
+  aggressive-cleanup:
+    name: Daily Aggressive Cleanup
+    runs-on: ubuntu-latest
+    # Uncomment to run daily at 3 AM UTC
+    # on:
+    #   schedule:
+    #     - cron: '0 3 * * *'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Aggressive cleanup for high-volume repo
+        uses: lostlink/docker-cleanup@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repositories: 'high-volume-app'
+          pr-retention-days: 7   # Keep PR tags for only 7 days
+          sha-retention-days: 3  # Keep SHA tags for only 3 days
+          custom-patterns: |
+            {
+              "^ci-.*": 1,
+              "^build-.*": 1,
+              "^tmp-.*": 0
+            }
+          dry-run: false
