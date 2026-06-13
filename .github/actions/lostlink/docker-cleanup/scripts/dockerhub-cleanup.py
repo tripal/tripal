@@ -518,7 +518,7 @@ def main():
     custom_patterns = {}
     # @@@
     print(f"CP1 custom_patterns: {custom_patterns}", file=sys.stderr)
-    print(f"CP2 args.custom_patterns: {args.custom_patterns}", file=sys.stderr)
+    print(f"CP2 args: {args}", file=sys.stderr)
     if args.custom_patterns:
         try:
             custom_patterns = json.loads(args.custom_patterns)
