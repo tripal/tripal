@@ -70,14 +70,14 @@ jobs:
       - uses: 'actions/checkout@v6'
         name: 'Check out code'
       - name: 'Get date workflow was run'
-        id: date
+        id: 'date'
         run: echo "WORKFLOW_DATE=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
       ## Build images tagged drupal{VER}-php{VER}-pgsql{VER}
       - uses: 'mr-smithers-excellent/docker-build-push@v7'
         name: 'Build & push Full matrix of Docker images'
         with:
           image: 'tripalproject/tripaldocker-drupal'
-          tags: 'drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }},drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}-BUILT${{ env.WORKFLOW_DATE }}'
+          tags: 'drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }},BUILT${{ env.WORKFLOW_DATE }}-${{ matrix.drupal-version }}-${{ matrix.php-version }}-${{ matrix.pgsql-version }}'
           dockerfile: 'tripaldocker/drupal.Dockerfile'
           registry: 'docker.io'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
@@ -90,7 +90,7 @@ jobs:
         if: ${{ matrix.php-version == '8.5' && matrix.pgsql-version == '18' }}
         with:
           image: 'tripalproject/tripaldocker-drupal'
-          tags: 'drupal${{ matrix.drupal-version }},drupal${{ matrix.drupal-version }}-BUILT${{ env.WORKFLOW_DATE }}'
+          tags: 'drupal${{ matrix.drupal-version }},BUILT${{ env.WORKFLOW_DATE }}-${{ matrix.drupal-version }}'
           dockerfile: 'tripaldocker/drupal.Dockerfile'
           registry: 'docker.io'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
@@ -103,7 +103,7 @@ jobs:
         if: ${{ matrix.drupal-version == '11.3.x' && matrix.php-version == '8.5' && matrix.pgsql-version == '18' }}
         with:
           image: 'tripalproject/tripaldocker-drupal'
-          tags: 'latest,latest-BUILT${{ env.WORKFLOW_DATE }}'
+          tags: 'latest,BUILT${{ env.WORKFLOW_DATE }}'
           dockerfile: 'tripaldocker/drupal.Dockerfile'
           registry: 'docker.io'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
