@@ -91,7 +91,7 @@ jobs:
         name: 'Build & push Full matrix of Docker images WITH NO CHADO'
         with:
           image: 'tripalproject/tripaldocker'
-          tags: 'drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}-noChado,BUILT${{ env.WORKFLOW_DATE }}-${{ matrix.drupal-version }}-${{ matrix.php-version }}-${{ matrix.pgsql-version }}
+          tags: 'drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}-noChado,BUILT${{ env.WORKFLOW_DATE }}-${{ matrix.drupal-version }}-${{ matrix.php-version }}-${{ matrix.pgsql-version }}-noChado'
           registry: 'docker.io'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
           password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
