@@ -1,5 +1,11 @@
 # Docker Hub Cleanup Action
 
+#####
+# NOTICE
+# Forked from PR https://github.com/lostlink/docker-cleanup
+# to incorporate pull request #3
+#####
+
 [![GitHub Action](https://img.shields.io/badge/GitHub-Action-blue?logo=github)](https://github.com/marketplace/actions/docker-hub-cleanup)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

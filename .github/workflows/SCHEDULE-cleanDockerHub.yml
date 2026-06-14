@@ -1,4 +1,4 @@
-name: 'Remove stale images from DockerHub'
+name: 'Remove obsolete images from DockerHub'
 
 on:
   # To allow manual run.
@@ -19,11 +19,16 @@ jobs:
 
       - name: 'Docker Hub Cleanup'
         #uses: 'lostlink/docker-cleanup@v1.0.1'
+        # Temporarily Use a locally forked copy to fix the bug to be fixed in
+        # pull request https://github.com/lostlink/docker-cleanup/pull/4
+        # Long term, we are hoping dockerhub eventually provides a mechanism
+        # for automatic image expiration.
         uses: ./.github/actions/lostlink/docker-cleanup
         with:
-          custom-patterns: '{"latest": 90, "drupal": 90, "BUILT": 1}'
+          # The first custom pattern matched has priority.
+          custom-patterns: '{"latest": 30, "drupal": 30, "BUILT": 0}'
+          repositories: 'tripaldocker-drupal,tripaldocker'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
           password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
-          repositories: 'tripaldocker-drupal,tripaldocker'
           verbose: true
           dry-run: true
