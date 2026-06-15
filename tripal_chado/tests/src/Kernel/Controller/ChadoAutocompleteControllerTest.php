@@ -224,6 +224,31 @@ class ChadoAutocompleteControllerTest extends ChadoTestKernelBase {
     $results = $generic_autocomplete->handleGenericAutocomplete($request, 'project', 'name', 'x', 'projectprop', 1000, $type_id)->getContent();
     $this->assertCount(2, json_decode($results, FALSE), 'Expected exactly 2 results from project generic autocomplete for Genome Project containing "w"');
 
+    // Test limiting by multiple type_id values for a table with a type_id in a property table.
+    $type_ids = implode(',', array_values($this->types));
+    $request = Request::create(
+      'chado/generic/autocomplete/project/name/p/projectprop/1000/' . $type_ids,
+      'GET',
+      ['q' => 'p']
+    );
+    $results = $generic_autocomplete->handleGenericAutocomplete($request, 'project', 'name', 'p', 'projectprop', 1000, $type_ids)->getContent();
+
+    $expected_projects = $this->projects;
+    // Excluding this project with unspecified type_id.
+    unset($expected_projects['Yes Project']);
+
+    $project_count = count($expected_projects);
+    $this->assertCount($project_count, json_decode($results, FALSE), 'Expected exactly ' . $project_count . ' results from project generic autocomplete for Genome Project containing "p"');
+
+    // Remove trailing string length from the decoded response values.
+    $project_result = array_map(
+      function ($p) {
+        return trim(preg_replace('/\(\d+\)/', '', $p));
+      },
+      array_column(array_values(json_decode($results, TRUE)), 'value')
+    );
+    $this->assertEqualsCanonicalizing(array_keys($expected_projects), $project_result, 'The project generic autocomplete failed to return expected project names.');
+
     /**
      * Tests the project autocomplete which is derived from the generic controller
      */
