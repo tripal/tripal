@@ -4,7 +4,7 @@ on:
   # To allow manual run.
   workflow_dispatch:
   schedule:
-    # Run at 5am every morning, 1 hour after images are built.
+    # Run at 1am every morning, 1 hour before images are built.
     - cron: '0 5 * * *'
   # This next trigger is temporary for testing!
   pull_request:
