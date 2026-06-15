@@ -16548,5 +16548,5 @@ SELECT pg_catalog.setval('chado.cvterm_relationship_cvterm_relationship_id_seq',
 SELECT pg_catalog.setval('chado.cvtermprop_cvtermprop_id_seq', 1346, true);
 SELECT pg_catalog.setval('chado.cvtermsynonym_cvtermsynonym_id_seq', 4559, true);
 SELECT pg_catalog.setval('chado.db_db_id_seq', 44, true);
-SELECT pg_catalog.setval('chado.dbxref_dbxref_id_seq', 3493, true);
+SELECT pg_catalog.setval('chado.dbxref_dbxref_id_seq', 3495, true);
 SELECT pg_catalog.setval('chado.pub_pub_id_seq', 1, true);
