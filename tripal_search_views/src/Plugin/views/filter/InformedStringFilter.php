@@ -9,17 +9,32 @@ use Drupal\views\Attribute\ViewsFilter;
 /**
  * String filter with dynamic select options.
  *
-* @ingroup views_filter_handlers.
+ * @ingroup views_filter_handlers.
  */
 #[ViewsFilter("dynamic_filter")]
 class InformedStringFilter extends StringFilter {
+
+  /**
+   * Indicates a single filter for an exposed view filter.
+   */
+  const TYPE_SINGLE_FILTER = 0;
+
+  /**
+   * Indicates a grouped filter for an exposed view filter.
+   */
+  const TYPE_GROUPED_FILTER = 1;
+
+  /**
+   * Indicates a dynamic select list for an exposed view filter.
+   */
+  const TYPE_DYNAMIC_SELECT_LIST = 2;
 
   /**
    * {@inheritDoc}
    */
   public function defineOptions() {
     $options = parent::defineOptions();
-    $options['filter_type'] = ['default' => 0];
+    $options['filter_type'] = ['default' => self::TYPE_SINGLE_FILTER];
     return $options;
   }
 
@@ -31,10 +46,10 @@ class InformedStringFilter extends StringFilter {
     parent::buildExposedForm($form, $form_state);
 
     $view = $this->view;
-    $type = $this->options['filter_type'] ?? 0;
+    $type = $this->options['filter_type'] ?? self::TYPE_SINGLE_FILTER;
     // Only modify the exposed form if this is a filter for a field on
     // Tripal Content and the field name exists.
-    if (!$view || $view->storage->get('base_table') !== 'tripal_entity' || !isset($this->definition['field_name']) || $type != 2) {
+    if (!$view || $view->storage->get('base_table') !== 'tripal_entity' || !isset($this->definition['field_name']) || $type != self::TYPE_DYNAMIC_SELECT_LIST) {
       return;
     }
 
@@ -89,13 +104,13 @@ class InformedStringFilter extends StringFilter {
       '#description' => $grouped_description,
       '#type' => 'radios',
       '#options' => [
-        $this->t('Single filter'),
-        $this->t('Grouped filters'),
-        $this->t('Dynamic Select List'),
+        self::TYPE_SINGLE_FILTER => $this->t('Single filter'),
+        self::TYPE_GROUPED_FILTER => $this->t('Grouped filters'),
+        self::TYPE_DYNAMIC_SELECT_LIST => $this->t('Dynamic Select List'),
       ],
     ];
-    $type = $this->options['filter_type'] ?? 0;
-    if ($type == 0) {
+    $type = $this->options['filter_type'] ?? self::TYPE_SINGLE_FILTER;
+    if ($type == self::TYPE_SINGLE_FILTER) {
       $form['group_button']['markup'] = [
         '#markup' => '<div class="description grouped-description">' . $grouped_description . '</div>',
       ];
@@ -107,7 +122,7 @@ class InformedStringFilter extends StringFilter {
       ];
       $form['group_button']['radios']['radios']['#default_value'] = 0;
     }
-    elseif ($type == 1) {
+    elseif ($type == self::TYPE_GROUPED_FILTER) {
       $form['group_button']['button'] = [
         '#limit_validation_errors' => [],
         '#type' => 'submit',
@@ -116,7 +131,7 @@ class InformedStringFilter extends StringFilter {
       ];
       $form['group_button']['radios']['radios']['#default_value'] = 1;
     }
-    elseif ($type == 2) {
+    elseif ($type == self::TYPE_DYNAMIC_SELECT_LIST) {
       $form['group_button']['markup'] = [
         '#markup' => '<div class="description grouped-description">' .
         $this->t('Dynamic Select List allows selecting values dynamically.') .
@@ -170,7 +185,7 @@ class InformedStringFilter extends StringFilter {
   public function submitExposeForm($form, FormStateInterface $form_state) {
     $selected = $form_state->getValue(['options', 'group_button', 'radios', 'radios']);
     $this->options['filter_type'] = $selected;
-    if ($selected == 2) {
+    if ($selected == self::TYPE_DYNAMIC_SELECT_LIST) {
       $this->options['plugin_id'] = 'dynamic_filter';
     }
   }
