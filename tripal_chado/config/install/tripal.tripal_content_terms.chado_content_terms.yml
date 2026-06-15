@@ -1036,6 +1036,9 @@ vocabularies:
         label: 'Gene Ontology'
         url: 'https://geneontology.org/'
         idSpaces:
+            -   name: 'gene_ontology'
+                description: 'Gene Ontology'
+                urlPrefix: 'https://purl.obolibrary.org/obo/GO_{accession}'
             -   name: 'biological_process'
                 description: 'BPs are the larger processes or ‘biological programs’ accomplished by the concerted action of multiple molecular activities'
                 urlPrefix: 'https://purl.obolibrary.org/obo/GO_{accession}'
