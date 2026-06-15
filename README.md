@@ -4,7 +4,7 @@
 
 ## Compatibility
 
-![Target Drupal Version 11.2.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-11.2.x-informational)
+![Target Drupal Version 11.2.x](https://img.shields.io/badge/Target%20Drupal%20Version-11.2.x-informational)
 
 Tested on ![PostgreSQL 14](https://img.shields.io/badge/PostreSQL-14-success) - ![PostgreSQL 18](https://img.shields.io/badge/PostreSQL-18-success)
 
@@ -50,11 +50,12 @@ This project uses QLTY Cloud to determine the quality of our codebase and the co
 | 4.0-alpha1 | >=9.2 <=10.0        | >=8.0 <=8.1 | >=13 <=16  |
 | 4.0-alpha2 | >=10.0 <= 10.1      | >=8.1 <=8.2 | >=13 <=16  |
 | 4.0-alpha3 | >=10.4 <= 11.2      | >=8.1 <=8.3 | >=13 <=17  |
+| 4.0-alpha4 | >=10.5 <= 11.3      | >=8.2 <=8.5 | >=14 <=18  |
 | 4.0-dev    | >=10.5 <= 11.x.dev  | >=8.2 <=8.5 | >=14 <=18  |
 
 ## Current Timeline
 
-### Required for Tripal 4.alpha4 Release
+### Required for Tripal 4.alpha5 Release
 
 - Display suite / page work (partially complete; needs default layouts for existing content types + auto application).
 - Search via Views (partially complete; waiting on default views for existing content types)

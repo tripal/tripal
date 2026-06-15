@@ -2,7 +2,7 @@ ARG phpversion='8.3'
 FROM php:${phpversion}-apache-bookworm
 
 ARG phpversion='8.3'
-ARG drupalversion='11.2.x-dev'
+ARG drupalversion='11.2.x'
 ARG postgresqlversion='18'
 ARG modules='devel devel_php field_group field_group_table'
 ARG chadoschema='chado'
@@ -203,10 +203,10 @@ RUN cd /var/www/drupal \
   && sleep 30 \
   && /var/www/drupal/vendor/drush/drush/drush site-install standard \
   --db-url=pgsql://drupaladmin:drupaldevelopmentonlylocal@localhost/sitedb \
-  --account-mail="drupaladmin@localhost" \
+  --account-mail="drupaladmin@local.dev" \
   --account-name=drupaladmin \
   --account-pass=some_admin_password \
-  --site-mail="drupaladmin@localhost" \
+  --site-mail="drupaladmin@local.dev" \
   --site-name="Tripal 4.x-dev on Drupal ${drupalversion}" \
   && service apache2 stop \
   && service postgresql stop

@@ -6,6 +6,7 @@
 
 use \Drupal\Core\Config\FileStorage;
 use \Drupal\Core\Database\Database;
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use \Drupal\Core\Utility\UpdateException;
 use \Drupal\Component\Serialization\Yaml;
 use \Drupal\field\Entity\FieldConfig;
@@ -507,6 +508,38 @@ function reload_content_type_collection(string $contentTypeCollection): void {
 }
 
 /**
+ * Updates the required status of one or more fields.
+ *
+ * @param array $field_ids
+ *   A list of fields to update.
+ * @param bool $required
+ *   The desired state of the required flag.
+ * @param string $context
+ *   A message to print if an error occurs.
+ *
+ * @return void
+ *   No return value.
+ */
+function tripal_chado_set_field_required_status(array $field_ids, bool $required, string $context): void {
+  try {
+    $messenger = \Drupal::messenger();
+    foreach ($field_ids as $field_id) {
+      /** Drupal\field\Entity\FieldConfig **/
+      $field = FieldConfig::load($field_id);
+      $state = $field->isRequired();
+      if ($state != $required) {
+        $field->setRequired($required);
+        $field->save();
+        $messenger->addMessage("Changed field $field_id to be " .($required?'':'not '). 'required');
+      }
+    }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException($context . ': ' . $e->getMessage());
+  }
+}
+
+/**
  * Reads a YAML file and adds the specified fields.
  *
  * @param string $yaml_path
@@ -775,23 +808,11 @@ function tripal_chado_update_10408() {
  * consistent with chado. PR 2029
  */
 function tripal_chado_update_10409() {
-  try {
-    $messenger = \Drupal::messenger();
-    $field_ids = ['tripal_entity.pub.pub_title', 'tripal_entity.pub.pub_pyear'];
-    foreach ($field_ids as $field_id) {
-      /** Drupal\field\Entity\FieldConfig **/
-      $field = FieldConfig::load($field_id);
-      $required = $field->isRequired();
-      if ($required) {
-        $field->setRequired(FALSE);
-        $field->save();
-        $messenger->addMessage("Changed field $field_id to be not required");
-      }
-    }
-  }
-  catch (\Exception $e) {
-    throw new UpdateException('Could not set title and publication year required setting: ' . $e->getMessage());
-  }
+  $field_ids = [
+    'tripal_entity.pub.pub_title',
+    'tripal_entity.pub.pub_pyear',
+  ];
+  tripal_chado_set_field_required_status($field_ids, FALSE, 'Could not set title and publication year required setting');
 }
 
 /**
@@ -1166,9 +1187,70 @@ function tripal_chado_update_10417() {
 }
 
 /**
- * Fix blank descriptions and invalid urls in db and cv records. PR 2462.
+ * Add a phylogenetic tree visualization field. PR 2244.
+ */
+function tripal_chado_update_10418() {
+  try {
+    $messenger = \Drupal::messenger();
+    // Adds a new CV term for storing phylotree visualization settings.
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $term_values = [
+      'db.name' => 'NCIT',
+      'cv.name' => 'ncit',
+      'dbxref.accession' => 'C85439',
+      'cvterm.name' => 'Graphics Visualization',
+      'cvterm.definition' => 'Computer methods for creating images, diagrams or animations.',
+    ];
+    $cvterm_buddy->upsertCvterm($term_values, []);
+    $messenger->addMessage('Added "NCIT:Graphics Visualization" term');
+
+    // Update collection configurations so that any content type
+    // collections not yet imported will include the new phylotreevis field.
+    $collections = ['general', 'genomic'];
+    update_content_type_collections($collections);
+
+    // Installs new phylotree visualization and settings (property) fields
+    // on existing collections.
+    $general_fields_yaml = __DIR__ . '/config/install/tripal.tripalfield_collection.general_chado.yml';
+    $genomic_fields_yaml = __DIR__ . '/config/install/tripal.tripalfield_collection.genomic_chado.yml';
+    add_field_from_yaml($general_fields_yaml, ['speciestree_phylotreevis']);
+    add_field_from_yaml($genomic_fields_yaml, ['phylotree_phylotreevis']);
+
+    // Hides existing fields that have now been set to hidden in yaml.
+    $fields_to_hide = [
+      'tripal_entity.speciestree.default' => 'speciestree_dbxref',
+      'tripal_entity.phylotree.default' => 'phylotree_type',
+    ];
+    foreach ($fields_to_hide as $display => $field) {
+      $entity_view_display = EntityViewDisplay::load($display);
+      if ($entity_view_display) {
+        $entity_view_display->removeComponent($field)->save();
+      }
+    }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not update phylotree: ' . $e->getMessage());
+  }
+}
+
+/**
+ * Sets germplasm collection fields as non-required.
  */
 function tripal_chado_update_10419() {
+  // This hook added by PR 2498.
+  $field_ids = [
+    'tripal_entity.germplasm.germplasm_collection',
+    'tripal_entity.breeding_cross.breeding_cross_collection',
+    'tripal_entity.germplasm_variety.germplasmvariety_collection',
+  ];
+  tripal_chado_set_field_required_status($field_ids, FALSE, 'Could not set germplasm collection required setting');
+}
+
+/**
+ * Fix blank descriptions and invalid urls in db and cv records. PR 2462.
+ */
+function tripal_chado_update_10420() {
   try {
     $messenger = \Drupal::messenger();
     $chado_patch_service = \Drupal::service('tripal_chado.patch_service');

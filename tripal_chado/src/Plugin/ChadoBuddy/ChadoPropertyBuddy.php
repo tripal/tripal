@@ -387,9 +387,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     if (count($existing_records) == 0) {
       return FALSE;
     }
-    if (count($existing_records) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy updateProperty error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
-    }
+    $this->throwIfMultipleRecords($existing_records, $property_table . '.' . $pkey, 'updateProperty', $conditions);
 
     $query = $this->chado_connection->update('1:' . $property_table);
     // We can now reduce conditions to just the property table primary key.
@@ -473,6 +471,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    */
   public function upsertProperty(string $base_table, int $record_id, array $values, array $options = []) {
     $property_table = $options['property_table'] ?? $base_table . 'prop';
+    $pkey = $options['pkey'] ?? $property_table . '_id';
 
     $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
     $valid_columns = $this->getTableColumns($valid_tables);
@@ -489,9 +488,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
 
     $existing_records = $this->getProperty($base_table, $record_id, $conditions, $options);
     if (count($existing_records) > 0) {
-      if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy upsertProperty error, more than one record matched the specified values\n" . print_r($values, TRUE));
-      }
+      $this->throwIfMultipleRecords($existing_records, $property_table . '.' . $pkey, 'upsertProperty', $values);
       $new_record = $this->updateProperty($base_table, $record_id, $values, $conditions, $options);
     }
     else {

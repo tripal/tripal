@@ -1,0 +1,103 @@
+'Chado Databases':
+  # Empty chado has one row predefined.
+  'view': 'config/install/views.view.chado_databases'
+  'rows':
+    0:
+      'fields':
+        'db_id': 2
+        'name': '1db1'
+        'description': ''
+        'url': ''
+        'urlprefix': ''
+        'db_edit_link': '<a href="/admin/tripal/storage/chado/db/2">Edit</a>'
+        'db_items_link': '<a href="/admin/tripal/terms/chado_dbxref?name=1db1">Items</a>'
+        'db_delete_link': '<a href="/admin/tripal/storage/chado/db_delete/2">Delete</a>'
+    1:
+      'fields':
+        'db_id': 3
+        'name': '1db2'
+        'description': 'non-blank-db-description'
+        'url': 'https://test'
+        'urlprefix': 'https://test/{db}/{accession}'
+        'db_edit_link': '<a href="/admin/tripal/storage/chado/db/3">Edit</a>'
+        'db_items_link': '<a href="/admin/tripal/terms/chado_dbxref?name=1db2">Items</a>'
+        'db_delete_link': '<a href="/admin/tripal/storage/chado/db_delete/3">Delete</a>'
+    3:
+      'is_null': true
+'Chado Database Cross References':
+  # Empty chado has two rows predefined.
+  'view': 'config/install/views.view.chado_database_cross_references'
+  'rows':
+    0:
+      'fields':
+        'dbxref_id': 3
+        'accession': '1a001'
+        'version': ''
+        'description': ''
+        'urlprefix': ''
+        'dbxref_urlprefix_link': 'not available'
+        'dbxref_edit_link': '<a href="/admin/tripal/storage/chado/dbxref/3">Edit</a>'
+        'dbxref_delete_link': '<a href="/admin/tripal/storage/chado/dbxref_delete/3">Delete</a>'
+    1:
+      'fields':
+        'dbxref_id': 4
+        'accession': '1b002'
+        'version': 'ver2'
+        'description': 'non-blank-db-description'
+        'urlprefix': 'https://test/{db}/{accession}'
+        'dbxref_urlprefix_link': '<a href="https://test/1db2/1b002" target="_blank">🔗1db2:1b002</a>'
+        'dbxref_edit_link': '<a href="/admin/tripal/storage/chado/dbxref/4">Edit</a>'
+        'dbxref_delete_link': '<a href="/admin/tripal/storage/chado/dbxref_delete/4">Delete</a>'
+    4:
+      'is_null': true
+
+'Chado Controlled Vocabularies':
+  # Empty chado has four rows predefined.
+  'view': 'config/install/views.view.chado_controlled_vocabularies'
+  'rows':
+    0:
+      'fields':
+        'cv_id': 5
+        'name': '1cv1'
+        'definition': ''
+        'cv_edit_link': '<a href="/admin/tripal/storage/chado/cv/5">Edit</a>'
+        'cv_items_link': '<a href="/admin/tripal/terms/chado_cvterm?name=1cv1">Items</a>'
+        'cv_delete_link': '<a href="/admin/tripal/storage/chado/cv_delete/5">Delete</a>'
+    1:
+      'fields':
+        'cv_id': 6
+        'name': '1cv2'
+        'definition': 'non-blank-cv-definition'
+        'cv_edit_link': '<a href="/admin/tripal/storage/chado/cv/6">Edit</a>'
+        'cv_items_link': '<a href="/admin/tripal/terms/chado_cvterm?name=1cv2">Items</a>'
+        'cv_delete_link': '<a href="/admin/tripal/storage/chado/cv_delete/6">Delete</a>'
+    6:
+      'is_null': true
+'Chado Controlled Vocabulary Terms':
+  # Empty chado has two rows predefined.
+  'view': 'config/install/views.view.chado_controlled_vocabulary_terms'
+  'rows':
+    0:
+      'fields':
+        'cvterm_id': 3
+        'name': '1cv1'
+        'definition': ''
+        'name_1': '1t001'
+        'name_2': '1db1'
+        'is_obsolete': 0
+        'is_relationshiptype': 0
+        'cvterm_edit_link': '<a href="/admin/tripal/storage/chado/cvterm/3">Edit</a>'
+        'cvterm_delete_link': '<a href="/admin/tripal/storage/chado/cvterm_delete/3">Delete</a>'
+    1:
+      'fields':
+        'cvterm_id': 4
+        'name': '1cv2'
+        'definition': 'non-blank-cvterm-definition'
+        'name_1': '1t002'
+        'name_2': '1db2'
+        'is_obsolete': 1
+        'is_relationshiptype': 1
+        'cvterm_edit_link': '<a href="/admin/tripal/storage/chado/cvterm/4">Edit</a>'
+        'cvterm_delete_link': '<a href="/admin/tripal/storage/chado/cvterm_delete/4">Delete</a>'
+    4:
+      'is_null': true

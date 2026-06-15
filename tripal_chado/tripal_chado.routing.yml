@@ -102,6 +102,101 @@ tripal_chado.chado_mviews:
   requirements:
     _permission: 'manage chado materialized views'
 
+tripal_chado.chado_db_form:
+  path: 'admin/tripal/storage/chado/db'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoDbForm'
+    _title: 'Add a Chado External Database'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_db_form_edit:
+  path: 'admin/tripal/storage/chado/db/{db_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoDbForm'
+    _title: 'Edit a Chado External Database'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_db_delete_form:
+  path: 'admin/tripal/storage/chado/db_delete/{db_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoDbDeleteForm'
+    _title: 'Delete a Chado External Database'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_dbxref_form:
+  path: 'admin/tripal/storage/chado/dbxref'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoDbxrefForm'
+    _title: 'Add a Chado External Database Cross Reference'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_dbxref_form_edit:
+  path: 'admin/tripal/storage/chado/dbxref/{dbxref_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoDbxrefForm'
+    _title: 'Edit a Chado External Database Cross Reference'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_dbxref_delete_form:
+  path: 'admin/tripal/storage/chado/dbxref_delete/{dbxref_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoDbxrefDeleteForm'
+    _title: 'Delete a Chado External Database Cross Reference'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_cv_form:
+  path: 'admin/tripal/storage/chado/cv'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoCvForm'
+    _title: 'Add a Chado Controlled Vocabulary'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_cv_form_edit:
+  path: 'admin/tripal/storage/chado/cv/{cv_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoCvForm'
+    _title: 'Edit a Chado Controlled Vocabulary'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_cv_delete_form:
+  path: 'admin/tripal/storage/chado/cv_delete/{cv_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoCvDeleteForm'
+    _title: 'Delete a Chado Controlled Vocabulary'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_cvterm_form:
+  path: 'admin/tripal/storage/chado/cvterm'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoCvtermForm'
+    _title: 'Add a Chado Controlled Vocabulary term'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_cvterm_form_edit:
+  path: 'admin/tripal/storage/chado/cvterm/{cvterm_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoCvtermForm'
+    _title: 'Edit a Chado Controlled Vocabulary term'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_cvterm_delete_form:
+  path: 'admin/tripal/storage/chado/cvterm_delete/{cvterm_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoCvtermDeleteForm'
+    _title: 'Delete a Chado Controlled Vocabulary term'
+  requirements:
+    _permission: 'administer tripal'
 
 entity.chado_term_mapping.collection:
   path: 'admin/tripal/storage/chado/terms'
@@ -199,7 +294,7 @@ tripal_chado.generic_autocomplete:
       match_limit:
         type: 'integer'
       type_id:
-        type: 'integer'
+        type: 'string'
 
 # Publication Loaders.
 tripal.data_loaders.publication_loaders:

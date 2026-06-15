@@ -147,7 +147,7 @@ fields:
         type: 'chado_stockcollection_type_default'
         description: 'The stock collections that this germplasm is part of.'
         cardinality: -1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
@@ -448,7 +448,7 @@ fields:
         type: 'chado_stockcollection_type_default'
         description: 'The stock collections that this cross is part of.'
         cardinality: -1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
@@ -749,7 +749,7 @@ fields:
         type: 'chado_stockcollection_type_default'
         description: 'The stock collections that this germplasm variety is part of.'
         cardinality: -1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: 'chado_storage'
             storage_plugin_settings:

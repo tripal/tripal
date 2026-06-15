@@ -2,7 +2,289 @@
 ## Drupal schema information for various functionality provided by Tripal.
 ## Specifically, focused on Tripal Entities, Tripal Entity Types, and Fields.
 
-## Described the config entity used for YML-file loading of
+## The following reusable schema defininitions follow a specific naming pattern
+## that you can define in your own module to add global settings!
+## Pattern: tripal.YOURMODULE.SPECIFICSETTING
+## In your own YOURMODULE.schema.yml file define a block similar to the one you
+## want to add more settings to but replace `core` with the machine name of
+## your module. All your custom settings will then be merged with core's.
+## DO NOT redefine the same settings as Tripal core!
+
+## TripalStorage Field Storage Settings.
+## @scope Applied to ALL Fields (due to limitation in Drupal).
+## @note this is a reusable schema definition BUT it is not used by Drupal
+##   automatically. Instead tripal will alter the schema later to add this.
+## @see TripalEntityHooks::configSchemaInfoAlter()
+tripal.core.field_storage_settings:
+  type: mapping
+  label: 'Tripal Field Storage Settings'
+  mapping:
+    termIdSpace:
+      type: string
+      label: 'Term ID Space'
+    termAccession:
+      type: string
+      label: 'Term Accession'
+    debug:
+      type: boolean
+      label: 'Flag to Enable field debugging'
+      nullable: true
+    storage_plugin_id:
+      type: string
+      label: 'Tripal Storage Plugin Machine Name'
+    storage_plugin_settings:
+      type: mapping
+      label: 'Tripal Storage-specific Settings'
+
+## Tripal Field Settings.
+## @scope Applied to ALL Fields (due to limitation in Drupal).
+## @note this is a reusable schema definition BUT it is not used by Drupal
+##   automatically. Instead tripal will alter the schema later to add this.
+## @see TripalEntityHooks::configSchemaInfoAlter()
+tripal.core.field_settings:
+  type: mapping
+  label: 'Tripal field settings'
+  mapping:
+    termIdSpace:
+      type: string
+      label: 'Term ID Space'
+    termAccession:
+      type: string
+      label: 'Term Accession'
+    debug:
+      type: boolean
+      label: 'Flag to Enable field debugging'
+      nullable: true
+    fixed_value:
+      type: string
+      label: 'A fixed value to use for the term Id Space and Accession for this field (e.g. data:1278).'
+      nullable: true
+
+## Tripal Field Widget Settings.
+## @scope Applied to ALL Field Widgets (due to limitation in Drupal).
+## @note this is a reusable schema definition BUT it is not used by Drupal
+##   automatically. Instead tripal will alter the schema later to add this.
+## @see TripalEntityHooks::configSchemaInfoAlter()
+tripal.core.field_widget_settings:
+  type: mapping
+  label: 'Field Widget settings associated with Tripal fields'
+  mapping:
+    widget_select_limit:
+      type: integer
+      label: 'Maximum number of records for a select'
+    match_operator:
+      type: string
+      label: 'Type of matching for an autocomplete'
+    match_limit:
+      type: integer
+      label: 'Maximum number of records to display for an autocomplete'
+    size:
+      type: integer
+      label: 'Number of characters for a text field'
+    placeholder:
+      type: string
+      label: 'Placeholder value for an empty text field'
+
+## Tripal Field Formatter Settings.
+## @scope Applied to ALL Fields (due to limitation in Drupal).
+## @note this is a reusable schema definition BUT it is not used by Drupal
+##   automatically. Instead tripal will alter the schema later to add this.
+## @see TripalEntityHooks::configSchemaInfoAlter()
+tripal.core.field_formatter_settings:
+  type: mapping
+  label: 'Field Formatter settings associated with Tripal fields'
+  mapping:
+    token_string:
+      type: string
+      label: 'Token string for field display'
+      nullable: false
+
+##
+## Specific Tripal Fields
+##
+## Only add field-specific settings here. All global settings will be added
+## automatically.
+##
+## Field settings...
+field.field_settings.tripal_boolean_type:
+  type: mapping
+  mapping: {}
+
+field.field_settings.tripal_integer_type:
+  type: mapping
+  mapping: {}
+
+field.field_settings.tripal_markup:
+  type: mapping
+  mapping:
+    markup:
+      type: mapping
+      label: 'Static markup to be rendered'
+      mapping:
+        value:
+          type: string
+        format:
+          type: string
+
+field.field_settings.tripal_string_type:
+  type: mapping
+  mapping: {}
+
+field.field_settings.tripal_text_type:
+  type: mapping
+  mapping: {}
+
+## Field storage settings...
+field.storage_settings.tripal_boolean_type:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.tripal_integer_type:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.tripal_markup:
+  type: mapping
+  mapping:
+    markup:
+      type: mapping
+      label: 'Static markup to be rendered'
+      mapping:
+        value:
+          type: string
+        format:
+          type: string
+
+field.storage_settings.tripal_string_type:
+  type: mapping
+  mapping:
+    max_length:
+      type: integer
+      label: 'Maximum length'
+
+field.storage_settings.tripal_text_type:
+  type: mapping
+  mapping:
+    max_length:
+      type: integer
+      label: 'Maximum length'
+
+## Field widget settings...
+field.widget.settings.default_tripal_boolean_type_widget:
+  type: mapping
+  mapping: {}
+
+field.widget.settings.default_tripal_integer_type_widget:
+  type: mapping
+  mapping: {}
+
+field.widget.settings.tripal_markup_widget:
+  type: mapping
+  mapping: {}
+
+field.widget.settings.default_tripal_string_type_widget:
+  type: mapping
+  mapping: {}
+
+field.widget.settings.default_tripal_text_type_widget:
+  type: mapping
+  mapping:
+    filter_format:
+      type: string
+      label: 'Filter format for a filtered text field'
+    num_rows:
+      type: integer
+      label: 'Number of Rows to display in the text widget'
+
+## Field formatter settings...
+field.formatter.settings.default_tripal_boolean_type_formatter:
+  type: mapping
+  mapping:
+    false_string:
+      type: string
+      label: 'Text to display for a boolean FALSE value'
+      nullable: false
+    true_string:
+      type: string
+      label: 'Text to display for a boolean TRUE value'
+      nullable: false
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+
+field.formatter.settings.default_tripal_integer_type_formatter:
+  type: mapping
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+    thousand_separator:
+      type: string
+      label: 'Thousand marker'
+      nullable: true
+
+field.formatter.settings.tripal_markup_formatter:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.default_tripal_string_type_formatter:
+  type: mapping
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+
+field.formatter.settings.default_tripal_text_type_formatter:
+  type: mapping
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+
+##
+## Tripal Configuration Entities!
+##
+## Describes the config entity used for YML-file loading of
 ## Tripal Vocabularies, ID Spaces and Terms.
 tripal.tripal_content_terms.*:
   type: config_entity
@@ -78,72 +360,6 @@ tripal.tripal_content_terms.*:
                   type: string
                   label: 'Term Definition'
                   nullable: true
-
-## TripalStorage focused settings for Tripal Entities.
-field.storage.tripal_entity.*:
-  type: field.storage.*.*
-  label: 'Tripal Entity Field Storage'
-  mapping:
-    settings:
-      type: field.storage_settings.*
-      label: 'Tripal Field Storage Settings'
-      mapping:
-        termIdSpace:
-          type: string
-          label: 'Term ID Space'
-        termAccession:
-          type: string
-          label: 'Term Accession'
-        max_length:
-          type: integer
-          label: 'Storage Maximum length'
-        debug:
-          type: boolean
-          label: 'Flag to Enable field debugging'
-          nullable: true
-        storage_plugin_id:
-          type: string
-          label: 'Tripal Storage Plugin Machine Name'
-        storage_plugin_settings:
-          type: field.storage.tripal_entity.*.settings.storage_plugin_settings.*
-          label: 'Tripal Storage-specific Settings'
-          mapping:
-            object_table:
-              type: string
-              label: "name of table joined through a linking table"
-
-
-## Adds term ID Space and Accession keys
-## to the existing Drupal Fields
-## schema specifically for TripalFields.
-field.field.tripal_entity.*.*:
-  type: field.field.*.*.*
-  mapping:
-    settings:
-      type: field.settings
-      mapping:
-        termIdSpace:
-          type: string
-          label: 'Term ID Space'
-        termAccession:
-          type: string
-          label: 'Term Accession'
-        debug:
-          type: boolean
-          label: 'Flag to Enable field debugging'
-          nullable: true
-        fixed_value:
-          type: string
-          label: "A fixed value for the field that cannot be changed."
-          nullable: true
-        markup:
-          type: mapping
-          label: 'Static markup to be rendered'
-          mapping:
-            value:
-              type: string
-            format:
-              type: string
 
 ## For TripalEntityTypeCollection functionality
 ## focused on using YML files to describe TripalEntityTypes
@@ -263,47 +479,11 @@ tripal.tripalfield_collection.*:
                  label: 'Required'
                  nullable: false
                settings:
-                 type: mapping
-                 label: 'Settings'
-                 mapping:
-                   termIdSpace:
-                     type: string
-                     label: "Term Id Space"
-                     nullable: false
-                   termAccession:
-                     type: string
-                     label: "Term Accession"
-                     nullable: false
-                   token_string:
-                     type: string
-                     label: "Token string for field display"
-                     nullable: false
-                   fixed_value:
-                     type: string
-                     label: "A fixed value for the field that cannot be changed."
-                     nullable: true
+                 type: ignore
+                 label: 'Field Settings'
                storage_settings:
-                 type: mapping
-                 label: 'Storage Settings'
-                 mapping:
-                   storage_plugin_id:
-                     type: string
-                     label: 'Storage Plugin ID'
-                     nullable: false
-                   termIdSpace:
-                     type: string
-                     label: "Term Id Space"
-                     nullable: false
-                   termAccession:
-                     type: string
-                     label: "Term Accession"
-                     nullable: false
-                   max_length:
-                     type: integer
-                     label: "The maximum size of the field vlaue."
-                   storage_plugin_settings:
-                      type: mapping
-                      label: 'Storage Plugin Settings'
+                 type: ignore
+                 label: 'Field Storage settings'
                display:
                  type: mapping
                  label: 'Display'
@@ -331,25 +511,8 @@ tripal.tripalfield_collection.*:
                            label: 'Weight'
                            nullable: false
                          settings:
-                           type: mapping
-                           label: 'Settings'
-                           mapping:
-                             field_prefix:
-                               type: string
-                               label: 'Field prefix'
-                               nullable: true
-                             field_suffix:
-                               type: string
-                               label: 'Field suffix'
-                               nullable: true
-                             hide_condition:
-                               type: string
-                               label: 'Hide condition'
-                               nullable: true
-                             hide_value:
-                               type: string
-                               label: 'Hide value'
-                               nullable: true
+                           type: ignore
+                           label: 'Formatter Settings'
                    form:
                      type: sequence
                      label: 'Edit'
@@ -377,103 +540,5 @@ tripal.tripalfield_collection.*:
                            label: 'Widget Type'
                            nullable: true
                          settings:
-                           type: mapping
-                           label: 'Settings'
-                           mapping:
-                             filter_format:
-                               type: string
-                               label: 'Filter format for a filtered text field'
-                               nullable: true
-                             num_rows:
-                               type: integer
-                               label: 'Number of Rows to display in the text widget'
-                               nullable: true
-                             widget_select_limit:
-                               type: integer
-                               label: 'Maximum number of records for a select'
-                               nullable: true
-                             match_operator:
-                               type: string
-                               label: 'Type of matching for an autocomplete'
-                               nullable: true
-                             match_limit:
-                               type: integer
-                               label: 'Maximum number of records to display for an autocomplete'
-                               nullable: true
-                             size:
-                               type: integer
-                               label: 'Number of characters for a text field'
-                               nullable: false
-                             placeholder:
-                               type: string
-                               label: 'Placeholder value for an empty text field'
-                               nullable: true
-
-field.formatter.settings.*:
-  type: mapping
-  mapping:
-    case_setting:
-      type: string
-      label: 'Case setting'
-      nullable: true
-    false_string:
-      type: string
-      label: 'Text to display for a boolean FALSE value'
-      nullable: false
-    true_string:
-      type: string
-      label: 'Text to display for a boolean TRUE value'
-      nullable: false
-    field_prefix:
-      type: string
-      label: 'Field prefix'
-      nullable: true
-    field_suffix:
-      type: string
-      label: 'Field suffix'
-      nullable: true
-    hide_condition:
-      type: string
-      label: 'Hide condition'
-      nullable: true
-    hide_value:
-      type: string
-      label: 'Hide value'
-      nullable: true
-    thousand_separator:
-      type: string
-      label: 'Thousand marker'
-      nullable: true
-    token_string:
-      type: string
-      label: 'Token string for field display'
-      nullable: false
-    wrap_setting:
-      type: integer
-      label: 'Word wrap setting'
-      nullable: true
-
-field.widget.settings.*:
-  type: mapping
-  mapping:
-    filter_format:
-      type: string
-      label: 'Filter format for a filtered text field'
-    num_rows:
-      type: integer
-      label: 'Number of Rows to display in the text widget'
-    widget_select_limit:
-      type: integer
-      label: 'Maximum number of records for a select'
-    match_operator:
-      type: string
-      label: 'Type of matching for an autocomplete'
-    match_limit:
-      type: integer
-      label: 'Maximum number of records to display for an autocomplete'
-    size:
-      type: integer
-      label: 'Number of characters for a text field'
-    placeholder:
-      type: string
-      label: 'Placeholder value for an empty text field'
+                           type: ignore
+                           label: 'Field Widget Settings'

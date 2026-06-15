@@ -132,7 +132,7 @@ vocabularies:
                 description: "A phylogenetic tree that is an estimate of the character's phylogeny."
             -   id: 'operation:0567'
                 name: 'Phylogenetic tree visualisation'
-                description: "A phylogenetic tree that is an estimate of the character's phylogeny."
+                description: 'Render or visualise a phylogenetic tree.'
             -   id: 'operation:0564'
                 name: 'Sequence visualisation'
                 description: 'Visualise, format or render a molecular sequence or sequences such as a sequence alignment, possibly with sequence features or properties shown.'
@@ -689,6 +689,9 @@ vocabularies:
             -   id: 'NCIT:C16223'
                 name: 'DNA Library'
                 description: 'A collection of DNA molecules that have been cloned in vectors.'
+            -   id: 'NCIT:C85439'
+                name: 'Graphics Visualization'
+                description: 'Computer methods for creating images, diagrams or animations.'
             -   id: 'NCIT:C85496'
                 name: 'Trait'
                 description: 'Any genetically determined characteristic.'
