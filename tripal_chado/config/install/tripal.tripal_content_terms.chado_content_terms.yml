@@ -3,12 +3,12 @@ label: 'Chado Managed Terms'
 description: 'Terms for Content Types and Chado Fields'
 vocabularies:
     -   name: 'germplasm_ontology'
-        label: 'GCP germplasm ontology'
-        url: 'http://www.cropontology.org/get-ontology/CO_010'
+        label: 'GCP germplasm ontology (legacy)'
+        url: 'https://www.cropontology.org/get-ontology/CO_010'
         idSpaces:
             -   name: 'CO_010'
-                description: 'Crop Germplasm Ontology'
-                urlPrefix: 'http://www.cropontology.org/terms/CO_010:{accession}'
+                description: 'Crop Germplasm Ontology (CO_010; legacy)'
+                urlPrefix: 'https://www.cropontology.org/terms/CO_010:{accession}'
         terms:
             -   id: 'CO_010:0000044'
                 name: 'accession'
