@@ -150,8 +150,8 @@ vocabularies:
                 description: 'Specification of range(s) of sequence positions.'
 
     -   name: 'efo'
-        label: 'The Experimental Factor Ontology (EFO) provides a systematic description of many experimental variables available in EBI databases, and for external projects such as the NHGRI GWAS catalogue. It combines parts of several biological ontologies, such as anatomy, disease and chemical compounds. The scope of EFO is to support the annotation, analysis and visualization of data handled by many groups at the EBI and as the core ontology for OpenTargets.org'
-        url: 'https://www.ebi.ac.uk/efo/'
+        label: 'The Experimental Factor Ontology'
+        url: 'https://github.com/EBISPOT/efo'
         idSpaces:
             -   name: 'EFO'
                 description: 'Experimental Factor Ontology'
@@ -180,7 +180,7 @@ vocabularies:
                 description: 'A cultivated plant variety selected and given a name because it has desirable characteristics that distinguish it from otherwise similar plants of the same species.'
 
     -   name: 'ero'
-        label: 'The Eagle-I Research Resource Ontology models research resources such instruments. protocols, reagents, animal models and biospecimens. It has been developed in the context of the eagle-i project (http://eagle-i.net/).'
+        label: 'The Eagle-I Research Resource Ontology'
         url: 'https://purl.bioontology.org/ontology/ERO'
         idSpaces:
             -   name: 'ERO'
@@ -219,7 +219,7 @@ vocabularies:
                 description: 'A data item that represents an arrangement according to a rank, i.e., the position of a particular case relative to other cases on a defined scale.'
 
     -   name: 'obi'
-        label: 'Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific'
+        label: 'Ontology for Biomedical Investigation'
         url: 'https://obi-ontology.org/'
         idSpaces:
             -   name: 'OBI'
@@ -575,8 +575,8 @@ vocabularies:
                 description: 'The name of the location.'
 
     -   name: 'sbo'
-        label: 'Systems Biology.  Terms commonly used in Systems Biology, and in particular in computational modeling.'
-        url: 'https://www.ebi.ac.uk/ols4/ontologies/sbo'
+        label: 'Systems Biology'
+        url: 'https://github.com/EBI-BioModels/SBO'
         idSpaces:
             -   name: 'SBO'
                 description: "Systems Biology Ontology"
@@ -608,7 +608,7 @@ vocabularies:
                 description: "Computer software, or generally just software, is any set of machine-readable instructions (most often in the form of a computer program) that conform to a given syntax (sometimes referred to as a language) that is interpretable by a given processor and that directs a computer's processor to perform specific operations."
 
     -   name: 'PMID'
-        label: 'PubMed.'
+        label: 'PubMed'
         url: 'https://www.ncbi.nlm.nih.gov/pubmed'
         idSpaces:
             -   name: 'PMID'
@@ -747,8 +747,8 @@ vocabularies:
                 name: 'Data Source'
                 description: 'The person or authoritative body who provided the information.'
     -   name: 'ncbitaxon'
-        label: 'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy'
-        url: 'https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon'
+        label: 'NCBI organismal classification'
+        url: 'https://github.com/obophenotype/ncbitaxon'
         idSpaces:
             -   name: 'NCBITaxon'
                 description: 'NCBI organismal classification'
@@ -889,8 +889,8 @@ vocabularies:
                 name: 'Volume Title'
 
     -   name: 'hydra'
-        label: 'A Vocabulary for Hypermedia-Driven Web APIs.'
-        url: 'https://www.hydra-cg.com/'
+        label: 'A Vocabulary for Hypermedia-Driven Web APIs'
+        url: 'https://www.w3.org/ns/hydra/core'
         idSpaces:
             -   name: 'hydra'
                 description: "A Vocabulary for Hypermedia-Driven Web APIs"
@@ -916,7 +916,7 @@ vocabularies:
                 description: 'A PartialCollectionView describes a partial view of a Collection. Multiple PartialCollectionViews can be connected with the next/previous properties to allow a client to retrieve all members of the collection.'
 
     -   name: 'schema'
-        label: 'Schema.org. Schema.org is sponsored by Google, Microsoft, Yahoo and Yandex. The vocabularies are developed by an open community process.'
+        label: 'Schema.org'
         url: 'https://schema.org/'
         idSpaces:
             -   name: 'schema'
@@ -952,7 +952,7 @@ vocabularies:
                 description: 'A web page element, like a table or an image.'
 
     -   name: 'owl'
-        label: 'Extends the RDF vocabulary to provide structural information for the semantic web.'
+        label: 'Web Ontology Language'
         url: 'https://www.w3.org/TR/owl-ref/'
         idSpaces:
             -   name: 'owl'
@@ -964,7 +964,7 @@ vocabularies:
                 description: 'An OWL property that applies a value restriction class to an individual.'
 
     -   name: 'sep'
-        label: 'A structured controlled vocabulary for the annotation of sample processing and separation techniques in scientific experiments.'
+        label: 'Sample processing and separation techniques (deprecated)'
         url: 'https://psidev.info/index.php?q=node/312'
         idSpaces:
             -   name: 'sep'
@@ -978,7 +978,7 @@ vocabularies:
                 description: 'A protocol is a process which is a parameterizable description of a process.'
 
     -   name: 'SIO'
-        label: 'The Semanticscience Integrated Ontology (SIO) provides a simple, integrated ontology of types and relations for rich description of objects, processes and their attributes.'
+        label: 'The Semanticscience Integrated Ontology'
         url: 'https://sio.semanticscience.org/'
         idSpaces:
             -   name: 'SIO'
@@ -1055,8 +1055,8 @@ vocabularies:
                 description: 'Gene Ontology'
                 urlPrefix: 'https://amigo.geneontology.org/amigo/term/GO:{accession}'
     -   name: 'MOD'
-        label: 'Protein modification'
-        url: 'https://www.ebi.ac.uk/ols4/ontologies/mod'
+        label: 'Protein Modification Ontology'
+        url: 'https://www.psidev.info/protein-modifications'
         idSpaces:
             -   name: 'MOD'
                 description: 'Protein modification'
@@ -1076,8 +1076,8 @@ vocabularies:
                 description: 'Classification of the type of synonym. This ontology is defined by Tripal.'
                 urlPrefix: 'cv/lookup/{db}/{accession}'
     -   name: 'wikipedia'
-        label: 'The Free Encyclopedia'
-        url: 'https://www.wikipedia.org/'
+        label: 'Wikipedia: the Free Encyclopedia'
+        url: 'https://www.wikipedia.org'
         idSpaces:
             -   name: 'wikipedia'
                 description: 'The Free Encyclopedia'
