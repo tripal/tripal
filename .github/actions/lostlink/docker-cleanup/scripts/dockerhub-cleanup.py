@@ -369,6 +369,16 @@ class DockerHubCleaner:
         # Unknown format - don't delete
         return False, "unknown"
 
+    def get_digests(self, tags):
+        """
+        Generate array where tags are keyed by digest
+        """
+        digests = {}
+        for tag in tags:
+            digest_id = tag.get("digest")
+            digests.setdefault(digest_id, []).append(tag)
+        return digests
+
     def cleanup_repository(self, repo_spec, default_namespace=None, pr_retention_days=30, sha_retention_days=14):
         """
         Clean up old tags from a repository
@@ -402,7 +412,10 @@ class DockerHubCleaner:
             self.stats["repositories"].append(repo_stats)
             return repo_stats
 
-        self.log(f"  📊 Found {len(tags)} total tags")
+        # An image may have more than one tag, so index by digest.
+        digests = self.get_digests(tags)
+
+        self.log(f"  📊 Found {len(tags)} total tags for {len(digests)} digests")
 
         # Calculate cutoff dates
         now = datetime.now(timezone.utc)
@@ -415,54 +428,77 @@ class DockerHubCleaner:
         failed_count = 0
         identified_count = 0
 
-        for tag in tags:
-            tag_name = tag.get("name")
-            if not tag_name:
-                continue
+        for digest_id in digests:
+            state = "unknown"
+            short_id = digest_id[7:14]
+            tag_name = ""
+            all_tags = []
+            for tag in digests[digest_id]:
+                tag_name = tag.get("name")
+                if not tag_name:
+                    continue
+                all_tags.append(tag_name)
 
-            # Parse last updated date
-            last_updated_str = tag.get("last_updated", "")
-            try:
-                # Handle both ISO format and simple datetime
-                if last_updated_str:
-                    # Docker Hub dates end with 'Z' for UTC
-                    last_updated = datetime.strptime(
-                        last_updated_str[:19],
-                        "%Y-%m-%dT%H:%M:%S"
-                    ).replace(tzinfo=timezone.utc)
+                # Parse last updated date
+                last_updated_str = tag.get("last_updated", "")
+                try:
+                    # Handle both ISO format and simple datetime
+                    if last_updated_str:
+                        # Docker Hub dates end with 'Z' for UTC
+                        last_updated = datetime.strptime(
+                            last_updated_str[:19],
+                            "%Y-%m-%dT%H:%M:%S"
+                        ).replace(tzinfo=timezone.utc)
+                    else:
+                        # If no date, assume it's old enough to consider
+                        last_updated = datetime.now(timezone.utc) - timedelta(days=365)
+                except (ValueError, TypeError):
+                    state = "no-date"
+                    continue
+
+                # Check if tag is protected
+                if self.is_protected_tag(tag_name):
+                    state = "protected"
+                    continue
+
+                # Check if tag should be deleted
+                should_delete, tag_type = self.should_delete_tag(tag_name, last_updated, pr_cutoff, sha_cutoff)
+
+                if should_delete:
+                    # Only set to delete if no other state has been set.
+                    if (state == "unknown"):
+                        state = "delete"
+
                 else:
-                    # If no date, assume it's old enough to consider
-                    last_updated = datetime.now(timezone.utc) - timedelta(days=365)
-            except (ValueError, TypeError):
-                self.log(f"  ⚠️  Skipping {tag_name}: unable to parse date", "WARNING")
-                kept_count += 1
-                continue
+                    if tag_type != "unknown":
+                        if state != "protected":
+                            state = "keep-known"
+                    else:
+                        state = "keep-unknown"
 
-            # Check if tag is protected
-            if self.is_protected_tag(tag_name):
-                self.log(f"  🛡️  Protected: {tag_name}")
-                protected_count += 1
-                self.stats["protected_count"] += 1
-                continue
-
-            # Check if tag should be deleted
-            should_delete, tag_type = self.should_delete_tag(tag_name, last_updated, pr_cutoff, sha_cutoff)
-
-            if should_delete:
-                identified_count += 1
-                self.stats["identified_count"] += 1
-
-                if self.delete_tag(namespace, repository, tag_name):
-                    deleted_count += 1
-                    self.stats["deleted_count"] += 1
-                else:
-                    failed_count += 1
-            else:
-                if tag_type != "unknown":
-                    self.log(f"  ⏳ Keeping {tag_type} tag (recent): {tag_name}")
-                else:
-                    self.log(f"  ❓ Keeping unknown format: {tag_name}")
-                kept_count += 1
+            concat_tags = " ".join(all_tags)
+            match state:
+                case "delete":
+                    if self.delete_tag(namespace, repository, tag_name):
+                        deleted_count += 1
+                        self.stats["deleted_count"] += 1
+                    else:
+                        failed_count += 1
+                    identified_count += 1
+                    self.stats["identified_count"] += 1
+                case "no-date":
+                    self.log(f"  ⚠️  Skipping {short_id} {concat_tags}: unable to parse date", "WARNING")
+                    kept_count += 1
+                case "protected":
+                    self.log(f"  🛡️  Protected tag: {short_id} {concat_tags}")
+                    protected_count += 1
+                    self.stats["protected_count"] += 1
+                case "keep-known":
+                    self.log(f"  ⏳ Keeping {tag_type} tag (recent): {short_id} {concat_tags}")
+                    kept_count += 1
+                case "keep-unknown", "unknown":
+                    self.log(f"  ❓ Keeping unknown format: {short_id} {concat_tags}")
+                    kept_count += 1
 
         # Summary
         self.log(f"\n  📈 Summary for {namespace}/{repository}:")
