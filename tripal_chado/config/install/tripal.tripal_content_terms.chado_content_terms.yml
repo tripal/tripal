@@ -44,7 +44,7 @@ vocabularies:
         url: 'https://www.doi.org'
         idSpaces:
             -   name: 'doi'
-                description: 'A DOI name is a digital identifier of an object, any object — physical, digital, or abstract.'
+                description: 'Digital Object Ontology'
                 urlPrefix: 'https://doi.org/{accession}'
 
     -   name: 'EDAM'
@@ -200,7 +200,7 @@ vocabularies:
         idSpaces:
             -   name: 'GEO'
                 description: 'An ontology of geographical entities'
-                urlPrefix: 'http://purl.obolibrary.org/obo/{$db}_{accession}'
+                urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
         terms:
             -   id: 'GEO:000000788'
                 name: 'geodetic datum'
@@ -283,6 +283,7 @@ vocabularies:
         idSpaces:
             -   name: 'null'
                 description: 'No database'
+                urlPrefix: 'cv/lookup/{db}/{accession}'
 
     -   name: 'local'
         label: 'Locally created terms'
@@ -580,7 +581,7 @@ vocabularies:
         idSpaces:
             -   name: 'SBO'
                 description: "Systems Biology Ontology"
-                urlPrefix: "https://www.ebi.ac.uk/ols4/ontologies/sbo/classes/http%253A%252F%252Fbiomodels.net%252FSBO%252F{db}_{accession}"
+                urlPrefix: "https://purl.obolibrary.org/obo/{db}_{accession}"
         terms:
             -   id: 'SBO:0000358'
                 name: 'phenotype'
@@ -752,7 +753,7 @@ vocabularies:
         idSpaces:
             -   name: 'NCBITaxon'
                 description: 'NCBI organismal classification'
-                urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
+                urlPrefix: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={accession}'
         terms:
             -   id: 'NCBITaxon:common_name'
                 name: 'common name'
@@ -894,7 +895,7 @@ vocabularies:
         idSpaces:
             -   name: 'hydra'
                 description: "A Vocabulary for Hypermedia-Driven Web APIs"
-                urlPrefix: "http://www.w3.org/ns/hydra/core#{accession}"
+                urlPrefix: "https://www.w3.org/ns/hydra/core#{accession}"
         terms:
             -   id: 'hydra:Collection'
                 name: 'Collection'
@@ -968,7 +969,8 @@ vocabularies:
         url: 'https://psidev.info/index.php?q=node/312'
         idSpaces:
             -   name: 'sep'
-                description: "Sample processing and separation techniques. (deprecated)"
+                description: "Sample processing and separation techniques (deprecated)"
+                urlPrefix: "https://purl.obolibrary.org/obo/{db}_{accession}"
         terms:
             -   id: 'sep:00195'
                 name: 'biological sample'
@@ -1040,13 +1042,17 @@ vocabularies:
         idSpaces:
             -   name: 'biological_process'
                 description: 'BPs are the larger processes or ‘biological programs’ accomplished by the concerted action of multiple molecular activities'
+                urlPrefix: 'https://purl.obolibrary.org/obo/GO_{accession}'
             -   name: 'cellular_component'
                 description: 'CC serves to capture the cellular location where a molecular function takes place'
+                urlPrefix: 'https://purl.obolibrary.org/obo/GO_{accession}'
             -   name: 'molecular_function'
                 description: 'MFs represent molecular-level activities performed by gene products'
+                urlPrefix: 'https://purl.obolibrary.org/obo/GO_{accession}'
             -   name: 'GO'
-                description: 'The mission of the GO Consortium is to develop a comprehensive, computational model of biological systems, ranging from the molecular to the organism level, across the multiplicity of species in the tree of life.'
-                urlPrefix: 'https://amigo.geneontology.org/amigo/term/{db}:{accession}'
+                description: 'Gene Ontology'
+                urlPrefix: 'https://purl.obolibrary.org/obo/GO_{accession}'
+
     -   name: 'gene_ontology'
         label: 'Gene Ontology'
         url: 'https://geneontology.org/'
@@ -1066,8 +1072,9 @@ vocabularies:
         url: 'https://orcid.org/'
         idSpaces:
             -   name: 'orcid'
-                description: 'ORCID is a free, unique, persistent identifier (PID) for individuals to use as they engage in research, scholarship, and innovation activities.'
+                description: 'Open Researcher and Contributor ID'
                 urlPrefix: 'https://orcid.org/{accession}'
+
     -   name: 'synonym_type'
         label: 'Type of synonym'
         url: 'cv/lookup/synonym_type'
@@ -1080,5 +1087,5 @@ vocabularies:
         url: 'https://www.wikipedia.org'
         idSpaces:
             -   name: 'wikipedia'
-                description: 'The Free Encyclopedia'
-                urlPrefix: 'https://wikipedia.org/wiki/{accession}'
+                description: 'Wikipedia: the Free Encyclopedia'
+                urlPrefix: 'https://en.wikipedia.org/wiki/{accession}'
