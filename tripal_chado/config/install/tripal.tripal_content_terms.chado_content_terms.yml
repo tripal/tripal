@@ -7,7 +7,7 @@ vocabularies:
         url: 'https://www.cropontology.org/get-ontology/CO_010'
         idSpaces:
             -   name: 'CO_010'
-                description: 'Crop Germplasm Ontology (CO_010; legacy)'
+                description: 'Crop Germplasm Ontology (legacy)'
                 urlPrefix: 'https://www.cropontology.org/terms/CO_010:{accession}'
         terms:
             -   id: 'CO_010:0000044'
@@ -24,6 +24,9 @@ vocabularies:
         url: 'https://www.dublincore.org/specifications/dublin-core/dcmi-terms/'
         idSpaces:
             -   name: 'dc'
+                description: 'DCMI Metadata Terms'
+                urlPrefix: 'https://purl.org/dc/terms/{accession}'
+            -   name: 'dcterms'
                 description: 'DCMI Metadata Terms'
                 urlPrefix: 'https://purl.org/dc/terms/{accession}'
         terms:
@@ -52,16 +55,16 @@ vocabularies:
         url: 'https://edamontology.org/page'
         idSpaces:
             -   name: 'data'
-                description: "Bioinformatics operations, data types, formats, identifiers and topics."
+                description: "EDAM: Data"
                 urlPrefix: "https://edamontology.org/{db}_{accession}"
             -   name: 'format'
-                description: 'A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere. The main focus in EDAM lies on formats as means of structuring data exchanged between different tools or resources.'
+                description: 'EDAM: Format'
                 urlPrefix: "https://edamontology.org/{db}_{accession}"
             -   name: 'operation'
-                description: 'A function that processes a set of inputs and results in a set of outputs, or associates arguments (inputs) with values (outputs). Special cases are: a) An operation that consumes no input (has no input arguments).'
+                description: 'EDAM: Operation'
                 urlPrefix: "https://edamontology.org/{db}_{accession}"
             -   name: 'topic'
-                description: 'A category denoting a rather broad domain or field of interest, of study, application, work, data, or technology. Topics have no clearly defined borders between each other.'
+                description: 'EDAM: Topic'
                 urlPrefix: "https://edamontology.org/{db}_{accession}"
         terms:
             -   id: 'data:1249'
@@ -199,7 +202,7 @@ vocabularies:
         url: 'https://github.com/mcwdsi/geographical-entity-ontology/wiki'
         idSpaces:
             -   name: 'GEO'
-                description: 'An ontology of geographical entities'
+                description: 'Geographical Entity Ontology'
                 urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
         terms:
             -   id: 'GEO:000000788'
@@ -223,7 +226,7 @@ vocabularies:
         url: 'https://obi-ontology.org/'
         idSpaces:
             -   name: 'OBI'
-                description: "The Ontology for Biomedical Investigation"
+                description: "Ontology for Biomedical Investigation"
                 urlPrefix: "https://purl.obolibrary.org/obo/{db}_{accession}"
         terms:
             -   id: 'OBI:0100026'
@@ -237,11 +240,11 @@ vocabularies:
                 description: 'A material entity that has two or more specimens as its parts.'
 
     -   name: 'ogi'
-        label: 'Ontology for genetic interval'
+        label: 'Ontology for Genetic Interval'
         url: 'https://purl.bioontology.org/ontology/OGI'
         idSpaces:
             -   name: 'OGI'
-                description: "Ontology for genetic interval"
+                description: "Ontology for Genetic Interval"
                 urlPrefix: "https://purl.obolibrary.org/obo/{db}_{accession}"
         terms:
             -   id: 'OGI:0000021'
@@ -277,6 +280,14 @@ vocabularies:
             -   id: 'IAO:0000700'
                 name: 'has ontology root term'
                 description: 'Ontology annotation property. Relates an ontology to a term that is a designated root term of the ontology. Display tools like OLS can use terms annotated with this property as the starting point for rendering the ontology class hierarchy. There can be more than one root.'
+    -   name: 'iao'
+        label: 'Information Artifact Ontology'
+        url: 'https://github.com/information-artifact-ontology/IAO/'
+        idSpaces:
+            -   name: 'IAO'
+                description: 'Information Artifact Ontology'
+                urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
+
     -   name: 'null'
         label: 'No vocabulary'
         url: 'cv/lookup/null'
@@ -290,7 +301,7 @@ vocabularies:
         url: 'cv/lookup/local'
         idSpaces:
             -   name: 'local'
-                description: 'Terms created for this site'
+                description: 'Locally created terms'
                 urlPrefix: 'cv/lookup/{db}/{accession}'
         terms:
             -   id: 'local:property'
@@ -576,7 +587,7 @@ vocabularies:
                 description: 'The name of the location.'
 
     -   name: 'sbo'
-        label: 'Systems Biology'
+        label: 'Systems Biology Ontology'
         url: 'https://github.com/EBI-BioModels/SBO'
         idSpaces:
             -   name: 'SBO'
@@ -597,11 +608,11 @@ vocabularies:
                 description: 'Connectedness between entities and/or interactions representing their relatedness or influence.'
 
     -   name: 'swo'
-        label: 'Bioinformatics operations, data types, formats, identifiers and topics'
+        label: 'The Software Ontology'
         url: 'https://obofoundry.org/ontology/swo.html'
         idSpaces:
             -   name: 'SWO'
-                description: "Bioinformatics operations, data types, formats, identifiers and topics"
+                description: "The Software Ontology"
                 urlPrefix: "https://www.ebi.ac.uk/swo/{db}_{accession}"
         terms:
             -   id: 'SWO:0000001'
@@ -633,7 +644,7 @@ vocabularies:
         url: 'https://www.ebi.ac.uk/ols4/ontologies/ncit'
         idSpaces:
             -   name: 'NCIT'
-                description: 'The NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.'
+                description: 'NCI Thesaurus OBO Edition'
                 urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
         terms:
             -   id: 'NCIT:C25164'
@@ -832,11 +843,11 @@ vocabularies:
                 description: 'A biological_region characterized as a single heritable trait in a phenotype screen. The heritable phenotype may be mapped to a chromosome but generally has not been characterized to a specific gene locus. [JAX:hdene]'
 
     -   name: 'taxonomic_rank'
-        label: 'Taxonomic Rank'
+        label: 'Taxonomic Rank Ontology'
         url: 'https://www.obofoundry.org/ontology/taxrank.html'
         idSpaces:
             -   name: 'TAXRANK'
-                description: "A vocabulary of taxonomic ranks (species, family, phylum, etc)"
+                description: "Taxonomic Rank Ontology"
                 urlPrefix: "https://purl.obolibrary.org/obo/{db}_{accession}"
         terms:
             -   id: 'TAXRANK:0000005'
@@ -851,7 +862,7 @@ vocabularies:
         url: 'cv/lookup/TCONTACT'
         idSpaces:
             -   name: 'TCONTACT'
-                description: "Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology can be identified."
+                description: "Tripal Contact Ontology"
                 urlPrefix: "cv/lookup/TCONTACT/{accession}"
         terms:
             -   id: 'TCONTACT:0000004'
@@ -872,7 +883,7 @@ vocabularies:
         url: 'cv/lookup/TPUB'
         idSpaces:
             -   name: 'TPUB'
-                description: "Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology can be identified."
+                description: "Tripal Publication Ontology "
                 urlPrefix: "cv/lookup/TPUB/{accession}"
         terms:
             -   id: 'TPUB:0000002'
@@ -886,11 +897,11 @@ vocabularies:
                 name: 'Volume Title'
 
     -   name: 'hydra'
-        label: 'A Vocabulary for Hypermedia-Driven Web APIs'
+        label: 'Hypermedia-Driven Web APIs Vocabulary'
         url: 'https://www.w3.org/ns/hydra/core'
         idSpaces:
             -   name: 'hydra'
-                description: "A Vocabulary for Hypermedia-Driven Web APIs"
+                description: "Hypermedia-Driven Web APIs Vocabulary"
                 urlPrefix: "https://www.w3.org/ns/hydra/core#{accession}"
         terms:
             -   id: 'hydra:Collection'
@@ -953,7 +964,7 @@ vocabularies:
         url: 'https://www.w3.org/TR/owl-ref/'
         idSpaces:
             -   name: 'owl'
-                description: 'Extends the RDF vocabulary to provide structural information for the semantic web.'
+                description: 'Web Ontology Language'
                 urlPrefix: "https://www.w3.org/TR/owl-ref/#{accession}-def"
         terms:
             -   id: 'owl:hasValue'
@@ -976,7 +987,7 @@ vocabularies:
                 description: 'A protocol is a process which is a parameterizable description of a process.'
 
     -   name: 'SIO'
-        label: 'The Semanticscience Integrated Ontology'
+        label: 'Semanticscience Integrated Ontology'
         url: 'https://sio.semanticscience.org/'
         idSpaces:
             -   name: 'SIO'
@@ -1027,7 +1038,7 @@ vocabularies:
         url: 'https://agroportal.lirmm.fr/ontologies/PBO'
         idSpaces:
             -   name: 'PBO'
-                description: 'Plant Breeding Ontology (PBO): an ontology for the plant breeding community which captures more than 2200 entries where 80 represent the core terms.'
+                description: 'Plant Breeding Ontology'
                 urlPrefix: 'https://agroportal.lirmm.fr/ontologies/PBO/PBO_{accession}'
         terms:
             -   id: 'PBO:0000065'
@@ -1040,13 +1051,13 @@ vocabularies:
                 description: 'Gene Ontology'
                 urlPrefix: 'https://purl.obolibrary.org/obo/GO_{accession}'
             -   name: 'biological_process'
-                description: 'BPs are the larger processes or ‘biological programs’ accomplished by the concerted action of multiple molecular activities'
+                description: 'GO: Biological Process'
                 urlPrefix: 'https://purl.obolibrary.org/obo/GO_{accession}'
             -   name: 'cellular_component'
-                description: 'CC serves to capture the cellular location where a molecular function takes place'
+                description: 'GO: Cellular Component'
                 urlPrefix: 'https://purl.obolibrary.org/obo/GO_{accession}'
             -   name: 'molecular_function'
-                description: 'MFs represent molecular-level activities performed by gene products'
+                description: 'GO: Molecular Function'
                 urlPrefix: 'https://purl.obolibrary.org/obo/GO_{accession}'
             -   name: 'GO'
                 description: 'Gene Ontology'
@@ -1077,7 +1088,7 @@ vocabularies:
                 urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
 
     -   name: 'RNAMOD'
-        label: 'RNA Modification Ontology (RNAMOD)'
+        label: 'RNA Modification Ontology'
         url: 'https://rnainformatics.org.cn/RNAmod/'
         idSpaces:
             -   name: 'RNAMOD'
@@ -1085,11 +1096,11 @@ vocabularies:
                 urlPrefix: 'https://github.com/The-Sequence-Ontology/SO-Ontologies/search?q=RNAMOD%3A{accession}'
 
     -   name: 'loinc'
-        label: 'Logical Observation Identifiers Names and Codes (LOINC)'
+        label: 'Logical Observation Identifiers Names and Codes'
         url: 'https://loinc.org/'
         idSpaces:
             -   name: 'loinc'
-                description: 'Logical Observation Identifiers Names and Codes (LOINC)'
+                description: 'Logical Observation Identifiers Names and Codes'
                 urlPrefix: 'https://loinc.org/{accession}'
 
     -   name: 'orcid'
