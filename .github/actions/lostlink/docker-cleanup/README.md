@@ -2,8 +2,9 @@
 
 #####
 # NOTICE
-# Forked from PR https://github.com/lostlink/docker-cleanup
-# to incorporate pull request #3
+# Forked from https://github.com/lostlink/docker-cleanup
+# to incorporate changes to address issues #2 and #4
+# and further modified to handle digests with multiple tags.
 #####
 
 [![GitHub Action](https://img.shields.io/badge/GitHub-Action-blue?logo=github)](https://github.com/marketplace/actions/docker-hub-cleanup)

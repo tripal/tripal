@@ -19,8 +19,9 @@ jobs:
 
       - name: 'Docker Hub Cleanup'
         #uses: 'lostlink/docker-cleanup@v1.0.1'
-        # Temporarily Use a locally forked copy to fix the bug to be fixed in
-        # pull request https://github.com/lostlink/docker-cleanup/pull/4
+        # Temporarily Use a locally forked copy to fix the bug described in
+        # issues https://github.com/lostlink/docker-cleanup/issue/3 and 5
+        # and additional changes to handle digests with multiple tags.
         # Long term, we are hoping dockerhub eventually provides a mechanism
         # for automatic image expiration.
         uses: ./.github/actions/lostlink/docker-cleanup
