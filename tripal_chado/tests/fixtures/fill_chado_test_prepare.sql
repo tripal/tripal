@@ -6848,7 +6848,7 @@ INSERT INTO chado.cvterm VALUES (3185, 12, 'collection of specimens', 'A materia
 INSERT INTO chado.cvterm VALUES (3186, 33, 'progeny', '', 3493, 0, 0);
 INSERT INTO chado.cvterm VALUES (3187, 19, 'Graphics Visualization', 'Computer methods for creating images, diagrams or animations.', 3494, 0, 0);
 INSERT INTO chado.contact VALUES (1, NULL, 'null', 'null');
-INSERT INTO chado.pub VALUES (1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'null', 'null', 1, false, NULL, NULL);
+INSERT INTO chado.pub VALUES (1, 'No publication', NULL, NULL, NULL, NULL, NULL, NULL, 'null', 'null', 1, false, NULL, NULL);
 INSERT INTO chado.chadoprop VALUES (1, 2, '1.3', 0);
 INSERT INTO chado.cv_root_mview VALUES ('sequence_attribute', 812, 23, 'sequence');
 INSERT INTO chado.cv_root_mview VALUES ('taxonomic_rank', 2878, 24, 'taxonomic_rank');
