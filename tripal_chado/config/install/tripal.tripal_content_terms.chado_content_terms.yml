@@ -808,10 +808,6 @@ vocabularies:
             -   name: 'SO'
                 description: "The Sequence Ontology"
                 urlPrefix: "http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}"
-            -   name: 'BS'
-                description: 'The Protein Feature Ontology is a structured controlled vocabulary for features of a protein sequence or structure.'
-            -   name: 'RNAMOD'
-                description: 'RNA modification'
         terms:
             -   id: 'SO:0000110'
                 name: 'sequence_feature'
@@ -1060,13 +1056,39 @@ vocabularies:
             -   name: 'gene_ontology'
                 description: 'Gene Ontology'
                 urlPrefix: 'https://amigo.geneontology.org/amigo/term/GO:{accession}'
+
+    -   name: 'BS'
+        label: 'Biosapiens Protein Feature Ontology'
+        url: 'https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/master/Ontology_Files/subsets/biosapiens.obo'
+        idSpaces:
+            -   name: 'BS'
+                description: 'Biosapiens Protein Feature Ontology'
+                urlPrefix: 'https://github.com/The-Sequence-Ontology/SO-Ontologies/search?q=BS%3A{accession}'
+
     -   name: 'MOD'
         label: 'Protein Modification Ontology'
         url: 'https://www.psidev.info/protein-modifications'
         idSpaces:
             -   name: 'MOD'
-                description: 'Protein modification'
+                description: 'Protein Modification Ontology'
                 urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
+
+    -   name: 'RNAMOD'
+        label: 'RNA Modification Ontology (RNAMOD)'
+        url: 'https://rnainformatics.org.cn/RNAmod/'
+        idSpaces:
+            -   name: 'RNAMOD'
+                description: 'RNA Modification Ontology'
+                urlPrefix: 'https://github.com/The-Sequence-Ontology/SO-Ontologies/search?q=RNAMOD%3A{accession}'
+
+    -   name: 'loinc'
+        label: 'Logical Observation Identifiers Names and Codes (LOINC)'
+        url: 'https://loinc.org/'
+        idSpaces:
+            -   name: 'loinc'
+                description: 'Logical Observation Identifiers Names and Codes (LOINC)'
+                urlPrefix: 'https://loinc.org/{accession}'
+
     -   name: 'orcid'
         label: 'Open Researcher and Contributor ID'
         url: 'https://orcid.org/'
