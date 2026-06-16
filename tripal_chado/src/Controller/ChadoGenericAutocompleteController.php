@@ -129,7 +129,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
     string $type_column,
     string $property_table,
     int $match_limit = 10,
-    int $type_id = 0,
+    string $type_id = '0',
   ) {
 
     // Array to hold matching records.
@@ -258,14 +258,16 @@ class ChadoGenericAutocompleteController extends ControllerBase {
         $query->range(0, $options['match_limit']);
       }
 
-      if ($options['type_id'] > 0) {
+      if ($options['type_id'] != '0') {
         // We are limiting to records of a specific type.
+        $options['type_id'] = explode(',', $options['type_id']);
+
         if ($property_table and ($property_table != $base_table)) {
           $query->leftJoin('1:' . $property_table, 'PT', '"BT".' . $options['pkey_id'] . ' = "PT".' . $options['pkey_id']);
-          $query->condition('PT.' . $options['property_type_column'], $options['type_id'], '=');
+          $query->condition('PT.' . $options['property_type_column'], $options['type_id'], 'IN');
         }
         else {
-          $query->condition('BT.' . $type_column, $options['type_id'], '=');
+          $query->condition('BT.' . $type_column, $options['type_id'], 'IN');
         }
       }
       else {
