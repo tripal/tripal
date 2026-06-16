@@ -229,7 +229,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $elements['debug'] = [
       '#type' => 'checkbox',
       '#title' => 'Enable Debugging',
-      '#description' => $this->t('Enabling debugging on the field will print out a number of debugging messages both on screen and in the logs to help developers diagnose any problems which may be occuring.'),
+      '#description' => t('Enabling debugging on the field will print out a number of debugging messages both on screen and in the logs to help developers diagnose any problems which may be occuring.'),
       '#default_value' => $debug,
     ];
 
