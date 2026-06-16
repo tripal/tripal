@@ -291,8 +291,14 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
 
     // Validate that organism exists.
     $values = $this->validateStockOrganism($values, $options);
+    if ($values['stock.organism_id'] === NULL) {
+      throw new ChadoBuddyException("ChadoBuddy insertStock error, a unique organism record must be provided to insert a stock record.");
+    }
     // Validate that stock type exists.
     $values = $this->validateStockType($values, $options);
+    if ($values['stock.type_id'] === NULL) {
+      throw new ChadoBuddyException("ChadoBuddy insertStock error, a unique cvterm must be provided to insert a stock record.");
+    }
     // Validate that stock dbxref exists or create it if permitted.
     $values = $this->validateStockDbxref($values, $options);
 
@@ -617,7 +623,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
         // Note: if the user didn't want to provide a dbxref_id, they wouldn't
         // have provided dbxref values in the first place.
         else {
-          throw new ChadoBuddyException("ChadoBuddy validateStockDbxref error, could not find or create a dbxref, but dbxref values were provided:\n" . print_r($dbxref_values, TRUE));
+          throw new ChadoBuddyException("ChadoBuddy validateStockDbxref error, could not find or create a dbxref, but dbxref values were provided from the db and/or dbxref tables:\n" . print_r($dbxref_values, TRUE));
         }
       }
     }
@@ -694,14 +700,14 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
         if ($organism_records) {
           // Ensure that we didn't retrieve multiple possible organisms.
           if (count($organism_records) > 1) {
-            throw new ChadoBuddyException("ChadoBuddy validateStockOrganism error, more than one record matched the values specified:\n" . print_r($organism_values, TRUE));
+            throw new ChadoBuddyException("ChadoBuddy validateStockOrganism error, more than one record matched the values specified:\n" . print_r($organism_values, TRUE) . "\nNOTE: You cannot specify the organism type using values from the cv, cvterm, db and dbxref tables because they apply to the stock.type_id or stock.dbxref_id. If you are having trouble uniquely selecting an organism, pass in a ChadoOrganismBuddy.");
           }
           $values['stock.organism_id'] = $organism_records[0]->getValue('organism.organism_id', ['strict' => FALSE]);
         }
         // If an organism could not be found, yet organism values were provided,
         // throw an exception.
         else {
-          throw new ChadoBuddyException("ChadoBuddy validateStockOrganism error, could not find an organism, but organism values were provided:\n" . print_r($organism_values, TRUE));
+          throw new ChadoBuddyException("ChadoBuddy validateStockOrganism error, could not find an organism, but organism values were provided from the organism table:\n" . print_r($organism_values, TRUE));
         }
       }
     }
@@ -778,14 +784,14 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
         if ($cvterm_records) {
           // Ensure that we didn't retrieve multiple possible cvterms.
           if (count($cvterm_records) > 1) {
-            throw new ChadoBuddyException("ChadoBuddy validateStockType error, more than one record matched the values specified:\n" . print_r($cvterm_values, TRUE));
+            throw new ChadoBuddyException("ChadoBuddy validateStockType error, more than one cvterm record matched the values specified:\n" . print_r($cvterm_values, TRUE) . "\nNOTE: You cannot specify the cvterm accession using db.name and dbxref.accession because they apply to the stock.dbxref_id. If you are having trouble uniquely selecting a cvterm, pass in a ChadoCvtermBuddy.");
           }
           $values['stock.type_id'] = $cvterm_records[0]->getValue('cvterm.cvterm_id', ['strict' => FALSE]);
         }
         // If a cvterm could not be found, yet cvterm values were provided,
         // throw an exception.
         else {
-          throw new ChadoBuddyException("ChadoBuddy validateStockType error, could not find a cvterm, but cvterm values were provided:\n" . print_r($cvterm_values, TRUE));
+          throw new ChadoBuddyException("ChadoBuddy validateStockType error, could not find a cvterm, but cvterm values were provided from the cv and/or cvterm tables:\n" . print_r($cvterm_values, TRUE));
         }
       }
     }
