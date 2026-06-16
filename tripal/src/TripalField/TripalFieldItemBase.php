@@ -39,11 +39,11 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       'termAccession' => '',
       // A simple flag to indicate that we should enable debugging information
       // for this field type.
-      // This will be used by ChadoStorage to tell the ChadoFieldDebugger service
-      // to display debugging information. All you need to do as a developer is
-      // set this variable to TRUE in your field and debuggin information will be
-      // displayed on the screen and in the drupal logs when you create, edit,
-      // and load content that has your field attached.
+      // This will be used by ChadoStorage to tell the ChadoFieldDebugger
+      // service to display debugging information. All you need to do as a
+      // developer is set this variable to TRUE in your field and debugging
+      // information will be displayed on the screen and in the drupal logs
+      // when you create, edit, and load content that has your field attached.
       'debug' => FALSE,
     ];
     return $settings + parent::defaultFieldSettings();
@@ -71,9 +71,14 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * Builds the table the describes the term assigned to the field.
    *
    * @param array $elements
+   *   The form elements array of the field settings form, to which we want
+   *   to add the table describing the term assigned to the field.
    * @param \Drupal\tripal\TripalVocabTerms\TripalTerm $term
+   *   The term assigned to the field.
    * @param \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase $idSpace
+   *   The ID space of the term assigned to the field.
    * @param \Drupal\tripal\TripalVocabTerms\TripalVocabularyBase $vocabulary
+   *   The vocabulary of the term assigned to the field.
    */
   public static function buildVocabularyTermTable(
     array &$elements,
@@ -152,11 +157,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $elements['field_term_fs']['table_label'] = [
       '#type' => 'item',
       '#title' => t('The Current Term'),
-      '#description' => t("Terms belong to a vocabulary (e.g. Sequence " .
-          "Ontology) and are identified with a unique accession which is often  " .
-          "numeric but may not be (e.g. gene accession is 0000704 in the Sequence " .
-          "Ontology). Term IDs are prefixed with an ID Space (e.g. SO). The " .
-          "ID Space and the accession will uniquely identify a term (e.g. SO:0000704)."),
+      '#description' => t("Terms belong to a vocabulary (e.g. Sequence Ontology) and are identified with a unique accession which is often numeric but may not be (e.g. gene accession is 0000704 in the Sequence Ontology). Term IDs are prefixed with an ID Space (e.g. SO). The ID Space and the accession will uniquely identify a term (e.g. SO:0000704)."),
     ];
 
     $elements['field_term_fs']['field_term'] = [
@@ -171,11 +172,15 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   /**
    * Provides the form for setting a cv term on a field.
    *
-   * @param $field
+   * @param \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface $field
+   *   The field for which we are building the form.
    * @param array $form
+   *   The existing field settings form elements, to which we want to add
+   *   the cv term settings form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the field settings form.
    */
-  public static function buildFieldTermForm($field, $form, FormStateInterface $form_state) {
+  public static function buildFieldTermForm(TripalFieldItemInterface $field, $form, FormStateInterface $form_state) {
     $elements = [];
 
     $is_open = FALSE;
@@ -208,14 +213,18 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $elements['debug'] = [
       '#type' => 'checkbox',
       '#title' => 'Enable Debugging',
-      '#description' => 'Enabling debugging on the field will print out a number of debugging messages both on screen and in the logs to help developers diagnose any problems which may be occuring.',
+      '#description' => $this->t('Enabling debugging on the field will print out a number of debugging messages both on screen and in the logs to help developers diagnose any problems which may be occuring.'),
       '#default_value' => $debug,
     ];
 
     $default_vocabulary_term = '';
-    // For Drupal ≥10.2 our values are now in the subform.
-    $vocabulary_term = $form_state->getValue(['field_storage', 'subform', 'settings', 'field_term_fs', 'vocabulary_term'])
-        ?? $form_state->getValue(['settings', 'field_term_fs', 'vocabulary_term']);
+    $vocabulary_term = $form_state->getValue([
+      'field_storage',
+      'subform',
+      'settings',
+      'field_term_fs',
+      'vocabulary_term',
+    ]);
 
     // The term may already be set as the default in the
     // form, but is not yet present in the form state.
@@ -267,29 +276,21 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $elements['field_term_fs'] = [
       '#type' => 'details',
       '#title' => t("Controlled Vocabulary Term"),
-      '#description' => t("All fields attached to a Tripal-based content " .
-          "type must be associated with a controlled vocabulary term. " .
-          "Use caution when changing the term. It should accurately represent " .
-          "the type of data stored in this field.  Using terms that are developed " .
-          "by the community (e.g. Sequence Ontology, etc.) ensures that the " .
-          "data on your site is discoverable and interoperable."),
+      '#description' => t("All fields attached to a Tripal-based content type must be associated with a controlled vocabulary term. Use caution when changing the term. It should accurately represent the type of data stored in this field.  Using terms that are developed by the community (e.g. Sequence Ontology, etc.) ensures that the data on your site is discoverable and interoperable."),
       '#open' => $is_open,
     ];
 
-    $element_title = "Set the Term";
+    $changing_term_mode = FALSE;
     if ($term and $idSpace and $vocabulary) {
       TripalFieldItemBase::buildVocabularyTermTable($elements, $term, $idSpace, $vocabulary);
-      $element_title = "Change the Term";
+      $changing_term_mode = TRUE;
     }
 
     $elements['field_term_fs']["vocabulary_term"] = [
       "#type" => "textfield",
-      "#title" => t($element_title),
+      "#title" => ($changing_term_mode) ? t("Change the Term") : t("Set the Term"),
       "#required" => TRUE,
-      "#description" => t("Enter a vocabulary term name. A set of matching " .
-          "candidates will be provided to choose from. You may find the multiple matching terms " .
-          "from different vocabularies. The full accession for each term is provided " .
-          "to help choose. Only the top 10 best matches are shown at a time."),
+      "#description" => t("Enter a vocabulary term name. A set of matching candidates will be provided to choose from. You may find the multiple matching terms from different vocabularies. The full accession for each term is provided to help choose. Only the top 10 best matches are shown at a time."),
       '#default_value' => $default_vocabulary_term,
       '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
       '#autocomplete_route_parameters' => ['count' => 10],
@@ -353,8 +354,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   }
 
   /**
-   * Returns a list of field terms for all fields on the specified
-   * bundle, including non-chado fields.
+   * Get a list of field terms for all fields on the specified bundle.
+   *
+   * Note: this includes terms on non-Tripal fields.
    *
    * @param string $bundle
    *   The bundle id, e.g. 'project', 'analysis', etc.
@@ -379,8 +381,12 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   }
 
   /**
-   * Returns a placeholder properties array for fields where the
-   * base table has not yet been set when manually adding a field.
+   * Get default placeholder properties for a field.
+   *
+   * This is used when manually adding a field before the base table has been
+   * set, and thus before the field plugin can determine what properties it
+   * needs to have. This allows us to add a field and then set the base table,
+   * which will trigger an update to the properties based on the new base table.
    *
    * @param object $field_definition
    *   The field configuration object. This can be an instance of:
@@ -631,6 +637,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * function performs that task.
    *
    * @param string $key
+   *   The property key to sanitize.
    *
    * @return string
    *   A sanitizied string.
@@ -667,8 +674,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public function tripalValuesTemplate($field_definition, $default_value = NULL) {
 
-    // If we have a parent, then the field is attached to an entity. If it's just
-    // an instance without a parent then the entity_id should stay null.
+    // If we have a parent, then the field is attached to an entity. If it's
+    // just an instance without a parent then the entity_id should stay null.
     $entity_id = NULL;
     $entity_type_id = 'tripal_entity';
     if ($this->getParent()) {
@@ -715,7 +722,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * provided. It ensures that only alphanumeric values are present in the
    * name and that it doesn't exceed Drupal's maximum length.
    *
-   * @param \Drupal\tripal\Entity\TripalEntityType TripalEntityType $bundle
+   * @param \Drupal\tripal\Entity\TripalEntityType $bundle
    *   The TripalEntityType object with information about the bundle.
    * @param string $extra
    *   Extra text to add to the field name after the bundle name.
