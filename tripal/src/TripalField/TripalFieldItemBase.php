@@ -188,7 +188,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   /**
    * Provides the form for setting a cv term on a field.
    *
-   * @param \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface $field
+   * @param mixed $field
    *   The field for which we are building the form.
    * @param array $form
    *   The existing field settings form elements, to which we want to add
@@ -196,7 +196,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state of the field settings form.
    */
-  public static function buildFieldTermForm(TripalFieldItemInterface $field, $form, FormStateInterface $form_state) {
+  public static function buildFieldTermForm(mixed $field, $form, FormStateInterface $form_state) {
     $elements = [];
 
     $is_open = FALSE;
