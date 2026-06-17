@@ -270,6 +270,8 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   behaviour, then use the upsert version of this method.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   - If conditions are missing information to uniquely identify organism
+   *     or cvterm for stock type.
    *   - If a stock record matching the values passed in already exists.
    *   - If the values fail validation.
    *   - If a buddy_record is passed in that is not valid.
@@ -291,12 +293,12 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
 
     // Validate that organism exists.
     $values = $this->validateStockOrganism($values, $options);
-    if ($values['stock.organism_id'] === NULL) {
+    if (!array_key_exists('stock.organism_id', $values)) {
       throw new ChadoBuddyException("ChadoBuddy insertStock error, a unique organism record must be provided to insert a stock record.");
     }
     // Validate that stock type exists.
     $values = $this->validateStockType($values, $options);
-    if ($values['stock.type_id'] === NULL) {
+    if (!array_key_exists('stock.type_id', $values)) {
       throw new ChadoBuddyException("ChadoBuddy insertStock error, a unique cvterm must be provided to insert a stock record.");
     }
     // Validate that stock dbxref exists or create it if permitted.
@@ -373,7 +375,8 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *     associations stored in the stock_dbxref table, then you will need to
    *     create them using the ChadoDbxrefBuddy and associate them using
    *     ::associateStock().
-   *   - validate_foreign_keys - specifies whether to validate foreign keys.
+   *   - validate_foreign_keys - specifies whether to validate foreign keys for
+   *     values. Note: Foreign keys in the conditions are always validated.
    *     Default is TRUE for all foreign keys. If you specify a boolean value,
    *     then that value is used for validating all potential foreign keys.
    *     You can skip validation for specific foreign keys by passing an array
@@ -390,6 +393,8 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   returned if no record was found to update.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   - If conditions are missing information to uniquely identify organism
+   *     or cvterm for stock type.
    *   - If more than one stock record matches the values passed in.
    *   - If the values fail validation.
    *   - If a buddy_record is passed in that is not valid.
@@ -401,6 +406,22 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
     $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($values, $valid_columns);
     $this->validateInput($conditions, $valid_columns);
+
+    // @todo We may want to optimize the following in the future so that these
+    // validate methods aren't always called twice during an update.
+    // Here, options are not passed through because we want to ensure that
+    // we can obtain the necessary columns for a stock's unique constraints.
+    $conditions = $this->validateStockOrganism($conditions);
+    if (!array_key_exists('stock.organism_id', $conditions)) {
+      throw new ChadoBuddyException("ChadoBuddy updateStock error, a unique organism must be provided as a condition to update a stock record.");
+    }
+    // Validate that stock type exists.
+    $conditions = $this->validateStockType($conditions);
+    if (!array_key_exists('stock.type_id', $conditions)) {
+      throw new ChadoBuddyException("ChadoBuddy updateStock error, a unique cvterm must be provided as a condition to update a stock record.");
+    }
+    // Validate that stock dbxref exists or create it if permitted.
+    $conditions = $this->validateStockDbxref($conditions);
 
     // Skip the validate step since the conditions have already been checked.
     $options['skip_validate'] = TRUE;

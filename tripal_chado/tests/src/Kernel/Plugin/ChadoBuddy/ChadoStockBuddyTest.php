@@ -588,6 +588,9 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       ],
       [
         'stock.uniquename' => 'nonexistingstock',
+        'stock.type_id' => 3,
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
       ],
       [],
       0,
@@ -1155,7 +1158,38 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy validateStockDbxref error, could not find or create a dbxref, but dbxref values were provided from the db and/or dbxref tables:",
     ];
 
-    // #6: updateStock() with conditions that match more than one stock record.
+    // #6: updateStock() with conditions that don't include organism info.
+    $scenarios[] = [
+      'updateStock',
+      [
+        [
+          'stock.name' => 'UpdatedStockName',
+        ],
+        [
+          'stock.uniquename' => 'existingstock',
+          'stock.type_id' => 3,
+        ],
+      ],
+      "ChadoBuddy updateStock error, a unique organism must be provided as a condition to update a stock record.",
+    ];
+
+    // #7: updateStock() with conditions that don't include stock type info.
+    $scenarios[] = [
+      'updateStock',
+      [
+        [
+          'stock.name' => 'UpdatedStockName',
+        ],
+        [
+          'stock.uniquename' => 'existingstock',
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+      ],
+      "ChadoBuddy updateStock error, a unique cvterm must be provided as a condition to update a stock record.",
+    ];
+
+    // #8: updateStock() with conditions that match more than one stock record.
     $scenarios[] = [
       'updateStock',
       [
@@ -1171,7 +1205,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy updateStock error, more than one stock record matches the specified conditions:",
     ];
 
-    // #7: updateStock() with values to update an existing stock's stock_id.
+    // #9: updateStock() with values to update an existing stock's stock_id.
     $scenarios[] = [
       'updateStock',
       [
@@ -1188,7 +1222,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy updateStock error, no valid values were specified for tables: stock",
     ];
 
-    // #8: updateStock() with a dbxref_id that does not exist and set options
+    // #10: updateStock() with a dbxref_id that does not exist and set options
     // to skip validation of foreign keys.
     $scenarios[] = [
       'updateStock',
@@ -1211,7 +1245,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy updateStock database error",
     ];
 
-    // #9: updateStock() where stock.organism_id and organism.organism_id don't
+    // #11: updateStock() where stock.organism_id and organism.organism_id don't
     // match.
     $scenarios[] = [
       'updateStock',
@@ -1223,12 +1257,14 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
         [
           'stock.uniquename' => 'existingstock',
           'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
         ],
       ],
       "ChadoBuddy validateStockOrganism error, stock.organism_id and organism.organism_id values were both provided but do not match:",
     ];
 
-    // #10: updateStock() with organism values that match more than one
+    // #12: updateStock() with organism values that match more than one
     // organism_id.
     $scenarios[] = [
       'updateStock',
@@ -1240,12 +1276,13 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
         [
           'stock.uniquename' => 'existingstock',
           'stock.type_id' => 3,
+          'organism.organism_id' => 1,
         ],
       ],
       "ChadoBuddy validateStockOrganism error, more than one record matched the values specified:",
     ];
 
-    // #11: updateStock() where organism values are provided but could not find
+    // #13: updateStock() where organism values are provided but could not find
     // or create a matching organism record.
     $scenarios[] = [
       'updateStock',
@@ -1257,12 +1294,14 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
         [
           'stock.uniquename' => 'existingstock',
           'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
         ],
       ],
       "ChadoBuddy validateStockOrganism error, could not find an organism, but organism values were provided from the organism table:",
     ];
 
-    // #12: upsertStock() with conditions that match more than one stock record.
+    // #14: upsertStock() with conditions that match more than one stock record.
     $scenarios[] = [
       'upsertStock',
       [
@@ -1275,7 +1314,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy upsertStock error, more than one stock record matches the specified values:",
     ];
 
-    // #13: upsertStock() where stock.type_id and cvterm.cvterm_id don't match.
+    // #15: upsertStock() where stock.type_id and cvterm.cvterm_id don't match.
     $scenarios[] = [
       'upsertStock',
       [
@@ -1290,7 +1329,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy validateStockType error, stock.type_id and cvterm.cvterm_id values were both provided but do not match:",
     ];
 
-    // #14: upsertStock() with cvterm values that match more than one cvterm_id.
+    // #16: upsertStock() with cvterm values that match more than one cvterm_id.
     $scenarios[] = [
       'upsertStock',
       [
@@ -1304,7 +1343,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy validateStockType error, more than one cvterm record matched the values specified:",
     ];
 
-    // #15: upsertStock() where cvterm values are provided but could not find
+    // #17: upsertStock() where cvterm values are provided but could not find
     // or create a matching cvterm record.
     $scenarios[] = [
       'upsertStock',
@@ -1320,7 +1359,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy validateStockType error, could not find a cvterm, but cvterm values were provided from the cv and/or cvterm tables:",
     ];
 
-    // #16: upsertStock() with a non-existing stock where a valid dbxref is
+    // #18: upsertStock() with a non-existing stock where a valid dbxref is
     // provided but no type_id.
     $scenarios[] = [
       'upsertStock',
@@ -1337,8 +1376,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy insertStock error, a unique cvterm must be provided to insert a stock record.",
     ];
 
-    /*
-    // #17: upsertStock() with an existing stock where a valid dbxref is
+    // #19: upsertStock() with an existing stock where a valid dbxref is
     // provided but no type_id.
     $scenarios[] = [
       'upsertStock',
@@ -1353,9 +1391,8 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       ],
       "ChadoBuddy updateStock error, a unique cvterm must be provided as a condition to update a stock record.",
     ];
-    */
 
-    // #18: Trigger a parseValidateForeignKeysOption error by providing a non-
+    // #20: Trigger a parseValidateForeignKeysOption error by providing a non-
     // boolean value.
     $scenarios[] = [
       'upsertStock',
@@ -1375,7 +1412,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy parseValidateForeignKeysOption error, validate_foreign_keys option for key cvterm_id must be a boolean value:",
     ];
 
-    // #19: Trigger a parseValidateForeignKeysOption error by providing a string
+    // #21: Trigger a parseValidateForeignKeysOption error by providing a string
     // value for validate_foreign_keys instead of an array or boolean.
     $scenarios[] = [
       'upsertStock',
@@ -1393,7 +1430,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy parseValidateForeignKeysOption error, validate_foreign_keys option must be a boolean value or an array:",
     ];
 
-    // #20: Provide an invalid base table to associateStock().
+    // #22: Provide an invalid base table to associateStock().
     $scenarios[] = [
       'associateStock',
       [
@@ -1404,7 +1441,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy associateStock error, invalid base_table provided: madeupbasetable. Valid options are:",
     ];
 
-    // #21: Provide an invalid record_id to associateStock().
+    // #23: Provide an invalid record_id to associateStock().
     $scenarios[] = [
       'associateStock',
       [
@@ -1415,7 +1452,7 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       "ChadoBuddy associateStock database error",
     ];
 
-    // #22: Try to associate a stock with a base table that requires a cvterm_id
+    // #24: Try to associate a stock with a base table that requires a cvterm_id
     // in the linking table but do not provide a cvterm_id in the options and
     // turn off looking it up.
     $scenarios[] = [
