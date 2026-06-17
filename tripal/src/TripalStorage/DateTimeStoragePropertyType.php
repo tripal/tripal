@@ -2,10 +2,12 @@
 
 namespace Drupal\tripal\TripalStorage;
 
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
+
 /**
  * Defines the date time Tripal storage property type.
  */
-class DateTimeStoragePropertyType extends StoragePropertyTypeBase {
+class DateTimeStoragePropertyType extends StoragePropertyTypeBase implements TripalStoragePropertyTypeInterface {
 
   /**
    * Constructs a new date time tripal storage property type.

@@ -10,6 +10,7 @@ use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
@@ -833,10 +834,10 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * @throws \Exception
    *   If a property type with key is not returned by self::tripalTypes().
    *
-   * @return \Drupal\tripal\TripalStorage\StoragePropertyTypeBase
+   * @return \Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface
    *   The property type you requested.
    */
-  public function getTripalStoragePropertyType(string $key, bool $use_cache = TRUE): StoragePropertyTypeBase {
+  public function getTripalStoragePropertyType(string $key, bool $use_cache = TRUE): TripalStoragePropertyTypeInterface {
     $keyed_proptypes = $this->getTripalStoragePropertyTypes($use_cache);
 
     if (!array_key_exists($key, $keyed_proptypes)) {

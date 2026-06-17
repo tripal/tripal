@@ -2,10 +2,12 @@
 
 namespace Drupal\tripal\TripalStorage;
 
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
+
 /**
  * Base class for a Tripal storage property type.
  */
-class StoragePropertyTypeBase extends StoragePropertyBase {
+class StoragePropertyTypeBase extends StoragePropertyBase implements TripalStoragePropertyTypeInterface {
 
   /**
    * Indicate if this property should be stored in the Drupal field tables.
