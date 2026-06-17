@@ -178,7 +178,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   - tripalstorage_settings: the storage plugin settings of this field.
    *   - fully_cached: indicates that all properties for this field are set to
    *     be saved in the Drupal field tables as well as the storage backend.
-   *   - main_property_name: the name of the property which indicates this
+   *   - main_property: the name of the property which indicates this
    *     field item is empty when it's empty.
    *
    * @see ::registerTripalField()
@@ -1201,6 +1201,33 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
 
     return $path;
+  }
+
+  /**
+   * Gets an array of field item lists including only TripalField instances.
+   *
+   * This is a filtered version of ContentEntityBase::getFields(). We use it in
+   * cases where we need to only act on TripalFields using backend storage.
+   * This saves us from checking the interface and the tsid every single time.
+   *
+   * NOTE: This requires TripalStorage to have been setup for the current
+   * entity instance. If it has not yet been then, this function will do that
+   * first.
+   *
+   * @return \Drupal\Core\Field\FieldItemListInterface[]
+   *   An array of field item lists for only TripalFields, keyed by field name.
+   */
+  public function getTripalFieldItems() {
+    $tripalfield_items = [];
+
+    // Now we can use that TripalField information cache to get a list of
+    // fields that have implemented the TripalFieldItemInterface and indicated
+    // a Tripal Storage backend.
+    foreach (array_keys($this->tripalfield_info) as $field_name) {
+      $tripalfield_items[$field_name] = $this->get($field_name);
+    }
+
+    return $tripalfield_items;
   }
 
   /**
