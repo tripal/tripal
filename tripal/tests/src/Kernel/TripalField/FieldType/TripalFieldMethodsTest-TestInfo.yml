@@ -1,0 +1,107 @@
+system-under-test:
+  bundle:
+    label: 'Gemstones'
+    termIdSpace: 'NCIT'
+    termAccession: 'C47885'
+    id: 'test_gemstone'
+  fields:
+  - name: 'gemstone_name'
+    type: 'tripal_string_type'
+    type_class: 'Drupal\tripal\Plugin\Field\FieldType\TripalStringTypeItem'
+    widget: 'default_tripal_string_type_widget'
+    formatter: 'default_tripal_string_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'name'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'drupal_sql_storage'
+      max_length: 255
+  - name: 'gemstone_description'
+    type: 'tripal_text_type'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\TripalTextTypeItem'
+    widget: 'default_tripal_text_type_widget'
+    formatter: 'default_tripal_text_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'description'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'drupal_sql_storage'
+  - name: 'gemstone_hardness'
+    type: 'tripal_integer_type'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\TripalIntegerTypeItem'
+    widget: 'default_tripal_integer_type_widget'
+    formatter: 'default_tripal_integer_type_formatter'
+    termIdSpace: 'local'
+    termAccession: 'property'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'drupal_sql_storage'
+  - name: 'is_precious'
+    type: 'tripal_boolean_type'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\TripalBooleanTypeItem'
+    widget: 'default_tripal_boolean_type_widget'
+    formatter: 'default_tripal_boolean_type_formatter'
+    termIdSpace: 'SO'
+    termAccession: '0001686'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'drupal_sql_storage'
+scenarios:
+  - label: 'Value for all fields'
+    description: 'Create a page where every field has one value.'
+    create:
+      user_input:
+        gemstone_name:
+        - value: 'amazonite'
+        gemstone_description:
+        - value: 'soothing, calming, healing from grief'
+        gemstone_hardness:
+        - value: 7
+        is_precious:
+        - value: FALSE
+      expected:
+        gemstone_name:
+          main_property: 'value'
+          values:
+          - value: 'amazonite'
+        gemstone_description:
+          main_property: 'value'
+          values:
+          - value: 'soothing, calming, healing from grief'
+        gemstone_hardness:
+          main_property: 'value'
+          values:
+          - value: 7
+        is_precious:
+          main_property: 'value'
+          values:
+          - value: FALSE
+    syncValues:
+      user_input:
+        gemstone_name:
+        - value: 'Amazonite'
+        gemstone_description:
+        - value: 'Amazonite is an attractive gemstone known for its distinctive blue and green color. It is a variety of potassium feldspar called microcline. Its chemical formula is KAlSi3O8, indicating it is composed of the elements potassium, aluminum, silicon, and oxygen.'
+        gemstone_hardness:
+        - value: 6
+        is_precious:
+        - value: TRUE
+      expected:
+        gemstone_name:
+        - value: 'Amazonite'
+        gemstone_description:
+        - value: 'Amazonite is an attractive gemstone known for its distinctive blue and green color. It is a variety of potassium feldspar called microcline. Its chemical formula is KAlSi3O8, indicating it is composed of the elements potassium, aluminum, silicon, and oxygen.'
+        gemstone_hardness:
+        - value: 6
+        is_precious:
+        - value: TRUE
+    clearValues:
+      expected:
+        gemstone_name:
+        - value: 'Amazonite'
+        gemstone_description:
+        - value: 'Amazonite is an attractive gemstone known for its distinctive blue and green color. It is a variety of potassium feldspar called microcline. Its chemical formula is KAlSi3O8, indicating it is composed of the elements potassium, aluminum, silicon, and oxygen.'
+        gemstone_hardness:
+        - value: 6
+        is_precious:
+        - value: TRUE
