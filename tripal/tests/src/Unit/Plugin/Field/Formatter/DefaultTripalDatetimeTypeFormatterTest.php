@@ -197,6 +197,31 @@ class DefaultTripalDatetimeTypeFormatterTest extends UnitTestCase {
   }
 
   // ---------------------------------------------------------------------------
+  // viewElements() — special values for hiding the field
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Special values for hiding the field for testViewElementsHidesSuppressedValue().
+   */
+  public static function provideSpecialHiddenValues(): array {
+    return [
+      '-infinity' => ['-infinity'],
+      '0'         => ['0'],
+    ];
+  }
+
+  /**
+   * '-infinity' and '0' are always hidden regardless of hide_condition.
+   */
+  #[DataProvider('provideSpecialHiddenValues')]
+  public function testViewElementsHidesSpecialValue(string $value): void {
+    $this->formatter->setSetting('hide_condition', 'never');
+    $elements = $this->formatter->viewElements($this->buildItems([$value]), 'en');
+    $this->assertCount(0, $elements,
+      '"' . $value . '" should be suppressed even when hide_condition is "never".');
+  }
+
+  // ---------------------------------------------------------------------------
   // viewElements() — prefix, suffix, and format
   // ---------------------------------------------------------------------------
 
