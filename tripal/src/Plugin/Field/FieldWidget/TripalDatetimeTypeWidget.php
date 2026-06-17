@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldWidget;
 
+use DateTime;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -40,9 +41,12 @@ class TripalDatetimeTypeWidget extends TripalWidgetBase {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+    // If no value exists, then default to the current time.
+    $date = new DateTime();
+    $default_value = $date->format('Y-m-d H:i:s');
     $element['value'] = $element + [
       '#type' => 'textfield',
-      '#default_value' => $items[$delta]->value ?? '',
+      '#default_value' => $items[$delta]->value ?? $default_value,
       '#placeholder' => 'YYYY-MM-DD HH:MM:SS',
       '#attributes' => ['class' => ['js-text-full', 'text-full']],
       '#element_validate' => [[$this, 'validateDatetimeValue']],
@@ -51,7 +55,9 @@ class TripalDatetimeTypeWidget extends TripalWidgetBase {
       'Enter a date and time using the format <code>YYYY-MM-DD HH:MM:SS</code> '
       . '(e.g., <code>2025-01-15 10:30:00</code>). '
       . 'The time portion is optional and defaults to <code>00:00:00</code> when omitted. '
-      . 'Sub-second precision is also accepted (e.g., <code>2025-01-15 10:30:00.123456</code>).'
+      . 'Sub-second precision is also accepted (e.g., <code>2025-01-15 10:30:00.123456</code>). '
+      . 'If left blank, the current date and time is used. '
+      . 'Enter either <code>0</code> or <code>-infinity</code> if a date is not available or is not appropriate.'
     );
     return $element;
   }
@@ -61,7 +67,11 @@ class TripalDatetimeTypeWidget extends TripalWidgetBase {
    */
   public function validateDatetimeValue(array &$element, FormStateInterface $form_state): void {
     $value = trim($element['#value'] ?? '');
-    if ($value === '') {
+    if ($value === '' ) {
+      return;
+    }
+    // These are special case "no time specified" values.
+    if ($value === '0' || $value === '-infinity') {
       return;
     }
     if ($this->parseDateTime($value) === NULL) {
@@ -85,14 +95,21 @@ class TripalDatetimeTypeWidget extends TripalWidgetBase {
         unset($values[$delta]);
         continue;
       }
-      $dt = $this->parseDateTime($raw);
-      if ($dt !== NULL) {
-        // Preserve sub-second precision only when the user actually provided it.
-        if (str_contains($raw, '.')) {
-          $values[$delta]['value'] = $dt->format('Y-m-d H:i:s.u');
-        }
-        else {
-          $values[$delta]['value'] = $dt->format('Y-m-d H:i:s');
+      // Special case handling for a zero, '-infinity' is a special
+      // postgres value that we hide by default in the formatter.
+      if ($raw === '0') {
+        $values[$delta]['value'] = '-infinity';
+      }
+      else {
+        $dt = $this->parseDateTime($raw);
+        if ($dt !== NULL) {
+          // Preserve sub-second precision only when the user actually provided it.
+          if (str_contains($raw, '.')) {
+            $values[$delta]['value'] = $dt->format('Y-m-d H:i:s.u');
+          }
+          else {
+            $values[$delta]['value'] = $dt->format('Y-m-d H:i:s');
+          }
         }
       }
     }

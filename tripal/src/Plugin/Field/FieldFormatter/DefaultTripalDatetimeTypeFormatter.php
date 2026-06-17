@@ -130,13 +130,13 @@ class DefaultTripalDatetimeTypeFormatter extends TripalFormatterBase {
         'never' => $this->t('Never hide'),
         'if_value' => $this->t('Hide if empty or equal to a specific value'),
       ],
-      '#default_value' => $this->getSetting('hide_condition') ?? '',
+      '#default_value' => $this->getSetting('hide_condition') ?? 'if_value',
     ];
     $form['hide_value'] = [
       '#title' => $this->t('Specific value to be hidden'),
       '#description' => $this->t('A value that you do not want displayed, e.g. "N/A" for a string, or "0" for a number'),
       '#type' => 'textfield',
-      '#default_value' => $this->getSetting('hide_value') ?? '',
+      '#default_value' => $this->getSetting('hide_value') ?? '-infinity',
       '#required' => FALSE,
     ];
 
