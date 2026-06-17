@@ -129,8 +129,8 @@ class ChadoDatetimeWidgetDefaultTest extends UnitTestCase {
 
   /**
    * Build the form element correctly.
-   * 
-   * 
+   *
+   * @dataProvider provideDataForTestFormElementBuild
    */
   #[DataProvider('provideDataForTestFormElementBuild')]
   public function testFormElementBuild(array $item_values, int $expected_record_id): void {
