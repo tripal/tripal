@@ -16,7 +16,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase implements TripalStora
    *   TRUE if this property should be saved in the Drupal field table, and
    *   FALSE otherwise.
    */
-  public bool $cache_status = FALSE;
+  public bool $cache_status = TRUE;
 
   /**
    * Constructs a new tripal storage property type base.
