@@ -1,7 +1,6 @@
 ARG phpversion='8.3'
 FROM php:${phpversion}-apache-bookworm
 
-ARG phpversion='8.3'
 ARG drupalversion='11.3.x'
 ARG postgresqlversion='18'
 ARG modules='devel devel_php field_group field_group_table'
