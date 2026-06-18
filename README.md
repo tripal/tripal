@@ -4,7 +4,7 @@
 
 ## Compatibility
 
-![Target Drupal Version 11.2.x](https://img.shields.io/badge/Target%20Drupal%20Version-11.2.x-informational)
+![Target Drupal Version 11.3.x](https://img.shields.io/badge/Target%20Drupal%20Version-11.3.x-informational)
 
 Tested on ![PostgreSQL 14](https://img.shields.io/badge/PostreSQL-14-success) - ![PostgreSQL 18](https://img.shields.io/badge/PostreSQL-18-success)
 
