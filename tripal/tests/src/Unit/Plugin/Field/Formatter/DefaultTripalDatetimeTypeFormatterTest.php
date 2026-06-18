@@ -212,6 +212,8 @@ class DefaultTripalDatetimeTypeFormatterTest extends UnitTestCase {
 
   /**
    * '-infinity' and '0' are always hidden regardless of hide_condition.
+   *
+   * @dataProvider provideSpecialHiddenValues
    */
   #[DataProvider('provideSpecialHiddenValues')]
   public function testViewElementsHidesSpecialValue(string $value): void {
