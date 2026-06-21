@@ -1,10 +1,21 @@
 name: 'Remove obsolete images from DockerHub'
 
+# The dockerhub_expire action uses the longest-lived rule for each
+# digest in the DockerHub repository. Here we intend to only delete
+# digests having ONLY a BUILT tag. When first pushed, digests have a
+# tag specifying versions, for example "drupal11.x-dev-php8.4-pgsql18".
+# They also are assigned a unique BUILT tag which includes the
+# date and time built, for example "BUILT202606210405-11.x-dev-8.4-18".
+# When new images get pushed to DockerHub, the previous day's digests
+# then lose their specific version tag, and now only retain the BUILT
+# tag. Those digests left without a current tag and retaining only the
+# BUILT tag are the ones we want to clean up with this workflow.
+
 on:
   # To allow manual run.
   workflow_dispatch:
+  # Run at 5am every morning, 1 hour after images are built.
   schedule:
-    # Run at 1am every morning, 1 hour before images are built.
     - cron: '0 5 * * *'
   # This next trigger is temporary for testing!
   pull_request:
@@ -18,18 +29,10 @@ jobs:
       - uses: 'actions/checkout@v6'
 
       - name: 'Docker Hub Cleanup'
-        #uses: 'lostlink/docker-cleanup@v1.0.1'
-        # Temporarily Use a locally forked copy to fix the bug described in
-        # issues https://github.com/lostlink/docker-cleanup/issue/3 and 5
-        # and additional changes to handle digests with multiple tags.
-        # Long term, we are hoping dockerhub eventually provides a mechanism
-        # for automatic image expiration.
-        uses: ./.github/actions/lostlink/docker-cleanup
+        uses: 'tripal/dockerhub_expire@v1.0.0'
         with:
-          # The first custom pattern matched has priority.
-          custom-patterns: '{"latest": 30, "drupal": 30, "BUILT": 0}'
-          repositories: 'tripaldocker-drupal,tripaldocker'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
           password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
-          verbose: true
+          repositories: 'tripaldocker-drupal, tripaldocker'
+          rules: 'BUILT:0, latest, drupal'
           dry-run: true
