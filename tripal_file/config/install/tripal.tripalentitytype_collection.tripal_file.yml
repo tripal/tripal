@@ -16,7 +16,7 @@ content_types:
         title_format: '[file_name]'
         url_format: 'file/[TripalEntity__entity_id]'
         settings:
-            chado_base_table: file
+            chado_base_table: 'file'
 
     -   label: 'License'
         term: 'schema:license'
@@ -26,4 +26,4 @@ content_types:
         title_format: '[license_name]'
         url_format: 'license/[TripalEntity__entity_id]'
         settings:
-            chado_base_table: license
+            chado_base_table: 'license'
