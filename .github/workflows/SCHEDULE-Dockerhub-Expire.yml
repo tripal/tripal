@@ -17,13 +17,13 @@ on:
   # Run at 5am every morning, 1 hour after images are built.
   schedule:
     - cron: '0 5 * * *'
-  # This next trigger is temporary for testing!
+  # This next trigger is temporary for testing:
   pull_request:
 
 permissions: 'read-all'
 
 jobs:
-  clean_dockerhub:
+  dockerhub_expire:
     runs-on: 'ubuntu-latest'
     steps:
       - uses: 'actions/checkout@v6'
@@ -33,6 +33,7 @@ jobs:
         with:
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
           password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
-          repositories: 'tripaldocker-drupal, tripaldocker'
+          repositories: 'tripalproject/tripaldocker-drupal, tripalproject/tripaldocker'
           rules: 'BUILT:0, latest, drupal'
+          # temporary for testing:
           dry-run: true
