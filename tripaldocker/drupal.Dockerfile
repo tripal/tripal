@@ -1,11 +1,12 @@
 ARG phpversion='8.3'
 FROM php:${phpversion}-apache-bookworm
 
-# PHP Version above is defined in the global scope. We need to redefine it here in the build stage scope to be able to use it in the RUN commands below.
+## PHP Version above is defined in the global scope.
+# We need to redefine it here in the build stage scope to be able to use it in the RUN commands below.
 # See https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG phpversion
 
-# Set build arguments with default values. These can be overridden at build time using --build-arg.
+## Now define the args only needed within the build scope.
 ARG drupalversion='11.3.x'
 ARG postgresqlversion='18'
 ARG modules='devel devel_php field_group field_group_table'

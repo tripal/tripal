@@ -6,9 +6,9 @@ FROM --platform=${buildplatform} tripalproject/tripaldocker-drupal:drupal${drupa
 
 ## Redefine the global args so that they are within the build scope.
 # See https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
-ARG phpversion='8.4'
-ARG drupalversion='11.3.x'
-ARG postgresqlversion='18'
+ARG phpversion
+ARG drupalversion
+ARG postgresqlversion
 
 ## Now define the args only needed within the build scope.
 ARG modules='devel devel_php field_group field_group_table'
