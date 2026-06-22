@@ -2994,11 +2994,18 @@ class OBOImporter extends ChadoImporterBase {
    * @param int $cvterm_id
    *   The cvterm_id of the term to which the synonym will be added.
    * @param string $xref
-   *   The cross reference.  It should be of the form from the OBO specification
+   *   The cross reference. It should be of the form from the OBO specification.
+   *   If not compliant, then do nothing, e.g. in the sequence ontology we see
+   *   xref: https://en.wikipedia.org/wiki/RNA_thermometer "wiki".
    *
    * @ingroup tripal_obo_loader
    */
   private function addXref($id, $cvterm_id, $xref) {
+
+    // Skip non-compliant xrefs.
+    if (!preg_match('/[0-9A-Za-z]:[0-9A-Za-z]/', $xref)) {
+      return;
+    }
 
     $dbname = preg_replace('/^(.+?):.*$/', '$1', $xref);
     $accession = preg_replace('/^.+?:\s*(.*?)(\{.+$|\[.+$|\s.+$|\".+$|$)/', '$1', $xref);
@@ -3007,11 +3014,6 @@ class OBOImporter extends ChadoImporterBase {
 
     if (!$accession) {
       throw new \Exception("Cannot add an xref without an accession: '$xref'");
-    }
-
-    // If the xref is a database link then skip those for now.
-    if (strcmp($dbname, 'http') == 0) {
-      return;
     }
 
     $db = $this->insertChadoDb($dbname);
