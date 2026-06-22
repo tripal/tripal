@@ -4,7 +4,8 @@ ARG postgresqlversion='18'
 ARG buildplatform='linux/amd64'
 FROM --platform=${buildplatform} tripalproject/tripaldocker-drupal:drupal${drupalversion}-php${phpversion}-pgsql${postgresqlversion}
 
-## Redefine the core args so that they are within the build scope.
+## Redefine the global args so that they are within the build scope.
+# See https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG phpversion='8.4'
 ARG drupalversion='11.3.x'
 ARG postgresqlversion='18'
