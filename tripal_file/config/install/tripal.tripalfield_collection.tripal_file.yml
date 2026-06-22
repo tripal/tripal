@@ -106,9 +106,9 @@ fields:
         storage_settings:
             storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: file
-                linker_table: file_contact
-                linker_fkey_column: contact_id
+                base_table: 'file'
+                linker_table: 'file_contact'
+                linker_fkey_column: 'contact_id'
         settings:
             termIdSpace: 'NCIT'
             termAccession: 'C47954'
@@ -190,8 +190,8 @@ fields:
                 base_table: 'file'
                 base_column: 'name'
                 linker_table: 'file_relationship'
-                subject_column: subject_id
-                object_column: object_id
+                subject_column: 'subject_id'
+                object_column: 'object_id'
         settings:
             termIdSpace: 'SBO'
             termAccession: '0000374'
@@ -243,9 +243,9 @@ fields:
         storage_settings:
             storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: file
-                linker_table: file_pub
-                linker_fkey_column: pub_id
+                base_table: 'file'
+                linker_table: 'file_pub'
+                linker_fkey_column: 'pub_id'
         settings:
             termIdSpace: 'schema'
             termAccession: 'publication'
@@ -270,9 +270,9 @@ fields:
         storage_settings:
             storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: file
-                linker_table: analysis_file
-                linker_fkey_column: analysis_id
+                base_table: 'file'
+                linker_table: 'analysis_file'
+                linker_fkey_column: 'analysis_id'
         settings:
             termIdSpace: 'operation'
             termAccession: '2945'
@@ -297,9 +297,9 @@ fields:
         storage_settings:
             storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: file
-                linker_table: organism_file
-                linker_fkey_column: organism_id
+                base_table: 'file'
+                linker_table: 'organism_file'
+                linker_fkey_column: 'organism_id'
         settings:
             termIdSpace: 'TAXRANK'
             termAccession: '0000005'
@@ -324,9 +324,9 @@ fields:
         storage_settings:
             storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: file
-                linker_table: project_file
-                linker_fkey_column: project_id
+                base_table: 'file'
+                linker_table: 'project_file'
+                linker_fkey_column: 'project_id'
         settings:
             termIdSpace: 'NCIT'
             termAccession: 'C47885'
@@ -351,9 +351,9 @@ fields:
         storage_settings:
             storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: file
-                linker_table: study_file
-                linker_fkey_column: study_id
+                base_table: 'file'
+                linker_table: 'study_file'
+                linker_fkey_column: 'study_id'
         settings:
             termIdSpace: 'SIO'
             termAccession: '001066'
