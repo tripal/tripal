@@ -299,7 +299,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
     // Validate that stock type exists.
     $values = $this->validateStockType($values, $options);
     if (!array_key_exists('stock.type_id', $values)) {
-      throw new ChadoBuddyException("ChadoBuddy insertStock error, a unique cvterm must be provided to insert a stock record.");
+      throw new ChadoBuddyException("ChadoBuddy insertStock error, a unique cvterm must be provided to insert a stock record.\nNOTE: You cannot specify the cvterm accession using db.name and dbxref.accession because they apply to the stock.dbxref_id. If you are having trouble uniquely selecting a cvterm, pass in a ChadoCvtermBuddy.");
     }
     // Validate that stock dbxref exists or create it if permitted.
     $values = $this->validateStockDbxref($values, $options);
@@ -418,7 +418,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
     // Validate that stock type exists.
     $conditions = $this->validateStockType($conditions);
     if (!array_key_exists('stock.type_id', $conditions)) {
-      throw new ChadoBuddyException("ChadoBuddy updateStock error, a unique cvterm must be provided as a condition to update a stock record.");
+      throw new ChadoBuddyException("ChadoBuddy updateStock error, a unique cvterm must be provided as a condition to update a stock record.\nNOTE: You cannot specify the cvterm accession using db.name and dbxref.accession because they apply to the stock.dbxref_id. If you are having trouble uniquely selecting a cvterm, pass in a ChadoCvtermBuddy.");
     }
     // Validate that stock dbxref exists or create it if permitted.
     $conditions = $this->validateStockDbxref($conditions);
