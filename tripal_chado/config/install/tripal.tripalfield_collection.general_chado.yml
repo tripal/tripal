@@ -454,6 +454,9 @@ fields:
               region: content
               label: above
               weight: 50
+              settings:
+                hide_condition: 'if_value'
+                hide_value: '-infinity'
           form:
             default:
               region: content

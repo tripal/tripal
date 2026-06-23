@@ -378,6 +378,9 @@ fields:
               region: content
               label: above
               weight: 100
+              settings:
+                hide_condition: 'if_value'
+                hide_value: '-infinity'
           form:
             default:
               region: content
@@ -404,6 +407,9 @@ fields:
               region: content
               label: above
               weight: 102
+              settings:
+                hide_condition: 'if_value'
+                hide_value: '-infinity'
           form:
             default:
               region: content
@@ -892,6 +898,9 @@ fields:
               region: content
               label: above
               weight: 92
+              settings:
+                hide_condition: 'if_value'
+                hide_value: '-infinity'
           form:
             default:
               region: content
@@ -918,6 +927,9 @@ fields:
               region: content
               label: above
               weight: 94
+              settings:
+                hide_condition: 'if_value'
+                hide_value: '-infinity'
           form:
             default:
               region: content
@@ -1648,6 +1660,9 @@ fields:
               region: content
               label: above
               weight: 92
+              settings:
+                hide_condition: 'if_value'
+                hide_value: '-infinity'
           form:
             default:
               region: content
@@ -1674,6 +1689,9 @@ fields:
               region: content
               label: above
               weight: 94
+              settings:
+                hide_condition: 'if_value'
+                hide_value: '-infinity'
           form:
             default:
               region: content
