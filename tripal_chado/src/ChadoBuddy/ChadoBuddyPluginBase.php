@@ -4,10 +4,10 @@ namespace Drupal\tripal_chado\ChadoBuddy;
 
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Base class for chado_buddy plugins.
@@ -39,7 +39,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *
    * @var Drupal\tripal_chado\Database\ChadoConnection
    */
-  public ChadoConnection $chado_connection;
+  protected ChadoConnection $chado_connection;
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
@@ -433,6 +433,9 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
                       [':value' . $n => $value]);
         $n++;
       }
+      elseif ($value === NULL) {
+        $query->isNull($key);
+      }
       else {
         $query->condition($key, $value, '=');
       }
@@ -496,7 +499,14 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
         $calling_function = debug_backtrace()[1]['function'];
         throw new ChadoBuddyException("ChadoBuddy $calling_function error, something other than a ChadoBuddyRecord was stored under the 'buddy_record' key");
       }
+      // Get the base table for this buddy record.
+      $base_table = $values['buddy_record']->getBaseTable();
+      // Get all values for this buddy record.
       $buddy_values = $values['buddy_record']->getValues();
+      // Subset values to only those in the buddy's base table.
+      $buddy_values = $this->subsetInput($buddy_values, [$base_table]);
+      // Merge these buddy values into the main values array, checking for
+      // duplicates with different values.
       foreach ($buddy_values as $buddy_key => $buddy_value) {
         if (array_key_exists($buddy_key, $values) and ($values[$buddy_key] != $buddy_value)) {
           $calling_function = debug_backtrace()[1]['function'];
@@ -579,6 +589,132 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
       $calling_function = debug_backtrace()[1]['function'];
       throw new ChadoBuddyException("ChadoBuddy $calling_function error, the array passed to validateOutput does not contain a ChadoBuddyRecord");
     }
+  }
+
+  /**
+   * Parses the 'validate_foreign_keys' option given to some buddy methods.
+   *
+   * This method is used by some insert, update and upsert methods to determine
+   * whether to validate foreign keys for the record. If the option:
+   * - is not set, then we return the default value of TRUE.
+   * - is set, then we check if it's an array and look for the valid key to
+   *   determine whether to validate foreign keys for that key.
+   * - is a boolean value, then we return that value regardless of the valid key
+   *   since it applies to all keys.
+   *
+   * @param array $options
+   *   Associative array of options supplied to a ChadoBuddy method. This method
+   *   only looks at the `validate_foreign_keys` key in this array.
+   * @param string $valid_key
+   *   The key to look for in the 'validate_foreign_keys' option if it's an
+   *   array. This should be the column name of the PRIMARY KEY in the foreign
+   *   table that we want to validate against, without the table prefix.
+   *   For example, if we want to validate stock.type_id, then the valid key
+   *   would be 'cvterm_id' since that is the primary key column name in the
+   *   cvterm table.
+   *
+   * @return bool
+   *   TRUE if we should validate foreign keys for $valid_key, FALSE if we
+   *   should not validate foreign keys for $valid_key. If $valid_key is not in
+   *   the validate_foreign_keys array, then return the default value of TRUE.
+   *
+   * @throws \Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   - if the 'valid_key' parameter is empty when the 'validate_foreign_keys'
+   *     option is an array.
+   *   - if the 'validate_foreign_keys' option contains the $valid_key but it
+   *     does not have a boolean value.
+   *   - if the 'validate_foreign_keys' option is set but is not of type boolean
+   *     or array.
+   */
+  protected function parseValidateForeignKeysOption(array $options, string $valid_key): bool {
+    if (array_key_exists('validate_foreign_keys', $options)) {
+      $validate_foreign_keys = $options['validate_foreign_keys'];
+      // If the option is a boolean, return that value for all keys.
+      if (is_bool($validate_foreign_keys)) {
+        return $validate_foreign_keys;
+      }
+      // If the option is an array, look for the valid key in the array and
+      // return its value if it's a boolean.
+      elseif (is_array($validate_foreign_keys)) {
+        if (empty($valid_key)) {
+          throw new ChadoBuddyException("ChadoBuddy parseValidateForeignKeysOption error, valid_key cannot be empty when validate_foreign_keys option is an array:\n" . print_r($options, TRUE));
+        }
+        if (array_key_exists($valid_key, $validate_foreign_keys)) {
+          if (is_bool($validate_foreign_keys[$valid_key])) {
+            return $validate_foreign_keys[$valid_key];
+          }
+          else {
+            throw new ChadoBuddyException("ChadoBuddy parseValidateForeignKeysOption error, validate_foreign_keys option for key $valid_key must be a boolean value:\n" . print_r($options, TRUE));
+          }
+        }
+      }
+      else {
+        // $validate_foreign_keys is set but is not of type bool or array.
+        throw new ChadoBuddyException("ChadoBuddy parseValidateForeignKeysOption error, validate_foreign_keys option must be a boolean value or an array:\n" . print_r($options, TRUE));
+      }
+    }
+    // Otherwise, return the default value of TRUE.
+    return TRUE;
+  }
+
+  /**
+   * Used by associate methods to add not NULL columns to linking tables.
+   *
+   * When making associations between a base table and a ChadoBuddy record,
+   * if there are additional not NULL columns in the linking table,
+   * this function will add them to the $values.
+   *
+   * @param string $linking_table
+   *   The name of the linking table, e.g. stock_cvterm.
+   * @param array $values
+   *   An associative array of key+value pairs where the keys are the column
+   *   names without the table prefix, and the values are the values to use for
+   *   those columns. Columns vary depending on the linking table.
+   * @param array $defaults
+   *   An array of default values to use for any potential not NULL columns in
+   *   tables where records can be associated with this ChadoBuddy record. The
+   *   keys should be the column names without the table prefix, and the values
+   *   should be the default values to use for those columns if they are not
+   *   specified in the $values array.
+   * @param array $options
+   *   - pkey (string): The name of the primary key column in the base table.
+   *     Looking up the primary key for the base table is costly. If it is
+   *     known, then pass it in using this option for better performance.
+   *   - lookup_columns (bool): Whether to look up any additional columns that
+   *     are not specified in the defaults. FALSE will disable looking up any
+   *     additional columns, which may cause the insert to fail if any NOT NULL
+   *     columns are not specified. Default TRUE.
+   *
+   * @return array
+   *   The passed $values array with not-NULL columns added.
+   */
+  protected function addLinkingColumns(string $linking_table, array $values, array $defaults, array $options): array {
+    $lookup_columns = $options['lookup_columns'] ?? TRUE;
+    if ($lookup_columns) {
+      // If any of the default values were specified in the $values, we
+      // disable the automatic lookup.
+      foreach (array_keys($values) as $key) {
+        if (array_key_exists($key, $defaults)) {
+          $lookup_columns = FALSE;
+          break;
+        }
+      }
+      if ($lookup_columns) {
+        // Automatic lookup is enabled.
+        // Determine actual columns for this linking table.
+        $linking_table_def = $this->getChadoTableDef($linking_table);
+        foreach ($linking_table_def['fields'] as $field_id => $def) {
+          if (array_key_exists($field_id, $defaults)) {
+            // Only include if a NOT NULL constraint exists,
+            // and there is not some type of default value.
+            if ($def['not null'] and ($def['type'] != 'serial') and !($def['default'] ?? FALSE)) {
+              $values[$field_id] = $defaults[$field_id];
+            }
+          }
+        }
+      }
+    }
+    return $values;
   }
 
   /**
