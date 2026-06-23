@@ -34,35 +34,30 @@ jobs:
           - '17'
           - '18'
         drupal-version:
-          - '10.5.x'
           - '10.6.x'
-          - '11.2.x'
           - '11.3.x'
+          - '11.4.x'
           - '11.x-dev'
         exclude:
           # Only Drupal 11.3+ supports PHP 8.5
           - php-version: '8.5'
-            drupal-version: '10.5.x'
-          - php-version: '8.5'
             drupal-version: '10.6.x'
-          - php-version: '8.5'
-            drupal-version: '11.2.x'
           # Drupal 11.x requires PHP 8.3+
           - php-version: '8.2'
-            drupal-version: '11.2.x'
-          - php-version: '8.2'
             drupal-version: '11.3.x'
+          - php-version: '8.2'
+            drupal-version: '11.4.x'
           - php-version: '8.2'
             drupal-version: '11.x-dev'
           # Drupal 11.x requires PostgreSQL 16+
           - pgsql-version: '14'
-            drupal-version: '11.2.x'
+            drupal-version: '11.3.x'
           - pgsql-version: '15'
-            drupal-version: '11.2.x'
+            drupal-version: '11.3.x'
           - pgsql-version: '14'
-            drupal-version: '11.3.x'
+            drupal-version: '11.4.x'
           - pgsql-version: '15'
-            drupal-version: '11.3.x'
+            drupal-version: '11.4.x'
           - pgsql-version: '14'
             drupal-version: '11.x-dev'
           - pgsql-version: '15'
@@ -107,8 +102,8 @@ jobs:
           labels: 'tripal.branch=4.x,drupal.version.label=${{ matrix.drupal-version }},php.version.label=${{ matrix.php-version }}, postgresql.version.label=${{ matrix.pgsql-version }}'
       ## Build the image tagged as latest which is the highest version combo that we feel is well supported.
       - uses: 'mr-smithers-excellent/docker-build-push@v7'
-        name: 'Build latest using 11.3.x, PHP 8.5, PgSQL 18'
-        if: ${{ matrix.drupal-version == '11.3.x' && matrix.php-version == '8.5' && matrix.pgsql-version == '18' }}
+        name: 'Build latest using 11.4.x, PHP 8.5, PgSQL 18'
+        if: ${{ matrix.drupal-version == '11.4.x' && matrix.php-version == '8.5' && matrix.pgsql-version == '18' }}
         with:
           image: 'tripalproject/tripaldocker'
           tags: 'latest'

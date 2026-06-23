@@ -48,6 +48,9 @@ class DefaultTripalDatetimeTypeFormatter extends TripalFormatterBase {
 
     foreach ($items as $delta => $item) {
       $raw = $item->get('value')->getValue() ?? '';
+      if ($raw === '-infinity' || $raw === '0') {
+        continue;
+      }
       $hide = ((($hide_condition == 'if_value') and ($raw == $hide_value))
             or (($hide_condition == '') and !strlen($raw)));
       if (!$hide) {

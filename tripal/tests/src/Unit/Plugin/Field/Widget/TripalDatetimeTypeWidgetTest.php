@@ -106,6 +106,10 @@ class TripalDatetimeTypeWidgetTest extends UnitTestCase {
         [['value' => '   ', 'record_id' => 0]],
         [],
       ],
+      'zero sentinel is converted to -infinity' => [
+        [['value' => '0', 'record_id' => 0]],
+        [0 => ['value' => '-infinity', 'record_id' => 0]],
+      ],
     ];
   }
 
@@ -133,6 +137,8 @@ class TripalDatetimeTypeWidgetTest extends UnitTestCase {
       'date only'                 => ['2025-01-15'],
       'HH:MM without seconds'     => ['2025-01-15 10:30'],
       'sub-second precision'      => ['2025-01-15 10:30:00.123456'],
+      'zero sentinel'             => ['0'],
+      '-infinity sentinel'        => ['-infinity'],
     ];
   }
 
