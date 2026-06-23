@@ -40,7 +40,14 @@ class ChadoDatetimeTypeDefaultTest extends UnitTestCase {
    * discover() returns an empty array when base_table is empty.
    */
   public function testDiscoverReturnsEmptyArrayWithoutBaseTable(): void {
-    
+    $bundle = $this->createMock(TripalEntityType::class);
+    $bundle->method('getThirdPartySetting')
+      ->with('tripal', 'chado_base_table')
+      ->willReturn('');
+
+    $result = ChadoDatetimeTypeDefault::discover($bundle, 'chado_datetime_type_default', [], []);
+
+    $this->assertSame([], $result);
   }
 
   /**
