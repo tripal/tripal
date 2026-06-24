@@ -26,17 +26,21 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *
    * @var \Drupal\tripal_chado\Database\ChadoConnection
    */
-  public ChadoConnection $chado_connection;
+  protected ChadoConnection $chado_connection;
 
   /**
-   * Used to store the manager so we can access the Cvterm buddy.
+   * Used to store the manager so we can create a buddy.
+   *
+   * @var \Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
    */
-  protected object $buddy_manager;
+  protected ChadoBuddyPluginManager $buddy_manager;
 
   /**
-   * Cache the cvterm instance here.
+   * Used to store the cvterm ChadoBuddy instance.
+   *
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy
    */
-  protected object $cvterm_instance;
+  protected ChadoCvtermBuddy $cvterm_instance;
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
