@@ -28,17 +28,21 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *
    * @var \Drupal\tripal_chado\Database\ChadoConnection
    */
-  public ChadoConnection $chado_connection;
+  protected ChadoConnection $chado_connection;
 
   /**
    * Used to store the manager so we can create a buddy.
+   *
+   * @var \Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
    */
-  protected object $buddy_manager;
+  protected ChadoBuddyPluginManager $buddy_manager;
 
   /**
-   * Provide the dbxref instance.
+   * Used to store the dbxref ChadoBuddy instance.
+   *
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoDbxrefBuddy
    */
-  protected object $dbxref_instance;
+  protected ChadoDbxrefBuddy $dbxref_instance;
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
@@ -942,6 +946,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *
    * For example, to the feature_cvterm table.
    *
+   * Both the cvterm record and the chado record indicated by $record_id
+   * MUST ALREADY EXIST.
+   *
    * @param string $base_table
    *   The base table for which the cvterm should be associated. Thus to
    *   associate a cvterm with a feature the base_table=feature and
@@ -950,29 +957,24 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *   The primary key of the base_table to associate the cvterm with.
    * @param \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord $cvterm
    *   A cvterm object returned by any of the *Cvterm() in this service.
+   * @param array $values
+   *   (Optional) An associative array defining the values to be associated with
+   *   the cvterm. These values will be inserted into the linking table along
+   *   with the foreign keys to the cvterm and the base table. The keys should
+   *   be the name of the column in this specific linking table and the value
+   *   should be the value to insert for that column. This is optional because
+   *   most of these columns have default values defined in chado that can
+   *   be looked up. See the table below for a list of columns used by various
+   *   linking tables.
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
    *   - pkey (string): The name of the primary key column in the base table.
    *     Looking up the primary key for the base table is costly. If it is
-   *     known, then pass it in as this option for better performance.
-   *   - pub_id (string): The name of the column linking to the publication.
-   *   - is_not (string): The name of the column indicating if the cvterm
-   *     association is a NOT association.
-   *   - rank (string): The name of the column indicating the rank.
-   *   - cvterm_type_id (string): The name of the column indicating the type of
-   *     cvterm association being made via foreign key to cvterm.cvterm_id.
+   *     known, then pass it in using this option for better performance.
    *   - lookup_columns (bool): Whether to look up any additional columns that
    *     are not specified in the options. FALSE will disable looking up any
    *     additional columns, which may cause the insert to fail if any NOT NULL
    *     columns are not specified. Default TRUE.
-   *
-   *   Both the cvterm and the chado record indicated by $record_id
-   *   MUST ALREADY EXIST.
-   *
-   *   While the column name options above are optional, they will incur a
-   *   slight performance hit if not included due to needing to look them up
-   *   via the schema. See the table below for which columns apply to which
-   *   linking tables so you know which ones to include.
    *
    *   phpcs:disable
    *   Chado 1.3 defines these columns in the various linking tables:
@@ -1000,7 +1002,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
    */
-  public function associateCvterm(string $base_table, int $record_id, ChadoBuddyRecord $cvterm, array $options = []): int {
+  public function associateCvterm(string $base_table, int $record_id, ChadoBuddyRecord $cvterm, array $values = [], array $options = []): int {
     $linking_table = $base_table . '_cvterm';
 
     // Get the primary key of the base table.
@@ -1019,18 +1021,21 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
 
       // If count is not zero, the record already exists, so skip insert.
       if (!$count) {
-        $fields = [
-          'cvterm_id' => $cvterm->getValue('cvterm.cvterm_id'),
-          $base_pkey_col => $record_id,
+        $fields = $values;
+        $fields['cvterm_id'] = $cvterm->getValue('cvterm.cvterm_id');
+        $fields[$base_pkey_col] = $record_id;
+
+        // For Chado 1.3, these are the only possible additional columns.
+        // Defaults: null pub, FALSE (encoded as zero), rank zero, null cvterm.
+        $defaults = [
+          'pub_id' => 1,
+          'is_not' => 0,
+          'rank' => 0,
+          'cvterm_type_id' => 1,
         ];
 
         // Add in any of the other columns for the linking table.
-        $options = $this->addLinkingColumns($linking_table, $options);
-        foreach ($options as $key => $value) {
-          if (($key != 'pkey') and ($key != 'lookup_columns')) {
-            $fields[$key] = $value;
-          }
-        }
+        $fields = $this->addLinkingColumns($linking_table, $fields, $defaults, $options);
         $query = $this->chado_connection->insert('1:' . $linking_table);
         $query->fields($fields);
         $query->execute();
@@ -1215,51 +1220,6 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     else {
       return self::NON_EXISTING;
     }
-  }
-
-  /**
-   * Adds not NULL columns to options.
-   *
-   * If there are additional not NULL columns in the linking table,
-   * then add them to the options.
-   *
-   * @param string $linking_table
-   *   The name of the linking table, e.g. featureprop.
-   * @param array $options
-   *   The options passed to the Chado Buddy.
-   *
-   * @return array
-   *   The passed options with not-NULL columns added.
-   */
-  private function addLinkingColumns(string $linking_table, array $options): array {
-    $lookup_columns = $options['lookup_columns'] ?? TRUE;
-    if ($lookup_columns) {
-      // For Chado 1.3, these are the only possible additional columns.
-      // Defaults are null pub, FALSE (encoded as zero), rank zero, null cvterm.
-      $defaults = ['pub_id' => 1, 'is_not' => 0, 'rank' => 0, 'cvterm_type_id' => 1];
-      // If any of these were specified, we disable the automatic lookup.
-      foreach (array_keys($options) as $key) {
-        if (in_array($key, array_keys($defaults))) {
-          $lookup_columns = FALSE;
-          break;
-        }
-      }
-      if ($lookup_columns) {
-        // Automatic lookup is enabled.
-        // Determine actual columns for this linking table.
-        $linking_table_def = $this->getChadoTableDef($linking_table);
-        foreach ($linking_table_def['fields'] as $field_id => $def) {
-          if (array_key_exists($field_id, $defaults)) {
-            // Only include if a NOT NULL constraint exists,
-            // and there is not some type of default value.
-            if ($def['not null'] and ($def['type'] != 'serial') and !($def['default'] ?? FALSE)) {
-              $options[$field_id] = $defaults[$field_id];
-            }
-          }
-        }
-      }
-    }
-    return $options;
   }
 
   /**
