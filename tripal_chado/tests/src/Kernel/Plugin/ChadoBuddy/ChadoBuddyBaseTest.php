@@ -3,8 +3,9 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
+use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
@@ -94,13 +95,16 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertIsObject(
       $instance,
       "We did not have an object created when trying to create an ChadoBuddy instance.");
-    $this->assertIsObject(
-      $instance->chado_connection,
-      "The chado connection should have been set by the plugin manager but the value is NOT AN OBJECT."
+    $schema_name = $this->chado_connection->getSchemaName();
+    $this->assertEquals(
+      $schema_name,
+      $instance->getSchemaName(),
+      "The chado connection schema should have been set by the plugin manager but the values do not match."
     );
     $this->assertInstanceOf(
-      ChadoConnection::class, $instance->chado_connection,
-      "The chado connection should have been set by the plugin manager but the value is NOT A CHADOCONNECTION OBJECT."
+      ChadoCvtermBuddy::class,
+      $instance,
+      "The cvterm buddy instance should have been set by the plugin manager but the value is NOT A CHADOCVTERMBUDDY OBJECT."
     );
   }
 
@@ -392,6 +396,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $subsetInput = $reflection->getMethod('subsetInput');
     $dereferenceBuddyRecord = $reflection->getMethod('dereferenceBuddyRecord');
     $validateOutput = $reflection->getMethod('validateOutput');
+    $parseValidateForeignKeysOption = $reflection->getMethod('parseValidateForeignKeysOption');
 
     // CASE: valid values passed to validateInput().
     $user_values = [
@@ -560,9 +565,10 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // buddy record. Normal use case.
     $sub_values = [
       'project.name' => 'Colossus: The Forbin Project',
-      'project_description' => 'The perfect defense system',
+      'project.description' => 'The perfect defense system',
     ];
     $buddy_record = new ChadoBuddyRecord();
+    $buddy_record->setBaseTable('project');
     $buddy_record->setValues($sub_values);
     $expected_values = array_merge($values, $sub_values);
     $values['buddy_record'] = $buddy_record;
@@ -713,6 +719,35 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     }
     $this->assertTrue($exception_caught, "We should get an exception when calling validateOutput() with anything other than an array");
     $this->assertStringContainsString('more than one record', $exception_message, "We did not get the exception message we expected when calling validateOutput() with multiple records.");
+
+    // CASE: calling parseValidateForeignKeysOption() with valid input.
+    $options = ['validate_foreign_keys' => ['test key' => TRUE]];
+    $exception_caught = FALSE;
+    try {
+      $parseValidateForeignKeysOption->invoke($instance, $options, 'test key');
+    }
+    catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertFalse($exception_caught, "We shouldn't get an exception when calling parseValidateForeignKeysOption() with valid input, but we got: $exception_message");
+
+    // CASE: calling parseValidateForeignKeysOption() with an empty $valid_key.
+    $exception_caught = FALSE;
+    try {
+      $parseValidateForeignKeysOption->invoke($instance, $options, '');
+    }
+    catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, "We should get an exception when calling parseValidateForeignKeysOption() with an empty valid_key parameter");
+    $this->assertStringContainsString(
+      'ChadoBuddy parseValidateForeignKeysOption error, valid_key cannot be empty when validate_foreign_keys option is an array:',
+      $exception_message,
+      "We did not get the exception message we expected when calling parseValidateForeignKeysOption() with an empty valid_key parameter."
+    );
+
   }
 
   /**

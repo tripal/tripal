@@ -596,6 +596,12 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     else {
       $xml = new \SimpleXMLElement($xml_text);
       $taxon = $xml->Taxon;
+      if (count(get_object_vars($taxon)) == 0) {
+        $this->logger->error("Empty taxon returned for taxid @taxid, NCBI may be down.",
+          ['@taxid' => $taxid]
+        );
+        return FALSE;
+      }
 
       // Get the genus and species from the xml.
       $parent = (string) $taxon->ParentTaxId;
