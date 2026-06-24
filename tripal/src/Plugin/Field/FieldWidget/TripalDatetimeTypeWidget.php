@@ -61,7 +61,6 @@ class TripalDatetimeTypeWidget extends TripalWidgetBase {
       . '(e.g., <code>2025-01-15 10:30:00</code>). '
       . 'The time portion is optional and defaults to <code>00:00:00</code> when omitted. '
       . 'Sub-second precision is also accepted (e.g., <code>2025-01-15 10:30:00.123456</code>). '
-      . 'If left blank, the current date and time is used. '
       . 'Enter either <code>0</code> or <code>-infinity</code> if a date is not available or is not appropriate.'
     );
     return $element;
