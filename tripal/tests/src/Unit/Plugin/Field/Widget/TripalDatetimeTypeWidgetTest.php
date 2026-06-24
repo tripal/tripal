@@ -114,6 +114,8 @@ class TripalDatetimeTypeWidgetTest extends UnitTestCase {
   }
 
   /**
+   * Tests that massaging of various values returns expected output.
+   *
    * @dataProvider provideMassageFormValues
    */
   #[DataProvider('provideMassageFormValues')]

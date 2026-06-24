@@ -111,7 +111,16 @@ class TripalStorageTest extends TripalTestKernelBase {
         $plugin_definition,
         $logger,
       ])
-      ->onlyMethods(['getStoredTypes', 'getNonStoredTypes', 'insertValues', 'updateValues', 'loadValues', 'deleteValues', 'findValues', 'validateValues'])
+      ->onlyMethods([
+        'getStoredTypes',
+        'getNonStoredTypes',
+        'insertValues',
+        'updateValues',
+        'loadValues',
+        'deleteValues',
+        'findValues',
+        'validateValues',
+      ])
       ->getMock();
     $this->assertIsObject($tripalStorage, "Unable to create tripal storage mock object.");
 
@@ -183,7 +192,16 @@ class TripalStorageTest extends TripalTestKernelBase {
         $plugin_definition,
         $logger,
       ])
-      ->onlyMethods(['getStoredTypes', 'getNonStoredTypes', 'insertValues', 'updateValues', 'loadValues', 'deleteValues', 'findValues', 'validateValues'])
+      ->onlyMethods([
+        'getStoredTypes',
+        'getNonStoredTypes',
+        'insertValues',
+        'updateValues',
+        'loadValues',
+        'deleteValues',
+        'findValues',
+        'validateValues',
+      ])
       ->getMock();
     $this->assertIsObject($tripalStorage, "Unable to create tripal storage mock object.");
 

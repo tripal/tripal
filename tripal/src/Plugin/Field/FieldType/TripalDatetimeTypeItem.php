@@ -2,13 +2,10 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
-use Drupal\core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\DatetimeStoragePropertyType;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
 
 /**
  * Plugin implementation of the datetime field type.
@@ -23,6 +20,11 @@ use Drupal\tripal\TripalStorage\StoragePropertyValue;
 )]
 class TripalDatetimeTypeItem extends TripalFieldItemBase {
 
+  /**
+   * The id for this field. Must match the attribute value.
+   *
+   * @var string
+   */
   public static $id = "tripal_datetime_type";
 
   /**
@@ -52,8 +54,8 @@ class TripalDatetimeTypeItem extends TripalFieldItemBase {
     $termIdSpace = $storage_settings['termIdSpace'];
     $termAccession = $storage_settings['termAccession'];
 
-    // Use a default term if one is not set.
-    $term = 'NCIT:C25164'; // 'NCIT:Date'
+    // Use a default term if one is not set, i.e. 'NCIT:Date'.
+    $term = 'NCIT:C25164';
     if ($termIdSpace) {
       $term = $termIdSpace . ':' . $termAccession;
     }

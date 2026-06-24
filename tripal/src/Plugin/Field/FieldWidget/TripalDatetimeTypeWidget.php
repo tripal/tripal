@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldWidget;
 
-use DateTime;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -29,12 +28,18 @@ class TripalDatetimeTypeWidget extends TripalWidgetBase {
    * are listed first so they take precedence over shorter variants.
    */
   private const ACCEPTED_FORMATS = [
-    '!Y-m-d H:i:s.u',  // 2025-01-15 10:30:00.123456
-    '!Y-m-d H:i:s',    // 2025-01-15 10:30:00
-    '!Y-m-d\TH:i:s',   // 2025-01-15T10:30:00  (ISO 8601)
-    '!Y-m-d H:i',      // 2025-01-15 10:30     → seconds default to 00
-    '!Y-m-d\TH:i',     // 2025-01-15T10:30
-    '!Y-m-d',          // 2025-01-15            → time defaults to 00:00:00
+    // 2025-01-15 10:30:00.123456
+    '!Y-m-d H:i:s.u',
+    // 2025-01-15 10:30:00
+    '!Y-m-d H:i:s',
+    // 2025-01-15T10:30:00 (ISO 8601)
+    '!Y-m-d\TH:i:s',
+    // 2025-01-15 10:30 → seconds default to 00
+    '!Y-m-d H:i',
+    // 2025-01-15T10:30
+    '!Y-m-d\TH:i',
+    // 2025-01-15 → time defaults to 00:00:00
+    '!Y-m-d',
   ];
 
   /**
@@ -42,7 +47,7 @@ class TripalDatetimeTypeWidget extends TripalWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     // If no value exists, then default to the current time.
-    $date = new DateTime();
+    $date = new \DateTime();
     $default_value = $date->format('Y-m-d H:i:s');
     $element['value'] = $element + [
       '#type' => 'textfield',
@@ -67,7 +72,7 @@ class TripalDatetimeTypeWidget extends TripalWidgetBase {
    */
   public function validateDatetimeValue(array &$element, FormStateInterface $form_state): void {
     $value = trim($element['#value'] ?? '');
-    if ($value === '' ) {
+    if ($value === '') {
       return;
     }
     // These are special case "no time specified" values.
@@ -103,7 +108,8 @@ class TripalDatetimeTypeWidget extends TripalWidgetBase {
       else {
         $dt = $this->parseDateTime($raw);
         if ($dt !== NULL) {
-          // Preserve sub-second precision only when the user actually provided it.
+          // Preserve sub-second precision only when the user actually
+          // provided it.
           if (str_contains($raw, '.')) {
             $values[$delta]['value'] = $dt->format('Y-m-d H:i:s.u');
           }

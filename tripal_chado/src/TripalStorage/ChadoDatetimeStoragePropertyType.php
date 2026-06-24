@@ -27,4 +27,5 @@ class ChadoDatetimeStoragePropertyType extends DatetimeStoragePropertyType {
   public function __construct($entityType, $fieldType, $key, $term_id, $storage_settings = []) {
     parent::__construct($entityType, $fieldType, $key, $term_id, $storage_settings, 'chado_id_space');
   }
+
 }

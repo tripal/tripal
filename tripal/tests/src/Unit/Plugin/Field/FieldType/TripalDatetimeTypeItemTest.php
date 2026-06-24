@@ -37,7 +37,9 @@ class TripalDatetimeTypeItemTest extends UnitTestCase {
   }
 
   /**
-   * Test that defaultStorageSettings() sets storage_plugin_id to drupal_sql_storage.
+   * Test that defaultStorageSettings() sets storage_plugin_id.
+   *
+   * It should be set to drupal_sql_storage.
    */
   public function testDefaultStorageSettings(): void {
     $settings = TripalDatetimeTypeItem::defaultStorageSettings();
@@ -50,7 +52,9 @@ class TripalDatetimeTypeItemTest extends UnitTestCase {
   }
 
   /**
-   * tripalTypes() returns a DatetimeStoragePropertyType with the term from settings.
+   * Tests that tripalTypes() returns a DatetimeStoragePropertyType.
+   *
+   * This should have been set with the term from settings.
    */
   public function testTripalTypesWithExplicitTerm(): void {
     $this->setUpIdspaceContainer();
@@ -73,7 +77,7 @@ class TripalDatetimeTypeItemTest extends UnitTestCase {
   }
 
   /**
-   * tripalTypes() falls back to NCIT:C25164 when termIdSpace is empty.
+   * Tests that tripalTypes() falls back to NCIT:C25164 for empty termIdSpace.
    */
   public function testTripalTypesFallsBackToDefaultTerm(): void {
     $this->setUpIdspaceContainer();
@@ -96,9 +100,10 @@ class TripalDatetimeTypeItemTest extends UnitTestCase {
   /**
    * Sets up a minimal Drupal container with a stub idspace service.
    *
-   * StoragePropertyBase::__construct() resolves tripal.collection_plugin_manager.idspace
-   * from the container to validate the term string. This stubs out that chain
-   * so DatetimeStoragePropertyType can be instantiated in a unit test.
+   * StoragePropertyBase::__construct() resolves
+   * tripal.collection_plugin_manager.idspace from the container to validate
+   * the term string. This stubs out that chain so DatetimeStoragePropertyType
+   * can be instantiated in a unit test.
    */
   private function setUpIdspaceContainer(): void {
     $idspace = $this->prophesize(TripalIdSpaceInterface::class);

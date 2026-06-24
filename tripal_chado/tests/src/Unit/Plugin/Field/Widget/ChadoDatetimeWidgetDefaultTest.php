@@ -2,6 +2,10 @@
 
 namespace Drupal\Tests\tripal_chado\Unit\Plugin\Field\Widget;
 
+use Drupal\Core\Field\WidgetBase;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Tests\UnitTestCase;
 use Drupal\tripal_chado\Plugin\Field\FieldWidget\ChadoDatetimeWidgetDefault;
@@ -49,10 +53,12 @@ class ChadoDatetimeWidgetDefaultTest extends UnitTestCase {
    * @param string $field_name
    *   The field machine name, used to build the element #parents path.
    *
-   * @return array{element: array, form_state: \Drupal\Core\Form\FormState}
+   * @return array
+   *   {element: array, form_state: \Drupal\Core\Form\FormState}.
    */
   private function buildScenario(string $value, int $record_id, string $field_name = 'analysis_timeexecuted'): array {
-    // The #parents path mirrors what the widget sets: ['field_name', delta, 'value'].
+    // The #parents path mirrors what the widget sets:
+    // ['field_name', delta, 'value'].
     $element = [
       '#value'   => $value,
       '#parents' => [$field_name, 0, 'value'],
@@ -70,7 +76,9 @@ class ChadoDatetimeWidgetDefaultTest extends UnitTestCase {
   // ---------------------------------------------------------------------------
 
   /**
-   * A non-empty value never triggers the NOT NULL error, regardless of record_id.
+   * A non-empty value never triggers the NOT NULL error.
+   *
+   * This is regardless of record_id.
    */
   public function testNonEmptyValueIsAlwaysAccepted(): void {
     ['element' => $element, 'form_state' => $form_state] =
@@ -115,7 +123,9 @@ class ChadoDatetimeWidgetDefaultTest extends UnitTestCase {
   }
 
   /**
-   * Whitespace-only input on an existing record is treated as empty and rejected.
+   * Tests whitespace-only input on an existing record.
+   *
+   * This is treated as empty and rejected.
    */
   public function testWhitespaceOnlyRejectedForExistingRecord(): void {
     ['element' => $element, 'form_state' => $form_state] =
@@ -134,31 +144,31 @@ class ChadoDatetimeWidgetDefaultTest extends UnitTestCase {
    */
   #[DataProvider('provideDataForTestFormElementBuild')]
   public function testFormElementBuild(array $item_values, int $expected_record_id): void {
-    $item = $this->createMock(\Drupal\Core\Field\FieldItemInterface::class);
-      $item->method('getValue')->willReturn($item_values);
+    $item = $this->createMock(FieldItemInterface::class);
+    $item->method('getValue')->willReturn($item_values);
 
-      $items = $this->createMock(\Drupal\Core\Field\FieldItemListInterface::class);
-      $items->method('offsetGet')->with(0)->willReturn($item);
-  
-      $field_def = $this->createMock(\Drupal\Core\Field\FieldDefinitionInterface::class);
-      $field_def->method('getSetting')
-          ->with('storage_plugin_settings')
-          ->willReturn(['base_table' => '', 'base_column' => '']);
+    $items = $this->createMock(FieldItemListInterface::class);
+    $items->method('offsetGet')->with(0)->willReturn($item);
 
-      (new \ReflectionProperty(\Drupal\Core\Field\WidgetBase::class, 'fieldDefinition'))
-          ->setValue($this->widget, $field_def);
-  
-      $form = [];
-      $result = $this->widget->formElement($items, 0, [], $form, new FormState());
+    $field_def = $this->createMock(FieldDefinitionInterface::class);
+    $field_def->method('getSetting')
+      ->with('storage_plugin_settings')
+      ->willReturn(['base_table' => '', 'base_column' => '']);
 
-      $this->assertArrayHasKey('record_id', $result);
-      $this->assertSame('value', $result['record_id']['#type']);
-      $this->assertSame($expected_record_id, $result['record_id']['#default_value']);
+    (new \ReflectionProperty(WidgetBase::class, 'fieldDefinition'))
+      ->setValue($this->widget, $field_def);
+
+    $form = [];
+    $result = $this->widget->formElement($items, 0, [], $form, new FormState());
+
+    $this->assertArrayHasKey('record_id', $result);
+    $this->assertSame('value', $result['record_id']['#type']);
+    $this->assertSame($expected_record_id, $result['record_id']['#default_value']);
   }
 
   /**
    * Provide data for testFormElementBuild() method.
-   * 
+   *
    * @return array
    *   An array containing the test scenario data.
    */

@@ -12,9 +12,10 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 /**
  * Tests the ChadoDatetimeTypeDefault field type.
  *
- * Covers create, load, and update operations through TripalEntity, ChadoStorage,
- * and the field plugin layer. Uses chado.analysis.timeexecuted as the backing
- * column since it is the simplest Chado table with a timestamp column.
+ * Covers create, load, and update operations through TripalEntity,
+ * ChadoStorage, and the field plugin layer. Uses
+ * chado.analysis.timeexecuted as the backing column since it is
+ * the simplest Chado table with a timestamp column.
  *
  * @group tripal-field
  * @group chado-field
@@ -26,20 +27,64 @@ class ChadoDatetimeTypeCRUDTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;
 
+  /**
+   * The theme to use when testing.
+   *
+   * @var string
+   */
   protected $defaultTheme = 'stark';
 
+  /**
+   * The modules that this test depends on.
+   *
+   * @var array
+   */
   protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'datetime', 'tripal', 'tripal_chado'];
 
+  /**
+   * The test chado connection. It is also set in the container.
+   *
+   * @var ChadoConnection
+   */
   protected object $chado_connection;
 
+  /**
+   * The test drupal connection. It is also set in the container.
+   *
+   * @var object
+   */
   protected object $drupal_connection;
 
+  /**
+   * The YAML file indicating the scenarios to test and how to setup the enviro.
+   *
+   * @var string
+   */
   protected string $yaml_info_file = __DIR__ . '/ChadoDatetimeType-TestInfo.yml';
 
+  /**
+   * Describes the environment to setup for this test.
+   *
+   * @var array
+   */
   protected array $system_under_test;
 
+  /**
+   * The TripalEntityType id of the bundle being used in this test.
+   *
+   * @var string
+   */
   protected string $bundle_name;
 
+  /**
+   * Describes the scenarios to test.
+   *
+   * This will be used in combination with the data provider. It can't be
+   * accessed directly in the dataProvider due to the way that PHPUnit is
+   * setup.
+   *
+   * @var array
+   */
   protected array $scenarios;
 
   /**
@@ -65,9 +110,10 @@ class ChadoDatetimeTypeCRUDTest extends ChadoTestKernelBase {
    * Data provider: scenarios from the YAML file.
    */
   public static function provideScenarios(): array {
+    // The second value is largely useless for our purpose.
     return [
       [0, 'Create and load a datetime value'],
-      [1, 'Datetime with sub-second precision'], # largely useless for our purpose
+      [1, 'Datetime with sub-second precision'],
     ];
   }
 

@@ -2,6 +2,10 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoField\Widget;
 
+use Drupal\Core\Field\WidgetBase;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldItemInterface;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\Plugin\Field\FieldWidget\ChadoDatetimeWidgetDefault;
@@ -26,12 +30,27 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class ChadoDatetimeWidgetFormElementTest extends ChadoTestKernelBase {
 
+  /**
+   * The theme to use when testing.
+   *
+   * @var string
+   */
   protected $defaultTheme = 'stark';
 
+  /**
+   * The modules that this test depends on.
+   *
+   * @var array
+   */
   protected static $modules = [
     'system', 'user', 'path', 'path_alias', 'field', 'datetime', 'tripal', 'tripal_chado',
   ];
 
+  /**
+   * An instance of the Chado datetime widget.
+   *
+   * @var Drupal\tripal_chado\Plugin\Field\FieldWidget\ChadoDatetimeWidgetDefault
+   */
   private ChadoDatetimeWidgetDefault $widget;
 
   /**
@@ -50,11 +69,11 @@ class ChadoDatetimeWidgetFormElementTest extends ChadoTestKernelBase {
   /**
    * Builds a mock FieldItemListInterface returning the given item values.
    */
-  private function buildItems(array $item_values): \Drupal\Core\Field\FieldItemListInterface {
-    $item = $this->createMock(\Drupal\Core\Field\FieldItemInterface::class);
+  private function buildItems(array $item_values): FieldItemListInterface {
+    $item = $this->createMock(FieldItemInterface::class);
     $item->method('getValue')->willReturn($item_values);
 
-    $items = $this->createMock(\Drupal\Core\Field\FieldItemListInterface::class);
+    $items = $this->createMock(FieldItemListInterface::class);
     $items->method('offsetGet')->with(0)->willReturn($item);
 
     return $items;
@@ -64,19 +83,20 @@ class ChadoDatetimeWidgetFormElementTest extends ChadoTestKernelBase {
    * Injects a mocked fieldDefinition with the given Chado storage settings.
    */
   private function injectFieldDefinition(string $base_table, string $base_column): void {
-    $field_def = $this->createMock(\Drupal\Core\Field\FieldDefinitionInterface::class);
+    $field_def = $this->createMock(FieldDefinitionInterface::class);
     $field_def->method('getSetting')
       ->with('storage_plugin_settings')
       ->willReturn(['base_table' => $base_table, 'base_column' => $base_column]);
 
-    (new \ReflectionProperty(\Drupal\Core\Field\WidgetBase::class, 'fieldDefinition'))
+    (new \ReflectionProperty(WidgetBase::class, 'fieldDefinition'))
       ->setValue($this->widget, $field_def);
   }
 
   /**
    * A NOT NULL column causes validateNotNullConstraint to be wired up.
    *
-   * analysis.timeexecuted is NOT NULL, so the validator must be attached.
+   * The column analysis.timeexecuted is NOT NULL, so the validator must
+   * be attached.
    */
   public function testNotNullColumnAddsValidator(): void {
     $this->injectFieldDefinition('analysis', 'timeexecuted');
@@ -94,7 +114,8 @@ class ChadoDatetimeWidgetFormElementTest extends ChadoTestKernelBase {
   /**
    * A nullable column does NOT cause validateNotNullConstraint to be wired up.
    *
-   * analysis.description is nullable, so the validator must not be attached.
+   * The column analysis.description is nullable, so the validator must not
+   * be attached.
    */
   public function testNullableColumnOmitsValidator(): void {
     $this->injectFieldDefinition('analysis', 'description');

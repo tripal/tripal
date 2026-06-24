@@ -24,6 +24,11 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('tripal-chado-field')]
 class ChadoDatetimeFormatterDefaultTest extends UnitTestCase {
 
+  /**
+   * An instance of the Chado datetime formatter.
+   *
+   * @var Drupal\tripal_chado\Plugin\Field\FieldFormatter\ChadoDatetimeFormatterDefault
+   */
   private ChadoDatetimeFormatterDefault $formatter;
 
   /**
@@ -65,7 +70,7 @@ class ChadoDatetimeFormatterDefaultTest extends UnitTestCase {
   }
 
   /**
-   * viewElements() delegates to the parent and returns rendered markup.
+   * Test viewElements() delegates to the parent and returns rendered markup.
    */
   public function testViewElementsDelegatesToParent(): void {
     $elements = $this->formatter->viewElements(
@@ -76,7 +81,7 @@ class ChadoDatetimeFormatterDefaultTest extends UnitTestCase {
   }
 
   /**
-   * viewElements() hides empty values via the inherited hide logic.
+   * Test viewElements() hides empty values via the inherited hide logic.
    */
   public function testViewElementsHidesEmptyValue(): void {
     $elements = $this->formatter->viewElements($this->buildItems(['']), 'en');

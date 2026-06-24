@@ -99,11 +99,7 @@ class DefaultTripalDatetimeTypeFormatter extends TripalFormatterBase {
     $form['date_format'] = [
       '#title' => $this->t('Date/time display format'),
       '#description' => $this->t(
-        'PHP date format string used to display the timestamp. '
-        . 'Common examples: <code>Y-m-d H:i:s</code> (2025-01-15 10:30:00), '
-        . '<code>F j, Y g:i A</code> (January 15, 2025 10:30 AM), '
-        . '<code>Y-m-d</code> (date only). '
-        . 'See the <a href="https://www.php.net/manual/en/function.date.php" target="_blank">PHP date() documentation</a> for all tokens.'
+        'PHP date format string used to display the timestamp. Common examples: <code>Y-m-d H:i:s</code> (2025-01-15 10:30:00), <code>F j, Y g:i A</code> (January 15, 2025 10:30 AM), <code>Y-m-d</code> (date only). See the <a href="https://www.php.net/manual/en/function.date.php" target="_blank">PHP date() documentation</a> for all tokens.'
       ),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('date_format'),
@@ -111,16 +107,14 @@ class DefaultTripalDatetimeTypeFormatter extends TripalFormatterBase {
     ];
     $form['field_prefix'] = [
       '#title' => $this->t('Text to display before the field value'),
-      '#description' => $this->t('Enter text here that will be displayed before the'
-                     . ' field value, or leave blank for no additional text'),
+      '#description' => $this->t('Enter text here that will be displayed before the field value, or leave blank for no additional text'),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('field_prefix'),
       '#required' => FALSE,
     ];
     $form['field_suffix'] = [
       '#title' => $this->t('Text to display after the field value'),
-      '#description' => $this->t('Enter text here that will be displayed after the'
-                     . ' field value, or leave blank for no additional text'),
+      '#description' => $this->t('Enter text here that will be displayed after the field value, or leave blank for no additional text'),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('field_suffix'),
       '#required' => FALSE,
