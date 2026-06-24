@@ -73,15 +73,15 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
-        name:
-          id: name
+        description:
+          id: description
           table: db
-          field: name
+          field: description
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: 'Database Name'
+          label: 'Label / Description'
           exclude: false
           alter:
             alter_text: false
@@ -122,21 +122,21 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
-        description:
-          id: description
+        name:
+          id: name
           table: db
-          field: description
+          field: name
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: 'Database Description'
+          label: 'Name / ID Space'
           exclude: false
           alter:
             alter_text: false
             text: ''
-            make_link: false
-            path: ''
+            make_link: true
+            path: '/admin/tripal/terms/chado_db?name={{ name }}'
             absolute: false
             external: false
             replace_spaces: false

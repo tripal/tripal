@@ -80,6 +80,55 @@ display:
           admin_label: ''
           plugin_id: standard
           label: 'Controlled Vocabulary Name'
+          exclude: true
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+        definition_1:
+          id: definition_1
+          table: cv
+          field: definition
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: standard
+          label: Vocabulary
           exclude: false
           alter:
             alter_text: false
@@ -227,7 +276,7 @@ display:
           admin_label: ''
           plugin_id: standard
           label: 'Database Name'
-          exclude: false
+          exclude: true
           alter:
             alter_text: false
             text: ''
@@ -276,7 +325,7 @@ display:
           admin_label: ''
           plugin_id: standard
           label: 'Database Accession'
-          exclude: false
+          exclude: true
           alter:
             alter_text: false
             text: ''
@@ -316,6 +365,55 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
+        nothing:
+          id: nothing
+          table: views
+          field: nothing
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: custom
+          label: 'Term Accession'
+          exclude: false
+          alter:
+            alter_text: true
+            text: '{{ name_2 }}:{{ accession }}'
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: false
         is_relationshiptype:
           id: is_relationshiptype
           table: cvterm
@@ -327,8 +425,8 @@ display:
           label: 'Is relationship type'
           exclude: false
           alter:
-            alter_text: false
-            text: ''
+            alter_text: true
+            text: "{% if is_relationshiptype == '0' %}\r\n  No\r\n{% elseif is_relationshiptype == '1' %}\r\n  Yes\r\n{% else %}\r\n  {{ is_relationshiptype }}\r\n{% endif %}"
             make_link: false
             path: ''
             absolute: false
@@ -376,8 +474,8 @@ display:
           label: 'Is obsolete'
           exclude: false
           alter:
-            alter_text: false
-            text: ''
+            alter_text: true
+            text: "{% if is_obsolete == '0' %}\r\n  No\r\n{% elseif is_obsolete == '1' %}\r\n  Yes\r\n{% else %}\r\n  {{ is_obsolete }}\r\n{% endif %}"
             make_link: false
             path: ''
             absolute: false

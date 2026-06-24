@@ -81,7 +81,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: 'Controlled Vocabulary Name'
+          label: 'Short Name'
           exclude: false
           alter:
             alter_text: false
@@ -130,7 +130,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: 'Controlled Vocabulary Definition'
+          label: Label
           exclude: false
           alter:
             alter_text: false
@@ -443,7 +443,7 @@ display:
           exposed: true
           expose:
             operator_id: name_op
-            label: 'Controlled Vocabulary Name'
+            label: 'Short Name'
             description: ''
             use_operator: false
             operator: name_op
@@ -482,7 +482,7 @@ display:
           exposed: true
           expose:
             operator_id: definition_op
-            label: 'Controlled vocabulary definition'
+            label: Label
             description: ''
             use_operator: false
             operator: definition_op
@@ -595,7 +595,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/cv\">Add a new vocabulary </a>\r\n<p>The following table lists the controlled vocabularies managed by Tripal in various chado schemas.</p>"
+          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/cv\">Add a new vocabulary</a>\r\n<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/terms/chado_cvterm\">Controlled Vocabulary Terms</a>\r\n<p>The following table lists the controlled vocabularies managed by Tripal in various chado schemas.</p>"
           tokenize: false
       footer: {  }
       display_extenders: {  }
