@@ -9,8 +9,6 @@ on:
   schedule:
     # Run at 2am every night.
     - cron: '0 2 * * *'
-  # TEMPORARY FOR TESTING
-  push:
 
 permissions: read-all
 
@@ -22,21 +20,20 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-        #  - '8.2'
-        #  - '8.3'
-        #  - '8.4'
+          - '8.2'
+          - '8.3'
+          - '8.4'
           - '8.5'
         pgsql-version:
-        #  - '14'
-        #  - '15'
-        #  - '16'
-        #  - '17'
+          - '14'
+          - '15'
+          - '16'
+          - '17'
           - '18'
         drupal-version:
           - '10.6.x'
           - '11.3.x'
           - '11.4.x'
-          - '13.3.x'
           - '11.x-dev'
         exclude:
           # Only Drupal 11.3+ supports PHP 8.5
