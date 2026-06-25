@@ -52,6 +52,7 @@
     <testsuite name="unit">
       <directory>tripal/tests/src/Unit</directory>
       <directory>tripal_biodb/tests/src/Unit</directory>
+      <directory>tripal_chado/tests/src/Unit</directory>
     </testsuite>
     <testsuite name="functional">
       <directory>tripal/tests/src/Functional</directory>
