@@ -29,7 +29,7 @@ class ChadoCvItemsLink extends FieldPluginBase {
   public function render(ResultRow $values) {
     $cv_name = $values->cv_name;
     $url = Url::fromUserInput('/admin/tripal/terms/chado_cvterm?name=' . $cv_name)->toString();
-    $html = '<a href="' . $url . '">Items</a>';
+    $html = '<a href="' . $url . '">Terms</a>';
     $markup = new Markup();
 
     return $markup->create($html);
