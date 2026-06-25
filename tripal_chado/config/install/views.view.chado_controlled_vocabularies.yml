@@ -318,6 +318,120 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: false
+        name_1:
+          id: name_1
+          table: db
+          field: name
+          relationship: rel_1
+          group_type: group
+          admin_label: ''
+          plugin_id: standard
+          label: 'ID Space'
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: true
+            path: '/admin/tripal/terms/chado_db?name={{ name_1 }}'
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          set_precision: false
+          precision: 0
+          decimal: .
+          separator: ','
+          format_plural: false
+          format_plural_string: !!binary MQNAY291bnQ=
+          prefix: ''
+          suffix: ''
+        cvterm_id:
+          id: cvterm_id
+          table: cvterm
+          field: cvterm_id
+          relationship: rel
+          group_type: count
+          admin_label: ''
+          plugin_id: standard
+          label: Terms
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: true
+            path: '/admin/tripal/terms/chado_cvterm?name_2={{ name_1 }}'
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          set_precision: false
+          precision: 0
+          decimal: .
+          separator: ','
+          format_plural: 0
+          format_plural_string: !!binary MQNAY291bnQ=
+          prefix: ''
+          suffix: ' terms'
         dropbutton:
           id: dropbutton
           table: views
@@ -584,7 +698,26 @@ display:
           distinct: false
           replica: false
           query_tags: {  }
-      relationships: {  }
+      relationships:
+        rel:
+          id: rel
+          table: cv
+          field: rel
+          relationship: none
+          group_type: group
+          admin_label: 'cv to cvterm relationship'
+          plugin_id: standard
+          required: false
+        rel_1:
+          id: rel_1
+          table: dbxref
+          field: rel
+          relationship: rel
+          group_type: group
+          admin_label: 'dbxref to db relationship'
+          plugin_id: standard
+          required: false
+      group_by: true
       header:
         area_text_custom:
           id: area_text_custom
