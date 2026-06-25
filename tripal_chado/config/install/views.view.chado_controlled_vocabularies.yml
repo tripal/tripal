@@ -367,14 +367,6 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
-          set_precision: false
-          precision: 0
-          decimal: .
-          separator: ','
-          format_plural: false
-          format_plural_string: !!binary MQNAY291bnQ=
-          prefix: ''
-          suffix: ''
         cvterm_id:
           id: cvterm_id
           table: cvterm
@@ -382,12 +374,12 @@ display:
           relationship: rel
           group_type: count
           admin_label: ''
-          plugin_id: standard
+          plugin_id: numeric
           label: Terms
           exclude: false
           alter:
-            alter_text: false
-            text: ''
+            alter_text: true
+            text: "{% if cvterm_id == \"0 terms\" %}\r\n\r\n{% elseif cvterm_id == \"1 terms\" %}\r\n1 term\r\n{% else %}\r\n{{ cvterm_id }}\r\n{% endif %}"
             make_link: true
             path: '/admin/tripal/terms/chado_cvterm?name_2={{ name_1 }}'
             absolute: false
@@ -428,7 +420,7 @@ display:
           precision: 0
           decimal: .
           separator: ','
-          format_plural: 0
+          format_plural: false
           format_plural_string: !!binary MQNAY291bnQ=
           prefix: ''
           suffix: ' terms'
