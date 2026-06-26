@@ -538,7 +538,7 @@ display:
           exposed: true
           expose:
             operator_id: description_op
-            label: 'Database Description'
+            label: 'Label / Description'
             description: ''
             use_operator: false
             operator: description_op

@@ -177,7 +177,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: 'Controlled Vocabulary Term Name'
+          label: 'Term Name'
           exclude: false
           alter:
             alter_text: false
@@ -226,7 +226,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: 'Controlled Vocabulary Term Definition'
+          label: 'Term Definition'
           exclude: false
           alter:
             alter_text: false
@@ -738,7 +738,7 @@ display:
           exposed: true
           expose:
             operator_id: name_op
-            label: 'Controlled Vocabulary Name'
+            label: Vocabulary
             description: ''
             use_operator: false
             operator: name_op
@@ -789,7 +789,7 @@ display:
           exposed: true
           expose:
             operator_id: name_1_op
-            label: 'Controlled Vocabulary Term Name'
+            label: 'Term Name'
             description: ''
             use_operator: false
             operator: name_1_op
@@ -828,7 +828,7 @@ display:
           exposed: true
           expose:
             operator_id: definition_op
-            label: 'Controlled Vocabulary Term Definition'
+            label: 'Term Definition'
             description: ''
             use_operator: false
             operator: definition_op

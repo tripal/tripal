@@ -628,6 +628,45 @@ display:
       sorts: {  }
       arguments: {  }
       filters:
+        description:
+          id: description
+          table: db
+          field: description
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: string
+          operator: contains
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: description_op
+            label: 'Label / Description'
+            description: ''
+            use_operator: false
+            operator: description_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: description
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
         name:
           id: name
           table: db
@@ -642,7 +681,7 @@ display:
           exposed: true
           expose:
             operator_id: name_op
-            label: 'Database Name'
+            label: 'Name / ID Space'
             description: ''
             use_operator: false
             operator: name_op
