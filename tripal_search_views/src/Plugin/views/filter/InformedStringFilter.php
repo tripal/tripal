@@ -72,7 +72,7 @@ class InformedStringFilter extends StringFilter {
       $value = $row[$real_field];
       $options[$value] = $value;
     }
-
+    natcasesort($options);
     // Replace the default text input with a select element.
     $form[$identifier] = [
       '#type' => 'select',
