@@ -304,6 +304,17 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       ],
       1,
     ];
+
+    // #5: Insert an organism with null comment
+    $scenarios[] = [
+      [
+        'organism.genus' => 'Tripalus',
+        'organism.species' => 'databasica',
+        'organism.comment' => NULL,
+      ],
+      [],
+      1,
+    ];
     return $scenarios;
   }
 
