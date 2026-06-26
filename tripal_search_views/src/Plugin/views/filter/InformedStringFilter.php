@@ -120,7 +120,7 @@ class InformedStringFilter extends StringFilter {
         '#value' => $this->t('Grouped filters'),
         '#submit' => [[$this, 'buildGroupForm']],
       ];
-      $form['group_button']['radios']['radios']['#default_value'] = 0;
+      $form['group_button']['radios']['radios']['#default_value'] = self::TYPE_SINGLE_FILTER;
     }
     elseif ($type == self::TYPE_GROUPED_FILTER) {
       $form['group_button']['button'] = [
@@ -129,7 +129,7 @@ class InformedStringFilter extends StringFilter {
         '#value' => $this->t('Single filter'),
         '#submit' => [[$this, 'buildGroupForm']],
       ];
-      $form['group_button']['radios']['radios']['#default_value'] = 1;
+      $form['group_button']['radios']['radios']['#default_value'] = self::TYPE_GROUPED_FILTER;
     }
     elseif ($type == self::TYPE_DYNAMIC_SELECT_LIST) {
       $form['group_button']['markup'] = [
@@ -143,7 +143,7 @@ class InformedStringFilter extends StringFilter {
         '#value' => $this->t('Dynamic Select List'),
         '#submit' => [[$this, 'buildGroupForm']],
       ];
-      $form['group_button']['radios']['radios']['#default_value'] = 2;
+      $form['group_button']['radios']['radios']['#default_value'] = self::TYPE_DYNAMIC_SELECT_LIST;
     }
   }
 
