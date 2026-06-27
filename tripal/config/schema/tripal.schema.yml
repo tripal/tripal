@@ -134,6 +134,10 @@ field.field_settings.tripal_text_type:
   type: mapping
   mapping: {}
 
+field.field_settings.tripal_datetime_type:
+  type: mapping
+  mapping: {}
+
 ## Field storage settings...
 field.storage_settings.tripal_boolean_type:
   type: mapping
@@ -169,6 +173,10 @@ field.storage_settings.tripal_text_type:
       type: integer
       label: 'Maximum length'
 
+field.storage_settings.tripal_datetime_type:
+  type: mapping
+  mapping: {}
+
 ## Field widget settings...
 field.widget.settings.default_tripal_boolean_type_widget:
   type: mapping
@@ -195,6 +203,10 @@ field.widget.settings.default_tripal_text_type_widget:
     num_rows:
       type: integer
       label: 'Number of Rows to display in the text widget'
+
+field.widget.settings.default_tripal_datetime_type_widget:
+  type: mapping
+  mapping: {}
 
 ## Field formatter settings...
 field.formatter.settings.default_tripal_boolean_type_formatter:
@@ -280,6 +292,30 @@ field.formatter.settings.default_tripal_text_type_formatter:
       type: string
       label: 'Hide value'
       nullable: true
+
+field.formatter.settings.default_tripal_datetime_type_formatter:
+  type: mapping
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+    date_format:
+      type: string
+      label: 'PHP date format string for datetime display'
+      nullable: false
 
 ##
 ## Tripal Configuration Entities!

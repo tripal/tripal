@@ -1246,3 +1246,25 @@ function tripal_chado_update_10419() {
   ];
   tripal_chado_set_field_required_status($field_ids, FALSE, 'Could not set germplasm collection required setting');
 }
+
+/**
+ * Adds chado_datetime_type_default fields for analysis, gene, mRNA, assay, and library.
+ */
+function tripal_chado_update_10420() {
+  try {
+    $collections = ['general', 'genomic', 'expression'];
+    update_content_type_collections($collections);
+
+    $config_dir = __DIR__ . '/config/install';
+    add_field_from_yaml($config_dir . '/tripal.tripalfield_collection.general_chado.yml',
+      ['analysis_timeexecuted']);
+    add_field_from_yaml($config_dir . '/tripal.tripalfield_collection.genomic_chado.yml',
+      ['gene_timeaccessioned', 'gene_timelastmodified', 'mrna_timeaccessioned', 'mrna_timelastmodified',
+       'library_timeaccessioned', 'library_timelastmodified']);
+    add_field_from_yaml($config_dir . '/tripal.tripalfield_collection.expression_chado.yml',
+      ['assay_assaydate']);
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not add datetime fields: ' . $e->getMessage());
+  }
+}
