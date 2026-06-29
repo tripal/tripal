@@ -1137,5 +1137,5 @@ vocabularies:
         url: 'https://www.wikipedia.org'
         idSpaces:
             -   name: 'wikipedia'
-                description: 'Wikipedia: the Free Encyclopedia'
+                description: 'Wikipedia: The Free Encyclopedia'
                 urlPrefix: 'https://wikipedia.org/wiki/{accession}'
