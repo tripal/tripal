@@ -883,7 +883,7 @@ vocabularies:
         url: 'cv/lookup/TPUB'
         idSpaces:
             -   name: 'TPUB'
-                description: "Tripal Publication Ontology "
+                description: "Tripal Publication Ontology"
                 urlPrefix: "cv/lookup/TPUB/{accession}"
         terms:
             -   id: 'TPUB:0000002'
@@ -1133,9 +1133,9 @@ vocabularies:
                 description: 'This scope is applied when a word of phrase has been used synonymously with the primary term name in the literature, but the usage is not strictly correct. That is, the synonym in fact has a slightly different meaning than the primary term name. Since users may not be aware that the synonym was being used incorrectly when searching for a term, related synonyms are included.'
 
     -   name: 'wikipedia'
-        label: 'Wikipedia: the Free Encyclopedia'
+        label: 'Wikipedia: The Free Encyclopedia'
         url: 'https://www.wikipedia.org'
         idSpaces:
             -   name: 'wikipedia'
                 description: 'Wikipedia: the Free Encyclopedia'
-                urlPrefix: 'https://en.wikipedia.org/wiki/{accession}'
+                urlPrefix: 'https://wikipedia.org/wiki/{accession}'
