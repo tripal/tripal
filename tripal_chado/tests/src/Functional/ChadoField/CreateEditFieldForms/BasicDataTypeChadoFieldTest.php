@@ -14,7 +14,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * property --these are fields that act on individual columns in the base table
  * and require their column to be set in the field storage settings.
  *
- * @group ChadoField
+ * @group form
+ * @group chado-field
  */
 #[Group('form')]
 #[Group('chado-field')]
@@ -34,6 +35,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     'chado_boolean_type_default',
     'chado_string_type_default',
     'chado_text_type_default',
+    'chado_datetime_type_default',
   ];
 
   /**
@@ -149,6 +151,11 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     $sets[] = [
       'chado_text_type_default',
       ['uniquename', 'residues'],
+    ];
+
+    $sets[] = [
+      'chado_datetime_type_default',
+      ['timeaccessioned', 'timelastmodified'],
     ];
 
     return $sets;
