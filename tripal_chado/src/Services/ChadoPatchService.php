@@ -101,6 +101,7 @@ class ChadoPatchService {
    */
   protected function patchRecord(array $record): int {
     $status = 0;
+    $upsert = $record['upsert'] ?? FALSE;
     $query = $this->chado_connection->select('1:' . $record['table'], 'T');
     foreach ($record['conditions'] as $condition) {
       $query->condition('T.' . $condition['column'], $condition['value'], '=');
@@ -114,8 +115,9 @@ class ChadoPatchService {
         . '" column "' . $record['key_column'] . '" value "' . $record['key_value'] . '".');
     }
 
-    // If no match, then we just skip this record.
-    if (count($results) == 1) {
+    // If no match, and we didn't set upsert, then we just skip
+    // this record.
+    if (count($results) == 1 || $upsert) {
       // If an existing value was indicated, check for match. If different, do nothing.
       if (isset($record['existing_value'])) {
         $current_value = $results[0]->{$record['update_column']};
@@ -125,11 +127,20 @@ class ChadoPatchService {
       }
       // Update the record in the database. Status will be the number of
       // records modified.
-      $query = $this->chado_connection->update('1:' . $record['table']);
-      foreach ($record['conditions'] as $condition) {
-        $query->condition($condition['column'], $condition['value'], '=');
+      if (count($results)) {
+        $query = $this->chado_connection->update('1:' . $record['table']);
+        foreach ($record['conditions'] as $condition) {
+          $query->condition($condition['column'], $condition['value'], '=');
+        }
+        $query->fields([$record['update_column'] => $record['update_value']]);
       }
-      $query->fields([$record['update_column'] => $record['update_value']]);
+      // Record does not exist, so insert it.
+      else {
+        $query = $this->chado_connection->insert('1:' . $record['table'], 't');
+        // When inserting, the conditions become field values.
+        $query->fields('t', $record['conditions']);
+        $query->addField('t', $record['update_column', $record['update_value']);
+      }
       $status = $query->execute();
     }
 
