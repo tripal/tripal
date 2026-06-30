@@ -17,7 +17,7 @@ on:
   # Run at 5am every morning, 1 hour after images are built.
   schedule:
     - cron: '0 5 * * *'
-  # This next trigger is temporary for testing:
+  # The next trigger is temporary for testing:
   pull_request:
 
 permissions: 'read-all'
