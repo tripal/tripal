@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal_chado\Services;
 
-use Drupal\Core\Config\FileStorage;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Symfony\Component\Yaml\Yaml;
 
@@ -118,7 +117,8 @@ class ChadoPatchService {
     // If no match, and we didn't set upsert, then we just skip
     // this record.
     if (count($results) == 1 || $upsert) {
-      // If an existing value was indicated, check for match. If different, do nothing.
+      // If an existing value was indicated, check for match.
+      // If different, do nothing.
       if (isset($record['existing_value'])) {
         $current_value = $results[0]->{$record['update_column']};
         if ($current_value != $record['existing_value']) {
@@ -139,7 +139,7 @@ class ChadoPatchService {
         $query = $this->chado_connection->insert('1:' . $record['table'], 't');
         // When inserting, the conditions become field values.
         $query->fields('t', $record['conditions']);
-        $query->addField('t', $record['update_column', $record['update_value']);
+        $query->addField('t', $record['update_column'], $record['update_value']);
       }
       $status = $query->execute();
     }
