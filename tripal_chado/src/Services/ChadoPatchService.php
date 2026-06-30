@@ -119,7 +119,7 @@ class ChadoPatchService {
     if (count($results) == 1 || $upsert) {
       // If an existing value was indicated, check for match.
       // If different, do nothing.
-      if (isset($record['existing_value'])) {
+      if (isset($record['existing_value']) && count($results)) {
         $current_value = $results[0]->{$record['update_column']};
         if ($current_value != $record['existing_value']) {
           return $status;
@@ -133,15 +133,20 @@ class ChadoPatchService {
           $query->condition($condition['column'], $condition['value'], '=');
         }
         $query->fields([$record['update_column'] => $record['update_value']]);
+        $status = $query->execute();
       }
       // Record does not exist, so insert it.
       else {
-        $query = $this->chado_connection->insert('1:' . $record['table'], 't');
-        // When inserting, the conditions become field values.
-        $query->fields('t', $record['conditions']);
-        $query->addField('t', $record['update_column'], $record['update_value']);
+        $query = $this->chado_connection->insert('1:' . $record['table']);
+        $fields = [$record['update_column'] => $record['update_value']];
+        // When inserting, the conditions also become field values.
+        foreach ($record['conditions'] as $condition) {
+          $fields[$condition['column']] = $condition['value'];
+        }
+        $query->fields($fields);
+        $query->execute();
+        $status = 1;
       }
-      $status = $query->execute();
     }
 
     return $status;

@@ -756,8 +756,7 @@
     - column: 'name'
       value: 'efo'
   update_column: 'definition'
-  existing_value: 'The Experimental Factor Ontology (EFO) provides a systematic description of many experimental variables available in EBI databases, and for external projects such as the NHGRI GWAS catalogue. It combines parts of several biological ontologies, such as anatomy, disease and chemical compounds. The scope of EFO is to support the annotation, analysis and visualization of data handled by many groups at the EBI and as the core ontology for OpenTargets.org
-> ero   The Eagle-I Research Resource Ontology models research resources such instruments. protocols, reagents, animal models and biospecimens. It has been developed in the context of the eagle-i project (http://eagle-i.net/).'
+  existing_value: 'The Experimental Factor Ontology (EFO) provides a systematic description of many experimental variables available in EBI databases, and for external projects such as the NHGRI GWAS catalogue. It combines parts of several biological ontologies, such as anatomy, disease and chemical compounds. The scope of EFO is to support the annotation, analysis and visualization of data handled by many groups at the EBI and as the core ontology for OpenTargets.org'
   update_value: 'The Experimental Factor Ontology'
 - table: 'cv'
   conditions:
@@ -765,7 +764,7 @@
       value: 'ero'
   update_column: 'definition'
   existing_value: 'The Eagle-I Research Resource Ontology models research resources such instruments. protocols, reagents, animal models and biospecimens. It has been developed in the context of the eagle-i project (http://eagle-i.net/).'
-  update_value: '  The Eagle-I Research Resource Ontology'
+  update_value: 'The Eagle-I Research Resource Ontology'
 - table: 'cv'
   conditions:
     - column: 'name'
