@@ -33,3 +33,4 @@ jobs:
           password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
           repositories: 'tripalproject/tripaldocker-drupal, tripalproject/tripaldocker'
           rules: 'BUILT:0, latest, drupal'
+          dry-run: false
