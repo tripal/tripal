@@ -17,8 +17,6 @@ on:
   # Run at 5am every morning, 1 hour after images are built.
   schedule:
     - cron: '0 5 * * *'
-  # The next trigger is temporary for testing:
-  pull_request:
 
 permissions: 'read-all'
 
@@ -35,5 +33,3 @@ jobs:
           password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
           repositories: 'tripalproject/tripaldocker-drupal, tripalproject/tripaldocker'
           rules: 'BUILT:0, latest, drupal'
-          # temporary for testing:
-          dry-run: true
