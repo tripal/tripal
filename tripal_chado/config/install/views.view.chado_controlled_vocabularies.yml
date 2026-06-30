@@ -81,7 +81,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: 'Controlled Vocabulary Name'
+          label: 'Short Name'
           exclude: false
           alter:
             alter_text: false
@@ -130,7 +130,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: 'Controlled Vocabulary Definition'
+          label: Label
           exclude: false
           alter:
             alter_text: false
@@ -318,6 +318,112 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: false
+        name_1:
+          id: name_1
+          table: db
+          field: name
+          relationship: rel_1
+          group_type: group
+          admin_label: ''
+          plugin_id: standard
+          label: 'ID Space'
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: true
+            path: '/admin/tripal/terms/chado_db?name={{ name_1 }}'
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+        cvterm_id:
+          id: cvterm_id
+          table: cvterm
+          field: cvterm_id
+          relationship: rel
+          group_type: count
+          admin_label: ''
+          plugin_id: numeric
+          label: Terms
+          exclude: false
+          alter:
+            alter_text: true
+            text: "{% if cvterm_id == \"0 terms\" %}\r\n\r\n{% elseif cvterm_id == \"1 terms\" %}\r\n1 term\r\n{% else %}\r\n{{ cvterm_id }}\r\n{% endif %}"
+            make_link: true
+            path: '/admin/tripal/terms/chado_cvterm?name_2={{ name_1 }}'
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          set_precision: false
+          precision: 0
+          decimal: .
+          separator: ','
+          format_plural: false
+          format_plural_string: !!binary MQNAY291bnQ=
+          prefix: ''
+          suffix: ' terms'
         dropbutton:
           id: dropbutton
           table: views
@@ -443,7 +549,7 @@ display:
           exposed: true
           expose:
             operator_id: name_op
-            label: 'Controlled Vocabulary Name'
+            label: 'Short Name'
             description: ''
             use_operator: false
             operator: name_op
@@ -482,7 +588,7 @@ display:
           exposed: true
           expose:
             operator_id: definition_op
-            label: 'Controlled vocabulary definition'
+            label: Label
             description: ''
             use_operator: false
             operator: definition_op
@@ -584,7 +690,26 @@ display:
           distinct: false
           replica: false
           query_tags: {  }
-      relationships: {  }
+      relationships:
+        rel:
+          id: rel
+          table: cv
+          field: rel
+          relationship: none
+          group_type: group
+          admin_label: 'cv to cvterm relationship'
+          plugin_id: standard
+          required: false
+        rel_1:
+          id: rel_1
+          table: dbxref
+          field: rel
+          relationship: rel
+          group_type: group
+          admin_label: 'dbxref to db relationship'
+          plugin_id: standard
+          required: false
+      group_by: true
       header:
         area_text_custom:
           id: area_text_custom
@@ -595,7 +720,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/cv\">Add a new vocabulary </a>\r\n<p>The following table lists the controlled vocabularies managed by Tripal in various chado schemas.</p>"
+          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/cv\">Add a new vocabulary</a>\r\n<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/terms/chado_cvterm\">Controlled Vocabulary Terms</a>\r\n<p>The following table lists the controlled vocabularies managed by Tripal in various chado schemas.</p>"
           tokenize: false
       footer: {  }
       display_extenders: {  }

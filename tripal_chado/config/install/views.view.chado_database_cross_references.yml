@@ -73,21 +73,21 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
-        name:
-          id: name
+        name_1:
+          id: name_1
           table: db
           field: name
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: 'Database Name'
-          exclude: false
+          label: 'Database Name for linking'
+          exclude: true
           alter:
             alter_text: false
             text: ''
-            make_link: true
-            path: '/admin/tripal/terms/chado_db?name={{ name }}'
+            make_link: false
+            path: ''
             absolute: false
             external: false
             replace_spaces: false
@@ -130,13 +130,62 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: 'Database Description'
+          label: 'Label / Description'
           exclude: false
           alter:
             alter_text: false
             text: ''
-            make_link: false
-            path: ''
+            make_link: true
+            path: '/admin/tripal/terms/chado_db?name={{ name_1 }}'
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+        name:
+          id: name
+          table: db
+          field: name
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: standard
+          label: 'Name / ID Space'
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: true
+            path: '/admin/tripal/terms/chado_db?name={{ name }}'
             absolute: false
             external: false
             replace_spaces: false
@@ -579,6 +628,45 @@ display:
       sorts: {  }
       arguments: {  }
       filters:
+        description:
+          id: description
+          table: db
+          field: description
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: string
+          operator: contains
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: description_op
+            label: 'Label / Description'
+            description: ''
+            use_operator: false
+            operator: description_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: description
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
         name:
           id: name
           table: db
@@ -593,7 +681,7 @@ display:
           exposed: true
           expose:
             operator_id: name_op
-            label: 'Database Name'
+            label: 'Name / ID Space'
             description: ''
             use_operator: false
             operator: name_op

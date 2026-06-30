@@ -564,6 +564,18 @@ class TripalChadoHooks {
         'id' => 'chado_cv_items_link',
       ],
     ];
+    // Relationship from cv to cvterm table for generating count of terms.
+    $data['cv']['rel'] = [
+      'title' => $this->t('CV Terms'),
+      'help' => $this->t('Relationship to the cvterm table'),
+      'relationship' => [
+        'base' => 'cvterm',
+        'base field' => 'cv_id',
+        'field' => 'cv_id',
+        'id' => 'standard',
+        'label' => 'cv to cvterm relationship',
+      ],
+    ];
 
     // The chado dbxref table.
     $data['dbxref']['table']['group'] = $this->t('Database cross-reference');
@@ -620,10 +632,10 @@ class TripalChadoHooks {
       ],
     ];
 
-    // Relationship from cvterm, through dbxref, to db table.
+    // Relationship from dbxref to db table.
     $data['dbxref']['rel'] = [
       'title' => $this->t('External Database'),
-      'help' => $this->t('Relationship through the dbxref table to the db table'),
+      'help' => $this->t('Relationship from the dbxref table to the db table'),
       'relationship' => [
         'base' => 'db',
         'base field' => 'db_id',
@@ -707,6 +719,19 @@ class TripalChadoHooks {
       'help' => $this->t('Clickable link to delete a controlled vocabulary term'),
       'field' => [
         'id' => 'chado_cvterm_delete_link',
+      ],
+    ];
+
+    // Relationship from cvterm to dbxref table, part of path to get to db.
+    $data['cvterm']['rel'] = [
+      'title' => $this->t('Controlled Vocabulary Term'),
+      'help' => $this->t('Relationship from the cvterm table to the dbxref table'),
+      'relationship' => [
+        'base' => 'dbxref',
+        'base field' => 'dbxref_id',
+        'field' => 'dbxref_id',
+        'id' => 'standard',
+        'label' => 'cvterm to dbxref relationship',
       ],
     ];
   }

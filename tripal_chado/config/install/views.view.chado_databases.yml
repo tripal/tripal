@@ -81,7 +81,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: 'Database Name'
+          label: Name
           exclude: false
           alter:
             alter_text: false
@@ -130,7 +130,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: 'Database Description'
+          label: 'Label / Description'
           exclude: false
           alter:
             alter_text: false
@@ -282,7 +282,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: chado_db_items_link
-          label: 'Cross Reference Items'
+          label: Accessions
           exclude: true
           alter:
             alter_text: true
@@ -499,8 +499,8 @@ display:
           exposed: true
           expose:
             operator_id: name_op
-            label: 'Database Name'
-            description: ''
+            label: Name
+            description: 'Label / Description'
             use_operator: false
             operator: name_op
             operator_limit_selection: false
@@ -538,7 +538,7 @@ display:
           exposed: true
           expose:
             operator_id: description_op
-            label: 'Database Description'
+            label: 'Label / Description'
             description: ''
             use_operator: false
             operator: description_op
@@ -648,7 +648,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: false
-          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/db\">Add a new database</a>\r\n<p>The following table lists the external databases managed by Tripal in various chado schemas.</p>"
+          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/db\">Add a new database</a>\r\n<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/terms/chado_dbxref\">Database Accessions</a>\r\n<p>The following table lists the external databases managed by Tripal in various chado schemas.</p>"
           tokenize: false
       footer: {  }
       display_extenders: {  }
