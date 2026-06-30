@@ -10,7 +10,7 @@
     - column: 'name'
       value: 'BS'
   update_column: 'description'
-  existing_value: 'The Protein Feature Ontology is a structured controlled vocabulary for features of a protein sequence or structure.'
+  existing_value: ''
   update_value: 'Biosapiens Protein Feature Ontology'
 - table: 'db'
   conditions:
@@ -591,7 +591,7 @@
     - column: 'name'
       value: 'orcid'
   update_column: 'description'
-  existing_value: 'ORCID is a free, unique, persistent identifier (PID) for individuals to use as they engage in research, scholarship, and innovation activities.'
+  existing_value: ''
   update_value: 'Open Researcher and Contributor ID'
 - table: 'db'
   conditions:
@@ -640,7 +640,7 @@
     - column: 'name'
       value: 'synonym_type'
   update_column: 'description'
-  existing_value: 'Classification of the type of synonym. This ontology is defined by Tripal.'
+  existing_value: ''
   update_value: 'Synonym Type Controlled Vocabulary'
 - table: 'db'
   conditions:
@@ -705,7 +705,30 @@
       value: 'BS'
   update_column: 'definition'
   existing_value: ''
-  update_value: 'Digital Object Identifier'
+  update_value: 'Biosapiens Protein Feature Ontology'
+  upsert: true
+- table: 'cv'
+  conditions:
+    - column: 'name'
+      value: 'MOD'
+  update_column: 'definition'
+  existing_value: ''
+  update_value: 'Protein Modification Ontology'
+  upsert: true
+- table: 'cv'
+  conditions:
+    - column: 'name'
+      value: 'PMID'
+  update_column: 'definition'
+  existing_value: 'PubMed.'
+  update_value: 'PubMed'
+- table: 'cv'
+  conditions:
+    - column: 'name'
+      value: 'RNAMOD'
+  update_column: 'definition'
+  existing_value: ''
+  update_value: 'RNA Modification Ontology'
   upsert: true
 - table: 'cv'
   conditions:
@@ -791,8 +814,45 @@
     - column: 'name'
       value: 'iao'
   update_column: 'definition'
-  existing_value: 'A synonym of the IAO ontology, some obo files have this ontology referenced in lower case'
+  existing_value: ''
   update_value: 'Information Artifact Ontology'
+- table: 'cv'
+  conditions:
+    - column: 'name'
+      value: 'loinc'
+  update_column: 'definition'
+  existing_value: ''
+  update_value: 'Logical Observation Identifiers Names and Codes'
+  upsert: true
+- table: 'cv'
+  conditions:
+    - column: 'name'
+      value: 'ncbitaxon'
+  update_column: 'definition'
+  existing_value: 'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy'
+  update_value: 'NCBI organismal classification'
+- table: 'cv'
+  conditions:
+    - column: 'name'
+      value: 'obi'
+  update_column: 'definition'
+  existing_value: 'Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific'
+  update_value: 'Ontology for Biomedical Investigation'
+- table: 'cv'
+  conditions:
+    - column: 'name'
+      value: 'ogi'
+  update_column: 'definition'
+  existing_value: 'Ontology for genetic interval'
+  update_value: 'Ontology for Genetic Interval'
+- table: 'cv'
+  conditions:
+    - column: 'name'
+      value: 'orcid'
+  update_column: 'definition'
+  existing_value: ''
+  update_value: 'Open Researcher and Contributor ID'
+  upsert: true
 - table: 'cv'
   conditions:
     - column: 'name'
@@ -800,6 +860,13 @@
   update_column: 'definition'
   existing_value: 'Extends the RDF vocabulary to provide structural information for the semantic web.'
   update_value: 'Web Ontology Language'
+- table: 'cv'
+  conditions:
+    - column: 'name'
+      value: 'sbo'
+  update_column: 'definition'
+  existing_value: 'Systems Biology.  Terms commonly used in Systems Biology, and in particular in computational modeling.'
+  update_value: 'Systems Biology Ontology'
 - table: 'cv'
   conditions:
     - column: 'name'
@@ -817,7 +884,22 @@
 - table: 'cv'
   conditions:
     - column: 'name'
+      value: 'swo'
+  update_column: 'definition'
+  existing_value: 'Bioinformatics operations, data types, formats, identifiers and topics'
+  update_value: 'The Software Ontology'
+- table: 'cv'
+  conditions:
+    - column: 'name'
       value: 'synonym_type'
   update_column: 'definition'
   existing_value: ''
-  update_value: 'Type of synonym'
+  update_value: 'Synonym Type Controlled Vocabulary'
+- table: 'cv'
+  conditions:
+    - column: 'name'
+      value: 'wikipedia'
+  update_column: 'definition'
+  existing_value: ''
+  update_value: 'Wikipedia: The Free Encyclopedia'
+  upsert: true
