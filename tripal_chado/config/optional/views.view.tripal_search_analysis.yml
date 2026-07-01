@@ -11,6 +11,7 @@ dependencies:
     - system.menu.data-search
     - tripal.content_type.analysis
   module:
+    - datetime
     - tripal
     - tripal_chado
 id: tripal_search_analysis
@@ -795,6 +796,51 @@ display:
             default_group_multiple: {  }
             group_items: {  }
           filter_type: '0'
+        analysis_timeexecuted_value:
+          id: analysis_timeexecuted_value
+          table: tripal_entity__analysis_timeexecuted
+          field: analysis_timeexecuted_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: datetime
+          operator: between
+          value:
+            min: ''
+            max: ''
+            value: ''
+            type: date
+          group: 1
+          exposed: true
+          expose:
+            operator_id: analysis_timeexecuted_value_op
+            label: 'Date and Time Executed'
+            description: ''
+            use_operator: false
+            operator: analysis_timeexecuted_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: analysis_timeexecuted_value
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            min_placeholder: ''
+            max_placeholder: ''
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
       filter_groups:
         operator: AND
         groups:
