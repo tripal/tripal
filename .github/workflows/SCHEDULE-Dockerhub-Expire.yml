@@ -1,0 +1,36 @@
+name: 'Remove obsolete images from DockerHub'
+
+# The dockerhub_expire action uses the longest-lived rule for each
+# digest in the DockerHub repository. Here we intend to only delete
+# digests having ONLY a BUILT tag. When first pushed, digests have a
+# tag specifying versions, for example "drupal11.x-dev-php8.4-pgsql18".
+# They also are assigned a unique BUILT tag which includes the
+# date and time built, for example "BUILT202606210405-11.x-dev-8.4-18".
+# When new images get pushed to DockerHub, the previous day's digests
+# then lose their specific version tag, and now only retain the BUILT
+# tag. Those digests left without a current tag and retaining only the
+# BUILT tag are the ones we want to clean up with this workflow.
+
+on:
+  # To allow manual run.
+  workflow_dispatch:
+  # Run at 5am every morning, 1 hour after images are built.
+  schedule:
+    - cron: '0 5 * * *'
+
+permissions: 'read-all'
+
+jobs:
+  dockerhub_expire:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: 'actions/checkout@v6'
+
+      - name: 'Docker Hub Cleanup'
+        uses: 'tripal/dockerhub_expire@v1.0.0'
+        with:
+          username: '${{ secrets.DOCKERHUB_USERNAME }}'
+          password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
+          repositories: 'tripalproject/tripaldocker-drupal, tripalproject/tripaldocker'
+          rules: 'BUILT:0, latest, drupal'
+          dry-run: false

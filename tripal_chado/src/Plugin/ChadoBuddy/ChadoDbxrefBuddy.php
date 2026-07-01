@@ -7,6 +7,8 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
+use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
+use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
  * Plugin implementation of the chado dbxref buddy.
@@ -17,6 +19,20 @@ use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
   description: new TranslatableMarkup('Provides helper methods for managing chado dbs and dbxrefs.'),
 )]
 class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
+
+  /**
+   * A Database query interface for querying Chado using Tripal DBX.
+   *
+   * @var \Drupal\tripal_chado\Database\ChadoConnection
+   */
+  protected ChadoConnection $chado_connection;
+
+  /**
+   * Used to store the manager so we can create a buddy.
+   *
+   * @var \Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
+   */
+  protected ChadoBuddyPluginManager $buddy_manager;
 
   /**
    * Retrieves a chado database record.

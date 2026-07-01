@@ -58,6 +58,11 @@ class TripalViewsHooks {
       return;
     }
 
+    // Only alter the view if using the Tripal Content Views Access plugin.
+    if ($view->display_handler->getPlugin('access')->getPluginId() !== 'tripal_content_views_access') {
+      return;
+    }
+
     $permissions = TripalEntityAccessControlHandler::getTripalContentPermissionsList('view');
 
     // Determine which entity types the user has permission to view.

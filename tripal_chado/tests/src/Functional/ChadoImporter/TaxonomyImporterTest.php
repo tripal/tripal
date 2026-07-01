@@ -40,6 +40,7 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
     '/Error contacting NCBI/' => 'skip',
     '/Invalid XML returned/' => 'skip',
     '/500 Internal Server Error/' => 'skip',
+    '/Empty taxon returned/' => 'skip',
   ];
 
   /**
