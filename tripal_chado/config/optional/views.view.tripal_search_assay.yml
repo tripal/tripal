@@ -3,12 +3,14 @@ status: true
 dependencies:
   config:
     - field.storage.tripal_entity.assay_array_design
+    - field.storage.tripal_entity.assay_assaydate
     - field.storage.tripal_entity.assay_description
     - field.storage.tripal_entity.assay_name
     - field.storage.tripal_entity.assay_operator
     - system.menu.data-search
     - tripal.content_type.assay
   module:
+    - datetime
     - tripal
     - tripal_chado
 id: tripal_search_assay
@@ -338,6 +340,73 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
+        assay_assaydate:
+          id: assay_assaydate
+          table: tripal_entity__assay_assaydate
+          field: assay_assaydate
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: 'Assay Date'
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: chado_datetime_type_formatter
+          settings:
+            field_prefix: ''
+            field_suffix: ''
+            hide_condition: if_value
+            hide_value: '-infinity'
+            date_format: 'Y-m-d H:i:s'
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
         operations:
           id: operations
           table: tripal_entity
@@ -612,6 +681,51 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
+        assay_assaydate_value:
+          id: assay_assaydate_value
+          table: tripal_entity__assay_assaydate
+          field: assay_assaydate_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: datetime
+          operator: between
+          value:
+            min: ''
+            max: ''
+            value: ''
+            type: date
+          group: 1
+          exposed: true
+          expose:
+            operator_id: assay_assaydate_value_op
+            label: 'Assay Date'
+            description: ''
+            use_operator: false
+            operator: assay_assaydate_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: assay_assaydate_value
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            min_placeholder: ''
+            max_placeholder: ''
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
       filter_groups:
         operator: AND
         groups:
@@ -628,6 +742,7 @@ display:
             assay_description: assay_description
             assay_array_design: assay_array_design
             assay_operator: assay_operator
+            assay_assaydate: assay_assaydate
             operations: operations
           default: assay_name
           info:
@@ -660,6 +775,13 @@ display:
               empty_column: false
               responsive: ''
             assay_operator:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            assay_assaydate:
               sortable: true
               default_sort_order: asc
               align: ''
@@ -700,6 +822,7 @@ display:
         - url.query_args
       tags:
         - 'config:field.storage.tripal_entity.assay_array_design'
+        - 'config:field.storage.tripal_entity.assay_assaydate'
         - 'config:field.storage.tripal_entity.assay_description'
         - 'config:field.storage.tripal_entity.assay_name'
         - 'config:field.storage.tripal_entity.assay_operator'
@@ -725,6 +848,7 @@ display:
         - url.query_args
       tags:
         - 'config:field.storage.tripal_entity.assay_array_design'
+        - 'config:field.storage.tripal_entity.assay_assaydate'
         - 'config:field.storage.tripal_entity.assay_description'
         - 'config:field.storage.tripal_entity.assay_name'
         - 'config:field.storage.tripal_entity.assay_operator'
