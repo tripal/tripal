@@ -6,9 +6,12 @@ dependencies:
     - field.storage.tripal_entity.dna_library_organism
     - field.storage.tripal_entity.dna_library_type
     - field.storage.tripal_entity.dna_library_uniquename
+    - field.storage.tripal_entity.library_timeaccessioned
+    - field.storage.tripal_entity.library_timelastmodified
     - system.menu.data-search
     - tripal.content_type.dna_library
   module:
+    - datetime
     - tripal
     - tripal_chado
 id: tripal_search_dna_library
@@ -338,6 +341,140 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
+        library_timeaccessioned:
+          id: library_timeaccessioned
+          table: tripal_entity__library_timeaccessioned
+          field: library_timeaccessioned
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: 'Time accessioned'
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: chado_datetime_type_formatter
+          settings:
+            field_prefix: ''
+            field_suffix: ''
+            hide_condition: if_value
+            hide_value: '-infinity'
+            date_format: 'Y-m-d H:i:s'
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        library_timelastmodified:
+          id: library_timelastmodified
+          table: tripal_entity__library_timelastmodified
+          field: library_timelastmodified
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: 'Time last modified'
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: chado_datetime_type_formatter
+          settings:
+            field_prefix: ''
+            field_suffix: ''
+            hide_condition: if_value
+            hide_value: '-infinity'
+            date_format: 'Y-m-d H:i:s'
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
         operations:
           id: operations
           table: tripal_entity
@@ -612,12 +749,177 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
+        library_timeaccessioned_value:
+          id: library_timeaccessioned_value
+          table: tripal_entity__library_timeaccessioned
+          field: library_timeaccessioned_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: datetime
+          operator: between
+          value:
+            min: ''
+            max: ''
+            value: ''
+            type: date
+          group: 1
+          exposed: true
+          expose:
+            operator_id: library_timeaccessioned_value_op
+            label: 'Time accessioned'
+            description: ''
+            use_operator: false
+            operator: library_timeaccessioned_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: library_timeaccessioned_value
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            min_placeholder: ''
+            max_placeholder: ''
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+        library_timelastmodified_value:
+          id: library_timelastmodified_value
+          table: tripal_entity__library_timelastmodified
+          field: library_timelastmodified_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: datetime
+          operator: between
+          value:
+            min: ''
+            max: ''
+            value: ''
+            type: date
+          group: 1
+          exposed: true
+          expose:
+            operator_id: library_timelastmodified_value_op
+            label: 'Time last modified'
+            description: ''
+            use_operator: false
+            operator: library_timelastmodified_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: library_timelastmodified_value
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            min_placeholder: ''
+            max_placeholder: ''
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
       filter_groups:
         operator: AND
         groups:
           1: AND
       style:
         type: table
+        options:
+          grouping: {  }
+          row_class: ''
+          default_row_class: true
+          columns:
+            view_tripal_entity: view_tripal_entity
+            dna_library_name: dna_library_name
+            dna_library_uniquename: dna_library_uniquename
+            dna_library_type: dna_library_type
+            dna_library_organism: dna_library_organism
+            library_timeaccessioned: library_timeaccessioned
+            library_timelastmodified: library_timelastmodified
+            operations: operations
+          default: dna_library_name
+          info:
+            view_tripal_entity:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            dna_library_name:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            dna_library_uniquename:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            dna_library_type:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            dna_library_organism:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            library_timeaccessioned:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            library_timelastmodified:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            operations:
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+          override: true
+          sticky: false
+          summary: ''
+          empty_table: false
+          caption: ''
+          description: ''
       row:
         type: fields
       query:
@@ -644,6 +946,8 @@ display:
         - 'config:field.storage.tripal_entity.dna_library_organism'
         - 'config:field.storage.tripal_entity.dna_library_type'
         - 'config:field.storage.tripal_entity.dna_library_uniquename'
+        - 'config:field.storage.tripal_entity.library_timeaccessioned'
+        - 'config:field.storage.tripal_entity.library_timelastmodified'
   page_1:
     id: page_1
     display_title: Page
@@ -669,3 +973,5 @@ display:
         - 'config:field.storage.tripal_entity.dna_library_organism'
         - 'config:field.storage.tripal_entity.dna_library_type'
         - 'config:field.storage.tripal_entity.dna_library_uniquename'
+        - 'config:field.storage.tripal_entity.library_timeaccessioned'
+        - 'config:field.storage.tripal_entity.library_timelastmodified'
