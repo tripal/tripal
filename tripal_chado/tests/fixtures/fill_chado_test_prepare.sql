@@ -154,7 +154,7 @@ INSERT INTO chado.db VALUES (28, 'hydra', 'Hypermedia-Driven Web APIs Vocabulary
 INSERT INTO chado.db VALUES (29, 'schema', 'Schema.org', 'https://schema.org/{accession}', 'https://schema.org/');
 INSERT INTO chado.db VALUES (30, 'sep', 'Sample processing and separation techniques (deprecated)', 'https://purl.obolibrary.org/obo/{db}_{accession}', 'https://psidev.info/index.php?q=node/312');
 INSERT INTO chado.db VALUES (31, 'SIO', 'Semanticscience Integrated Ontology', 'https://semanticscience.org/resource/{db}_{accession}', 'https://sio.semanticscience.org/');
-INSERT INTO chado.db VALUES (32, 'GO', 'Gene Ontology', 'https://purl.obolibrary.org/obo/GO_{accession}', 'https://geneontology.org/');
+INSERT INTO chado.db VALUES (32, 'GO', 'Gene Ontology', 'https://amigo.geneontology.org/amigo/term/GO:{accession}', 'https://geneontology.org/');
 INSERT INTO chado.db VALUES (33, 'synonym_type', 'Synonym Type Controlled Vocabulary', 'https://ontology-development-kit.readthedocs.io/en/latest/Synonyms.html', 'https://ontology-development-kit.readthedocs.io/en/latest/Synonyms.html');
 INSERT INTO chado.db VALUES (34, 'loinc', 'Logical Observation Identifiers Names and Codes', 'https://loinc.org/{accession}', 'https://loinc.org/');
 INSERT INTO chado.db VALUES (35, 'BS', 'Biosapiens Protein Feature Ontology', 'https://github.com/The-Sequence-Ontology/SO-Ontologies/search?q=BS%3A{accession}', 'https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/master/Ontology_Files/subsets/biosapiens.obo');

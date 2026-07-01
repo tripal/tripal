@@ -109,7 +109,7 @@
       value: 'GO'
   update_column: 'urlprefix'
   existing_value: ''
-  update_value: 'https://amigo.geneontology.org/amigo/term/{db}:{accession}'
+  update_value: 'https://amigo.geneontology.org/amigo/term/GO:{accession}'
 - table: 'db'
   conditions:
     - column: 'name'
@@ -379,6 +379,20 @@
 - table: 'db'
   conditions:
     - column: 'name'
+      value: 'biological_process'
+  update_column: 'description'
+  existing_value: 'BPs are the larger processes or ‘biological programs’ accomplished by the concerted action of multiple molecular activities'
+  update_value: 'GO: Biological Process'
+- table: 'db'
+  conditions:
+    - column: 'name'
+      value: 'biological_process'
+  update_column: 'urlprefix'
+  existing_value: 'https://purl.obolibrary.org/obo/GO_{accession}'
+  update_value: 'https://amigo.geneontology.org/amigo/term/GO:{accession}'
+- table: 'db'
+  conditions:
+    - column: 'name'
       value: 'cellular_component'
   update_column: 'description'
   existing_value: 'CC serves to capture the cellular location where a molecular function takes place'
@@ -386,10 +400,10 @@
 - table: 'db'
   conditions:
     - column: 'name'
-      value: 'biological_process'
-  update_column: 'description'
-  existing_value: 'BPs are the larger processes or ‘biological programs’ accomplished by the concerted action of multiple molecular activities'
-  update_value: 'GO: Biological Process'
+      value: 'cellular_component'
+  update_column: 'urlprefix'
+  existing_value: 'https://purl.obolibrary.org/obo/GO_{accession}'
+  update_value: 'https://amigo.geneontology.org/amigo/term/GO:{accession}'
 - table: 'db'
   conditions:
     - column: 'name'
@@ -452,7 +466,7 @@
       value: 'doi'
   update_column: 'description'
   existing_value: ''
-  update_value: 'A DOI name is a digital identifier of an object, any object — physical, digital, or abstract.'
+  update_value: 'Digital Object Ontology'
 - table: 'db'
   conditions:
     - column: 'name'
@@ -558,6 +572,13 @@
   update_column: 'description'
   existing_value: 'MFs represent molecular-level activities performed by gene products'
   update_value: 'GO: Molecular Function'
+- table: 'db'
+  conditions:
+    - column: 'name'
+      value: 'molecular_function'
+  update_column: 'urlprefix'
+  existing_value: 'https://purl.obolibrary.org/obo/GO_{accession}'
+  update_value: 'https://amigo.geneontology.org/amigo/term/GO:{accession}'
 - table: 'db'
   conditions:
     - column: 'name'
@@ -903,3 +924,32 @@
   existing_value: ''
   update_value: 'Wikipedia: The Free Encyclopedia'
   upsert: true
+
+- table: 'dbxref'
+  conditions:
+    - column: 'accession'
+      value: 'exact'
+  update_column: 'description'
+  existing_value: ''
+  update_value: 'The definition of the synonym is exactly the same as primary term definition. This is used when the same class can have more than one name.'
+- table: 'dbxref'
+  conditions:
+    - column: 'accession'
+      value: 'broad'
+  update_column: 'description'
+  existing_value: ''
+  update_value: 'The primary definition accurately describes the synonym, but the definition of the synonym may encompass other structures as well. In some cases where a broad synonym is given, it will be a broad synonym for more than one ontology term.'
+- table: 'dbxref'
+  conditions:
+    - column: 'accession'
+      value: 'narrow'
+  update_column: 'description'
+  existing_value: ''
+  update_value: 'The definition of the synonym is the same as the primary definition, but has additional qualifiers.'
+- table: 'dbxref'
+  conditions:
+    - column: 'accession'
+      value: 'related'
+  update_column: 'description'
+  existing_value: ''
+  update_value: 'This scope is applied when a word or phrase has been used synonymously with the primary term name in the literature, but the usage is not strictly correct. That is, the synonym in fact has a slightly different meaning than the primary term name. Since users may not be aware that the synonym was being used incorrectly when searching for a term, related synonyms are included.'
