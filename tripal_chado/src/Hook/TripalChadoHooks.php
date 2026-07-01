@@ -125,7 +125,43 @@ class TripalChadoHooks {
     ];
     $definitions['tripal.content_type.*']['mapping']['third_party_settings']['mapping']['tripal']['mapping']
       = $tct_mapping;
+  }
 
+  /**
+   * Implements hook_views_data_alter().
+   *
+   * Modifies table columns that are postgres timestamp types to use
+   * the drupal datetime type for filtering.
+   */
+  #[Hook('views_data_alter')]
+  public function viewsDataAlter(array &$data): void {
+    // This is an exhaustive list of all datetime columns in chado 1.3.
+    $chado_table_and_column = [
+      'acquisition_acquisitiondate',
+      'analysis_timeexecuted',
+      'assay_assaydate',
+      'cell_line_timeaccessioned',
+      'cell_line_timelastmodified',
+      'f_type_timeaccessioned',
+      'f_type_timelastmodified',
+      'feature_timeaccessioned',
+      'feature_timelastmodified',
+      'fnr_type_timeaccessioned',
+      'fnr_type_timelastmodified',
+      'library_timeaccessioned',
+      'library_timelastmodified',
+      'materialized_view_last_update',
+      'protein_coding_gene_timeaccessioned',
+      'protein_coding_gene_timelastmodified',
+      'quantification_quantificationdate',
+      'tableinfo_modification_date',
+    ];
+    foreach ($chado_table_and_column as $tab_col) {
+      $current_id = $data['tripal_entity__' . $tab_col][$tab_col . '_value']['filter']['id'] ?? '';
+      if ($current_id === 'string') {
+        $data['tripal_entity__' . $tab_col][$tab_col . '_value']['filter']['id'] = 'datetime';
+      }
+    }
   }
 
 }

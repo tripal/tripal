@@ -71,3 +71,15 @@ function tripal_chado_rebuild() {
 function tripal_chado_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   \Drupal::service('tripal_chado.hooks')->formAlter($form, $form_state, $form_id);
 }
+
+/**
+ * Implements hook_views_data_alter().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_chado\Hook\TripalChadoHooks in
+ * tripal_chado/src/Hook/TripalChadoHooks.php.
+ */
+#[LegacyHook]
+function tripal_chado_views_data_alter(array &$data): void {
+  \Drupal::service('tripal_chado.hooks')->viewsDataAlter($data);
+}
