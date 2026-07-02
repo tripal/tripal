@@ -6,6 +6,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
+use Drupal\tripal_chado\TripalStorage\ChadoDatetimeStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
@@ -118,6 +119,8 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     $value['assay_operator'] = '';
     $value['assay_database_accession'] = '';
     $value['assay_database_name'] = '';
+    $value['assay_database_name'] = '';
+    $value['assay_assaydate'] = '2001-01-01 01:01:01';
 
     return [$value];
   }
@@ -156,6 +159,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     $description_term = self::getColumnTermId($object_table, 'description', 'schema_description');
     $arrayidentifier_term = self::getColumnTermId($object_table, 'arrayidentifier', 'data:0842');
     $arraybatchidentifier_term = self::getColumnTermId($object_table, 'arraybatchidentifier', 'local:array_batch_identifier');
+    $assaydate_term = self::getColumnTermId($object_table, 'assaydate', 'NCIT:C25164');
 
     // Columns from linked tables.
     $arraydesign_term = self::getColumnTermId('arraydesign', 'name', 'schema:name');
@@ -294,6 +298,13 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';arraybatchidentifier',
       'as' => 'assay_arraybatchidentifier',
+    ]);
+
+    $properties[] = new ChadoDatetimeStoragePropertyType($entity_type_id, self::$id, 'assay_assaydate', $assaydate_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';assaydate',
+      'as' => 'assay_assaydate',
     ]);
 
     // Values from tables linked to by the object table.
