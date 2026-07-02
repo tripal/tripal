@@ -1,8 +1,7 @@
 expected_modules:
+  - 'tripal'
+  - 'tripal_chado'
   - 'tripal_file'
-# After PR #2356 is merged add these two:
-#  - 'tripal'
-#  - 'tripal_chado'
 expected_tables:
   - name: 'file'
     before:
