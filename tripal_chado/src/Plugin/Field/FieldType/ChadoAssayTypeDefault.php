@@ -108,8 +108,6 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     $value['linker_rank'] = 0;
 
     // Object table properties.
-    // @todo 'assay_database_accession' and 'assay_database_name' is included
-    // twice in properties, confirm if this is intentional.
     $value['assay_name'] = '';
     $value['assay_description'] = '';
     $value['assay_arrayidentifier'] = '';
@@ -330,22 +328,6 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
       . ';' . $object_table . '.operator_id>contact.contact_id;name',
       'as' => 'assay_operator',
-    ]);
-
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_database_accession', $dbxref_term, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-      . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;accession',
-      'as' => 'assay_database_accession',
-    ]);
-
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_database_name', $db_term, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-      . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
-      'as' => 'assay_database_name',
     ]);
 
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_database_accession', $dbxref_term, [
