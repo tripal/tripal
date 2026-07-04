@@ -1475,19 +1475,31 @@ class ChadoRecords {
         }
         $query = $this->connection->select('1:' . $base_table, $base_table);
         $query->fields($base_table);
+        $n_conditions = 0;
         foreach ($ukey_cols as $col) {
           $col = trim($col);
           $col_val = NULL;
           if (in_array($col, $record['columns'])) {
             $col_val = $record['values'][$col];
           }
+
+          // If the value is null, but nulls are considered distinct, then
+          // we don't want to check this column because in this case
+          // duplications are allowed.
+          // @todo we will never see a null here because the widgets
+          // return an empty string for empty fields.
+          $nulls_are_distinct = !($table_def['nulls not distinct'][$ukey_name] ?? FALSE);
+          if (is_null($col_val) && $nulls_are_distinct) {
+            continue;
+          }
+
           // If there is not a NOT NULL constraint on this column,
           // and it is of a string type, then we need to handle
           // empty values specially, since they might be stored
           // as either NULL or as an empty string in the database
           // table. Create a condition that checks for both. For
           // other types, e.g. integer, just check for null.
-          if (($table_def['fields'][$col]['not null'] ?? FALSE) == FALSE and !$col_val) {
+          if (($table_def['fields'][$col]['not null'] ?? FALSE) == FALSE && ($col_val === '' || is_null($col_val))) {
             if (in_array($table_def['fields'][$col]['type'],
                 ['character', 'character varying', 'char', 'varchar', 'text'])) {
               $query->condition($query->orConditionGroup()
@@ -1501,13 +1513,16 @@ class ChadoRecords {
           else {
             $query->condition($col, $col_val);
           }
+          $n_conditions++;
         }
 
         // If we have matching record, check for a unique constraint
         // violation.
-        $match = $query->execute()->fetchObject();
+        $match = NULL;
+        if ($n_conditions) {
+          $match = $query->execute()->fetchObject();
+        }
         if ($match) {
-
           // Add a constraint violation if we have a match and the
           // record_id is 0. This would be an insert but a record already
           // exists. Or, if the record_id isn't the same as the matched
