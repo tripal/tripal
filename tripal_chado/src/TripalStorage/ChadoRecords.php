@@ -1486,8 +1486,6 @@ class ChadoRecords {
           // If the value is null, but nulls are considered distinct, then
           // we don't want to check this column because in this case
           // duplications are allowed.
-          // @todo we will never see a null here because the widgets
-          // return an empty string for empty fields.
           $nulls_are_distinct = !($table_def['nulls not distinct'][$ukey_name] ?? FALSE);
           if (is_null($col_val) && $nulls_are_distinct) {
             continue;
