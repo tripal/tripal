@@ -285,6 +285,7 @@ trait TripalEntityFieldTestTrait {
           'cardinality' => $field_details['cardinality'] ?? 1,
           'required' => $field_details['required'] ?? TRUE,
           'settings' => $field_details['settings'],
+          'display_settings' => $field_details['display_settings'] ?? [],
         ],
         [
           'idspace_plugin_id' => 'tripal_default_id_space',
@@ -393,6 +394,7 @@ trait TripalEntityFieldTestTrait {
     $values['widget_id'] = $values['widget_id'] ?? 'default_tripal_string_type_widget';
     $values['field_type'] = $values['field_type'] ?? 'tripal_string_type';
     $values['settings'] = $values['settings'] ?? [];
+    $values['display_settings'] = $values['display_settings'] ?? [];
     // -- Bundle
     if (array_key_exists('bundle', $values)) {
       $bundle = $values['bundle'];
@@ -438,7 +440,7 @@ trait TripalEntityFieldTestTrait {
     $display_options = [
       'type' => $values['widget_id'],
       'region' => 'content',
-      'settings' => [],
+      'settings' => $values['display_settings'],
     ];
     if (array_key_exists($values['bundle_name'], $this->entityFormDisplay)) {
       $display = $this->entityFormDisplay[$values['bundle_name']];
