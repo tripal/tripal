@@ -62,3 +62,9 @@
 # Deprecation: Method "Consolidation\AnnotatedCommand\State\SavableState::currentState()" might add "State" as a native return type declaration in the future. Do the same in implementation "Drush\Commands\DrushCommands" now to avoid errors or add an explicit @return annotation to suppress this message.
 # Example test that triggers this: testDrushMviewPopulate
 %Method "Consolidation\\AnnotatedCommand\\State\\SavableState::currentState\(\)" might add "State"%
+
+# Module: Drupal 11.4+
+# Location: web/core/lib/Drupal/Core/Test/HttpClientMiddleware/TestHttpClientMiddleware.php:51
+# Deprecation: Since twig/twig 3.28: The "Drupal\Core\Template\TwigSandboxPolicy::checkSecurity()" method will take a 4th "array $tests" argument in 4.0; not declaring it is deprecated.
+# Example test that triggers this: testTripalAccessOwnContentCheck
+%TwigSandboxPolicy::checkSecurity\(\)" method will take a 4th "array \$tests" argument%

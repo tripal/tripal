@@ -35,4 +35,50 @@ class TripalStringTypeWidget extends TripalWidgetBase {
     ];
     return $element;
   }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    foreach ($values as $key => $item) {
+      if ($item['value'] === '' && $this->getSetting('null_if_empty')) {
+        $values[$key]['value'] = NULL;
+      }
+    }
+    return $values;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    $defaultSettings = parent::defaultSettings();
+    $defaultSettings['null_if_empty'] = FALSE;
+    return $defaultSettings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    $elements = parent::settingsForm($form, $form_state);
+    $elements['null_if_empty'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Store NULL for empty string'),
+      '#description' => $this->t('If the form element contains an empty string, store a NULL in the database table instead of the empty string.'),
+      '#default_value' => $this->getSetting('null_if_empty') ?? 0,
+    ];
+    return $elements;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    $summary = parent::settingsSummary();
+    $summary[] = $this->t('Store NULL if empty: @setting',
+      ['@setting' => $this->getSetting('null_if_empty') ? $this->t('yes') : $this->t('no')]);
+    return $summary;
+  }
+
 }

@@ -789,7 +789,10 @@ field.storage_settings.chado_string_type_default:
 
 field.widget.settings.chado_string_type_widget:
   type: mapping
-  mapping: {}
+  mapping:
+    null_if_empty:
+      type: integer
+      label: 'If the form element contains an empty string, store a NULL in the database table instead of the empty string.'
 
 field.formatter.settings.chado_string_type_formatter:
   type: mapping
@@ -873,6 +876,9 @@ field.widget.settings.chado_text_type_widget:
     num_rows:
       type: integer
       label: 'Number of Rows to display in the text widget'
+    null_if_empty:
+      type: integer
+      label: 'If the form element contains an empty string, store a NULL in the database table instead of the empty string.'
 
 field.formatter.settings.chado_text_type_formatter:
   type: mapping
