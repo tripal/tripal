@@ -63,13 +63,20 @@ scenarios:
         metaphysical_props:
         - record_id: 0
           value: 'soothing, calming, healing from grief'
-      expected:
+      expected_field_values:
         project_name:
         - record_id: 1
           value: 'amazonite'
         metaphysical_props:
         - record_id: 1
           value: 'soothing, calming, healing from grief'
+      expected_chado_values:
+        project:
+          conditions:
+            project_id: 1
+          expectations:
+            name: 'amazonite'
+            description: 'soothing, calming, healing from grief'
     edit:
       title: 'TEST Gemstones <em>Amazonite</em> Entity #1'
       url: '/test/test_gemstone/amazonite/1'
@@ -80,13 +87,20 @@ scenarios:
         metaphysical_props:
         - record_id: 1
           value: 'Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work.'
-      expected:
+      expected_field_values:
         project_name:
         - record_id: 1
           value: 'Amazonite'
         metaphysical_props:
         - record_id: 1
           value: 'Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work.'
+      expected_chado_values:
+        project:
+          conditions:
+            project_id: 1
+          expectations:
+            name: 'Amazonite'
+            description: 'Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work.'
   - label: 'Use format with read_value for title + URL + override url on edit'
     description: 'Create a page where every field has one value.'
     create:
@@ -104,7 +118,7 @@ scenarios:
           linker_id: 1
           link: 1
           contact_id: 2
-      expected:
+      expected_field_values:
         project_name:
         - record_id: 1
           value: 'amazonite'
@@ -118,6 +132,13 @@ scenarios:
           contact_id: 2
           contact_name: 'Zhanna Beissekova'
           contact_description: 'Enjoys grading and is fascinated by how each stone is different, even within the same species'
+      expected_chado_values:
+        project:
+          conditions:
+            project_id: 1
+          expectations:
+            name: 'amazonite'
+            description: 'soothing, calming, healing from grief'
     edit:
       title: 'TEST Gemstones <em>Amazonite</em> Entity #1 acquired by Zhanna Beissekova'
       url: '/my/user/set/url/alias'
@@ -135,7 +156,7 @@ scenarios:
           contact_id: 2
         path:
         - alias: '/my/user/set/url/alias'
-      expected:
+      expected_field_values:
         project_name:
         - record_id: 1
           value: 'Amazonite'
@@ -149,3 +170,10 @@ scenarios:
           contact_id: 2
           contact_name: 'Zhanna Beissekova'
           contact_description: 'Enjoys grading and is fascinated by how each stone is different, even within the same species'
+      expected_chado_values:
+        project:
+          conditions:
+            project_id: 1
+          expectations:
+            name: 'Amazonite'
+            description: 'Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work.'
