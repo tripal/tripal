@@ -458,3 +458,4 @@ fields:
               settings:
                 filter_format: 'plain_text'
                 num_rows: 1
+                null_if_empty: 1
