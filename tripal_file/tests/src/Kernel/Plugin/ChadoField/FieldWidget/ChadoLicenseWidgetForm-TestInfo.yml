@@ -1,0 +1,167 @@
+system-under-test:
+  chado_version: '1.3.3.013'
+  termIdSpace:
+  - 'NCIT'
+  bundle:
+    label: 'License'
+    termIdSpace: 'schema'
+    termAccession: 'license'
+    id: 'test_license'
+    settings:
+      chado_base_table: 'license'
+  fields:
+  - name: 'license_name'
+    type: 'chado_string_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+    widget: 'chado_string_type_widget'
+    formatter: 'chado_string_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'name'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'license'
+          base_column: 'name'
+      max_length: 1024
+  - name: 'license_summary'
+    type: 'chado_text_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
+    widget: 'chado_text_type_widget'
+    formatter: 'chado_text_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'description'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'license'
+          base_column: 'summary'
+  - name: 'license_uri'
+    type: 'chado_text_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
+    widget: 'chado_text_type_widget'
+    formatter: 'chado_text_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'url'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'license'
+          base_column: 'uri'
+    display_settings:
+      filter_format: 'plain_text'
+      null_if_empty: 1
+scenarios:
+  - label: 'Create new license'
+    description: 'Create a new license entity'
+    create:
+      expected_form_keys:
+        license_name:
+        - record_id:
+            '#type': 'value'
+            '#value': '0'
+          value:
+            '#type': 'textfield'
+        license_summary:
+        - record_id:
+            '#type': 'value'
+            '#value': '0'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+        license_uri:
+        - record_id:
+            '#type': 'value'
+            '#value': '0'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+      user_input:
+        license_name:
+        - record_id: 0
+          value: 'Public Domain'
+        license_summary:
+        - record_id: 0
+          value:
+            format: 'basic_html'
+            value: 'No restrictions'
+        license_uri:
+        - record_id: 0
+          value:
+            format: 'plain_text'
+            value: ''
+      expected_field_values:
+        license_name:
+        - record_id: 4
+          value: 'Public Domain'
+        license_summary:
+        - record_id: 4
+          value: 'No restrictions'
+        license_uri:
+        - count: 0
+      expected_chado_values:
+        license:
+          conditions:
+            license_id: 4
+          expectations:
+            name: 'Public Domain'
+            summary: 'No restrictions'
+            uri: null
+          count: 1
+    edit:
+      expected_form_keys:
+        license_name:
+        - record_id:
+            '#type': 'value'
+            '#value': '4'
+          value:
+            '#type': 'textfield'
+        license_summary:
+        - record_id:
+            '#type': 'value'
+            '#value': '4'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+        license_uri:
+        - record_id:
+            '#type': 'value'
+            '#value': '0'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+      user_input:
+        license_name:
+        - record_id: 4
+          value: 'The Tripal 4 License'
+        license_summary:
+        - record_id: 4
+          value:
+            format: 'basic_html'
+            value: 'This is a license to write good tests'
+        license_uri:
+        - record_id: 4
+          value:
+            format: 'plain_text'
+            value: 'https://tripal.info'
+      expected_field_values:
+        license_name:
+        - record_id: 4
+          value: 'The Tripal 4 License'
+        license_summary:
+        - record_id: 4
+          value: 'This is a license to write good tests'
+        license_uri:
+        - record_id: 4
+          value: 'https://tripal.info'
+      expected_chado_values:
+        license:
+          conditions:
+            license_id: 4
+          expectations:
+            name: 'The Tripal 4 License'
+            summary: 'This is a license to write good tests'
+            uri: 'https://tripal.info'
+          count: 1
