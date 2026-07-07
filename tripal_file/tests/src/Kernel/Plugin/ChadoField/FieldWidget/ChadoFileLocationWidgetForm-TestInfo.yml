@@ -182,7 +182,7 @@ scenarios:
         file_license:
         - record_id: 0
           linker_id: 0
-          license_id: 9999
+          license_id: 1
           field_name: 'file_license'
         file_location:
         - record_id: 0
@@ -219,7 +219,7 @@ scenarios:
           type_id: '15'
         file_license:
         - record_id: 1
-          license_id: 9999
+          license_id: 1
         file_location:
         - record_id: 1
           fileloc_size: '8.192MB'
@@ -235,6 +235,40 @@ scenarios:
           fileloc_size: 5
           fileloc_filename: 'tripal_genome.fna'
           fileloc_md5checksum: '58ce66d7df0a1cf9b360cabf43da3ea5'
+      expected_chado_values:
+        - table: 'file'
+          conditions:
+            file_id: 1
+          expectations:
+          - name: 'An Image File'
+            description: 'This is a test of the file content type'
+            type_id: '15'
+        - table: 'file_license'
+          conditions:
+            file_id: 1
+          expectations:
+          - license_id: 1
+        - table: 'fileloc'
+          conditions:
+            file_id: 1
+          count: 3
+          order_by: 'fileloc_id'
+          expectations:
+          - file_id: 1
+            uri: 'https://tripal.info'
+            size: '8.192MB'
+            md5checksum: null
+            filename: 'someknowledge.txt'
+          - file_id: 1
+            uri: 'ftp://google.com/the.internet'
+            size: '4096'
+            md5checksum: '0123456789ABCDEF0123456789abcdef'
+            filename: 'allknowledge.txt'
+          - file_id: 1
+            uri: 'public://tripal_genome.fna'
+            size: '5'
+            md5checksum: '58ce66d7df0a1cf9b360cabf43da3ea5'
+            filename: 'tripal_genome.fna'
     edit:
       expected_form_keys:
         file_name:
@@ -346,9 +380,30 @@ scenarios:
           type_id: '15'
         file_license:
         - record_id: 1
-          license_id: 9999
+          license_id: 1
         file_location:
         - record_id: 1
           fileloc_size: 8193
           fileloc_filename: 'abitofknowledge.txt'
           fileloc_md5checksum: null
+      expected_chado_values:
+        - table: 'file'
+          conditions:
+            file_id: 1
+          expectations:
+          - name: 'This is an updated file name'
+            description: 'This is an updated description'
+            type_id: '15'
+        - table: 'file_license'
+          conditions:
+            file_id: 1
+          expectations:
+          - license_id: 1
+        - table: 'fileloc'
+          conditions:
+            file_id: 1
+          count: 1
+          expectations:
+          - size: '8193'
+            filename: 'abitofknowledge.txt'
+            md5checksum: null

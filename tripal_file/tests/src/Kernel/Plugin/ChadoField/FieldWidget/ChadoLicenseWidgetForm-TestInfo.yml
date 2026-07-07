@@ -102,14 +102,13 @@ scenarios:
         license_uri:
         - count: 0
       expected_chado_values:
-        license:
+        - table: 'license'
           conditions:
             license_id: 4
           expectations:
-            name: 'Public Domain'
+          - name: 'Public Domain'
             summary: 'No restrictions'
             uri: null
-          count: 1
     edit:
       expected_form_keys:
         license_name:
@@ -157,11 +156,10 @@ scenarios:
         - record_id: 4
           value: 'https://tripal.info'
       expected_chado_values:
-        license:
+        - table: 'license'
           conditions:
             license_id: 4
           expectations:
-            name: 'The Tripal 4 License'
+          - name: 'The Tripal 4 License'
             summary: 'This is a license to write good tests'
             uri: 'https://tripal.info'
-          count: 1

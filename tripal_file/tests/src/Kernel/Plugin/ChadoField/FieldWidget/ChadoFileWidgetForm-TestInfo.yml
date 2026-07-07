@@ -110,6 +110,23 @@ scenarios:
           file_id: 1
           linker_type_id: ''
           linker_rank: 4
+      expected_chado_values:
+        - table: 'project'
+          conditions:
+            project_id: 1
+          expectations:
+          - name: 'The Tripal Project'
+            description: 'This project will have one file attached'
+        - table: 'project_file'
+          conditions:
+            project_id: 1
+          expectations:
+          - file_id: 1
+        - table: 'file'
+          conditions:
+            file_id: 1
+          expectations:
+          - name: 'File 1'
     edit:
       expected_form_keys:
         project_name:
@@ -188,3 +205,26 @@ scenarios:
           file_id: 2
           linker_type_id: 5
           linker_rank: 6
+      expected_chado_values:
+        - table: 'project'
+          conditions:
+            project_id: 1
+          expectations:
+          - name: 'The Tripal 4 Project'
+            description: 'This project will have two files attached'
+        - table: 'project_file'
+          conditions:
+            project_id: 1
+          count: 2
+          order_by: 'project_file_id'
+          expectations:
+          - project_id: 1
+            project_file_id: 2
+            file_id: 1
+            type_id: null
+            rank: 4
+          - project_id: 1
+            project_file_id: 3
+            file_id: 2
+            type_id: 5
+            rank: 6
