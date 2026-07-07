@@ -163,6 +163,8 @@ trait ChadoFieldTestTrait {
    */
   public function assertChadoValuesMatch(array $expected_values, string $message_prefix = ''): void {
     foreach ($expected_values as $chado_table => $config) {
+      $this->assertArrayHasKey('conditions', $config, "YAML configuration for chado table \"$table\" does not have any conditions");
+      $this->assertArrayHasKey('expectations', $config, "YAML configuration for chado table \"$table\" does not have any expectations");
       $count = $config['count'] ?? 1;
       $query = $this->chado_connection->select('1:' . $chado_table, 'T');
       foreach ($config['conditions'] as $column_name => $chado_value) {
@@ -172,7 +174,7 @@ trait ChadoFieldTestTrait {
         $query->addField('T', $column_name);
       }
 
-      // Checks the number of chado records, generally we expect one.
+      // Checks the number of chado records. Only 0 and 1 are supported.
       $chado_count = $query->countQuery()->execute()->fetchField();
       $this->assertEquals($count, $chado_count, $message_prefix . "Chado record count for table \"$chado_table\" does not match expectation");
 
