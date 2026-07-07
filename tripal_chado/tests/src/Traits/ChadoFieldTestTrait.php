@@ -145,16 +145,21 @@ trait ChadoFieldTestTrait {
    * Confirms that the retrieved chado values match the expected ones.
    *
    * @param array $expected_values
-   *   A nested array of expected values following the format:
-   *    - chado table name
-   *      - conditions
-   *        - table_column: value_for_condition
-   *      - expectations
-   *        - table_column: expected_value
+   *   A nested array of expected values following the YAML format:
+   *    - table: chado_table_name (required)
+   *      conditions:
+   *        table_column: value_for_condition (at least one required)
+   *      order_by: column (optional)
+   *      count: int (optional, defaults to 1).
+   *      expectations:
+   *        - a_table_column: expected_value
    *          another_column: another_value
-   *      - count: int (defaults to 1).
-   *   Count can be used to indicate when we do NOT expect a value for the
-   *   conditions. Do so by setting it to zero.
+   *        - a_table_column: expected_second_value
+   *          another_column: another_second_value
+   *   Count can be used to indicate when we do NOT expect a value for
+   *   the conditions. Do so by setting it to zero and omitting expectations.
+   *   If you expect more than one record, order_by is recommended so that
+   *   the order is deterministic.
    * @param string $message_prefix
    *   A short string that all assert messages will be prefixed with.
    *
@@ -162,30 +167,39 @@ trait ChadoFieldTestTrait {
    *   No return value, just performs assertions.
    */
   public function assertChadoValuesMatch(array $expected_values, string $message_prefix = ''): void {
-    foreach ($expected_values as $chado_table => $config) {
-      $this->assertArrayHasKey('conditions', $config, "YAML configuration for chado table \"$chado_table\" does not have any conditions");
-      $this->assertArrayHasKey('expectations', $config, "YAML configuration for chado table \"$chado_table\" does not have any expectations");
+    foreach ($expected_values as $config) {
+      $this->assertArrayHasKey('table', $config, "YAML configuration does not have a table key: " . print_r($config, TRUE));
+      $chado_table = $config['table'];
+      $this->assertArrayHasKey('conditions', $config, "YAML configuration does not have any conditions: " . print_r($config, TRUE));
       $count = $config['count'] ?? 1;
+      if ($count) {
+        $this->assertArrayHasKey('expectations', $config, "YAML configuration does not have any expectations: " . print_r($config, TRUE));
+      }
       $query = $this->chado_connection->select('1:' . $chado_table, 'T');
       foreach ($config['conditions'] as $column_name => $chado_value) {
         $query->condition($column_name, $chado_value, '=');
       }
-      foreach (array_keys($config['expectations']) as $column_name) {
-        $query->addField('T', $column_name);
+      $query->fields('T');
+
+      // Make order deterministic if expecting multiple records.
+      if (isset($config['order_by'])) {
+        $query->orderBy($config['order_by']);
       }
 
-      // Checks the number of chado records. Only 0 and 1 are supported.
+      // Checks the number of chado records.
       $chado_count = $query->countQuery()->execute()->fetchField();
       $this->assertEquals($count, $chado_count, $message_prefix . "Chado record count for table \"$chado_table\" does not match expectation");
 
       // Checks the actual values in chado.
-      $result = $query->execute();
-      if ($count !== 0) {
+      if ($count > 0) {
+        $result = $query->execute();
+        $row_index = 0;
         while ($row = $result->fetchAssoc()) {
-          foreach ($config['expectations'] as $column_name => $expected_value) {
+          foreach ($config['expectations'][$row_index] as $column_name => $expected_value) {
             $actual_value = $row[$column_name];
             $this->assertEquals($expected_value, $actual_value, $message_prefix . "Table \"$chado_table\" column \"$column_name\" does not have the expected value");
           }
+          $row_index++;
         }
       }
     }
