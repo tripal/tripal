@@ -142,7 +142,7 @@ class TripalEntityLookup {
    * @return string|null
    *   The bundle id, or null if no match found.
    */
-  protected function getBundleFromCvTerm($termIdSpace, $termAccession) {
+  public function getBundleFromCvTerm($termIdSpace, $termAccession) {
     $bundle_id = NULL;
     $bundles = \Drupal::entityTypeManager()
       ->getStorage('tripal_entity_type')
@@ -162,7 +162,7 @@ class TripalEntityLookup {
    * @return array
    *   The bundle ids, or an empty array if no matches found.
    */
-  protected function getBundles(string $base_table): array {
+  public function getBundles(string $base_table): array {
     if (!array_key_exists($base_table, $this->bundle_base_table_cache)) {
       $bundles = \Drupal::entityTypeManager()
         ->getStorage('tripal_entity_type')
@@ -193,7 +193,7 @@ class TripalEntityLookup {
    *   in Tripal 3, for example if an analysis is published as both
    *   "Analysis", and as "Genome Assembly".
    */
-  protected function getEntityIdFromRecordId($record_id, $bundle_id, $entity_type) : array {
+  public function getEntityIdFromRecordId($record_id, $bundle_id, $entity_type) : array {
 
     $ids = [];
     $required_fields = $this->getRequiredFields($bundle_id, $entity_type);

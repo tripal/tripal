@@ -14,6 +14,7 @@ use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
+use Drupal\tripal\TripalStorage\DatetimeStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\tripal\Entity\TripalEntityType;
@@ -417,6 +418,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       elseif ($type instanceof BoolStoragePropertyType) {
         $properties[$type->getKey()] = DataDefinition::create("boolean");
       }
+      elseif ($type instanceof DatetimeStoragePropertyType) {
+        $properties[$type->getKey()] = DataDefinition::create("string");
+      }
       else {
         throw new \RuntimeException('Unknown Tripal Property Type class "' . get_class($type) . '"');
       }
@@ -460,6 +464,13 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
           "type" => "int",
           "size" => "tiny",
           "pgsql_type" => "boolean",
+        ];
+        $schema["columns"][$type->getKey()] = $column;
+      }
+      elseif ($type instanceof DatetimeStoragePropertyType) {
+        $column = [
+          "type" => "varchar",
+          "length" => 32,
         ];
         $schema["columns"][$type->getKey()] = $column;
       }

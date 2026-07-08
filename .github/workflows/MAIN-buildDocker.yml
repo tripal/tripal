@@ -34,35 +34,30 @@ jobs:
           - '17'
           - '18'
         drupal-version:
-          - '10.5.x-dev'
-          - '10.6.x-dev'
-          - '11.2.x-dev'
-          - '11.3.x-dev'
+          - '10.6.x'
+          - '11.3.x'
+          - '11.4.x'
           - '11.x-dev'
         exclude:
           # Only Drupal 11.3+ supports PHP 8.5
           - php-version: '8.5'
-            drupal-version: '10.5.x-dev'
-          - php-version: '8.5'
-            drupal-version: '10.6.x-dev'
-          - php-version: '8.5'
-            drupal-version: '11.2.x-dev'
+            drupal-version: '10.6.x'
           # Drupal 11.x requires PHP 8.3+
           - php-version: '8.2'
-            drupal-version: '11.2.x-dev'
+            drupal-version: '11.3.x'
           - php-version: '8.2'
-            drupal-version: '11.3.x-dev'
+            drupal-version: '11.4.x'
           - php-version: '8.2'
             drupal-version: '11.x-dev'
           # Drupal 11.x requires PostgreSQL 16+
           - pgsql-version: '14'
-            drupal-version: '11.2.x-dev'
+            drupal-version: '11.3.x'
           - pgsql-version: '15'
-            drupal-version: '11.2.x-dev'
+            drupal-version: '11.3.x'
           - pgsql-version: '14'
-            drupal-version: '11.3.x-dev'
+            drupal-version: '11.4.x'
           - pgsql-version: '15'
-            drupal-version: '11.3.x-dev'
+            drupal-version: '11.4.x'
           - pgsql-version: '14'
             drupal-version: '11.x-dev'
           - pgsql-version: '15'
@@ -71,15 +66,18 @@ jobs:
     steps:
       - uses: 'actions/checkout@v6'
         name: 'Check out code'
+      - name: 'Get date workflow was run'
+        id: 'date'
+        run: echo "WORKFLOW_DATE=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
       ## Build images tagged drupal{VER}-php{VER}-pgsqlVER
       - uses: 'mr-smithers-excellent/docker-build-push@v7'
         name: 'Build & push Full matrix of Docker images'
         with:
           image: 'tripalproject/tripaldocker'
-          tags: 'drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}'
+          tags: 'drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }},BUILT${{ env.WORKFLOW_DATE }}-${{ matrix.drupal-version }}-${{ matrix.php-version }}-${{ matrix.pgsql-version }}'
           registry: 'docker.io'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
-          password: '${{ secrets.DOCKERHUB_PASSWORD }}'
+          password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
           buildArgs: 'drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}'
           labels: 'tripal.branch=4.x,drupal.version.label=${{ matrix.drupal-version }},php.version.label=${{ matrix.php-version }}, postgresql.version.label=${{ matrix.pgsql-version }}'
       ## Build images tagged drupal{VER}-php{VER}-pgsqlVER-noChado without chado installed!
@@ -87,10 +85,10 @@ jobs:
         name: 'Build & push Full matrix of Docker images WITH NO CHADO'
         with:
           image: 'tripalproject/tripaldocker'
-          tags: 'drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}-noChado'
+          tags: 'drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}-noChado,BUILT${{ env.WORKFLOW_DATE }}-${{ matrix.drupal-version }}-${{ matrix.php-version }}-${{ matrix.pgsql-version }}-noChado'
           registry: 'docker.io'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
-          password: '${{ secrets.DOCKERHUB_PASSWORD }}'
+          password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
           buildArgs: 'drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }},installchado=FALSE'
           labels: 'tripal.branch=4.x,drupal.version.label=${{ matrix.drupal-version }},php.version.label=${{ matrix.php-version }}, postgresql.version.label=${{ matrix.pgsql-version }}'
       ## Build Images tagged drupal{VER} focused on php 8.5 + postgresql 18
@@ -99,21 +97,21 @@ jobs:
         if: ${{ matrix.php-version == '8.5' && matrix.pgsql-version == '18' }}
         with:
           image: 'tripalproject/tripaldocker'
-          tags: 'drupal${{ matrix.drupal-version }}'
+          tags: 'drupal${{ matrix.drupal-version }},BUILT${{ env.WORKFLOW_DATE }}-${{ matrix.drupal-version }}'
           registry: 'docker.io'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
-          password: '${{ secrets.DOCKERHUB_PASSWORD }}'
+          password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
           buildArgs: 'drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}'
           labels: 'tripal.branch=4.x,drupal.version.label=${{ matrix.drupal-version }},php.version.label=${{ matrix.php-version }}, postgresql.version.label=${{ matrix.pgsql-version }}'
       ## Build the image tagged as latest which is the highest version combo that we feel is well supported.
       - uses: 'mr-smithers-excellent/docker-build-push@v7'
-        name: 'Build latest using 11.3.x-dev, PHP 8.5, PgSQL 18'
-        if: ${{ matrix.drupal-version == '11.3.x-dev' && matrix.php-version == '8.5' && matrix.pgsql-version == '18' }}
+        name: 'Build latest using 11.4.x, PHP 8.5, PgSQL 18'
+        if: ${{ matrix.drupal-version == '11.4.x' && matrix.php-version == '8.5' && matrix.pgsql-version == '18' }}
         with:
           image: 'tripalproject/tripaldocker'
-          tags: 'latest'
+          tags: 'latest,BUILT${{ env.WORKFLOW_DATE }}'
           registry: 'docker.io'
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
-          password: '${{ secrets.DOCKERHUB_PASSWORD }}'
+          password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
           buildArgs: 'drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}'
           labels: 'tripal.branch=4.x,drupal.version.label=${{ matrix.drupal-version }},php.version.label=${{ matrix.php-version }}, postgresql.version.label=${{ matrix.pgsql-version }}'

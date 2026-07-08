@@ -982,8 +982,8 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     if ($result_count == 0) {
       $this->logger->notice("Inserting the null publication.");
       $pub_sql = "
-        INSERT INTO {1:pub} (uniquename,type_id)
-        VALUES (:uname,
+        INSERT INTO {1:pub} (title, uniquename, type_id)
+        VALUES (:title, :uname,
           (SELECT cvterm_id
            FROM {1:cvterm} CVT
              INNER JOIN {1:dbxref} DBX ON DBX.dbxref_id = CVT.dbxref_id
@@ -991,6 +991,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
            WHERE CVT.name = :type_id))
       ";
       $status = $this->connection->query($pub_sql, [
+        ':title' => 'No publication',
         ':uname' => 'null',
         ':type_id' => 'null',
       ]);

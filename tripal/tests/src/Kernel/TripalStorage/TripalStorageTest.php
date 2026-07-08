@@ -16,9 +16,10 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 /**
  * Tests for Tripal Storage Base class.
  *
- * @group Tripal
- * @group TripalStorage
+ * @group tripal
+ * @group tripal-storage
  */
+#[Group('tripal')]
 #[Group('tripal-storage')]
 #[RunTestsInSeparateProcesses]
 class TripalStorageTest extends TripalTestKernelBase {
@@ -110,7 +111,16 @@ class TripalStorageTest extends TripalTestKernelBase {
         $plugin_definition,
         $logger,
       ])
-      ->onlyMethods(['getStoredTypes', 'getNonStoredTypes', 'insertValues', 'updateValues', 'loadValues', 'deleteValues', 'findValues', 'validateValues'])
+      ->onlyMethods([
+        'getStoredTypes',
+        'getNonStoredTypes',
+        'insertValues',
+        'updateValues',
+        'loadValues',
+        'deleteValues',
+        'findValues',
+        'validateValues',
+      ])
       ->getMock();
     $this->assertIsObject($tripalStorage, "Unable to create tripal storage mock object.");
 
@@ -182,7 +192,16 @@ class TripalStorageTest extends TripalTestKernelBase {
         $plugin_definition,
         $logger,
       ])
-      ->onlyMethods(['getStoredTypes', 'getNonStoredTypes', 'insertValues', 'updateValues', 'loadValues', 'deleteValues', 'findValues', 'validateValues'])
+      ->onlyMethods([
+        'getStoredTypes',
+        'getNonStoredTypes',
+        'insertValues',
+        'updateValues',
+        'loadValues',
+        'deleteValues',
+        'findValues',
+        'validateValues',
+      ])
       ->getMock();
     $this->assertIsObject($tripalStorage, "Unable to create tripal storage mock object.");
 
@@ -207,7 +226,7 @@ class TripalStorageTest extends TripalTestKernelBase {
     ];
 
     $propertyTyleClass_namespace = 'Drupal\tripal\TripalStorage\\';
-    $propertyTypeClasses = ['BoolStoragePropertyType', 'DateTimeStoragePropertyType',
+    $propertyTypeClasses = ['BoolStoragePropertyType', 'DatetimeStoragePropertyType',
       'IntStoragePropertyType', 'RealStoragePropertyType', 'TextStoragePropertyType',
     ];
 
