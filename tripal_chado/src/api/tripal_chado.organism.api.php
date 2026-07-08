@@ -19,8 +19,8 @@
  *
  * @deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use
  *   the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service
- *   instead and call the getScientificName() method on that service.
- * @see https://github.com/tripal/tripal/pull/2372
+ *   instead and call the getOrganism() method on that service.
+ * @see https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-get-organism
  *
  * @param $identifiers
  *   An array with the key stating what the identifier is. Supported keys (only
@@ -55,7 +55,7 @@
  */
 function chado_get_organism($identifiers, $options = [], $schema_name = NULL) {
 
-  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service instead and call the getScientificName() method on that service. See https://github.com/tripal/tripal/pull/2372', E_USER_DEPRECATED);
+  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service instead and call the getOrganism() method on that service. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-get-organism', E_USER_DEPRECATED);
 
   // Set default options.
   if (!isset($options['include_fk'])) {
@@ -157,8 +157,8 @@ function chado_get_organism($identifiers, $options = [], $schema_name = NULL) {
  *
  * @deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use
  *   the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service
- *   instead and call the getScientificName() method on that service.
- * @see https://github.com/tripal/tripal/pull/2372
+ *   instead and call the getOrganismScientificName() method on that service.
+ * @see https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-get-organism-scientific-name
  *
  * @param $organism
  *   An organism object.
@@ -173,7 +173,7 @@ function chado_get_organism($identifiers, $options = [], $schema_name = NULL) {
  */
 function chado_get_organism_scientific_name($organism, $schema_name = NULL) {
 
-  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service instead and call the getScientificName() method on that service. See https://github.com/tripal/tripal/pull/2372', E_USER_DEPRECATED);
+  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service instead and call the getOrganismScientificName() method on that service. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-get-organism-scientific-name', E_USER_DEPRECATED);
   // Set default schema.
   if (!$schema_name) {
     $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
@@ -221,7 +221,7 @@ function chado_get_organism_scientific_name($organism, $schema_name = NULL) {
  * @deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use
  *   the \Drupal\tripal_chado\Controller\ChadoOrganismFormElementController
  *   class instead and call the getSelectOptions() method on that service.
- * @see https://github.com/tripal/tripal/pull/2293
+ * @see https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-get-organism-select-options
  *
  * @param $published_only
  *   Only return organisms that have been published within Tripal.
@@ -239,7 +239,7 @@ function chado_get_organism_scientific_name($organism, $schema_name = NULL) {
  * @ingroup tripal_organism_api
  */
 function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE, $schema_name = NULL) {
-  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Controller\ChadoOrganismFormElementController class instead and call the getSelectOptions() method on that service. See https://github.com/tripal/tripal/pull/2293', E_USER_DEPRECATED);
+  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Controller\ChadoOrganismFormElementController class instead and call the getSelectOptions() method on that service. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-get-organism-select-options', E_USER_DEPRECATED);
 
   $org_list = [];
 
@@ -289,7 +289,7 @@ function chado_get_organism_select_options($published_only = FALSE, $show_common
  * @deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use
  *   the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service
  *   instead and call the getOrganismFromScientificName() method on that service.
- * @see https://github.com/tripal/tripal/pull/2372
+ * @see https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-get-organism-id-from-scientific-name
  *
  * @param $name
  *   The organism name to be queried. Infraspecific type can be abbreviated.
@@ -311,7 +311,7 @@ function chado_get_organism_select_options($published_only = FALSE, $show_common
  * @ingroup tripal_organism_api
  */
 function chado_get_organism_id_from_scientific_name($name, $options = []) {
-  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service instead and call the getOrganismFromScientificName() method on that service. See https://github.com/tripal/tripal/pull/2372', E_USER_DEPRECATED);
+  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service instead and call the getOrganismFromScientificName() method on that service. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-get-organism-id-from-scientific-name', E_USER_DEPRECATED);
 
   $organism_ids = [];
   // Handle missing $name by returning empty array.
@@ -479,8 +479,8 @@ function chado_get_organism_image_url($organism) {
  *
  * @deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use
  *   the \Drupal\tripal_chado\Controller\ChadoOrganismFormElementController
- *   class instead and call the getAutocompleteElement() method on that service.
- * @see https://github.com/tripal/tripal/pull/2293
+ *   class instead and call the handleAutocomplete() method on that service.
+ * @see https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-autocomplete-organism
  *
  * @param $text
  *   The string to search for.
@@ -493,7 +493,7 @@ function chado_get_organism_image_url($organism) {
 // @to-do: 1. This function doesn't support infraspecific nomenclature
 // @to-do: 2. Drupal 8+ drupal_json_output() is removed in favor of Symfony\Component\HttpFoundation\JsonResponse
 function chado_autocomplete_organism($text) {
-  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Controller\ChadoOrganismFormElementController class instead and call the getAutocompleteElement() method on that service. See https://github.com/tripal/tripal/pull/2293', E_USER_DEPRECATED);
+  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Controller\ChadoOrganismFormElementController class instead and call the handleAutocomplete() method on that service. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-autocomplete-organism', E_USER_DEPRECATED);
 
   $chado = \Drupal::service('tripal_chado.database');
   $matches = [];
@@ -527,7 +527,7 @@ function chado_autocomplete_organism($text) {
  * @deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use
  *   the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service
  *   instead and call the abbreviateInfraspecificRank() method on that service.
- * @see https://github.com/tripal/tripal/pull/2372
+ * @see https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-abbreviate-infraspecific-rank
  *
  * @param $rank
  *   The rank below species.
@@ -538,7 +538,7 @@ function chado_autocomplete_organism($text) {
  * @ingroup tripal_organism_api
  */
 function chado_abbreviate_infraspecific_rank($rank) {
-  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service instead and call the abbreviateInfraspecificRank() method on that service. See https://github.com/tripal/tripal/pull/2372', E_USER_DEPRECATED);
+  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service instead and call the abbreviateInfraspecificRank() method on that service. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-abbreviate-infraspecific-rank', E_USER_DEPRECATED);
 
   $abb = '';
   $rank = strtolower($rank);
@@ -588,7 +588,7 @@ function chado_abbreviate_infraspecific_rank($rank) {
  * @deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use
  *   the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service
  *   instead and call the unabbreviateInfraspecificRank() method on that service.
- * @see https://github.com/tripal/tripal/pull/2372
+ * @see https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-unabbreviate-infraspecific-rank
  *
  * @param $rank
  *   The rank below species or its abbreviation.
@@ -600,7 +600,7 @@ function chado_abbreviate_infraspecific_rank($rank) {
  * @ingroup tripal_organism_api
  */
 function chado_unabbreviate_infraspecific_rank($rank) {
-  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service instead and call the unabbreviateInfraspecificRank() method on that service. See https://github.com/tripal/tripal/pull/2372', E_USER_DEPRECATED);
+  @trigger_error(__FUNCTION__.'() deprecated in tripal:4.0.0-alpha4 and is removed from tripal:4.1.0. Use the \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy service instead and call the unabbreviateInfraspecificRank() method on that service. See https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations/chado_organism_api.html#chado-unabbreviate-infraspecific-rank', E_USER_DEPRECATED);
 
   if (preg_match('/^subsp\.?$/i', $rank)) {
     $rank = 'subspecies';
