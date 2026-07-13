@@ -16,6 +16,10 @@ $drupal_ignore_file = DRUPAL_ROOT . '/core/.deprecation-ignore.txt';
 $tripal_ignore_file = __DIR__ . '/../../.tripal-deprecation-ignore.txt';
 $combined_ignore_file = __DIR__ . '/../../.deprecation-ignore.txt';
 
+print "\nTripal is ignoring the deprecation warnings defined in:\n";
+print "- " . $drupal_ignore_file . "\n";
+print "- " . $tripal_ignore_file . "\n\n";
+
 // Append Tripal's phpunit deprecation exclusions to those already
 // defined by Drupal.
 $exclude_text = file_get_contents($drupal_ignore_file);
