@@ -220,3 +220,47 @@ html.gin--dark-mode #tripal-entity-add-content #category-Expression .admin-item 
 #block-claro-content #tripal-entity-add-content #category-Expression .admin-item .admin-item__link::before {
   background-image: url("data:image/svg+xml,%3csvg width='9' height='14' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M1.71.314L.29 1.723l5.302 5.353L.289 12.43l1.422 1.408 6.697-6.762z' fill='%23969529'/%3e%3c/svg%3e");
 }
+
+/**
+  Category: Tripal File
+*/
+
+/** -- Bundle Title */
+#tripal-entity-add-content #category-TripalFile .admin-item .admin-item__title,
+#tripal-entity-add-content #category-TripalFile .admin-item a {
+  color: var(--tripalcontent-category10-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-TripalFile .admin-item .admin-item__title {
+  color: var(--tripalcontent-category10-solid-dark);
+}
+
+/** -- Arrow icon */
+#block-gin-content #tripal-entity-add-content #category-TripalFile .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category10-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-TripalFile .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category10-solid-dark);
+}
+
+/** -- Hover effect */
+#block-gin-content #tripal-entity-add-content #category-TripalFile .admin-item .admin-item__link:hover,
+#block-gin-content #tripal-entity-add-content #category-TripalFile .admin-item .admin-item__link:focus {
+  background: var(--tripalcontent-category10-soft);
+}
+
+#tripal-entity-add-content #category-TripalFile .admin-item .admin-item__link:hover~.admin-item__description,
+#tripal-entity-add-content #category-TripalFile .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category10-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-TripalFile .admin-item .admin-item__link:hover~.admin-item__description,
+html.gin--dark-mode #tripal-entity-add-content #category-TripalFile .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category10-solid-dark);
+}
+
+/** -- CLARO */
+#block-claro-content #tripal-entity-add-content #category-TripalFile .admin-item .admin-item__link::before {
+  background-image: url("data:image/svg+xml,%3csvg width='9' height='14' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M1.71.314L.29 1.723l5.302 5.353L.289 12.43l1.422 1.408 6.697-6.762z' fill='%2322807E'/%3e%3c/svg%3e");
+}
