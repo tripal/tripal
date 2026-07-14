@@ -20,6 +20,12 @@ print "\nTripal is ignoring the deprecation warnings defined in:\n";
 print "- " . $drupal_ignore_file . "\n";
 print "- " . $tripal_ignore_file . "\n\n";
 
+// Set the SYMFONY_DEPRECATIONS_HELPER environment variable to point to the
+// combined ignore file but only in Drupal versions less than 11.5.
+if (version_compare(\Drupal::VERSION, '11.4.x-dev', '<=')) {
+  putenv('SYMFONY_DEPRECATIONS_HELPER=ignoreFile=' . $combined_ignore_file);
+}
+
 // Append Tripal's phpunit deprecation exclusions to those already
 // defined by Drupal.
 $exclude_text = file_get_contents($drupal_ignore_file);
