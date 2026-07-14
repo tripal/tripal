@@ -68,3 +68,9 @@
 # Deprecation: Since twig/twig 3.28: The "Drupal\Core\Template\TwigSandboxPolicy::checkSecurity()" method will take a 4th "array $tests" argument in 4.0; not declaring it is deprecated.
 # Example test that triggers this: testTripalAccessOwnContentCheck
 %TwigSandboxPolicy::checkSecurity\(\)" method will take a 4th "array \$tests" argument%
+
+# Module: Drupal 11.4+
+# Location: /var/www/drupal/vendor/symfony/error-handler/DebugClassLoader.php:363
+# Deprecation: Since twig/twig 3.28: The "Drupal\Core\Template\TwigSandboxPolicy::checkSecurity()" method will require a new "string[] $tests" argument in the next major version of its interface "Twig\Sandbox\SecurityPolicyInterface", not defining it is deprecated.
+# Example test that triggers this: TripalCultivate::testResultWindowDisplay
+%TwigSandboxPolicy::checkSecurity\(\)" method will require a new "string\[\] \$tests" argument%
