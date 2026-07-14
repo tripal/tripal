@@ -22,7 +22,10 @@ print "- " . $tripal_ignore_file . "\n\n";
 
 // Set the SYMFONY_DEPRECATIONS_HELPER environment variable to point to the
 // combined ignore file but only in Drupal versions less than 11.5.
-if (version_compare(\Drupal::VERSION, '11.5', '<')) {
+// Cleanup -dev or .x versions first.
+$drupal_version = preg_replace('/\.x/', '999', \Drupal::VERSION);
+$drupal_version = preg_replace('/[^0-9.]/', '', $drupal_version);
+if (version_compare($drupal_version, '11.5', '<')) {
   putenv('SYMFONY_DEPRECATIONS_HELPER=ignoreFile=../../../modules/contrib/tripal/.deprecation-ignore.txt');
 }
 
