@@ -25,7 +25,8 @@ print "- " . $tripal_ignore_file . "\n\n";
 // If we are on a dev version, increment minor version by 1 so that we can
 // distinguish 11.x from 11.4 for example.
 $drupal_version = \Drupal::VERSION;
-if (preg_replace('/-dev/', '', $drupal_version)) {
+if (preg_match('/-dev/', $drupal_version)) {
+  preg_replace('/-dev/', '', $drupal_version);
   $drupal_version = floatval($drupal_version) + 0.1;
 }
 if (version_compare($drupal_version, '11.5', '<')) {
