@@ -51,7 +51,7 @@
       <parameter name="enableProjectIgnores" value="true"/>
       <!-- The path to a file containing the deprecation ignore patterns.
         Relative paths are resolved against Drupal's root directory. -->
-      <parameter name="projectIgnoreFile" value="modules/contrib/tripal/.tripal-deprecation-ignore.txt"/>
+      <parameter name="projectIgnoreFile" value="modules/contrib/tripal/.deprecation-ignore.txt"/>
       <!-- Set to true to enable Symfony's DebugClassLoader.
         See https://github.com/symfony/error-handler -->
       <parameter name="enableDebugClassLoader" value="true"/>

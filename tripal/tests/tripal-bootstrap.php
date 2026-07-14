@@ -9,8 +9,6 @@
  * modules. Because there can only be one phpunit exclusion file, we first
  * copy Drupal's exclusions, and then append the additional ones we define
  * here. We can then proceed to call Drupal's bootstrap.php.
- *
- * This is only used for Drupal 10.x.
  */
 
 // Define exclusion file names.
@@ -22,15 +20,11 @@ print "\nTripal is ignoring the deprecation warnings defined in:\n";
 print "- " . $drupal_ignore_file . "\n";
 print "- " . $tripal_ignore_file . "\n\n";
 
-$version = \Drupal::VERSION;
-if (version_compare($version, '11.0.0', '<')) {
-
-  // Append Tripal's phpunit deprecation exclusions to those already
-  // defined by Drupal.
-  $exclude_text = file_get_contents($drupal_ignore_file);
-  $exclude_text .= file_get_contents($tripal_ignore_file);
-  file_put_contents($combined_ignore_file, $exclude_text);
-}
+// Append Tripal's phpunit deprecation exclusions to those already
+// defined by Drupal.
+$exclude_text = file_get_contents($drupal_ignore_file);
+$exclude_text .= file_get_contents($tripal_ignore_file);
+file_put_contents($combined_ignore_file, $exclude_text);
 
 // Tripal preprocessing is done, now call Drupal's bootstrap.php.
 include DRUPAL_ROOT . '/core/tests/bootstrap.php';
