@@ -983,7 +983,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   An array where the key is a column in chado and the value describes the
    *   stock that you want to be the object of the relationship.
    *   Valid keys include the same ones listed for $subject_values.
-   * @param array $relationship_type
+   * @param array $rel_type_values
    *   An array where the key is a column in chado and the value describes the
    *   cvterm that you want to use as the relationship type. Valid keys include:
    *     - cv.cv_id
@@ -1037,40 +1037,41 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    *   - If a database exception is encountered when inserting the new
    *     stock_relationship record.
    */
-  public function relateStock(array $subject_values, array $object_values, array $relationship_type, array $stock_rel_values = [], array $options = []) {
+  public function relateStock(array $subject_values, array $object_values, array $rel_type_values, array $stock_rel_values = [], array $options = []) {
 
     // Get the subject stock record.
     $subject_stock = $this->getStock($subject_values, $options);
     if (count($subject_stock) < 1) {
-      throw new ChadoBuddyException("ChadoBuddy relateStock error, could not find a stock which matched the specified values:\n" . print_r($subject_values, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy relateStock error, could not find a stock which matched the specified subject values:\n" . print_r($subject_values, TRUE));
     }
     elseif (count($subject_stock) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy relateStock error, more than one stock record matched the specified values:\n" . print_r($subject_values, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy relateStock error, more than one stock record matched the specified subject values:\n" . print_r($subject_values, TRUE));
     }
 
     // Get the object stock record.
     $object_stock = $this->getStock($object_values, $options);
     if (count($object_stock) < 1) {
-      throw new ChadoBuddyException("ChadoBuddy relateStock error, could not find a stock which matched the specified values:\n" . print_r($object_values, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy relateStock error, could not find a stock which matched the specified object values:\n" . print_r($object_values, TRUE));
     }
     elseif (count($object_stock) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy relateStock error, more than one stock record matched the specified values:\n" . print_r($object_values, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy relateStock error, more than one stock record matched the specified object values:\n" . print_r($object_values, TRUE));
     }
 
     // Get the relationship type cvterm record.
     if (!isset($this->cvterm_buddy)) {
       $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
     }
-    $rel_cvterm = $this->cvterm_buddy->getCvterm($relationship_type, $options);
+    $rel_cvterm = $this->cvterm_buddy->getCvterm($rel_type_values, $options);
     if (count($rel_cvterm) < 1) {
-      throw new ChadoBuddyException("ChadoBuddy relateStock error, could not find a cvterm which matched the specified values:\n" . print_r($relationship_type, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy relateStock error, could not find a cvterm which matched the specified values:\n" . print_r($rel_type_values, TRUE));
     }
     elseif (count($rel_cvterm) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy relateStock error, more than one cvterm record matched the specified values:\n" . print_r($relationship_type, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy relateStock error, more than one cvterm record matched the specified values:\n" . print_r($rel_type_values, TRUE));
     }
 
     try {
       // Check if this relationship already exists between the two stocks.
+      // Primary key: subject_id + object_id + type_id + rank.
       $query = $this->chado_connection->select('1:stock_relationship', 'SR');
       $query->condition('SR.subject_id', $subject_stock[0]->getValue('stock.stock_id'), '=');
       $query->condition('SR.object_id', $object_stock[0]->getValue('stock.stock_id'), '=');
