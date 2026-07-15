@@ -22,11 +22,15 @@ print "- " . $tripal_ignore_file . "\n\n";
 
 // Set the SYMFONY_DEPRECATIONS_HELPER environment variable to point to the
 // combined ignore file but only in Drupal versions less than 11.5.
-// If we are on a dev version, increment minor version by 1 so that we can
-// distinguish 11.x from 11.4 for example.
+// If we are on a dev version, then the path handling has changed for the
+// deprecation helper so catch that specifically.
 $drupal_version = \Drupal::VERSION;
-if (version_compare($drupal_version, '11.4.2', '<=') && ($drupal_version !== '11.4-dev')) {
-  print "We are using Symphony deprecation helper. This should only be used for Drupal versions less than and including 11.4.2.\n\n";
+if ($drupal_version === '11.4-dev') {
+  print "We are using Symphony deprecation helper with the updated path handling.\nThis should only be used for Drupal versions less than and including 11.5.\n\n";
+  putenv('SYMFONY_DEPRECATIONS_HELPER=ignoreFile=/modules/contrib/tripal/.deprecation-ignore.txt');
+}
+elseif (version_compare($drupal_version, '11.4.666', '<=')) {
+  print "We are using Symphony deprecation helper.\nThis should only be used for Drupal versions less than and including 11.5.\n\n";
   putenv('SYMFONY_DEPRECATIONS_HELPER=ignoreFile=../../../modules/contrib/tripal/.deprecation-ignore.txt');
 }
 
