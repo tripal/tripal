@@ -20,11 +20,26 @@ print "\nTripal is ignoring the deprecation warnings defined in:\n";
 print "- " . $drupal_ignore_file . "\n";
 print "- " . $tripal_ignore_file . "\n\n";
 
+// Set the SYMFONY_DEPRECATIONS_HELPER environment variable to point to the
+// combined ignore file. If we are on a dev version starting with 11.4-dev,
+// then the path handling has changed for the deprecation helper so catch
+// that specifically.
+$drupal_version = \Drupal::VERSION;
+if ($drupal_version === '11.4-dev') {
+  print "We are using Symphony deprecation helper with the updated path handling.\nThis should only be used for Drupal versions 11.5 and higher.\n\n";
+  putenv('SYMFONY_DEPRECATIONS_HELPER=ignoreFile=modules/contrib/tripal/.deprecation-ignore.txt');
+}
+elseif (version_compare($drupal_version, '11.4.666', '<=')) {
+  print "We are using Symphony deprecation helper.\nThis should only be used for Drupal versions less than and including 11.4.\n\n";
+  putenv('SYMFONY_DEPRECATIONS_HELPER=ignoreFile=../../../modules/contrib/tripal/.deprecation-ignore.txt');
+}
+
 // Append Tripal's phpunit deprecation exclusions to those already
 // defined by Drupal.
 $exclude_text = file_get_contents($drupal_ignore_file);
 $exclude_text .= file_get_contents($tripal_ignore_file);
 file_put_contents($combined_ignore_file, $exclude_text);
 
+print "Drupal $drupal_version by the Drupal Community.\n";
 // Tripal preprocessing is done, now call Drupal's bootstrap.php.
 include DRUPAL_ROOT . '/core/tests/bootstrap.php';

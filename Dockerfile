@@ -38,8 +38,9 @@ RUN service apache2 start \
   && rm -rf /tripal_app \
   && allmodules="${tripalmodules} ${modules}" \
   && vendor/bin/drush en ${allmodules} -y \
-  && rm web/modules/contrib/tripal/phpunit.xml \
-  && bash web/modules/contrib/tripal/set_phpunit_config.sh \
+  && cd web/modules/contrib/tripal \
+  && rm phpunit.xml \
+  && bash set_phpunit_config.sh \
   && service postgresql stop
 
 RUN service apache2 start \
