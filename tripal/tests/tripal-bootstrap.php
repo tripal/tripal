@@ -25,11 +25,8 @@ print "- " . $tripal_ignore_file . "\n\n";
 // If we are on a dev version, increment minor version by 1 so that we can
 // distinguish 11.x from 11.4 for example.
 $drupal_version = \Drupal::VERSION;
-if (preg_match('/-dev/', $drupal_version)) {
-  preg_replace('/-dev/', '', $drupal_version);
-  $drupal_version = floatval($drupal_version) + 0.1;
-}
-if (version_compare($drupal_version, '11.5', '<')) {
+if (version_compare($drupal_version, '11.4.2', '<=') && ($drupal_version !== '11.4-dev')) {
+  print "We are using Symphony deprecation helper. This should only be used for Drupal versions less than and including 11.4.2.\n\n";
   putenv('SYMFONY_DEPRECATIONS_HELPER=ignoreFile=../../../modules/contrib/tripal/.deprecation-ignore.txt');
 }
 
@@ -39,5 +36,6 @@ $exclude_text = file_get_contents($drupal_ignore_file);
 $exclude_text .= file_get_contents($tripal_ignore_file);
 file_put_contents($combined_ignore_file, $exclude_text);
 
+print "Drupal $drupal_version by the Drupal Community.\n";
 // Tripal preprocessing is done, now call Drupal's bootstrap.php.
 include DRUPAL_ROOT . '/core/tests/bootstrap.php';
