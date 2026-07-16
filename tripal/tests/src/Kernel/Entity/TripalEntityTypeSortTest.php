@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal\Kernel\Entity;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\Entity\TripalEntityType;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests TripalEntityType::sort().
