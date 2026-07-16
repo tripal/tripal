@@ -6,6 +6,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
+use Drupal\tripal_chado\TripalStorage\ChadoDatetimeStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
@@ -129,6 +130,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $value['analysis_sourcename'] = '';
     $value['analysis_sourceversion'] = '';
     $value['analysis_sourceuri'] = '';
+    $value['analysis_timeexecuted'] = '2001-01-01 01:01:01';
 
     return [$value];
   }
@@ -179,7 +181,8 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $sourceversion_len = $object_schema_def['fields']['sourceversion']['size'];
     // Text.
     $sourceuri_term = self::getColumnTermId($object_table, 'sourceuri', 'data:1047');
-    // @todo timeexecuted not yet implemented
+    $timeexecuted_term = self::getColumnTermId($object_table, 'timeexecuted', 'local:timeexecuted');
+
     // Linker table, when used, requires specifying the linker table and column.
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
 
@@ -346,7 +349,14 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       'as' => 'analysis_sourceuri',
     ]);
 
-    // @todo timeexecuted not yet implemented - not null, default CURRENT_TIMESTAMP
+    // The analysis timeexecuted - not null, default CURRENT_TIMESTAMP.
+    $properties[] = new ChadoDatetimeStoragePropertyType($entity_type_id, self::$id, 'analysis_timeexecuted', $timeexecuted_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';timeexecuted',
+      'as' => 'analysis_timeexecuted',
+    ]);
+
     return $properties;
   }
 
