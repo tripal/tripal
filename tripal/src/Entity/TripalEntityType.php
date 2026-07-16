@@ -3,6 +3,7 @@
 namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
+use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\Attribute\ConfigEntityType;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityViewBuilder;
@@ -845,14 +846,12 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
 
   /**
-   * Sorts Tripal Entity Types first by category and then by Label.
+   * {@inheritdoc}
    *
-   * @param TripalEntityTypeInterface $a
-   *   The first Tripal Entity Type object.
-   * @param TripalEntityTypeInterface $b
-   *   The second Tripal Entity Type object.
+   * Overrides the default label-only sort to first group Tripal Entity
+   * Types by category (with "General" always first) and then by label.
    */
-  public static function sortByCategory(TripalEntityTypeInterface $a, TripalEntityTypeInterface $b) {
+  public static function sort(ConfigEntityInterface $a, ConfigEntityInterface $b) {
     $a_value = $a->getCategory();
     $b_value = $b->getCategory();
     if ($a_value == $b_value) {
@@ -869,7 +868,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       return 1;
     }
     else {
-      return strnatcasecmp($b_value, $a_value);
+      return strnatcasecmp($a_value, $b_value);
     }
   }
 
