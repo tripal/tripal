@@ -66,7 +66,7 @@ class TripalEntityTypeSortTest extends TripalTestKernelBase {
   /**
    * Within the same category, types should be sorted alphabetically by label.
    */
-  public function testTypesWithinACategoryAreSortedByLabel() {
+  public function testTypesWithinCategoryAreSortedByLabel() {
 
     $types = [
       $this->createType('t_orange', 'Orange', 'Genetic'),
