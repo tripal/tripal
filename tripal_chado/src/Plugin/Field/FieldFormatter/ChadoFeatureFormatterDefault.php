@@ -34,6 +34,8 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     '[infraname]',
     '[abbreviation]',
     '[common_name]',
+    '[timeaccessioned]',
+    '[timelastmodified]',
   ],
 )]
 class ChadoFeatureFormatterDefault extends ChadoFormatterBase {
@@ -74,8 +76,9 @@ class ChadoFeatureFormatterDefault extends ChadoFormatterBase {
         'infraname' => $item->get('feature_infraspecific_name')->getString(),
         'abbreviation' => $item->get('feature_abbreviation')->getString(),
         'common_name' => $item->get('feature_common_name')->getString(),
+        'timeaccessioned' => $item->get('feature_timeaccessioned')->getString(),
+        'timelastmodified' => $item->get('feature_timelastmodified')->getString(),
         // residues is not implemented in this field since it can be millions of characters long
-        // timeaccessioned, timelastmodified not implemented
       ];
 
       // Substitute values in token string to generate displayed string.
