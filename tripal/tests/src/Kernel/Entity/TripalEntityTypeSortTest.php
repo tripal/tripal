@@ -7,7 +7,9 @@ use Drupal\tripal\Entity\TripalEntityType;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Tests TripalEntityType::sort(), used to order Tripal Content Types in
+ * Tests TripalEntityType::sort().
+ * 
+ * This function is used to order Tripal Content Types in
  * both TripalEntityTypeListBuilder and TripalEntityUIController.
  *
  * @group TripalEntityType
