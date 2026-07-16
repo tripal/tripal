@@ -26,6 +26,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     '[sourcename]',
     '[sourceversion]',
     '[sourceuri]',
+    '[timeexecuted]',
   ],
 )]
 class ChadoAnalysisFormatterDefault extends ChadoFormatterBase {
@@ -59,7 +60,7 @@ class ChadoAnalysisFormatterDefault extends ChadoFormatterBase {
         'sourcename' => $item->get('analysis_sourcename')->getString(),
         'sourceversion' => $item->get('analysis_sourceversion')->getString(),
         'sourceuri' => $item->get('analysis_sourceuri')->getString(),
-        // timeexecuted not implemented
+        'timeexecuted' => $item->get('analysis_timeexecuted')->getString(),
       ];
 
       // Substitute values in token string to generate displayed string.
