@@ -15,6 +15,7 @@ use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
+use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy;
 
 /**
  * Taxonomy Importer implementation of the TripalImporterBase.
@@ -64,6 +65,13 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    * Provide the property buddy instance
    */
   protected object $property_buddy;
+
+  /**
+   * Provide the organism buddy instance.
+   *
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy
+   */
+  protected ChadoOrganismBuddy $organism_buddy;
 
   /**
    * Options for file retrieval from NCBI.
@@ -144,6 +152,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     $this->buddy_manager = $buddy_manager;
     $this->dbxref_buddy = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
     $this->property_buddy = $this->buddy_manager->createInstance('chado_property_buddy', []);
+    $this->organism_buddy = $this->buddy_manager->createInstance('chado_organism_buddy', []);
   }
 
   /**
@@ -343,7 +352,14 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       if ((property_exists($organism, 'is_new')) and ($organism->is_new)) {
         continue;
       }
-      $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
+
+      $organism_arr = [];
+      foreach (['genus', 'species', 'infraspecific_name', 'type_id'] as $key) {
+        if ($organism->$key) {
+          $organism_arr['organism.' . $key] = $organism->$key;
+        }
+      }
+      $sci_name = $this->organism_buddy->getOrganismScientificName($organism_arr);
 
       // If the organism already has a taxonomy ID, query to NCBI not needed.
       if ($organism->ncbitaxid) {
@@ -450,10 +466,10 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     if (!$organism) {
       // We do the lookup in two steps so that there is no error if
       // we don't retrieve an organism_id.
-      $organism_ids = chado_get_organism_id_from_scientific_name($sci_name, []);
+      $organism_ids = $this->organism_buddy->getOrganismFromScientificName($sci_name);
       if ($organism_ids) {
         $query = $this->connection->select('1:organism', 'o');
-        $query->condition('o.organism_id', $organism_ids[0], '=');
+        $query->condition('o.organism_id', $organism_ids[0]->getValue('organism.organism_id'), '=');
         $query->fields('o');
         $results = $query->execute()->fetchAll();
         if (count($results) > 0) {
@@ -497,7 +513,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       $cvterm_id = $query->execute()->fetchField();
 
       // Remove the rank from the infraspecific name.
-      $abbrev = chado_abbreviate_infraspecific_rank($rank);
+      $abbrev = $this->organism_buddy->abbreviateInfraspecificRank($rank);
       $infra = preg_replace("/$abbrev/", "", $full_infra);
       $infra = trim($infra);
 
@@ -625,7 +641,13 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       // be different than what is stored in chado. To keep the site
       // consistent, use the name from chado for the tree.
       if ($organism) {
-        $chado_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
+        $organism_arr = [];
+        foreach (['genus', 'species', 'infraspecific_name', 'type_id'] as $key) {
+          if ($organism->$key) {
+            $organism_arr['organism.' . $key] = $organism->$key;
+          }
+        }
+        $chado_name = $this->organism_buddy->getOrganismScientificName($organism_arr);
         if ($chado_name != $sci_name) {
           $this->logger->warning("Substituting site taxon \"@chado_name\" for NCBI taxon \"@sci_name\","
                                . " taxid @taxid, organism_id @organism_id",
