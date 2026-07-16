@@ -1090,15 +1090,20 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
         ];
         $stock_rel_values = array_merge($defaults, $stock_rel_values);
         $this->validateInput($stock_rel_values, array_keys($defaults));
+        $stock_rel_values = $this->removeTablePrefix($stock_rel_values);
 
-        // Insert the new relationship.
-        $query = $this->chado_connection->insert('1:stock_relationship');
-        $query->fields([
+        // Add only the information needed for the stock_relationship table.
+        $fields = [
           'subject_id' => $subject_stock[0]->getValue('stock.stock_id'),
           'object_id' => $object_stock[0]->getValue('stock.stock_id'),
           'type_id' => $rel_cvterm[0]->getValue('cvterm.cvterm_id'),
-        ]);
-        $query->fields($this->removeTablePrefix($stock_rel_values));
+        ];
+
+        $fields = array_merge($fields, $stock_rel_values);
+
+        // Insert the new relationship.
+        $query = $this->chado_connection->insert('1:stock_relationship');
+        $query->fields($fields);
         $query->execute();
         // Return NEW to indicate the relationship was created.
         return self::NEW;
