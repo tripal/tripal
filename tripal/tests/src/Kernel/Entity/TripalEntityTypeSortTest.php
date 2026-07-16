@@ -16,6 +16,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * @group TripalEntityType
  */
 #[Group('tripal-content')]
+#[RunTestsInSeparateProcesses]
 class TripalEntityTypeSortTest extends TripalTestKernelBase {
 
   /**
