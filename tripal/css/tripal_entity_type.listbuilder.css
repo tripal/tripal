@@ -329,62 +329,62 @@ html.gin--dark-mode table.tripal-entity-type-list tr.Expression a {
 */
 
 /** -- Background Highlight */
-table.tripal-entity-type-list tr.TripalFile td.type-category {
+table.tripal-entity-type-list tr.File td.type-category {
 	background-color: var(--tripalcontent-category10-med);
 }
 
-table.tripal-entity-type-list tbody tr.TripalFile:focus,
-table.tripal-entity-type-list tbody tr.TripalFile:hover,
-table.tripal-entity-type-list tbody tr.TripalFile:focus td.type-category,
-table.tripal-entity-type-list tbody tr.TripalFile:hover td.type-category {
+table.tripal-entity-type-list tbody tr.File:focus,
+table.tripal-entity-type-list tbody tr.File:hover,
+table.tripal-entity-type-list tbody tr.File:focus td.type-category,
+table.tripal-entity-type-list tbody tr.File:hover td.type-category {
 	background: var(--tripalcontent-category10-soft);
 }
 
 /** -- Action Item Button: CLARO */
-#block-claro-content table.tripal-entity-type-list tr.TripalFile .dropbutton a {
+#block-claro-content table.tripal-entity-type-list tr.File .dropbutton a {
 	color: var(--button-fg-color);
 }
 
 /** -- Action Item Button: GIN */
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton {
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton {
 	border: 2px solid var(--tripalcontent-category10-solid);
 }
 
 @media not (forced-colors: active) {
-	#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__toggle::before {
+	#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__toggle::before {
 		background-color: var(--tripalcontent-category10-solid);
 	}
 }
 
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__toggle {
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__toggle {
 	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category10-solid) !important;
 	color: var(--tripalcontent-category10-solid);
 }
 
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__item> :hover,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__item> :active,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__item> :focus,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__item>a:hover,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__item>a:active,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__item>a:focus,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__item>input:hover,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__item>input:active,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__item>input:focus,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__item>button:hover,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__item>button:active,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__item>button:focus,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__toggle:hover,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__toggle:active,
-#block-gin-content table.tripal-entity-type-list tr.TripalFile .dropbutton__toggle:focus {
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__item> :hover,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__item> :active,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__item> :focus,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__item>a:hover,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__item>a:active,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__item>a:focus,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__item>input:hover,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__item>input:active,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__item>input:focus,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__item>button:hover,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__item>button:active,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__item>button:focus,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__toggle:hover,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__toggle:active,
+#block-gin-content table.tripal-entity-type-list tr.File .dropbutton__toggle:focus {
 	background-color: var(--tripalcontent-category10-med);
 }
 
 /** -- Light Mode Text */
-table.tripal-entity-type-list tr.TripalFile a {
+table.tripal-entity-type-list tr.File a {
 	color: var(--tripalcontent-category10-solid);
 }
 
 /** -- Dark Mode Text */
-html.gin--dark-mode table.tripal-entity-type-list tr.TripalFile a {
+html.gin--dark-mode table.tripal-entity-type-list tr.File a {
 	color: var(--tripalcontent-category10-solid-dark);
 }
