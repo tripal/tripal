@@ -15,8 +15,8 @@ permissions: read-all
 jobs:
   push_to_registry:
     runs-on: 'ubuntu-latest'
-    continue-on-error: true
     strategy:
+      # A failure will not prevent other matrix jobs from running.
       fail-fast: false
       matrix:
         php-version:

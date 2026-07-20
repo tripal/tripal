@@ -449,13 +449,14 @@ function tripal_chado_field_reload(array $upgradable_types, array $upgradable_pr
         }
       }
     }
+    $types = implode(', ', $upgradable_types);
     if ($update_only) {
-      $messenger->addMessage(t("Updated @n_updated properties",
-          ['@n_updated' => $n_updated]));
+      $messenger->addMessage(t("Updated @n_updated properties for @types",
+          ['@n_updated' => $n_updated, '@types' => $types]));
     }
     else {
-      $messenger->addMessage(t("Added @n_added properties, updated @n_updated properties",
-          ['@n_added' => $n_added, '@n_updated' => $n_updated]));
+      $messenger->addMessage(t("Added @n_added properties, updated @n_updated properties for @types",
+          ['@n_added' => $n_added, '@n_updated' => $n_updated, '@types' => $types]));
     }
   }
   catch (\Exception $e) {
@@ -1267,4 +1268,15 @@ function tripal_chado_update_10420() {
   catch (\Exception $e) {
     throw new UpdateException('Could not add datetime fields: ' . $e->getMessage());
   }
+}
+
+/**
+ * Adds field properties for datetime chado columns. PR 2524.
+ */
+function tripal_chado_update_10421() {
+  tripal_chado_field_reload(['chado_analysis_type_default'], ['analysis_timeexecuted'], FALSE);
+  // Tripal doesn't define any default instances of these fields,
+  // but they may have been discovered.
+  tripal_chado_field_reload(['chado_feature_type_default'], ['gene_timeaccessioned', 'gene_timelastmodified', 'mrna_timeaccessioned', 'mrna_timelastmodified'], FALSE);
+  tripal_chado_field_reload(['chado_assay_type_default'], ['assay_assaydate'], FALSE);
 }
