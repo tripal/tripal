@@ -1091,11 +1091,38 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $this->assertIsInt($status, "We did not retrieve an integer when relating two stock records");
     $this->assertEquals($expected_status, $status, "We did not retrieve the expected status when relating two stock records for the first time.");
 
+    // Verify the stock_relationship table has our new record.
+    $rel_table_query = $this->chado_connection->select('1:stock_relationship', 'sr')
+      ->fields('sr')
+      ->execute();
+    $results = $rel_table_query->fetchAll();
+    $this->assertIsArray($results, "We should have been able to select from the stock_relationship table");
+    $this->assertCount(1, $results, "There should be 1 \"stock_relationship\" record inserted");
+    $expected_stock_subject_id = $subject_stock_record->getValue('stock.stock_id');
+    $retrieved_stock_subject_id = $results[0]->subject_id;
+    $this->assertEquals($expected_stock_subject_id, $retrieved_stock_subject_id,
+      "We did not get the subject_id from \"stock_relationship\" that should have been set by relateStock()");
+    $expected_stock_object_id = $object_stock_record->getValue('stock.stock_id');
+    $retrieved_stock_object_id = $results[0]->object_id;
+    $this->assertEquals($expected_stock_object_id, $retrieved_stock_object_id,
+      "We did not get the object_id from \"stock_relationship\" that should have been set by relateStock()");
+    $expected_cvterm_id = $cvterm_record->getValue('cvterm.cvterm_id');
+    $retrieved_cvterm_id = $results[0]->type_id;
+    $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
+      "We did not get the type_id from \"stock_relationship\" that should have been set by relateStock()");
+
     // Repeat the same relationship, it should return a status of 2 (EXISTING).
     $expected_status = 2;
     $status = $stock_instance->relateStock(['buddy_record' => $subject_stock_record], ['buddy_record' => $object_stock_record], ['buddy_record' => $cvterm_record]);
     $this->assertIsInt($status, "We did not retrieve an integer when relating two stock records");
     $this->assertEquals($expected_status, $status, "We did not retrieve the expected status when relating the same two stock records a second time.");
+    // Verify we still have one record.
+    $rel_table_query = $this->chado_connection->select('1:stock_relationship', 'sr')
+      ->fields('sr')
+      ->execute();
+    $results = $rel_table_query->fetchAll();
+    $this->assertIsArray($results, "We should have been able to select from the stock_relationship table");
+    $this->assertCount(1, $results, "There should be 1 \"stock_relationship\" record inserted");
 
     // This time, set the rank to 1. We expect a new relationship to be created
     // since rank is part of the primary key, so the status should be 1 (NEW).
@@ -1103,6 +1130,23 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
     $status = $stock_instance->relateStock(['buddy_record' => $subject_stock_record], ['buddy_record' => $object_stock_record], ['buddy_record' => $cvterm_record], ['stock_relationship.rank' => 1]);
     $this->assertIsInt($status, "We did not retrieve an integer when relating two stock records");
     $this->assertEquals($expected_status, $status, "We did not retrieve the expected status when relating the same two stock records a third time, but this time with a different rank.");
+    // Verify we have two records.
+    $rel_table_query = $this->chado_connection->select('1:stock_relationship', 'sr')
+      ->fields('sr')
+      ->execute();
+    $results = $rel_table_query->fetchAll();
+    $this->assertIsArray($results, "We should have been able to select from the stock_relationship table");
+    $this->assertCount(2, $results, "There should be 2 \"stock_relationship\" records inserted");
+    // Check the rank values.
+    $this->assertEquals(0, $results[0]->rank, "The first stock_relationship record should have a rank of 0.");
+    $this->assertEquals(1, $results[1]->rank, "The second stock_relationship record should have a rank of 1.");
+    // Then make sure every other field matches.
+    foreach ($results[0] as $field => $value) {
+      $this->assertObjectHasProperty($field, $results[1], "The field '$field' from the first stock_relationship record was not found in the second stock_relationship record.");
+      if ($field !== 'rank' && $field !== 'stock_relationship_id') {
+        $this->assertEquals($value, $results[1]->$field, "The field '$field' from the first stock_relationship record should match the value of the same field in the second stock_relationship record since we specified a different rank.");
+      }
+    }
 
     // Try the same relationship again without a rank to trigger an exception.
     try {
@@ -1113,10 +1157,14 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
       $this->assertStringContainsString("ChadoBuddy relateStock error, more than one stock_relationship record already exists between the two stocks with the specified relationship type.", $e->getMessage(), "We did not get the expected exception message when relating the same two stock records a fourth time without specifying a unique rank.");
     }
 
-    // Other test ideas:
-    // Switch subject and object, use a different relationship type.
-    // Lastly, select from the stock_relationship table to verify we have the
-    // right number of relationships.
+    // Confirm we still have two records.
+    $rel_table_query = $this->chado_connection->select('1:stock_relationship', 'sr')
+      ->fields('sr')
+      ->execute();
+    $results = $rel_table_query->fetchAll();
+    $this->assertIsArray($results, "We should have been able to select from the stock_relationship table");
+    $this->assertCount(2, $results, "There should still be 2 \"stock_relationship\" records inserted after attempting to relate the same two stock records a fourth time without specifying a unique rank.");
+
   }
 
   /**
