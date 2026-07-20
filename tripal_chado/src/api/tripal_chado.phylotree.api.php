@@ -981,7 +981,9 @@ function chado_phylogeny_lookup_organism_by_name($name, $schema_name = 'chado') 
   $name = trim(preg_replace('/_/', ' ', $name ));
 
   // Call api function to look up organism_id, case insensitive.
-  $organism_id = chado_get_organism_id_from_scientific_name($name, [], $schema_name);
+  $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+  $organism_buddy_instance = $buddy_service->createInstance('chado_organism_buddy', []);
+  $organism_id = $organism_buddy_instance->getOrganismFromScientificName($name, []);
 
   // The unique constraint on the organism table ensures we get
   // either zero or one record returned.
@@ -989,7 +991,7 @@ function chado_phylogeny_lookup_organism_by_name($name, $schema_name = 'chado') 
     return FALSE;
   }
   else {
-    return $organism_id[0];
+    return $organism_id[0]->getValue('organism.organism_id');
   }
 }
 

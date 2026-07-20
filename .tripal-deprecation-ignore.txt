@@ -68,3 +68,15 @@
 # Deprecation: Since twig/twig 3.28: The "Drupal\Core\Template\TwigSandboxPolicy::checkSecurity()" method will take a 4th "array $tests" argument in 4.0; not declaring it is deprecated.
 # Example test that triggers this: testTripalAccessOwnContentCheck
 %TwigSandboxPolicy::checkSecurity\(\)" method will take a 4th "array \$tests" argument%
+
+# Module: Drupal 11.4+
+# Location: /var/www/drupal/vendor/symfony/error-handler/DebugClassLoader.php:363
+# Deprecation: Since twig/twig 3.28: The "Drupal\Core\Template\TwigSandboxPolicy::checkSecurity()" method will require a new "string[] $tests" argument in the next major version of its interface "Twig\Sandbox\SecurityPolicyInterface", not defining it is deprecated.
+# Example test that triggers this: TripalCultivate::testResultWindowDisplay
+%TwigSandboxPolicy::checkSecurity\(\)" method will require a new "string\[\] \$tests" argument%
+
+# Module: Drupal 11.5
+# Location: /var/www/drupal/web/core/tests/Drupal/Tests/DrupalTestCaseTrait.php:75
+# Deprecation: Since Drupal 11.5: Using the SYMFONY_DEPRECATIONS_HELPER environment variable to configure test runs is deprecated in drupal:11.5.0 and is removed from drupal:12.0.0. See https://www.drupal.org/node/3594014
+# Example test that triggers this: ConfigTest::testConfigYaml
+%SYMFONY_DEPRECATIONS_HELPER environment variable to configure test runs is deprecated%
