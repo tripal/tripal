@@ -38,7 +38,7 @@ class TripalEntityUIController extends ControllerBase {
     // See \Drupal\Core\Config\Entity\ConfigEntityBase::sort().
     uasort($bundle_entities, [
       TripalEntityType::class,
-      'sortByCategory',
+      'sort',
     ]);
 
     // Now compile them into variables to be used in twig.

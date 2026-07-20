@@ -27,6 +27,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     '[operator]',
     '[database_name]',
     '[database_accession]',
+    '[assaydate]',
   ],
 )]
 class ChadoAssayFormatterDefault extends ChadoFormatterBase {
@@ -61,6 +62,7 @@ class ChadoAssayFormatterDefault extends ChadoFormatterBase {
         'operator' => $item->get('assay_operator')->getString(),
         'database_name' => $item->get('assay_database_name')->getString(),
         'database_accession' => $item->get('assay_database_accession')->getString(),
+        'assaydate' => $item->get('assay_assaydate')->getString(),
       ];
 
       // Substitute values in token string to generate displayed string.

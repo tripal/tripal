@@ -51,6 +51,7 @@ scenarios:
         analysis_sourcename: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         analysis_sourceversion: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         analysis_sourceuri: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+        analysis_timeexecuted: 'Drupal\tripal_chado\TripalStorage\ChadoDatetimeStoragePropertyType'
   -
       label: 'Analysis in base table'
       field_type: 'chado_analysis_type_default'
@@ -77,6 +78,7 @@ scenarios:
         analysis_sourcename: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         analysis_sourceversion: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         analysis_sourceuri: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+        analysis_timeexecuted: 'Drupal\tripal_chado\TripalStorage\ChadoDatetimeStoragePropertyType'
   -
       label: 'Array Design in base table'
       field_type: 'chado_array_design_type_default'
@@ -146,6 +148,7 @@ scenarios:
         assay_operator: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         assay_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
         assay_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+        assay_assaydate: 'Drupal\tripal_chado\TripalStorage\ChadoDatetimeStoragePropertyType'
   -
       label: 'Assay in base table'
       field_type: 'chado_assay_type_default'
@@ -174,6 +177,7 @@ scenarios:
         assay_operator: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         assay_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
         assay_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+        assay_assaydate: 'Drupal\tripal_chado\TripalStorage\ChadoDatetimeStoragePropertyType'
   -
       label: 'Biomaterial through linking table'
       field_type: 'chado_biomaterial_type_default'
@@ -445,6 +449,8 @@ scenarios:
         feature_common_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         feature_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
         feature_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+        feature_timeaccessioned: 'Drupal\tripal_chado\TripalStorage\ChadoDatetimeStoragePropertyType'
+        feature_timelastmodified: 'Drupal\tripal_chado\TripalStorage\ChadoDatetimeStoragePropertyType'
   -
       label: 'Feature linked in base table'
       field_type: 'chado_feature_type_default'
@@ -479,6 +485,8 @@ scenarios:
         feature_common_name: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         feature_database_accession: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
         feature_database_name: 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType'
+        feature_timeaccessioned: 'Drupal\tripal_chado\TripalStorage\ChadoDatetimeStoragePropertyType'
+        feature_timelastmodified: 'Drupal\tripal_chado\TripalStorage\ChadoDatetimeStoragePropertyType'
   -
       label: 'Feature MAP through linking table'
       field_type: 'chado_featuremap_type_default'
