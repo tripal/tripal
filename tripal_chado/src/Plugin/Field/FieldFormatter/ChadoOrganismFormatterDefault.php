@@ -66,7 +66,9 @@ class ChadoOrganismFormatterDefault extends ChadoFormatterBase {
       // Special case handling of abbreviations for genus and infraspecific type
       // These are not available to web services!
       $values['genus_abbrev'] = substr($values['genus'], 0, 1) . '.';
-      $values['infratype_abbrev'] = chado_abbreviate_infraspecific_rank($values['infratype']);
+      $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+      $organism_buddy_instance = $buddy_service->createInstance('chado_organism_buddy', []);
+      $values['infratype_abbrev'] = $organism_buddy_instance->abbreviateInfraspecificRank($values['infratype']);
 
       // Substitute values in token string to generate displayed string.
       $displayed_string = $token_string;
