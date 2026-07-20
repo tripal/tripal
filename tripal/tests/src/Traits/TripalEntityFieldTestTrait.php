@@ -22,6 +22,7 @@ use PHPUnit\Framework\Attributes\Group;
 trait TripalEntityFieldTestTrait {
 
   use UserCreationTrait;
+  use TripalTestTrait;
 
   /**
    * An array of FieldStorageConfig objects keyed by the field name.
@@ -263,6 +264,15 @@ trait TripalEntityFieldTestTrait {
     $fields = [];
     foreach ($system_under_test['fields'] as $field_details) {
 
+      // Create the term for the field.
+      $values = [
+        'id_space_name' => $field_details['termIdSpace'] ?? NULL,
+        'term' => [
+          'accession' => $field_details['termAccession'] ?? NULL,
+        ],
+      ];
+      $this->createTripalTerm($values, 'tripal_default_id_space', 'tripal_default_vocabulary');
+
       // Create both the FieldConfig and FieldStorageConfig.
       $fields[$field_details['name']] = $this->createFieldInstance(
         'tripal_entity',
@@ -273,7 +283,12 @@ trait TripalEntityFieldTestTrait {
           'widget_id' => $field_details['widget'],
           'formatter_id' => $field_details['formatter'],
           'cardinality' => $field_details['cardinality'] ?? 1,
+          'required' => $field_details['required'] ?? TRUE,
           'settings' => $field_details['settings'],
+        ],
+        [
+          'idspace_plugin_id' => 'tripal_default_id_space',
+          'vocab_plugin_id' => 'tripal_default_vocabulary',
         ]
       );
     }
@@ -334,6 +349,7 @@ trait TripalEntityFieldTestTrait {
       'entity_type' => $entity_type,
       'type' => $values['field_type'],
       'cardinality' => $values['cardinality'] ?? 1,
+      'required' => $values['required'] ?? TRUE,
       'settings' => [
         'termIdSpace' => $term->getIdSpace(),
         'termAccession' => $term->getAccession(),
@@ -376,6 +392,7 @@ trait TripalEntityFieldTestTrait {
     $values['formatter_id'] = $values['formatter_id'] ?? 'default_tripal_string_type_formatter';
     $values['widget_id'] = $values['widget_id'] ?? 'default_tripal_string_type_widget';
     $values['field_type'] = $values['field_type'] ?? 'tripal_string_type';
+    $values['settings'] = $values['settings'] ?? [];
     // -- Bundle
     if (array_key_exists('bundle', $values)) {
       $bundle = $values['bundle'];
@@ -411,7 +428,8 @@ trait TripalEntityFieldTestTrait {
     $fieldConfig = FieldConfig::create([
       'field_storage' => $values['fieldStorage'],
       'bundle' => $values['bundle_name'],
-      'required' => TRUE,
+      'required' => $values['required'] ?? TRUE,
+      'settings' => $values['settings'],
     ]);
     $fieldConfig
       ->save();

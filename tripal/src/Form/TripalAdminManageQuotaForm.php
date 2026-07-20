@@ -2,22 +2,37 @@
 
 namespace Drupal\tripal\Form;
 
-use Drupal;
-use Drupal\Core\Form\FormInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
-use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Url;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
-class TripalAdminManageQuotaForm implements FormInterface{
-
-  use MessengerTrait;
+/**
+ * Provides the form to manage file quotas for users.
+ */
+class TripalAdminManageQuotaForm extends FormBase {
 
   /**
-   * Form ID.
-   *
-   * @return string
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager'),
+    );
+  }
+
+  /**
+   * Class constructor.
+   */
+  public function __construct(
+    protected readonly EntityTypeManagerInterface $entityTypeManager,
+  ) {
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function getFormId() {
     return 'tripal_admin_manage_quota_form';
@@ -27,20 +42,22 @@ class TripalAdminManageQuotaForm implements FormInterface{
    * Allow users to specify a max file size.
    *
    * @param array $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form array definition.
+   * @param Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
    *
    * @return array
+   *   Render array containing elements for the form.
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $settings = Drupal::config('tripal.settings');
-
+  public function buildForm(array $form, FormStateInterface $form_state): array {
+    $settings = $this->config('tripal.settings');
     $username = $form_state->getValue('username', '');
     $default_quota = $form_state->getValue('default_quota',
       $settings->get('files.quota'));
     $default_expiration = $form_state->getValue('default_expiration_date',
       $settings->get('files.expiration'));
 
-    // Textfield (ajax call based off of existing users) for users on the site
+    // Textfield (ajax call based off of existing users) for users on the site.
     $form['username'] = [
       '#type' => 'textfield',
       '#title' => 'User',
@@ -49,26 +66,26 @@ class TripalAdminManageQuotaForm implements FormInterface{
       '#default_value' => $username,
     ];
 
-    // Custom quota textfield (prepopulated with defualt value)
+    // Custom quota textfield (prepopulated with default value)
     $form['quota'] = [
       '#type' => 'textfield',
       '#title' => 'Custom User Quota',
-      '#description' => 'Set the number of megabytes that a user can consume. The number must be followed by the suffix "MB" (megabytes) or "GB" (gigabytes) with no space between the number and the suffix (e.g.: 200MB).',
+      '#description' => $this->t('Set the number of megabytes that a user can consume. The number must be followed by the suffix "MB" (megabytes) or "GB" (gigabytes) with no space between the number and the suffix (e.g.: 200MB).'),
       '#default_value' => tripal_format_bytes($default_quota),
     ];
 
-    // Custom exp date textfield (prepopulated with defualt value)
+    // Custom exp date textfield (prepopulated with default value)
     $form['expiration'] = [
       '#type' => 'textfield',
       '#title' => 'Days to Expire',
-      '#description' => 'The number of days that a user uploaded file can remain on the server before it is automatically removed.',
+      '#description' => $this->t('The number of days that a user uploaded file can remain on the server before it is automatically removed.'),
       '#default_value' => $default_expiration,
     ];
 
-    // Submit button
+    // Submit button.
     $form['button'] = [
       '#type' => 'submit',
-      '#value' => t('Submit'),
+      '#value' => $this->t('Submit'),
     ];
 
     $form['cancel'] = [
@@ -83,7 +100,9 @@ class TripalAdminManageQuotaForm implements FormInterface{
    * Validate form.
    *
    * @param array $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form array definition.
+   * @param Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $username = $form_state->getValue('username');
@@ -91,7 +110,8 @@ class TripalAdminManageQuotaForm implements FormInterface{
     $expiration = $form_state->getValue('expiration');
 
     // Make sure the username is a valid user.
-    $user = user_load_by_name($username);
+    $users = $this->entityTypeManager->getStorage('user')->loadByProperties(['name' => $username]);
+    $user = reset($users);
     if (!$user) {
       $form_state->setErrorByName('username', 'Cannot find this username');
       return;
@@ -100,13 +120,13 @@ class TripalAdminManageQuotaForm implements FormInterface{
     // Validate the quota string.
     if (!preg_match("/^\d+(MB|GB|TB)$/", $quota)) {
       $form_state->setErrorByName('quota',
-        t('Please provide a quota size in the format indicated.'));
+        $this->t('Please provide a quota size in the format indicated.'));
     }
 
     // Validate the expiration time.
     if (!preg_match("/^\d+$/", $expiration)) {
       $form_state->setErrorByName('expiration',
-        t('Please providate a positive non-decimal numeric value for the days to expire'));
+        $this->t('Please providate a positive non-decimal numeric value for the days to expire'));
     }
   }
 
@@ -114,18 +134,22 @@ class TripalAdminManageQuotaForm implements FormInterface{
    * Save settings.
    *
    * @param array $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form array definition.
+   * @param Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
    *
-   * @return RedirectResponse|void
+   * @return \Symfony\Component\HttpFoundation\RedirectResponse|void
+   *   A redirection to the parent quota form.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $username = $form_state->getValue('username');
     $quota = $form_state->getValue('quota');
     $expiration = $form_state->getValue('expiration');
 
-    // if the 2nd element of the quota string occupied by a valid suffix we need to check to see
-    // what we have to multiply the value by (1024 for GB 1024^2 for TB because
-    // we assume that the initial number is already in MB)
+    // If the 2nd element of the quota string is occupied by a valid suffix
+    // we need to check to see what we have to multiply the value by (1024
+    // for GB 1024^2 for TB because we assume that the initial number is
+    // already in MB).
     $matches = [];
     $multiplier = 'MB';
     $size = $quota;
@@ -138,26 +162,29 @@ class TripalAdminManageQuotaForm implements FormInterface{
       case 'GB':
         $size = (int) $quota * pow(10, 9);
         break;
+
       case 'TB':
         $size = (int) $quota * pow(10, 12);
         break;
+
       default:
         $size = (int) $quota * pow(10, 6);
         break;
     }
 
     // Get the UID of the given user.
-    $user = user_load_by_name($username);
-
+    $users = $this->entityTypeManager->getStorage('user')->loadByProperties(['name' => $username]);
+    $user = reset($users);
     try {
       // Set user quota.
       tripal_set_user_quota($user->id(), $size, $expiration);
-    } catch (\Exception $exception) {
+    }
+    catch (\Exception $exception) {
       $this->messenger()->addError($exception->getMessage());
       return;
     }
 
-    $this->messenger()->addStatus(t('Custom quota set for the user: @username',
+    $this->messenger()->addStatus($this->t('Custom quota set for the user: @username',
       ['@username' => $username]));
 
     $form_state->setRedirect('tripal.files_quota');

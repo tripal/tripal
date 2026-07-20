@@ -315,9 +315,9 @@ fields:
         display:
           view:
             default:
-              region: 'content'
+              region: 'hidden'
               label: 'above'
-              weight: 20
+              weight: 0
           form:
             default:
               region: 'content'
@@ -393,13 +393,38 @@ fields:
         display:
           view:
             default:
-              region: 'content'
+              region: 'hidden'
               label: 'above'
-              weight: 68
+              weight: 0
           form:
             default:
               region: 'content'
-              weight: 68
+              weight: 40
+
+    -   name: 'speciestree_phylotreevis'
+        content_type: 'speciestree'
+        label: 'Phylogenetic Tree Visualization'
+        type: 'chado_phylotreevis_type_default'
+        description: 'Visualization of a phylogenetic tree.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'phylotree'
+                base_column: 'phylotree_id'
+        settings:
+            termIdSpace: 'operation'
+            termAccession: '0567'
+            formatterSettingsTerm: 'NCIT:C85439'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 95
+              settings:
+                phylogram_skip_ticks: 1
 
 ## Analysis ##
 ## Chado Table: analysis
@@ -408,7 +433,34 @@ fields:
 ## Related: analysis_cvterm, analysis_dbxref, analysis_pub, analysis_relationship, analysisprop,
 ##          phylotree, quantification,
 ##          analysisfeature, nd_experiment_analysis, project_analysis
-## MISSING FIELD: Timestamp
+    -   name: analysis_timeexecuted
+        content_type: analysis
+        label: Date and Time Executed
+        type: chado_datetime_type_default
+        description: The date and time at which this analysis was performed.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: timeexecuted
+        settings:
+            termIdSpace: local
+            termAccession: timeexecuted
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 50
+              settings:
+                hide_condition: 'if_value'
+                hide_value: '-infinity'
+          form:
+            default:
+              region: content
+              weight: 50
 
     -   name: analysis_name
         content_type: analysis

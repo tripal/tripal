@@ -74,7 +74,7 @@ class ChadoPubFormatterDefault extends ChadoFormatterBase {
 
       // Change the non-user-friendly 'null' publication.
       if ($values['uniquename'] == 'null') {
-        $values['uniquename'] = 'Unknown';
+        $values['uniquename'] = 'No publication';
       }
 
       // Substitute values in token string to generate displayed string.

@@ -333,7 +333,34 @@ fields:
               region: content
               weight: 30
 
-# placeholder for assaydate
+    -   name: assay_assaydate
+        content_type: assay
+        label: Assay Date
+        type: chado_datetime_type_default
+        description: The date and time at which this assay was performed.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: assaydate
+        settings:
+            termIdSpace: NCIT
+            termAccession: "C25164"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 32
+              settings:
+                hide_condition: 'if_value'
+                hide_value: '-infinity'
+          form:
+            default:
+              region: content
+              weight: 32
 
     -   name: assay_arrayidentifier
         content_type: assay

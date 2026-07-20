@@ -58,6 +58,12 @@ services:
      - '@tripal.collection_plugin_manager.idspace'
      - '@tripal.collection_plugin_manager.vocabulary'
      - '@tripal.logger'
+  tripal.fieldvalue.lookup:
+    class: 'Drupal\tripal\Services\TripalFieldValueLookup'
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_field.manager'
+      - '@cache.static'
   tripal.publish:
     class: 'Drupal\tripal\Services\TripalPublish'
   tripal.backend_publish:

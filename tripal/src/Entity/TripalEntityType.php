@@ -3,7 +3,9 @@
 namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
+use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\Attribute\ConfigEntityType;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityViewBuilder;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\Access\TripalEntityAccessControlHandler;
@@ -311,6 +313,22 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     // Check that the TripalTerm exists with the ID Space and Accession
     // added to this type when it was created.
     // If not, then create the TripalTerm, TripalIDSpace and TripalVocabulary.
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+    // After a content type is deleted, all drupal fields are deleted,
+    // however we will still have published entity records in the
+    // "tripal_entity" table. To complete the deletion process, we
+    // now delete those records.
+    $drupal_connection = \Drupal::database();
+    foreach (array_keys($entities) as $bundle_id) {
+      $query = $drupal_connection->delete('tripal_entity');
+      $query->condition('type', $bundle_id, '=');
+      $query->execute();
+    }
   }
 
   /**
@@ -828,14 +846,12 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
 
   /**
-   * Sorts Tripal Entity Types first by category and then by Label.
+   * {@inheritdoc}
    *
-   * @param TripalEntityTypeInterface $a
-   *   The first Tripal Entity Type object.
-   * @param TripalEntityTypeInterface $b
-   *   The second Tripal Entity Type object.
+   * Overrides the default label-only sort to first group Tripal Entity
+   * Types by category (with "General" always first) and then by label.
    */
-  public static function sortByCategory(TripalEntityTypeInterface $a, TripalEntityTypeInterface $b) {
+  public static function sort(ConfigEntityInterface $a, ConfigEntityInterface $b) {
     $a_value = $a->getCategory();
     $b_value = $b->getCategory();
     if ($a_value == $b_value) {
@@ -852,7 +868,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       return 1;
     }
     else {
-      return strnatcasecmp($b_value, $a_value);
+      return strnatcasecmp($a_value, $b_value);
     }
   }
 

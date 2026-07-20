@@ -3,8 +3,9 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
+use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
@@ -62,6 +63,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
     $this->installConfig('system');
+    $this->installSchema('tripal_chado', ['tripal_custom_tables']);
 
     $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
   }
@@ -93,13 +95,16 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertIsObject(
       $instance,
       "We did not have an object created when trying to create an ChadoBuddy instance.");
-    $this->assertIsObject(
-      $instance->chado_connection,
-      "The chado connection should have been set by the plugin manager but the value is NOT AN OBJECT."
+    $schema_name = $this->chado_connection->getSchemaName();
+    $this->assertEquals(
+      $schema_name,
+      $instance->getSchemaName(),
+      "The chado connection schema should have been set by the plugin manager but the values do not match."
     );
     $this->assertInstanceOf(
-      ChadoConnection::class, $instance->chado_connection,
-      "The chado connection should have been set by the plugin manager but the value is NOT A CHADOCONNECTION OBJECT."
+      ChadoCvtermBuddy::class,
+      $instance,
+      "The cvterm buddy instance should have been set by the plugin manager but the value is NOT A CHADOCVTERMBUDDY OBJECT."
     );
   }
 
@@ -244,6 +249,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $getTableCache = $reflection->getMethod('getTableCache');
     $makeUpsertConditions = $reflection->getMethod('makeUpsertConditions');
 
+    // Creates a non-core table "freezer" in chado.
+    $this->createMigratedChadoTable();
+
     // CASE: getTableColumns() with no tables.
     $returned_columns = $getTableColumns->invoke($instance, []);
     $this->assertCount(0, $returned_columns, "We should not have had any columns returned when calling getTableColumns() with an empty tables parameter.");
@@ -307,6 +315,20 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     ];
     $returned_columns = $getTableColumns->invoke($instance, ['analysis'], 'unique');
     $this->assertEqualsCanonicalizing($expected_columns, $returned_columns, 'We did not get the expected unique columns when calling getTableColumns(["analysis"], "unique").');
+
+    // CASE: getTableColumns() with a non-core chado table.
+    $expected_columns = [
+      'freezer.type_id',
+      'freezer.name',
+    ];
+    $returned_columns = $getTableColumns->invoke($instance, ['freezer'], 'unique');
+    $this->assertEqualsCanonicalizing($expected_columns, $returned_columns, 'We did not get the expected unique columns when calling getTableColumns(["freezer"], "unique").');
+
+    $expected_columns = [
+      'freezer.name',
+    ];
+    $returned_columns = $getTableColumns->invoke($instance, ['freezer'], 'required');
+    $this->assertEqualsCanonicalizing($expected_columns, $returned_columns, 'We did not get the expected required columns when calling getTableColumns(["freezer"], "required").');
 
     // CASE: addTableToCache() with a non-existent chado table.
     $expected_cache = $getTableCache->invoke($instance);
@@ -374,6 +396,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $subsetInput = $reflection->getMethod('subsetInput');
     $dereferenceBuddyRecord = $reflection->getMethod('dereferenceBuddyRecord');
     $validateOutput = $reflection->getMethod('validateOutput');
+    $parseValidateForeignKeysOption = $reflection->getMethod('parseValidateForeignKeysOption');
 
     // CASE: valid values passed to validateInput().
     $user_values = [
@@ -542,9 +565,10 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // buddy record. Normal use case.
     $sub_values = [
       'project.name' => 'Colossus: The Forbin Project',
-      'project_description' => 'The perfect defense system',
+      'project.description' => 'The perfect defense system',
     ];
     $buddy_record = new ChadoBuddyRecord();
+    $buddy_record->setBaseTable('project');
     $buddy_record->setValues($sub_values);
     $expected_values = array_merge($values, $sub_values);
     $values['buddy_record'] = $buddy_record;
@@ -695,6 +719,35 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     }
     $this->assertTrue($exception_caught, "We should get an exception when calling validateOutput() with anything other than an array");
     $this->assertStringContainsString('more than one record', $exception_message, "We did not get the exception message we expected when calling validateOutput() with multiple records.");
+
+    // CASE: calling parseValidateForeignKeysOption() with valid input.
+    $options = ['validate_foreign_keys' => ['test key' => TRUE]];
+    $exception_caught = FALSE;
+    try {
+      $parseValidateForeignKeysOption->invoke($instance, $options, 'test key');
+    }
+    catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertFalse($exception_caught, "We shouldn't get an exception when calling parseValidateForeignKeysOption() with valid input, but we got: $exception_message");
+
+    // CASE: calling parseValidateForeignKeysOption() with an empty $valid_key.
+    $exception_caught = FALSE;
+    try {
+      $parseValidateForeignKeysOption->invoke($instance, $options, '');
+    }
+    catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, "We should get an exception when calling parseValidateForeignKeysOption() with an empty valid_key parameter");
+    $this->assertStringContainsString(
+      'ChadoBuddy parseValidateForeignKeysOption error, valid_key cannot be empty when validate_foreign_keys option is an array:',
+      $exception_message,
+      "We did not get the exception message we expected when calling parseValidateForeignKeysOption() with an empty valid_key parameter."
+    );
+
   }
 
   /**
@@ -779,6 +832,28 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertStringContainsString('LOWER(db.name)', $sql, "We did not get a query with case insensitivity for both 'db.name' and 'dbxref.accession'.");
     $this->assertStringContainsString('LOWER(dbxref.accession)', $sql, "We did not get a query with case insensitivity for both 'db.name' and 'dbxref.accession'.");
 
+  }
+
+  /**
+   * Create a chado non-core non-custom table.
+   *
+   * This will simulate a table from a migrated tripal 3 site and
+   * test getting a table schema directly from the database.
+   */
+  protected function createMigratedChadoTable() {
+    $testschema = $this->chado_connection->getSchemaName();
+    $sqlarr = [
+      "CREATE TABLE $testschema.freezer (freezer_id bigint NOT NULL, type_id bigint, name text NOT NULL, description text)",
+      "CREATE SEQUENCE $testschema.freezer_freezer_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1",
+      "ALTER SEQUENCE $testschema.freezer_freezer_id_seq OWNED BY $testschema.freezer.freezer_id",
+      "ALTER TABLE ONLY $testschema.freezer ALTER COLUMN freezer_id SET DEFAULT nextval('$testschema.freezer_freezer_id_seq'::regclass)",
+      "ALTER TABLE ONLY $testschema.freezer ADD CONSTRAINT freezer_c1 UNIQUE (name, type_id)",
+      "ALTER TABLE ONLY $testschema.freezer ADD CONSTRAINT freezer_type_id_fkey FOREIGN KEY (type_id) REFERENCES $testschema.cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED",
+      "INSERT INTO $testschema.freezer (type_id, name, description) VALUES (1, 'Ultracold #1', NULL), (1, 'Ultracold #2', 'Broken')",
+    ];
+    foreach ($sqlarr as $sql) {
+      $this->chado_connection->query($sql, []);
+    }
   }
 
 }

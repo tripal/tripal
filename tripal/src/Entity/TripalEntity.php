@@ -153,6 +153,41 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   protected $token_values = [];
 
   /**
+   * Keeps track of which TripalStorage Backend each field uses.
+   *
+   * Note: This will only be populated when the entity has values.
+   *
+   * @var array
+   *   An array keyed by the TripalStorage plugin id (tsid) where the value is
+   *   an array of fields that are managed by the given TripalStorage plugin.
+   *   In the array of fields, the key is the field machine name and the value
+   *   is a boolean indicating if the field is required or not.
+   *
+   * @see ::registerTripalField()
+   */
+  public array $tripalstorage_fields = [];
+
+  /**
+   * Information on the tripal fields associated with this entity.
+   *
+   * Note: This can be populated even when this entity does not have any values.
+   *
+   * @var array
+   *   An array keyed by field name where the value provides tripal-specific
+   *   information for that field. The following keys are supported:
+   *   - term: the ID Space and Accession for this field (e.g. 'schema:name').
+   *   - tripalstorage_id: the TripalStorage plugin id which manages this field.
+   *   - tripalstorage_settings: the storage plugin settings of this field.
+   *   - fully_cached: indicates that all properties for this field are set to
+   *     be saved in the Drupal field tables as well as the storage backend.
+   *   - main_property_name: the name of the property which indicates this
+   *     field item is empty when it's empty.
+   *
+   * @see ::registerTripalField()
+   */
+  public array $tripalfield_info = [];
+
+  /**
    * Save bundles to avoid repeated lookup.
    *
    * @var array
@@ -173,6 +208,20 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     if (empty($values['uuid'])) {
       $values['uuid'] = \Drupal::service('uuid')->generate();
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(array $values = []) {
+    $entity = parent::create($values);
+
+    // Now that we have the entity created, lets initialize TripalStorage
+    // for all of the fields so it can be cached locally.
+    $entity->registerAllTripalFields();
+
+    // @debug print "\nWe now have " . count($entity->tripal_storages) . " TripalStorage backends setup in CREATE.\n";
+    return $entity;
   }
 
   /**
@@ -355,9 +404,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       if ($entities) {
 
         // Reset the internal path field.
-        $path_item = $this->path->first();
-        $path_item->set('alias', '');
-        $path_item->set('pid', NULL);
+        $path_item = $this->get('path')->first();
+        if ($path_item) {
+          $path_item->set('alias', '');
+          $path_item->set('pid', NULL);
+        }
 
         // Keep track of the duplicates here but DO NOT throw the exception
         // until the end so we can still remove previous alias' if that applies.
@@ -372,12 +423,16 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     if (!$existing_alias and $new_alias and empty($duplicates)) {
       // The field will create the alias for us so we just need to ensure
       // its set to the new one here.
+      $alias_set = FALSE;
       if ($during_save) {
-        $path_item = $this->path->first();
-        $path_item->set('alias', $new_alias);
+        $path_item = $this->get('path')->first();
+        if ($path_item) {
+          $path_item->set('alias', $new_alias);
+          $alias_set = TRUE;
+        }
       }
       // We have to create the path alias ourselves.
-      else {
+      if (!$alias_set) {
         $system_path = '/bio_data/' . $this->getID();
         $new_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
           'path' => $system_path,
@@ -388,9 +443,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         }
         $new_alias_object->save();
         // And update the internal path field.
-        $path_item = $this->path->first();
-        $path_item->set('alias', $new_alias);
-        $path_item->set('pid', $new_alias_object->id());
+        $path_item = $this->get('path')->first();
+        if ($path_item) {
+          $path_item->set('alias', $new_alias);
+          $path_item->set('pid', $new_alias_object->id());
+        }
       }
     }
     // If an alias already exists, and is different...
@@ -405,17 +462,21 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       if (empty($duplicates)) {
         $existing_alias_object->setAlias($new_alias);
         $existing_alias_object->save();
-        $path_item = $this->path->first();
-        $path_item->set('alias', $new_alias);
-        $path_item->set('pid', $existing_alias['id']);
+        $path_item = $this->get('path')->first();
+        if ($path_item) {
+          $path_item->set('alias', $new_alias);
+          $path_item->set('pid', $existing_alias['id']);
+        }
       }
       // If there are duplcates then we just remove the alias.
       // An exception will be thrown below to inform the user what happened.
       else {
         $existing_alias_object->delete();
-        $path_item = $this->path->first();
-        $path_item->set('alias', '');
-        $path_item->set('pid', NULL);
+        $path_item = $this->get('path')->first();
+        if ($path_item) {
+          $path_item->set('alias', '');
+          $path_item->set('pid', NULL);
+        }
       }
     }
 
@@ -513,6 +574,43 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function getPostSaveErrors() {
     return $this->post_save_errors;
+  }
+
+  /**
+   * Retrieve the primary key for this content in the backend storage.
+   *
+   * ASSUMPTION: We assume that the primary key for the backend storage is
+   * stored in a `record_id` property present in every required field for a
+   * given TripalStorage backend.
+   *
+   * @param string $tsid
+   *   The TripalStorage plugin id for the backend of interest.
+   *
+   * @return mixed
+   *   The primary key for this content in the backend storage, or NULL either
+   *   there are no values set for this entity or if it cannot be found.
+   */
+  public function getBackendRecordId(string $tsid): mixed {
+    $backend_record_id = NULL;
+
+    // First only look at fields for this TripalStorage backend.
+    if (array_key_exists($tsid, $this->tripalstorage_fields)) {
+
+      // Now filter to those that are required.
+      $required_fields = array_keys($this->tripalstorage_fields[$tsid], TRUE, TRUE);
+
+      // Finally we find the first field that has a value and use its
+      // record_id as the backend record id.
+      foreach ($required_fields as $field_name) {
+        if ($this->hasField($field_name) and !$this->get($field_name)->isEmpty()) {
+          $first_item = $this->get($field_name)->first();
+          $backend_record_id = $first_item->get('record_id')->getValue();
+          break;
+        }
+      }
+    }
+
+    return $backend_record_id;
   }
 
   /**
@@ -761,6 +859,362 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Registers all the Tripal fields for this entity.
+   *
+   * @param bool $refresh_cache
+   *   Indicates if already registered fields are skipped (default behaviour).
+   *   TRUE indicates we should override any existing registration.
+   *
+   * @return array
+   *   Returns a list of TripalStorage instances registered and the fields
+   *   each one manages. The TripalStorage plugin id is the key and the
+   *   value is an array of field names.
+   */
+  public function registerAllTripalFields(bool $refresh_cache = FALSE): array {
+
+    // Loop through all fields and register any TripalFields.
+    foreach (array_keys($this->getFieldDefinitions()) as $field_name) {
+      // @debug print "Registering $field_name.\n";
+      $this->registerTripalField($field_name);
+    }
+
+    return $this->tripalstorage_fields;
+  }
+
+  /**
+   * Populates info about this field in the entity for performance reasons.
+   *
+   * @param string $field_name
+   *   The name of the field to be registered.
+   * @param bool $refresh_cache
+   *   Indicates if this field should be skipped if it is already registered.
+   *   TRUE indicates we should override any existing registration.
+   *
+   * @return bool
+   *   TRUE if this field is a TripalField and was registered, FALSE otherwise.
+   *
+   * @see TripalEntity::getTripalFieldInfo()
+   */
+  public function registerTripalField(string $field_name, bool $refresh_cache = FALSE): bool {
+
+    // Get some general info about this field to confirm it's a TripalField.
+    $field_defn = $this->getFieldDefinition($field_name);
+    if (!$field_defn) {
+      return FALSE;
+    }
+    $settings = $field_defn->getSettings();
+    $field_storage_defn = $field_defn->getFieldStorageDefinition();
+
+    // Determine some key information to be saved later.
+    $is_required = $field_defn->isRequired();
+
+    // Only register TripalFields which use TripalStorage.
+    if (!array_key_exists('storage_plugin_id', $settings) or empty($settings['storage_plugin_id'])) {
+      return FALSE;
+    }
+
+    // TripalStorage Backend ID.
+    $tsid = $settings['storage_plugin_id'];
+
+    // Register information about this field from the field definition.
+    // Note: Unless it already exists and we're not told to refresh the cache.
+    if ((!array_key_exists($field_name, $this->tripalfield_info)) or ($refresh_cache === TRUE)) {
+
+      // @debug print "\tAdded basic details.\n";
+      // Next lets save some key information about it.
+      $this->tripalfield_info[$field_name]['term'] = $settings['termIdSpace'] . ':' . $settings['termAccession'];
+      // -- storage settings.
+      $this->tripalfield_info[$field_name]['tripalstorage_id'] = $tsid;
+      $this->tripalfield_info[$field_name]['tripalstorage_settings'] = $settings['storage_plugin_settings'];
+      // -- field settings.
+      $this->tripalfield_info[$field_name]['settings'] = $settings;
+      unset($this->tripalfield_info[$field_name]['settings']['storage_plugin_settings']);
+      unset($this->tripalfield_info[$field_name]['settings']['storage_plugin_id']);
+      $this->tripalfield_info[$field_name]['is_required'] = $is_required;
+      $this->tripalfield_info[$field_name]['cardinality'] = $field_storage_defn->getCardinality();
+      $this->tripalfield_info[$field_name]['field_type'] = $field_defn->getType();
+
+      // It would be nice to know its class as well.
+      $manager = \Drupal::service('plugin.manager.field.field_type');
+      $plugin_definition = $manager->getDefinition($field_defn->getType());
+      $this->tripalfield_info[$field_name]['field_class'] = $plugin_definition['class'];
+      $this->tripalfield_info[$field_name]['field_label'] = $plugin_definition['label'];
+
+      // Now we have the class we can ask for some of the field-specific
+      // information like the main property name.
+      $this->tripalfield_info[$field_name]['main_property'] = $plugin_definition['class']::mainPropertyName();
+      $this->tripalfield_info[$field_name]['main_display_property'] = $plugin_definition['class']::mainDisplayPropertyName();
+
+      // Now lets add information about its property types.
+      $property_info = [];
+      foreach ($this->tripalfield_info[$field_name]['field_class']::tripalTypes($field_defn) as $property_type) {
+        $property_info = [];
+        $property_info['id'] = $property_type->getId();
+        $property_info['key'] = $property_type->getKey();
+        $property_info['cardinality'] = $property_type->getCardinality();
+        $property_info['cache_status'] = $property_type->getCacheStatus();
+        $property_info['id_space'] = $property_type->getTermIdSpace();
+        $property_info['accession'] = $property_type->getTermAccession();
+        $property_info = $property_info + $property_type->getStorageSettings();
+        $this->tripalfield_info[$field_name]['property_types'][$property_type->getKey()] = $property_info;
+      }
+    }
+
+    // Register the TripalStorage backend that this field is managed by.
+    $this->tripalstorage_fields[$tsid] ??= [];
+    $this->tripalstorage_fields[$tsid][$field_name] = $is_required;
+
+    return TRUE;
+  }
+
+  /**
+   * Get a list of fields managed by a specific backend storage.
+   *
+   * @param string $tsid
+   *   The TripalStorage plugin id (tsid) that controls the backend storage.
+   *   of the fields you are interested in.
+   * @param array $options
+   *   An array of options controlling which fields are returned.
+   *   The following are supported:
+   *   - is_required (bool): when TRUE only include required fields,
+   *     when FALSE only include optional fields.
+   *
+   * @return array
+   *   A list of the fields managed by the specified backend storage.
+   */
+  public function getTripalStorageFields(string $tsid, array $options = []): array {
+    $fields = [];
+
+    // Check if the specified tsid has been registered.
+    if (array_key_exists($tsid, $this->tripalstorage_fields)) {
+
+      // Check if the is_required option has been supplied.
+      if (array_key_exists('is_required', $options)) {
+        // If it has, then we filter tripalstorage_fields for keys with TRUE for
+        // required or FALSE for optional.
+        if ($options['is_required'] === TRUE) {
+          $fields = array_keys($this->tripalstorage_fields[$tsid], TRUE);
+        }
+        else {
+          $fields = array_keys($this->tripalstorage_fields[$tsid], FALSE);
+        }
+      }
+      // If not then return all fields for that storage backend.
+      else {
+        $fields = array_keys($this->tripalstorage_fields[$tsid]);
+      }
+    }
+
+    return $fields;
+  }
+
+  /**
+   * Returns Tripal-specific information about a specific field.
+   *
+   * This is populated by TripalEntity::registerTripalField() and cached
+   * in the class variable $this->tripalfield_info for performance reasons.
+   *
+   * You can only request information about fields that define a TripalStorage
+   * backend (i.e. storage_plugin_id).
+   *
+   * @param string $field_name
+   *   The field that you want information about.
+   * @param string $request_key
+   *   The information you want. Specifically, the following are supported:
+   *   - term (string): the term associated with this field in the format
+   *     'termIdSpace:termAccession'.
+   *   - tripalstorage_id (string): the TripalStorage plugin id for the
+   *     backend that manages this field.
+   *   - tripalstorage_settings (array): the settings for the TripalStorage
+   *     backend that manages this field.
+   *   - settings (array): the field settings defined in Drupal for this field.
+   *   - is_required (bool): indicates whether this field is required or not.
+   *   - cardinality (int): the cardinality of this field.
+   *   - field_type (string): the Drupal field type for this field.
+   *   - field_class (string): the class name for this field.
+   *   - field_label (string): the human readable label for this field.
+   *   - property_types (array): an array of the property types for this field,
+   *     keyed by the property key. Each element in the array is an array with
+   *     the following keys:
+   *     - id (string): the id of the property type (e.g. 'varchar').
+   *     - key (string): the property key set in the field class (e.g. 'value').
+   *     - cardinality (int): the cardinality of this property.
+   *     - cache_status (bool): the cache status of this property, where TRUE
+   *       indicates this property is cached in the Drupal field tables and
+   *       FALSE indicates it is not.
+   *     - storage_settings (array): the storage settings used by the backend
+   *       storage for this property.
+   *     - id_space (string): the term id space for this property type.
+   *     - accession (string): the term accession for this property type.
+   *   - main_property (string): the key name for the main property in this
+   *     field. This is set by TripalFieldItem::mainPropertyName() and is the
+   *     property used to test if the field is empty.
+   *   - main_display_property (string): the key name for the property used to
+   *     generate the field value for token replacement in title and URL.
+   *
+   * @return mixed
+   *   The information indicated by $request_key for the field indicated. See
+   *   The $request_key param for the return value to expect for a specific
+   *   request key.
+   *
+   * @throws \Exception
+   *   An exception is thrown in the following cases:
+   *   - the field is not cached after populating it. This happens if the field
+   *     is not a valid Tripal Field.
+   *   - the request key is not supported. See supported keys above.
+   *
+   * @group tripal-storage
+   */
+  public function getTripalFieldInfo(string $field_name, string $request_key): mixed {
+    // Ensure this field is registered.
+    $this->registerTripalField($field_name);
+
+    if (!array_key_exists($field_name, $this->tripalfield_info)) {
+      throw new \Exception("You requested information for a field (i.e. '$field_name') that is either not attached to this entity or not a valid TripalField.");
+    }
+
+    if (!array_key_exists($request_key, $this->tripalfield_info[$field_name])) {
+      throw new \Exception("The Request key '$request_key' is not supported by TripalEntity::getTripalFieldInfo(). This error was encountered when information was requested for '$field_name' field.");
+    }
+
+    // Now we can use that TripalField information cache to retrieve the
+    // requested information.
+    return $this->tripalfield_info[$field_name][$request_key];
+  }
+
+  /**
+   * Returns TripalStorage-specific information about a specific field.
+   *
+   * @param string $field_name
+   *   The field that you want information about.
+   * @param string $request_key
+   *   The information you want. This will depend on the TripalStorage backend
+   *   used by this field, but some examples include:
+   *   - base_table (string): the table to store this field in the backend.
+   *   - base_column (string): the column in the base table.
+   *
+   * @return mixed
+   *   The information indicated by $request_key for the field indicated.
+   */
+  public function getTripalFieldStorageInfo(string $field_name, string $request_key): mixed {
+
+    // Ensure this field is registered.
+    $this->registerTripalField($field_name);
+
+    if (!array_key_exists($field_name, $this->tripalfield_info)) {
+      throw new \Exception("You requested field storage information for a field (i.e. '$field_name') that is either not attached to this entity or not a valid TripalField.");
+    }
+
+    if (!array_key_exists($request_key, $this->tripalfield_info[$field_name]['tripalstorage_settings'])) {
+      throw new \Exception("The Request key '$request_key' is not supported by TripalEntity::getTripalFieldStorageInfo(). This error was encountered when information was requested for '$field_name' field.");
+    }
+
+    // Now we can use that TripalField information cache to retrieve the
+    // requested information.
+    return $this->tripalfield_info[$field_name]['tripalstorage_settings'][$request_key];
+  }
+
+  /**
+   * Returns a list of property keys for a specific field.
+   *
+   * @param string $field_name
+   *   The name of the field we want to get the property keys for.
+   *
+   * @return array
+   *   A simple list of the property keys for this field.
+   */
+  public function getTripalFieldPropertyKeys(string $field_name): array {
+    // Ensure this field is registered.
+    $this->registerTripalField($field_name);
+
+    if (!array_key_exists($field_name, $this->tripalfield_info)) {
+      throw new \Exception("You requested field property keys for a field (i.e. '$field_name') that is either not attached to this entity or not a valid TripalField.");
+    }
+
+    return array_keys($this->tripalfield_info[$field_name]['property_types']);
+  }
+
+  /**
+   * Returns Tripal Property Type-specific information about a specific field.
+   *
+   * @param string $field_name
+   *   The field that you want information about.
+   * @param string $property_key
+   *   The property key for which you want information.
+   * @param string $request_key
+   *   The information you want. This will depend on the TripalStorage backend
+   *   used by this field, but some examples include:
+   *   - cache_status (bool): whether or not this property is cached in the
+   *     Drupal field tables. TRUE indicates this property is cached and
+   *     FALSE indicates it is not.
+   *   - action (string): the action to use for storage backend.
+   *   - path (string): the path describing the column to save this property
+   *   to in the backend.
+   *   - table_alias_mapping (array): a mapping between the alias used in the
+   *   path and the real table name in the backend.
+   *
+   * @return mixed
+   *   The information indicated by $request_key for the field indicated.
+   *   If the request_key is not defined then NULL is returned.
+   */
+  public function getTripalFieldPropertyInfo(string $field_name, string $property_key, string $request_key): mixed {
+
+    // Ensure this field is registered.
+    $this->registerTripalField($field_name);
+
+    if (!array_key_exists($field_name, $this->tripalfield_info)) {
+      throw new \Exception("You requested field property information for a field (i.e. '$field_name') that is either not attached to this entity or not a valid TripalField.");
+    }
+
+    if (!array_key_exists($property_key, $this->tripalfield_info[$field_name]['property_types'])) {
+      throw new \Exception("You requested field property information for a property (i.e. '$property_key') that is not part of the '$field_name' field.");
+    }
+
+    if (!array_key_exists($request_key, $this->tripalfield_info[$field_name]['property_types'][$property_key])) {
+      return NULL;
+    }
+
+    // Now we can use that TripalField information cache to retrieve the
+    // requested information.
+    return $this->tripalfield_info[$field_name]['property_types'][$property_key][$request_key];
+  }
+
+  /**
+   * Returns the path for a specific property of a field.
+   *
+   * @param string $field_name
+   *   The field containing the property for which you want the path.
+   * @param string $property_key
+   *   The property key for which you want the path.
+   *
+   * @return ?string
+   *   The path describing the column to save this property to in the backend.
+   *   If the path is not defined for this property then NULL is returned.
+   */
+  public function getTripalFieldPropertyPath(string $field_name, string $property_key): ?string {
+    // Ensure this field is registered.
+    $this->registerTripalField($field_name);
+
+    if (!array_key_exists($field_name, $this->tripalfield_info)) {
+      throw new \Exception("You requested a property path for a field (i.e. '$field_name') that is either not attached to this entity or not a valid TripalField.");
+    }
+
+    if (!array_key_exists($property_key, $this->tripalfield_info[$field_name]['property_types'])) {
+      throw new \Exception("You requested a property path for a property (i.e. '$property_key') that is not part of the '$field_name' field.");
+    }
+
+    $path = $this->getTripalFieldPropertyInfo($field_name, $property_key, 'path');
+    $mapping = $this->getTripalFieldPropertyInfo($field_name, $property_key, 'table_alias_mapping');
+    if (is_array($mapping)) {
+      foreach ($mapping as $alias => $real_table) {
+        $path = str_replace($alias . '.', $real_table . '.', $path);
+      }
+    }
+
+    return $path;
+  }
+
+  /**
    * Returns an associative array of property type values for the entity.
    *
    * The array is keyed in the following levels:
@@ -978,11 +1432,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // indicate that by using our Drupal SQL Storage option OR by not
     // creating a Tripal-based field at all depending on their needs.
     if (empty($tsid)) {
-      \Drupal::logger('tripal')->error('The Tripal-based field :field on
-            this content type must indicate a TripalStorage backend and currently does not.',
-        [':field' => $field_name]
-      );
-      return FALSE;
+      throw new \Exception("The Tripal-based field '$field_name' on this content type must indicate a TripalStorage backend and currently does not.");
     }
 
     return [

@@ -72,8 +72,10 @@ class ChadoStockFormatterDefault extends ChadoFormatterBase {
         'common_name' => $item->get('stock_common_name')->getString(),
       ];
 
-      // Special case handling for abbreviation of infraspecific type
-      $values['infratype_abbrev'] = chado_abbreviate_infraspecific_rank($values['infratype']);
+      // Special case handling for abbreviation of infraspecific type.
+      $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+      $organism_buddy_instance = $buddy_service->createInstance('chado_organism_buddy', []);
+      $values['infratype_abbrev'] = $organism_buddy_instance->abbreviateInfraspecificRank($values['infratype']);
 
       // Substitute values in token string to generate displayed string.
       $displayed_string = $token_string;
@@ -94,7 +96,7 @@ class ChadoStockFormatterDefault extends ChadoFormatterBase {
 
     // If more than one value has been found, display all values in an
     // unordered list.
-// @todo: add a pager
+    // @todo add pager here.
     elseif (count($list) > 1) {
       $elements[0] = [
         '#theme' => 'item_list',

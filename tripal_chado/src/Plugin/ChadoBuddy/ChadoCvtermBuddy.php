@@ -28,17 +28,21 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *
    * @var \Drupal\tripal_chado\Database\ChadoConnection
    */
-  public ChadoConnection $chado_connection;
+  protected ChadoConnection $chado_connection;
 
   /**
    * Used to store the manager so we can create a buddy.
+   *
+   * @var \Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
    */
-  protected object $buddy_manager;
+  protected ChadoBuddyPluginManager $buddy_manager;
 
   /**
-   * Provide the dbxref instance.
+   * Used to store the dbxref ChadoBuddy instance.
+   *
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoDbxrefBuddy
    */
-  protected object $dbxref_instance;
+  protected ChadoDbxrefBuddy $dbxref_instance;
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
@@ -560,9 +564,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     if (count($existing_records) < 1) {
       return FALSE;
     }
-    if (count($existing_records) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy updateCv error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
-    }
+    $this->throwIfMultipleRecords($existing_records, 'cv.cv_id', 'updateCv', $conditions);
     // Update query will only be based on the cv.cv_id,
     // which we get from the retrieved record.
     $cv_id = $existing_records[0]->getValue('cv.cv_id');
@@ -639,9 +641,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     if (count($existing_records) < 1) {
       return FALSE;
     }
-    if (count($existing_records) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
-    }
+    $this->throwIfMultipleRecords($existing_records, 'cvterm.cvterm_id', 'updateCvterm', $conditions);
     // Only update the dbxref if it is being changed.
     $existing_values = $existing_records[0]->getValues();
     $update_dbxref = FALSE;
@@ -748,9 +748,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     if (count($existing_records) < 1) {
       return FALSE;
     }
-    if (count($existing_records) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
-    }
+    $this->throwIfMultipleRecords($existing_records, 'cvtermsynonym.cvtermsynonym_id', 'updateCvtermSynonym', $conditions);
     // This function will only update the cvtermsynonym table.
     // The update query will only be based on the cvtermsynonym_id,
     // which we get from the retrieved record.
@@ -812,9 +810,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
 
     $existing_records = $this->getCv($conditions, $options);
     if (count($existing_records) > 0) {
-      if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy upsertCv error, more than one record matched the specified values\n" . print_r($values, TRUE));
-      }
+      $this->throwIfMultipleRecords($existing_records, 'cv.cv_id', 'upsertCv', $values);
       $new_record = $this->updateCv($values, $conditions, $options);
     }
     else {
@@ -873,9 +869,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
 
     $existing_records = $this->getCvterm($conditions, $options);
     if (count($existing_records) > 0) {
-      if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy upsertCvterm error, more than one record matched the specified values\n" . print_r($values, TRUE));
-      }
+      $this->throwIfMultipleRecords($existing_records, 'cvterm.cvterm_id', 'upsertCvterm', $values);
       $new_record = $this->updateCvterm($values, $conditions, $options);
     }
     else {
@@ -938,9 +932,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
 
     $existing_records = $this->getCvtermSynonym($conditions, $options);
     if (count($existing_records) > 0) {
-      if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy upsertCvtermSynonym error, more than one record matched the specified values\n" . print_r($values, TRUE));
-      }
+      $this->throwIfMultipleRecords($existing_records, 'cvtermsynonym.cvtermsynonym_id', 'upsertCvtermSynonym', $values);
       $new_record = $this->updateCvtermSynonym($values, $conditions, $options);
     }
     else {
@@ -954,6 +946,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *
    * For example, to the feature_cvterm table.
    *
+   * Both the cvterm record and the chado record indicated by $record_id
+   * MUST ALREADY EXIST.
+   *
    * @param string $base_table
    *   The base table for which the cvterm should be associated. Thus to
    *   associate a cvterm with a feature the base_table=feature and
@@ -962,26 +957,24 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *   The primary key of the base_table to associate the cvterm with.
    * @param \Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddyRecord $cvterm
    *   A cvterm object returned by any of the *Cvterm() in this service.
+   * @param array $values
+   *   (Optional) An associative array defining the values to be associated with
+   *   the cvterm. These values will be inserted into the linking table along
+   *   with the foreign keys to the cvterm and the base table. The keys should
+   *   be the name of the column in this specific linking table and the value
+   *   should be the value to insert for that column. This is optional because
+   *   most of these columns have default values defined in chado that can
+   *   be looked up. See the table below for a list of columns used by various
+   *   linking tables.
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
    *   - pkey (string): The name of the primary key column in the base table.
    *     Looking up the primary key for the base table is costly. If it is
-   *     known, then pass it in as this option for better performance.
-   *   - pub_id (string): The name of the column linking to the publication.
-   *   - is_not (string): The name of the column indicating if the cvterm
-   *    association is a NOT association.
-   *   - rank (string): The name of the column indicating the rank.
-   *   - cvterm_type_id (string): The name of the column indicating the type of
-   *     cvterm association being made via foreign key to cvterm.cvterm_id.
+   *     known, then pass it in using this option for better performance.
    *   - lookup_columns (bool): Whether to look up any additional columns that
    *     are not specified in the options. FALSE will disable looking up any
    *     additional columns, which may cause the insert to fail if any NOT NULL
    *     columns are not specified. Default TRUE.
-   *
-   *   While the column name options above are optional, they will incur a
-   *   slight performance hit if not included due to needing to look them up
-   *   via the schema. See the table below for which columns apply to which
-   *   linking tables so you know which ones to include.
    *
    *   phpcs:disable
    *   Chado 1.3 defines these columns in the various linking tables:
@@ -1000,22 +993,22 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *   | stock_relationship_cvterm   | yes null | -absent     | -absent     | -absent        |
    *   phpcs:enable
    *
-   * @return bool
-   *   Returns TRUE if successful.
-   *   Both the cvterm and the chado record indicated by $record_id
-   *   MUST ALREADY EXIST.
+   * @return int
+   *   Indicates whether the association was
+   *   - created (ChadoBuddyPluginBase::NEW = 1)
+   *   - already existed (ChadoBuddyPluginBase::EXISTING = 2)
+   *   If the association request was not successful, an exception is thrown.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
    */
-  public function associateCvterm(string $base_table, int $record_id, ChadoBuddyRecord $cvterm, array $options = []) {
+  public function associateCvterm(string $base_table, int $record_id, ChadoBuddyRecord $cvterm, array $values = [], array $options = []): int {
     $linking_table = $base_table . '_cvterm';
 
     // Get the primary key of the base table.
     $base_pkey_col = $options['pkey'] ?? NULL;
     if (!$base_pkey_col) {
-      $schema = $this->chado_connection->schema();
-      $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+      $base_table_def = $this->getChadoTableDef($base_table);
       $base_pkey_col = $base_table_def['primary key'];
     }
     try {
@@ -1028,74 +1021,205 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
 
       // If count is not zero, the record already exists, so skip insert.
       if (!$count) {
-        $fields = [
-          'cvterm_id' => $cvterm->getValue('cvterm.cvterm_id'),
-          $base_pkey_col => $record_id,
+        $fields = $values;
+        $fields['cvterm_id'] = $cvterm->getValue('cvterm.cvterm_id');
+        $fields[$base_pkey_col] = $record_id;
+
+        // For Chado 1.3, these are the only possible additional columns.
+        // Defaults: null pub, FALSE (encoded as zero), rank zero, null cvterm.
+        $defaults = [
+          'pub_id' => 1,
+          'is_not' => 0,
+          'rank' => 0,
+          'cvterm_type_id' => 1,
         ];
 
         // Add in any of the other columns for the linking table.
-        $options = $this->addLinkingColumns($linking_table, $options);
-        foreach ($options as $key => $value) {
-          if (($key != 'pkey') and ($key != 'lookup_columns')) {
-            $fields[$key] = $value;
-          }
-        }
+        $fields = $this->addLinkingColumns($linking_table, $fields, $defaults, $options);
         $query = $this->chado_connection->insert('1:' . $linking_table);
         $query->fields($fields);
         $query->execute();
+        return self::NEW;
+      }
+      else {
+        return self::EXISTING;
       }
     }
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy associateCvterm database error ' . $e->getMessage());
     }
-
-    return TRUE;
   }
 
   /**
-   * Adds not NULL columns to options.
+   * Delete a controlled vocabulary.
    *
-   * If there are additional not NULL columns in the linking table,
-   * then add them to the options.
+   * Note that the cvterm and cvtermpath tables have foreign keys to the
+   * cv table. If a record in cv is deleted, it can cascade to delete
+   * records in those tables!
    *
-   * @param string $linking_table
-   *   The name of the linking table, e.g. featureprop.
+   * @param array $conditions
+   *   An associative array of the conditions to find the record to delete:
+   *     - cv.cv_id
+   *     - cv.name
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys.
    * @param array $options
-   *   The options passed to the Chado Buddy.
+   *   An associative array of options with the following keys supported:
+   *     - cascade
+   *       If TRUE, then delete even if there are foreign keys in use.
+   *       If ON DELETE CASCADE is defined for the foreign key, then
+   *       those records will also be deleted. If not, an exception will
+   *       be thrown.
+   *       Default is FALSE, and in this case, if any such referencing
+   *       records exist, the delete will be skipped and this function
+   *       will return FALSE.
    *
-   * @return array
-   *   The passed options with not-NULL columns added.
+   * @return int
+   *   Indicates whether the CV was
+   *   - deleted (ChadoBuddyPluginBase::SUCCESS = 4)
+   *   - did not exist (ChadoBuddyPluginBase::NON_EXISTING = 3)
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   Thrown in the following cases:
+   *   - Foreign key references exist to the record.
+   *   - The conditions match more then one record.
+   *   - SQL error encountered when deleting the cv.
    */
-  private function addLinkingColumns(string $linking_table, array $options): array {
-    $lookup_columns = $options['lookup_columns'] ?? TRUE;
-    if ($lookup_columns) {
-      // For Chado 1.3, these are the only possible additional columns.
-      // Defaults are null pub, FALSE (encoded as zero), rank zero, null cvterm.
-      $defaults = ['pub_id' => 1, 'is_not' => 0, 'rank' => 0, 'cvterm_type_id' => 1];
-      // If any of these were specified, we disable the automatic lookup.
-      foreach (array_keys($options) as $key) {
-        if (in_array($key, array_keys($defaults))) {
-          $lookup_columns = FALSE;
-          break;
-        }
+  public function deleteCv(array $conditions, array $options = []): int {
+    $valid_tables = ['cv'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
+    $this->validateInput($conditions, $valid_columns);
+    $existing_records = $this->getCv($conditions, $options);
+    if (count($existing_records) > 0) {
+      $this->throwIfMultipleRecords($existing_records, 'cv.cv_id', 'deleteCv', $conditions);
+      $cv_id = $existing_records[0]->getValue('cv.cv_id');
+
+      // Throw an exception if there are referencing records and cascade
+      // is not set.
+      if (!($options['cascade'] ?? FALSE)) {
+        $this->throwIfReferencingRecords('cv', $cv_id, 'deleteCv');
       }
-      if ($lookup_columns) {
-        // Automatic lookup is enabled.
-        // Determine actual columns for this linking table.
-        $schema = $this->chado_connection->schema();
-        $linking_table_def = $schema->getTableDef($linking_table, ['format' => 'Drupal']);
-        foreach ($linking_table_def['fields'] as $field_id => $def) {
-          if (array_key_exists($field_id, $defaults)) {
-            // Only include if a NOT NULL constraint exists,
-            // and there is not some type of default value.
-            if ($def['not null'] and ($def['type'] != 'serial') and !($def['default'] ?? FALSE)) {
-              $options[$field_id] = $defaults[$field_id];
-            }
-          }
-        }
+
+      // Perform the record deletion. This might fail if
+      // a foreign key is not defined as ON DELETE CASCADE.
+      $query = $this->chado_connection->delete('1:cv');
+      $query->condition('cv_id', $cv_id, '=');
+      try {
+        $query->execute();
+        return self::SUCCESS;
+      }
+      catch (\Exception $e) {
+        throw new ChadoBuddyException('ChadoBuddy deleteCv database error ' . $e->getMessage());
       }
     }
-    return $options;
+    else {
+      return self::NON_EXISTING;
+    }
+  }
+
+  /**
+   * Delete a controlled vocabulary term.
+   *
+   * We provide an option to also delete the dbxref.
+   *
+   * @param array $conditions
+   *   An associative array of the conditions to find the record to delete:
+   *     - cv.cv_id
+   *     - cv.name
+   *     - cv.definition
+   *     - cvterm.cvterm_id
+   *     - cvterm.cv_id
+   *     - cvterm.name
+   *     - cvterm.definition
+   *     - cvterm.is_obsolete
+   *     - cvterm.is_relationshiptype
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id
+   *     - dbxref.description
+   *     - dbxref.accession
+   *     - dbxref.version
+   *     - db.db_id
+   *     - db.name
+   *     - db.description
+   *     - db.urlprefix
+   *     - db.url
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   An associative array of options with the following keys supported:
+   *     - cascade
+   *       If TRUE, then delete even if there are foreign keys in use.
+   *       If ON DELETE CASCADE is defined for the foreign key, then
+   *       those records will also be deleted. If not, an exception will
+   *       be thrown.
+   *       Default is FALSE, and in this case, if any such referencing
+   *       records exist, the delete will be skipped and this function
+   *       will return FALSE.
+   *     - drop_dbxref
+   *       If TRUE, then delete the dbxref record used by the term.
+   *       Default is FALSE.
+   *
+   * @return int
+   *   Indicates whether the cvterm was
+   *   - deleted (ChadoBuddyPluginBase::SUCCESS = 4)
+   *   - did not exist (ChadoBuddyPluginBase::NON_EXISTING = 3)
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   Thrown in the following cases:
+   *   - Foreign key references exist to the record.
+   *   - The conditions match more then one record.
+   *   - SQL error encountered when deleting the cvterm.
+   */
+  public function deleteCvterm(array $conditions, array $options = []): int {
+    $valid_tables = ['cvterm', 'cv', 'dbxref'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
+    $this->validateInput($conditions, $valid_columns);
+    $existing_records = $this->getCvterm($conditions, $options);
+    if (count($existing_records) > 0) {
+      $this->throwIfMultipleRecords($existing_records, 'cvterm.cvterm_id', 'deleteCvterm', $conditions);
+      $cvterm_id = $existing_records[0]->getValue('cvterm.cvterm_id');
+      $dbxref_id = $existing_records[0]->getValue('dbxref.dbxref_id');
+
+      // Throw an exception if there are referencing records and cascade
+      // is not set.
+      if (!($options['cascade'] ?? FALSE)) {
+        $this->throwIfReferencingRecords('cvterm', $cvterm_id, 'deleteCvterm');
+      }
+
+      $transaction = $this->chado_connection->startTransaction();
+      try {
+        // Perform the record deletion. This might fail if
+        // a foreign key is not defined as ON DELETE CASCADE.
+        $query = $this->chado_connection->delete('1:cvterm');
+        $query->condition('cvterm_id', $cvterm_id, '=');
+        $query->execute();
+
+        if (method_exists($transaction, 'commitOrRelease')) {
+          $transaction->commitOrRelease();
+        }
+      }
+      catch (\Exception $e) {
+        throw new ChadoBuddyException('ChadoBuddy deleteCvterm database error deleting cvterm: ' . $e->getMessage());
+      }
+      // If drop_dbxref is set, delete the dbxref.
+      if ($options['drop_dbxref'] ?? FALSE) {
+        try {
+          $query = $this->chado_connection->delete('1:dbxref');
+          $query->condition('dbxref_id', $dbxref_id, '=');
+          $query->execute();
+        }
+        catch (\Exception $e) {
+          $transaction->rollback();
+          throw new ChadoBuddyException('ChadoBuddy deleteCvterm database error deleting dbxref: ' . $e->getMessage());
+        }
+      }
+      return self::SUCCESS;
+    }
+    else {
+      return self::NON_EXISTING;
+    }
   }
 
   /**

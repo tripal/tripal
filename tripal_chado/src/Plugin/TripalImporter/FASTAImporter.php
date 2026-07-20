@@ -135,7 +135,7 @@ class FASTAImporter extends ChadoImporterBase {
          feature name from the FASTA definition line. For example, for a
          defintion line with a name and unique name separated by a bar \'|\' (>seqname|uniquename),
          the regular expression for the name would be, "^(.*?)\|.*$".  All FASTA
-         definition lines begin with the ">" symbol.  You do not need to incldue
+         definition lines begin with the ">" symbol.  You do not need to include
          this symbol in your regular expression.'),
     ];
 
@@ -147,7 +147,7 @@ class FASTAImporter extends ChadoImporterBase {
          feature name from the FASTA definition line. For example, for a
          defintion line with a name and unique name separated by a bar \'|\' (>seqname|uniquename),
          the regular expression for the unique name would be "^.*?\|(.*)$".  All FASTA
-         definition lines begin with the ">" symbol.  You do not need to incldue
+         definition lines begin with the ">" symbol.  You do not need to include
          this symbol in your regular expression.'),
     ];
 

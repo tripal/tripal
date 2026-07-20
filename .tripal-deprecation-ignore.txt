@@ -12,6 +12,36 @@
 # Example test that triggers this: testTripalEmptyContentTypes
 %field_group_module_implements_alter without a #\[LegacyModuleImplementsAlter\] attribute%
 
+# Module: Field Group Module
+# Location: /var/www/drupal/web/core/lib/Drupal/Core/Test/HttpClientMiddleware/TestHttpClientMiddleware.php:52
+# Deprecation: Providing a file for theme hook horizontal_tabs is deprecated in drupal:11.3.0 and is removed from drupal:12.0.0. Use initial preprocess for template_preprocess instead. See https://www.drupal.org/node/3549500
+# Example test that triggers this is TripalCultivate::installTest. Triggered whenever a Tripal module with layouts including vertical or horizontal tabs is installed or such layouts are applied.
+%Providing a file for theme hook horizontal_tabs is deprecated%
+
+# Module: Field Group Module
+# Location: /var/www/drupal/web/core/lib/Drupal/Core/Test/HttpClientMiddleware/TestHttpClientMiddleware.php:52
+# Deprecation: Providing template_preprocess_horizontal_tabs() is deprecated in drupal:11.3.0 and is removed from drupal:12.0.0. Use initial preprocess for template_preprocess instead. See https://www.drupal.org/node/3504125
+# Example test that triggers this is TripalCultivate::installTest. Triggered whenever a Tripal module with layouts including vertical or horizontal tabs is installed or such layouts are applied.
+%Providing template_preprocess_horizontal_tabs\(\) is deprecated%
+
+# Module: Field Group Module
+# Location: /var/www/drupal/web/core/lib/Drupal/Core/Test/HttpClientMiddleware/TestHttpClientMiddleware.php:52
+# Deprecation: Providing a file for theme hook field_group_html_element is deprecated in drupal:11.3.0 and is removed from drupal:12.0.0. Use initial preprocess for template_preprocess instead. See https://www.drupal.org/node/3549500
+# Example test that triggers this is TripalCultivate::installTest. Triggered whenever a Tripal module with layouts including vertical or horizontal tabs is installed or such layouts are applied.
+%Providing a file for theme hook field_group_html_element is deprecated%
+
+# Module: Field Group Module
+# Location: /var/www/drupal/web/core/lib/Drupal/Core/Test/HttpClientMiddleware/TestHttpClientMiddleware.php:52
+# Deprecation: Providing template_preprocess_field_group_html_element() is deprecated in drupal:11.3.0 and is removed from drupal:12.0.0. Use initial preprocess for template_preprocess instead. See https://www.drupal.org/node/3504125
+# Example test that triggers this is TripalCultivate::installTest. Triggered whenever a Tripal module with layouts including vertical or horizontal tabs is installed or such layouts are applied.
+%Providing template_preprocess_field_group_html_element\(\) is deprecated%
+
+# Module: Field Group Module
+# Location: /var/www/drupal/web/modules/contrib/TripalCultivate/tests/src/Functional/InstallTest.php:119
+# Deprecation: Not supporting attribute discovery in Drupal\field_group\FieldGroupFormatterPluginManager is deprecated in drupal:11.2.0 and is removed from drupal:12.0.0. Provide an Attribute class and an Annotation class for BC. See https://www.drupal.org/node/3395582
+# Example test that triggers this is TripalCultivate::installTest. Triggered whenever a Tripal module with layouts including vertical or horizontal tabs is installed or such layouts are applied.
+%Not supporting attribute discovery in Drupal\\field_group\\FieldGroupFormatterPluginManager is deprecated%
+
 # Module: Drupal
 # Location: /var/www/drupal/vendor/symfony/error-handler/DebugClassLoader.php:347
 # Deprecation: Method "Twig\Extension\ExtensionInterface::getFunctions()" might add "array" as a native return type declaration in the future. Do the same in implementation "Drupal\devel\Twig\Extension\Debug" now to avoid errors or add an explicit @return annotation to suppress this message.
@@ -26,3 +56,27 @@
 # Deprecation: devel_requirements without a #[LegacyRequirementsHook] attribute is deprecated in drupal:11.3.0 and removed in drupal:13.0.0.
 # Example test that triggers this: EntityAccessTest
 %without a #\[LegacyRequirementsHook\] attribute is deprecated%
+
+# Module: DrushCommands (Drupal 11.1 only)
+# Location: vendor/consolidation/annotated-command/src/State/SavableState.php:11
+# Deprecation: Method "Consolidation\AnnotatedCommand\State\SavableState::currentState()" might add "State" as a native return type declaration in the future. Do the same in implementation "Drush\Commands\DrushCommands" now to avoid errors or add an explicit @return annotation to suppress this message.
+# Example test that triggers this: testDrushMviewPopulate
+%Method "Consolidation\\AnnotatedCommand\\State\\SavableState::currentState\(\)" might add "State"%
+
+# Module: Drupal 11.4+
+# Location: web/core/lib/Drupal/Core/Test/HttpClientMiddleware/TestHttpClientMiddleware.php:51
+# Deprecation: Since twig/twig 3.28: The "Drupal\Core\Template\TwigSandboxPolicy::checkSecurity()" method will take a 4th "array $tests" argument in 4.0; not declaring it is deprecated.
+# Example test that triggers this: testTripalAccessOwnContentCheck
+%TwigSandboxPolicy::checkSecurity\(\)" method will take a 4th "array \$tests" argument%
+
+# Module: Drupal 11.4+
+# Location: /var/www/drupal/vendor/symfony/error-handler/DebugClassLoader.php:363
+# Deprecation: Since twig/twig 3.28: The "Drupal\Core\Template\TwigSandboxPolicy::checkSecurity()" method will require a new "string[] $tests" argument in the next major version of its interface "Twig\Sandbox\SecurityPolicyInterface", not defining it is deprecated.
+# Example test that triggers this: TripalCultivate::testResultWindowDisplay
+%TwigSandboxPolicy::checkSecurity\(\)" method will require a new "string\[\] \$tests" argument%
+
+# Module: Drupal 11.5
+# Location: /var/www/drupal/web/core/tests/Drupal/Tests/DrupalTestCaseTrait.php:75
+# Deprecation: Since Drupal 11.5: Using the SYMFONY_DEPRECATIONS_HELPER environment variable to configure test runs is deprecated in drupal:11.5.0 and is removed from drupal:12.0.0. See https://www.drupal.org/node/3594014
+# Example test that triggers this: ConfigTest::testConfigYaml
+%SYMFONY_DEPRECATIONS_HELPER environment variable to configure test runs is deprecated%

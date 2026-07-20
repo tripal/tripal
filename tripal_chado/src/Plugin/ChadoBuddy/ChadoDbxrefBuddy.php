@@ -7,6 +7,8 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
+use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
+use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
  * Plugin implementation of the chado dbxref buddy.
@@ -17,6 +19,20 @@ use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
   description: new TranslatableMarkup('Provides helper methods for managing chado dbs and dbxrefs.'),
 )]
 class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
+
+  /**
+   * A Database query interface for querying Chado using Tripal DBX.
+   *
+   * @var \Drupal\tripal_chado\Database\ChadoConnection
+   */
+  protected ChadoConnection $chado_connection;
+
+  /**
+   * Used to store the manager so we can create a buddy.
+   *
+   * @var \Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
+   */
+  protected ChadoBuddyPluginManager $buddy_manager;
 
   /**
    * Retrieves a chado database record.
@@ -379,9 +395,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     if (count($existing_records) < 1) {
       return FALSE;
     }
-    if (count($existing_records) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy updateDb error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
-    }
+    $this->throwIfMultipleRecords($existing_records, 'db.db_id', 'updateDb', $conditions);
     // Update query will only be based on the db.db_id, which we
     // can get from the retrieved record.
     $db_id = $existing_records[0]->getValue('db.db_id');
@@ -454,9 +468,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     if (count($existing_records) < 1) {
       return FALSE;
     }
-    if (count($existing_records) > 1) {
-      throw new ChadoBuddyException("ChadoBuddy updateDbxref error, more than one record matched the conditions specified\n" . print_r($conditions, TRUE));
-    }
+    $this->throwIfMultipleRecords($existing_records, 'dbxref.dbxref_id', 'updateDbxref', $conditions);
 
     // Update query will only be based on the dbxref_id, which we
     // can get from the retrieved record.
@@ -522,9 +534,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
 
     $existing_records = $this->getDb($conditions, $options);
     if (count($existing_records) > 0) {
-      if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy upsertDb error, more than one record matched the specified values\n" . print_r($values, TRUE));
-      }
+      $this->throwIfMultipleRecords($existing_records, 'db.db_id', 'upsertDb', $values);
       $new_record = $this->updateDb($values, $conditions, $options);
     }
     else {
@@ -575,9 +585,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
 
     $existing_records = $this->getDbxref($conditions, $options);
     if (count($existing_records) > 0) {
-      if (count($existing_records) > 1) {
-        throw new ChadoBuddyException("ChadoBuddy upsertDbxref error, more than one record matched the specified values\n" . print_r($values, TRUE));
-      }
+      $this->throwIfMultipleRecords($existing_records, 'dbxref.dbxref_id', 'upsertDbxref', $values);
       $new_record = $this->updateDbxref($values, $conditions, $options);
     }
     else {
@@ -608,22 +616,25 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   Also pass in any other columns used in the linking table, some of which
    *   may have a NOT NULL constraint.
    *
-   * @return bool
-   *   Returns true if successful.
    *   Both the dbxref and the chado record indicated by $record_id
    *   MUST ALREADY EXIST.
+   *
+   * @return int
+   *   Indicates whether the association was
+   *   - created (ChadoBuddyPluginBase::NEW = 1)
+   *   - already existed (ChadoBuddyPluginBase::EXISTING = 2)
+   *   If the association request was not successful, an exception is thrown.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
    */
-  public function associateDbxref(string $base_table, int $record_id, ChadoBuddyRecord $dbxref, array $options = []) {
+  public function associateDbxref(string $base_table, int $record_id, ChadoBuddyRecord $dbxref, array $options = []): int {
     $linking_table = $base_table . '_dbxref';
 
     // Get the primary key of the base table.
     $base_pkey_col = $options['pkey'] ?? NULL;
     if (!$base_pkey_col) {
-      $schema = $this->chado_connection->schema();
-      $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+      $base_table_def = $this->getChadoTableDef($base_table);
       $base_pkey_col = $base_table_def['primary key'];
     }
 
@@ -651,13 +662,152 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
         $query = $this->chado_connection->insert('1:' . $linking_table);
         $query->fields($this->removeTablePrefix($fields));
         $query->execute();
+        return self::NEW;
+      }
+      else {
+        return self::EXISTING;
       }
     }
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy associateDbxref database error ' . $e->getMessage());
     }
+  }
 
-    return TRUE;
+  /**
+   * Delete a database.
+   *
+   * @param array $conditions
+   *   An associative array of the conditions to find the record to delete:
+   *     - db.db_id
+   *     - db.name
+   *     - db.url
+   *     - db.urlprefix
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   An associative array of options with the following keys supported:
+   *     - cascade
+   *       If TRUE, then delete even if there are foreign keys in use.
+   *       If ON DELETE CASCADE is defined for the foreign key, then
+   *       those records will also be deleted. If not, an exception will
+   *       be thrown.
+   *       Default is FALSE, and in this case, if any such referencing
+   *       records exist, the delete will be skipped and this function
+   *       will return FALSE.
+   *
+   * @return int
+   *   Indicates whether the DB was
+   *   - deleted (ChadoBuddyPluginBase::SUCCESS = 4)
+   *   - did not exist (ChadoBuddyPluginBase::NON_EXISTING = 3)
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   Thrown in the following cases:
+   *   - Foreign key references exist to the record.
+   *   - The conditions match more then one record.
+   *   - SQL error encountered when deleting the db.
+   */
+  public function deleteDb(array $conditions, array $options = []): int {
+    $valid_tables = ['db'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
+    $this->validateInput($conditions, $valid_columns);
+    $existing_records = $this->getDb($conditions, $options);
+    if (count($existing_records) > 0) {
+      $this->throwIfMultipleRecords($existing_records, 'db.db_id', 'deleteDb', $conditions);
+      $db_id = $existing_records[0]->getValue('db.db_id');
+
+      // Throw an exception if there are referencing records and cascade
+      // is not set.
+      if (!($options['cascade'] ?? FALSE)) {
+        $this->throwIfReferencingRecords('db', $db_id, 'deleteDb');
+      }
+
+      // Perform the record deletion. This might fail if
+      // a foreign key is not defined as ON DELETE CASCADE.
+      $query = $this->chado_connection->delete('1:db');
+      $query->condition('db_id', $db_id, '=');
+      try {
+        $query->execute();
+        return self::SUCCESS;
+      }
+      catch (\Exception $e) {
+        throw new ChadoBuddyException('ChadoBuddy deleteDb database error ' . $e->getMessage());
+      }
+    }
+    else {
+      return self::NON_EXISTING;
+    }
+  }
+
+  /**
+   * Delete a database crossreference.
+   *
+   * @param array $conditions
+   *   An associative array of the conditions to find the record to delete:
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id
+   *     - dbxref.description
+   *     - dbxref.accession
+   *     - dbxref.version
+   *     - db.db_id
+   *     - db.name
+   *     - db.url
+   *     - db.urlprefix
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys.
+   * @param array $options
+   *   An associative array of options with the following keys supported:
+   *     - cascade
+   *       If TRUE, then delete even if there are foreign keys in use.
+   *       If ON DELETE CASCADE is defined for the foreign key, then
+   *       those records will also be deleted. If not, an exception will
+   *       be thrown.
+   *       Default is FALSE, and in this case, if any such referencing
+   *       records exist, the delete will be skipped and this function
+   *       will return FALSE.
+   *
+   * @return int
+   *   Indicates whether the DB was
+   *   - deleted (ChadoBuddyPluginBase::SUCCESS = 4)
+   *   - did not exist (ChadoBuddyPluginBase::NON_EXISTING = 3)
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   Thrown in the following cases:
+   *   - Foreign key references exist to the record.
+   *   - The conditions match more then one record.
+   *   - SQL error encountered when deleting the dbxref.
+   */
+  public function deleteDbxref(array $conditions, array $options = []): int {
+    $valid_tables = ['db', 'dbxref'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
+    $this->validateInput($conditions, $valid_columns);
+    $existing_records = $this->getDbxref($conditions, $options);
+    if (count($existing_records) > 0) {
+      $this->throwIfMultipleRecords($existing_records, 'dbxref.dbxref_id', 'deleteDbxref', $conditions);
+      $dbxref_id = $existing_records[0]->getValue('dbxref.dbxref_id');
+
+      // Throw an exception if there are referencing records and cascade
+      // is not set.
+      if (!($options['cascade'] ?? FALSE)) {
+        $this->throwIfReferencingRecords('dbxref', $dbxref_id, 'deleteDbxref');
+      }
+
+      // Perform the record deletion. This might fail if
+      // a foreign key is not defined as ON DELETE CASCADE.
+      $query = $this->chado_connection->delete('1:dbxref');
+      $query->condition('dbxref_id', $dbxref_id, '=');
+      try {
+        $query->execute();
+        return self::SUCCESS;
+      }
+      catch (\Exception $e) {
+        throw new ChadoBuddyException('ChadoBuddy deleteDbxref database error ' . $e->getMessage());
+      }
+    }
+    else {
+      return self::NON_EXISTING;
+    }
   }
 
 }

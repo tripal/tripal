@@ -1,0 +1,151 @@
+system-under-test:
+  bundle:
+    label: 'Gemstones'
+    termIdSpace: 'FAKE'
+    termAccession: '123456'
+    id: 'test_gemstone'
+    title_format: 'TEST [TripalEntityType__label] <em>[common_name]</em> Entity #[TripalEntity__entity_id]'
+    url_format: 'test/[TripalEntityType__entity_id]/[common_name]/[TripalEntity__entity_id]'
+  fields:
+  - name: 'common_name'
+    type: 'tripal_string_type'
+    type_class: 'Drupal\tripal\Plugin\Field\FieldType\TripalStringTypeItem'
+    widget: 'default_tripal_string_type_widget'
+    formatter: 'default_tripal_string_type_formatter'
+    termIdSpace: 'FAKE'
+    termAccession: 'name'
+    cardinality: 1
+    required: true
+    settings:
+      termIdSpace: 'FAKE'
+      termAccession: 'name'
+      storage_plugin_id: 'drupal_sql_storage'
+      max_length: 255
+  - name: 'metaphysical_props'
+    type: 'tripal_text_type'
+    type_class: 'Drupal\tripal\Plugin\Field\FieldType\TripalTextTypeItem'
+    widget: 'default_tripal_text_type_widget'
+    formatter: 'default_tripal_text_type_formatter'
+    termIdSpace: 'META'
+    termAccession: 'properties'
+    cardinality: 5
+    required: false
+    settings:
+      termIdSpace: 'META'
+      termAccession: 'properties'
+      storage_plugin_id: 'drupal_sql_storage'
+  - name: 'drupal_description'
+    type: 'string_long'
+    type_class: 'Drupal\Core\Field\Plugin\Field\FieldType\StringLongItem'
+    widget: 'string_textarea'
+    formatter: 'string'
+    termIdSpace: 'META'
+    termAccession: 'description'
+    cardinality: 1
+    required: false
+    settings:
+      storage_plugin_id: NULL
+  - name: 'missing_storage'
+    type: 'tripal_text_type'
+    type_class: 'Drupal\tripal\Plugin\Field\FieldType\TripalTextTypeItem'
+    widget: 'default_tripal_text_type_widget'
+    formatter: 'default_tripal_text_type_formatter'
+    termIdSpace: 'BROKEN'
+    termAccession: 'storage'
+    cardinality: 1
+    required: false
+    settings:
+      termIdSpace: 'BROKEN'
+      termAccession: 'storage'
+      storage_plugin_id: NULL
+scenarios:
+  - label: 'Simple Entity'
+    description: 'Create a page where every field has one value and the title/path are left empty.'
+    create:
+      user_input:
+        common_name:
+        - value: 'amazonite'
+        metaphysical_props:
+        - value: 'soothing, calming, healing from grief'
+        drupal_description:
+        - value: 'This is a really long description if you use your imagination.'
+      expected_field_values:
+        common_name:
+        - value: 'amazonite'
+        metaphysical_props:
+        - value: 'soothing, calming, healing from grief'
+    expectations:
+      registerField:
+        - field_name: 'field_that_doesnt_exist_at_all'
+          expected_result: false
+        - field_name: 'common_name'
+          expected_result: true
+      getFieldItemBackendStorage:
+        drupal_description:
+          expected_result: false
+        common_name:
+          expected_result:
+          - 0
+          - 'drupal_sql_storage'
+      getStorageFields:
+        all_fields:
+        - 'common_name'
+        - 'metaphysical_props'
+        required_fields:
+        - 'common_name'
+        optional_fields:
+        - 'metaphysical_props'
+      getTripalFieldInfo:
+        common_name:
+          term: 'FAKE:name'
+          tripalstorage_id: 'drupal_sql_storage'
+          is_required: true
+          cardinality: 1
+          field_type: 'tripal_string_type'
+          tripalstorage_settings: []
+          settings:
+            max_length: 255
+            termIdSpace: 'FAKE'
+            termAccession: 'name'
+            debug: FALSE
+        metaphysical_props:
+          term: 'META:properties'
+          tripalstorage_id: 'drupal_sql_storage'
+          is_required: false
+          cardinality: 5
+          field_type: 'tripal_text_type'
+          tripalstorage_settings: []
+          settings:
+            termIdSpace: 'META'
+            termAccession: 'properties'
+            debug: FALSE
+      getTripalFieldPropertyInfo:
+        common_name:
+          value:
+            id: 'varchar'
+            key: 'value'
+            cardinality: 1
+            cache_status: true
+            id_space: 'FAKE'
+            accession: 'name'
+        metaphysical_props:
+          value:
+            id: 'text'
+            key: 'value'
+            cardinality: 1
+            cache_status: true
+            id_space: 'META'
+            accession: 'properties'
+  ## EXCEPTION SCENARIOS.
+  - label: 'No Storage Exception expected'
+    description: 'Entity with Tripal field given value but no storage backend'
+    user_input:
+      common_name:
+      - value: 'amazonite'
+      metaphysical_props:
+      - value: 'soothing, calming, healing from grief'
+      drupal_description:
+      - value: 'This is a really long description if you use your imagination.'
+      missing_storage:
+      - value: 'Meh, this has nowhere to be stored anyway.'
+    exception_message: "The Tripal-based field 'missing_storage' on this content type must indicate a TripalStorage backend and currently does not."

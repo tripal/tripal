@@ -6,6 +6,7 @@
 
 use \Drupal\Core\Config\FileStorage;
 use \Drupal\Core\Database\Database;
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use \Drupal\Core\Utility\UpdateException;
 use \Drupal\Component\Serialization\Yaml;
 use \Drupal\field\Entity\FieldConfig;
@@ -448,13 +449,14 @@ function tripal_chado_field_reload(array $upgradable_types, array $upgradable_pr
         }
       }
     }
+    $types = implode(', ', $upgradable_types);
     if ($update_only) {
-      $messenger->addMessage(t("Updated @n_updated properties",
-          ['@n_updated' => $n_updated]));
+      $messenger->addMessage(t("Updated @n_updated properties for @types",
+          ['@n_updated' => $n_updated, '@types' => $types]));
     }
     else {
-      $messenger->addMessage(t("Added @n_added properties, updated @n_updated properties",
-          ['@n_added' => $n_added, '@n_updated' => $n_updated]));
+      $messenger->addMessage(t("Added @n_added properties, updated @n_updated properties for @types",
+          ['@n_added' => $n_added, '@n_updated' => $n_updated, '@types' => $types]));
     }
   }
   catch (\Exception $e) {
@@ -504,6 +506,38 @@ function reload_content_type_collection(string $contentTypeCollection): void {
   $content_type_service->install([$contentTypeCollection . '_chado']);
   $field_type_service = \Drupal::service('tripal.tripalfield_collection');
   $field_type_service->install([$contentTypeCollection . '_chado']);
+}
+
+/**
+ * Updates the required status of one or more fields.
+ *
+ * @param array $field_ids
+ *   A list of fields to update.
+ * @param bool $required
+ *   The desired state of the required flag.
+ * @param string $context
+ *   A message to print if an error occurs.
+ *
+ * @return void
+ *   No return value.
+ */
+function tripal_chado_set_field_required_status(array $field_ids, bool $required, string $context): void {
+  try {
+    $messenger = \Drupal::messenger();
+    foreach ($field_ids as $field_id) {
+      /** Drupal\field\Entity\FieldConfig **/
+      $field = FieldConfig::load($field_id);
+      $state = $field->isRequired();
+      if ($state != $required) {
+        $field->setRequired($required);
+        $field->save();
+        $messenger->addMessage("Changed field $field_id to be " .($required?'':'not '). 'required');
+      }
+    }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException($context . ': ' . $e->getMessage());
+  }
 }
 
 /**
@@ -775,23 +809,11 @@ function tripal_chado_update_10408() {
  * consistent with chado. PR 2029
  */
 function tripal_chado_update_10409() {
-  try {
-    $messenger = \Drupal::messenger();
-    $field_ids = ['tripal_entity.pub.pub_title', 'tripal_entity.pub.pub_pyear'];
-    foreach ($field_ids as $field_id) {
-      /** Drupal\field\Entity\FieldConfig **/
-      $field = FieldConfig::load($field_id);
-      $required = $field->isRequired();
-      if ($required) {
-        $field->setRequired(FALSE);
-        $field->save();
-        $messenger->addMessage("Changed field $field_id to be not required");
-      }
-    }
-  }
-  catch (\Exception $e) {
-    throw new UpdateException('Could not set title and publication year required setting: ' . $e->getMessage());
-  }
+  $field_ids = [
+    'tripal_entity.pub.pub_title',
+    'tripal_entity.pub.pub_pyear',
+  ];
+  tripal_chado_set_field_required_status($field_ids, FALSE, 'Could not set title and publication year required setting');
 }
 
 /**
@@ -1163,4 +1185,98 @@ function tripal_chado_update_10417() {
   catch (\Exception $e) {
     throw new UpdateException('Could not perform update: ' . $e->getMessage());
   }
+}
+
+/**
+ * Add a phylogenetic tree visualization field. PR 2244.
+ */
+function tripal_chado_update_10418() {
+  try {
+    $messenger = \Drupal::messenger();
+    // Adds a new CV term for storing phylotree visualization settings.
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $term_values = [
+      'db.name' => 'NCIT',
+      'cv.name' => 'ncit',
+      'dbxref.accession' => 'C85439',
+      'cvterm.name' => 'Graphics Visualization',
+      'cvterm.definition' => 'Computer methods for creating images, diagrams or animations.',
+    ];
+    $cvterm_buddy->upsertCvterm($term_values, []);
+    $messenger->addMessage('Added "NCIT:Graphics Visualization" term');
+
+    // Update collection configurations so that any content type
+    // collections not yet imported will include the new phylotreevis field.
+    $collections = ['general', 'genomic'];
+    update_content_type_collections($collections);
+
+    // Installs new phylotree visualization and settings (property) fields
+    // on existing collections.
+    $general_fields_yaml = __DIR__ . '/config/install/tripal.tripalfield_collection.general_chado.yml';
+    $genomic_fields_yaml = __DIR__ . '/config/install/tripal.tripalfield_collection.genomic_chado.yml';
+    add_field_from_yaml($general_fields_yaml, ['speciestree_phylotreevis']);
+    add_field_from_yaml($genomic_fields_yaml, ['phylotree_phylotreevis']);
+
+    // Hides existing fields that have now been set to hidden in yaml.
+    $fields_to_hide = [
+      'tripal_entity.speciestree.default' => 'speciestree_dbxref',
+      'tripal_entity.phylotree.default' => 'phylotree_type',
+    ];
+    foreach ($fields_to_hide as $display => $field) {
+      $entity_view_display = EntityViewDisplay::load($display);
+      if ($entity_view_display) {
+        $entity_view_display->removeComponent($field)->save();
+      }
+    }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not update phylotree: ' . $e->getMessage());
+  }
+}
+
+/**
+ * Sets germplasm collection fields as non-required.
+ */
+function tripal_chado_update_10419() {
+  // This hook added by PR 2498.
+  $field_ids = [
+    'tripal_entity.germplasm.germplasm_collection',
+    'tripal_entity.breeding_cross.breeding_cross_collection',
+    'tripal_entity.germplasm_variety.germplasmvariety_collection',
+  ];
+  tripal_chado_set_field_required_status($field_ids, FALSE, 'Could not set germplasm collection required setting');
+}
+
+/**
+ * Adds chado_datetime_type_default fields for analysis, gene, mRNA, assay, and library.
+ */
+function tripal_chado_update_10420() {
+  try {
+    $collections = ['general', 'genomic', 'expression'];
+    update_content_type_collections($collections);
+
+    $config_dir = __DIR__ . '/config/install';
+    add_field_from_yaml($config_dir . '/tripal.tripalfield_collection.general_chado.yml',
+      ['analysis_timeexecuted']);
+    add_field_from_yaml($config_dir . '/tripal.tripalfield_collection.genomic_chado.yml',
+      ['gene_timeaccessioned', 'gene_timelastmodified', 'mrna_timeaccessioned', 'mrna_timelastmodified',
+       'library_timeaccessioned', 'library_timelastmodified']);
+    add_field_from_yaml($config_dir . '/tripal.tripalfield_collection.expression_chado.yml',
+      ['assay_assaydate']);
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not add datetime fields: ' . $e->getMessage());
+  }
+}
+
+/**
+ * Adds field properties for datetime chado columns. PR 2524.
+ */
+function tripal_chado_update_10421() {
+  tripal_chado_field_reload(['chado_analysis_type_default'], ['analysis_timeexecuted'], FALSE);
+  // Tripal doesn't define any default instances of these fields,
+  // but they may have been discovered.
+  tripal_chado_field_reload(['chado_feature_type_default'], ['gene_timeaccessioned', 'gene_timelastmodified', 'mrna_timeaccessioned', 'mrna_timelastmodified'], FALSE);
+  tripal_chado_field_reload(['chado_assay_type_default'], ['assay_assaydate'], FALSE);
 }

@@ -15,6 +15,7 @@ use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;
+use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy;
 
 /**
  * GFF3 Importer implementation of the TripalImporterBase.
@@ -65,6 +66,13 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
    * Provide the property buddy instance
    */
   protected object $property_buddy;
+
+  /**
+   * Provide the organism buddy instance.
+   *
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy
+   */
+  protected ChadoOrganismBuddy $organism_buddy;
 
   /**
    * A handle to a temporary file for caching the GFF features. This allows for
@@ -386,6 +394,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $this->dbxref_buddy = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
     $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
     $this->property_buddy = $this->buddy_manager->createInstance('chado_property_buddy', []);
+    $this->organism_buddy = $this->buddy_manager->createInstance('chado_organism_buddy', []);
   }
 
   /**
@@ -973,8 +982,8 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     if ($result_count == 0) {
       $this->logger->notice("Inserting the null publication.");
       $pub_sql = "
-        INSERT INTO {1:pub} (uniquename,type_id)
-        VALUES (:uname,
+        INSERT INTO {1:pub} (title, uniquename, type_id)
+        VALUES (:title, :uname,
           (SELECT cvterm_id
            FROM {1:cvterm} CVT
              INNER JOIN {1:dbxref} DBX ON DBX.dbxref_id = CVT.dbxref_id
@@ -982,6 +991,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
            WHERE CVT.name = :type_id))
       ";
       $status = $this->connection->query($pub_sql, [
+        ':title' => 'No publication',
         ':uname' => 'null',
         ':type_id' => 'null',
       ]);
@@ -1489,7 +1499,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     }
     if ($num_found > 1) {
       throw new \Exception("The landmark '$landmark_name' has more than one entry for this organism "
-          . chado_get_organism_scientific_name($this->organism)
+          . $this->organism_buddy->getOrganismScientificName($this->organism)
           . '. Did you provide a landmark type? If not, try resubmitting and providing a type.');
     }
 

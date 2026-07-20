@@ -47,6 +47,7 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
       'SO' => 'sequence',
       'data' => 'EDAM',
       'UO' => 'uo',
+      'operation' => 'EDAM',
     ];
     foreach ($new_collections as $id => $cv) {
       $idspace[$id] = $idsmanager->createCollection($id, 'tripal_default_id_space');
@@ -80,6 +81,15 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
       'definition' => 'Test pub',
     ]);
     $idspace['TPUB']->saveTerm($terms['pub']);
+
+    $terms['speciestree'] = new TripalTerm([
+      'name' => 'speciestree',
+      'idSpace' => 'data',
+      'vocabulary' => 'EDAM',
+      'accession' => '3272',
+      'definition' => 'Test speciestree',
+    ]);
+    $idspace['data']->saveTerm($terms['speciestree']);
 
     $terms['map'] = new TripalTerm([
       'name' => 'map',
@@ -130,6 +140,14 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
       'definition' => 'Test sequence checksum',
     ]);
     $idspace['data']->saveTerm($terms['Sequence']);
+    $terms['phylotreevis'] = new TripalTerm([
+      'name' => 'Phylogenetic tree visualisation',
+      'idSpace' => 'operation',
+      'vocabulary' => 'EDAM',
+      'accession' => '0567',
+      'definition' => 'Render or visualise a phylogenetic tree.',
+    ]);
+    $idspace['operation']->saveTerm($terms['phylotreevis']);
 
     $content_types = [];
 
@@ -180,6 +198,21 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
     ];
     $content_types['pub'] = $content_type_service->createContentType($ct_details);
     $content_types['pub']->setThirdPartySetting('tripal', 'chado_base_table', 'pub');
+
+    $ct_details = [
+      'label' => 'Species Tree',
+      'term' => $terms['speciestree'],
+      'help_text' => 'Taxonomy tree content type',
+      'category' => 'General',
+      'id' => 'speciestree',
+      'title_format' => '[speciestree_name]',
+      'url_format' => 'speciestree/[TripalEntity__entity_id]',
+      'settings' => [
+        'chado_base_table' => 'phylotree',
+      ],
+    ];
+    $content_types['speciestree'] = $content_type_service->createContentType($ct_details);
+    $content_types['speciestree']->setThirdPartySetting('tripal', 'chado_base_table', 'phylotree');
 
     $ct_details = [
       'label' => 'Map',
@@ -251,6 +284,15 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
     $this->assertArrayHasKey('gene_residues', $discovered_fields['new'], 'The sequence residues field was not discovered for gene');
     $this->assertArrayHasKey('gene_seqlen', $discovered_fields['new'], 'The sequence length field was not discovered for gene');
     $this->assertArrayHasKey('gene_md5checksum', $discovered_fields['new'], 'The MD5 checksum field was not discovered for gene');
+
+    // Test discovery of a function-based field. It should only be discovered
+    // on one of the phylotree content types.
+    $discovered_fields = $fields_service->discover($content_types['gene']);
+    $this->assertArrayNotHasKey('gene_phylotreevis', $discovered_fields['new'], 'The phylotreevis field was incorrectly discovered for gene');
+    $discovered_fields = $fields_service->discover($content_types['stock']);
+    $this->assertArrayNotHasKey('stock_phylotreevis', $discovered_fields['new'], 'The phylotreevis field was incorrectly discovered for stock');
+    $discovered_fields = $fields_service->discover($content_types['speciestree']);
+    $this->assertArrayHasKey('speciestree_phylotreevis', $discovered_fields['new'], 'The phylotreevis field was not discovered for speciestree');
   }
 
 }

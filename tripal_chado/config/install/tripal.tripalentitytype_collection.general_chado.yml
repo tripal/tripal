@@ -5,7 +5,7 @@ content_types:
 
     -   label: Organism
         term: OBI:0100026
-        help_text: Use the organism page for an individual living system, such as animal, plant, bacteria or virus,
+        help_text: Use the organism page for an individual living system, such as animal, plant, bacteria or virus.
         category: General
         id: organism
         title_format: "<em>[organism_genus] [organism_species]</em>[ [organism_infraspecific_type]][ <em>[organism_infraspecific_name]</em>]"

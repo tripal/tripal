@@ -5,6 +5,934 @@ tripal_chado.settings:
       type: string
       label: 'Default Chado schema name'
 
+## TripalStorage Field Storage Settings.
+## @scope Applied to ALL Fields (due to limitation in Drupal).
+## @note this is a reusable schema definition BUT it is not used by Drupal
+##   automatically. Instead tripal will alter the schema later to add this.
+## @see TripalEntityHooks::configSchemaInfoAlter()
+tripal.chado.field_storage_settings:
+  type: mapping
+  mapping:
+    storage_plugin_settings:
+      type: mapping
+      label: 'Tripal Storage-specific Settings'
+      mapping:
+        base_table:
+          type: 'string'
+          label: 'Field Base Chado Table'
+          nullable: FALSE
+
+##
+## Re-usable Field Specific settings...
+##
+## Specific for base table focused fields.
+tripal_chado.base_table_storage_settings:
+  type: mapping
+  mapping:
+    storage_plugin_settings:
+      type: mapping
+      label: 'Tripal Storage-specific Settings'
+      mapping:
+        base_column:
+          type: 'string'
+          label: 'Field Base Chado Column'
+          nullable: FALSE
+
+## Specific for linking table focused fields.
+tripal_chado.linking_table_storage_settings:
+  type: mapping
+  mapping:
+    storage_plugin_settings:
+      type: mapping
+      label: 'Tripal Storage-specific Settings'
+      mapping:
+        base_column:
+          type: 'string'
+          label: 'Field Base Chado Column'
+          nullable: FALSE
+        object_table:
+          type: string
+          label: "The name of table joined to the base table through a linking table (e.g. synonym)."
+        object_column:
+          type: string
+          label: "The column in the object table this field will be using (e.g. synonym_id)."
+        linker_table:
+          type: 'string'
+          label: 'The linking table used to connect the base table to the object table (e.g. feature_synonym).'
+          nullable: TRUE
+        linker_fkey_column:
+          type: 'string'
+          label: 'The column in the linking table which is a foreign key pointing to the base table (e.g. for feature_synonym this would be feature_id).'
+          nullable: TRUE
+        linking_method:
+          type: 'string'
+          label: 'The path through which to link the base table to the fields linked table. For example to link "feature" to "synonym", the linking method would be "feature_synonym → synonym_id".'
+          nullable: TRUE
+
+##
+## Specific Tripal Fields
+##
+## Only add field-specific settings here. All global settings will be added
+## automatically.
+##
+##
+## Embedded Entity View
+field.formatter.settings.embedded_entity_view:
+  type: mapping
+  mapping: {}
+
+## Type Field.
+field.field_settings.chado_additional_type_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_additional_type_type_default:
+  type: mapping
+  mapping:
+    storage_plugin_settings:
+      type: mapping
+      label: 'Tripal Storage-specific Settings'
+      mapping:
+        base_table:
+          type: 'string'
+          label: 'Field Base Chado Table'
+          nullable: FALSE
+        type_table:
+          type: 'string'
+          label: 'Table containing Type ID'
+          nullable: FALSE
+        type_column:
+          type: 'string'
+          label: 'Column Linking to CVTerm table'
+          nullable: FALSE
+
+field.widget.settings.chado_additional_type_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_additional_type_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Analysis Linker Field.
+field.field_settings.chado_analysis_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_analysis_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_analysis_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_analysis_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Array Design Linker Field.
+field.field_settings.chado_array_design_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_array_design_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_array_design_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_array_design_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Assay Linker Field.
+field.field_settings.chado_assay_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_assay_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_assay_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_assay_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Biomaterial Linker Field.
+field.field_settings.chado_biomaterial_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_biomaterial_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_biomaterial_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_biomaterial_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Boolean Base Table Field.
+field.field_settings.chado_boolean_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_boolean_type_default:
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_boolean_type_widget:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_boolean_type_formatter:
+  type: mapping
+  mapping:
+    false_string:
+      type: string
+      label: 'Text to display for a boolean FALSE value'
+      nullable: false
+    true_string:
+      type: string
+      label: 'Text to display for a boolean TRUE value'
+      nullable: false
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+
+## Contact By Role Linker Field.
+field.field_settings.chado_contact_by_role_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_contact_by_role_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+## Contact Linker Field.
+field.field_settings.chado_contact_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_contact_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_contact_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_contact_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Datetime Field.
+field.field_settings.chado_datetime_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_datetime_type_default:
+  type: mapping
+  mapping:
+    storage_plugin_settings:
+      type: mapping
+      mapping:
+        base_column:
+          type: string
+          label: 'Field Base Chado Column'
+          nullable: FALSE
+
+field.widget.settings.chado_datetime_type_widget:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_datetime_type_formatter:
+  type: mapping
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+    date_format:
+      type: string
+      label: 'PHP date format string for datetime display'
+      nullable: false
+
+## DBXREF Linker Field.
+field.field_settings.chado_dbxref_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_dbxref_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_dbxref_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_dbxref_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Feature Map Linker Field.
+field.field_settings.chado_featuremap_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_featuremap_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_featuremap_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_featuremap_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Feature Linker Field.
+field.field_settings.chado_feature_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_feature_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_feature_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_feature_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Integer Base Table Field.
+field.field_settings.chado_integer_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_integer_type_default:
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_integer_type_widget:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_integer_type_formatter:
+  type: mapping
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+    thousand_separator:
+      type: string
+      label: 'Thousand marker'
+      nullable: true
+
+## Organism Linker Field.
+field.field_settings.chado_organism_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_organism_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_organism_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_organism_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Phylogenetic Tree Visualization Field.
+field.field_settings.chado_phylotreevis_type_default:
+  type: mapping
+  mapping:
+    formatterSettingsTerm:
+      type: string
+      label: 'Term used for storage of formatter settings as a phylotree property in chado.'
+
+field.storage_settings.chado_phylotreevis_type_default:
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_phylotreevis_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_phylotreevis_formatter_default:
+  type: mapping
+  mapping:
+    phylogram_width:
+      type: integer
+      label: 'Width of the rendered phylogram'
+      nullable: true
+    phylogram_height:
+      type: integer
+      label: 'Height of the rendered phylogram'
+      nullable: true
+    phylogram_scale:
+      type: string
+      label: 'Scaling transformation for the X-axis of a phylogenetic tree'
+      nullable: true
+    phylogram_layout:
+      type: string
+      label: 'Whether tree layout is linear or radial'
+      nullable: true
+    phylogram_font_size:
+      type: string
+      label: 'Font size to use when rendering a tree, defaults to 12'
+      nullable: true
+    phylogram_skip_ticks:
+      type: integer
+      label: 'Tick marks are not displayed if truthy'
+      nullable: true
+    phylogram_root_node_size:
+      type: integer
+      label: 'Diameter of the root node of a phylogenetic tree'
+      nullable: true
+    phylogram_root_node_color:
+      type: string
+      label: 'Color of the root node of a phylogenetic tree'
+      nullable: true
+    phylogram_interior_node_size:
+      type: integer
+      label: 'Diameter of the interior nodes of a phylogenetic tree'
+      nullable: true
+    phylogram_interior_node_color:
+      type: string
+      label: 'Color of the interior nodes of a phylogenetic tree'
+      nullable: true
+    phylogram_leaf_node_size:
+      type: integer
+      label: 'Diameter of the terminal nodes of a phylogenetic tree'
+      nullable: true
+    phylogram_leaf_node_color:
+      type: string
+      label: 'Color of the terminal nodes of a phylogenetic tree'
+      nullable: true
+    phylogram_colors:
+      type: mapping
+      label: 'Color mapping to apply to nodes in a phylogenetic tree'
+      nullable: true
+      mapping:
+        index:
+          type: 'integer'
+          label: 'array key'
+          mapping:
+            organism:
+              type: string
+              label: 'Organism'
+            color:
+              type: string
+              label: 'Color specification'
+
+## Project Linker Field.
+field.field_settings.chado_project_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_project_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_project_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_project_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Property Field.
+field.field_settings.chado_property_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_property_type_default:
+  type: mapping
+  mapping:
+    storage_plugin_settings:
+      type: mapping
+      label: 'Tripal Storage-specific Settings'
+      mapping:
+        prop_table:
+          type: 'string'
+          label: 'Table containing property columns'
+          nullable: FALSE
+
+field.widget.settings.chado_property_select_widget_default:
+  type: mapping
+  mapping: {}
+
+field.widget.settings.chado_property_string_widget_default:
+  type: mapping
+  mapping: {}
+
+field.widget.settings.chado_property_widget_default:
+  type: mapping
+  mapping:
+    filter_format:
+      type: string
+      label: 'Filter format for a filtered text field'
+    num_rows:
+      type: integer
+      label: 'Number of Rows to display in the text widget'
+
+field.formatter.settings.chado_property_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Protocol Linking Field.
+field.field_settings.chado_protocol_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_protocol_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_protocol_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_protocol_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Publication Linking Field.
+field.field_settings.chado_pub_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_pub_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_pub_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_pub_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Relationship Field.
+field.field_settings.chado_relationship_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_relationship_type_default:
+  type: mapping
+  mapping:
+    storage_plugin_settings:
+      type: mapping
+      label: 'Tripal Storage-specific Settings'
+      mapping:
+        base_table:
+          type: 'string'
+          label: 'The base table of the content type (e.g. contact).'
+          nullable: FALSE
+        base_column:
+          type: 'string'
+          label: 'The primary key of the base table (e.g. contact_id).'
+          nullable: FALSE
+        linker_table:
+          type: 'string'
+          label: 'The table linking two versions of the base table together (e.g. contact_relationship).'
+          nullable: TRUE
+        subject_column:
+          type: 'string'
+          label: 'The column in the relationship table which is a foreign key for the relationship subject pointing to the base table.'
+          nullable: TRUE
+        object_column:
+          type: 'string'
+          label: 'The column in the relationship table which is a foreign key for the relationship object pointing to the base table.'
+          nullable: TRUE
+
+field.widget.settings.chado_relationship_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_relationship_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Feature Sequence Checksum Field.
+field.field_settings.chado_sequence_checksum_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_sequence_checksum_type_default:
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_sequence_checksum_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_sequence_checksum_formatter_default:
+  type: mapping
+  mapping:
+    case_setting:
+      type: string
+      label: 'Case setting'
+      nullable: true
+
+## Feature Sequence Coordinates Field.
+field.field_settings.chado_sequence_coordinates_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_sequence_coordinates_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_sequence_coordinates_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_sequence_coordinates_formatter_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_sequence_coordinates_formatter_table:
+  type: mapping
+  mapping: {}
+
+## Feature Sequence Length Field.
+field.field_settings.chado_sequence_length_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_sequence_length_type_default:
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_sequence_length_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_sequence_length_formatter_default:
+  type: mapping
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+    thousand_separator:
+      type: string
+      label: 'Thousand marker'
+      nullable: true
+
+## Feature Sequence Residues Field.
+field.field_settings.chado_sequence_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_sequence_type_default:
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_sequence_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_sequence_formatter_default:
+  type: mapping
+  mapping:
+    wrap_setting:
+      type: integer
+      label: 'Word wrap setting'
+      nullable: true
+
+## Analysis Source Data Field.
+field.field_settings.chado_source_data_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_source_data_type_default:
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_source_data_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_source_data_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Stock Collection Database Field.
+field.field_settings.chado_stockcollection_db_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_stockcollection_db_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_stockcollection_db_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_stockcollection_db_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Stock Collection Linking Field.
+field.field_settings.chado_stockcollection_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_stockcollection_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_stockcollection_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_stockcollection_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Stock Linking Field.
+field.field_settings.chado_stock_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_stock_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_stock_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_stock_formatter_default:
+  type: mapping
+  mapping: {}
+
+## String Base Table Field.
+field.field_settings.chado_string_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_string_type_default:
+  type: mapping
+  mapping:
+    max_length:
+      type: integer
+      label: 'Maximum length'
+    storage_plugin_settings:
+      type: mapping
+      mapping:
+        base_column:
+          type: 'string'
+          label: 'Field Base Chado Column'
+          nullable: FALSE
+
+field.widget.settings.chado_string_type_widget:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_string_type_formatter:
+  type: mapping
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+
+## Study Linking Field.
+field.field_settings.chado_study_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_study_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_study_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_study_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Synonym Linking Field.
+field.field_settings.chado_synonym_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_synonym_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_synonym_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_synonym_formatter_default:
+  type: mapping
+  mapping: {}
+
+## Text Base Table Field.
+field.field_settings.chado_text_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_text_type_default:
+  type: mapping
+  mapping:
+    max_length:
+      type: integer
+      label: 'Maximum length'
+    storage_plugin_settings:
+      type: mapping
+      mapping:
+        base_column:
+          type: 'string'
+          label: 'Field Base Chado Column'
+          nullable: FALSE
+
+field.widget.settings.chado_text_type_widget:
+  type: mapping
+  mapping:
+    filter_format:
+      type: string
+      label: 'Filter format for a filtered text field'
+    num_rows:
+      type: integer
+      label: 'Number of Rows to display in the text widget'
+
+field.formatter.settings.chado_text_type_formatter:
+  type: mapping
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+
+## Feature Map Unit Field.
+field.field_settings.chado_unit_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_unit_type_default:
+  type: mapping
+  mapping:
+    storage_plugin_settings:
+      type: mapping
+      label: 'Tripal Storage-specific Settings'
+      mapping:
+        base_table:
+          type: 'string'
+          label: 'Field Base Chado Table'
+          nullable: FALSE
+        type_table:
+          type: 'string'
+          label: 'Table containing Type ID'
+          nullable: FALSE
+        type_column:
+          type: 'string'
+          label: 'Column Linking to CVTerm table'
+          nullable: FALSE
+
+field.widget.settings.chado_unit_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_unit_formatter_default:
+  type: mapping
+  mapping: {}
+
+##
+## Tripal Configuration Entities!
+##
+##
+## Described the config entity used for YML-file loading of
+## mappings between chado cvterms and all columns in chado.
 tripal_chado.chado_term_mapping.*:
   type: config_entity
   mapping:
