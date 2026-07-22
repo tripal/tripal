@@ -435,6 +435,7 @@ class ChadoManageCommands extends DrushCommands {
   #[CLI\Option(name: 'migration-file', description: 'Name of a file used to migrate entity ID numbers from a Tripal 3 site.')]
   #[CLI\Option(name: 'lenient-migration', description: 'Use if some content was not published on the Tripal 3 site.')]
   #[CLI\Option(name: 'batch-size', description: 'Publish in batches of this size to reduce memory usage.')]
+  #[CLI\Option(name: 'records', description: 'A comma-delimited list of the chado primary key values of one or more records to publish.')]
   #[CLI\Usage(
     name: 'drush trp-chado-publish organism',
     description: 'Publishes the organism content type using records in the default chado schema organism table.',
@@ -453,6 +454,7 @@ class ChadoManageCommands extends DrushCommands {
       'schema-name' => NULL,
       'datastore' => NULL,
       'batch-size' => NULL,
+      'records' => NULL,
       'migration-file' => NULL,
       'lenient-migration' => NULL,
       'republish' => NULL,
@@ -463,6 +465,7 @@ class ChadoManageCommands extends DrushCommands {
     $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
     $datastore = $options['datastore'] ?? 'chado_storage';
     $batch_size = $options['batch-size'] ?? '1000';
+    $records = $options['records'] ?? '';
     $migration_file = $options['migration-file'] ?? '';
     $lenient_migration = $options['lenient-migration'] ?? FALSE;
     $republish = $options['republish'] ?? FALSE;
@@ -476,10 +479,19 @@ class ChadoManageCommands extends DrushCommands {
       $this->logger->error($this->t('The options --republish and --migration-file cannot be combined.'));
       return;
     }
+    if (preg_match('/[^0-9,\s]/', $records)) {
+      $this->logger->error($this->t('Records must be a comma-delimited list of one or more integer values'));
+      return;
+    }
+    $record_ids = NULL;
+    if ($records) {
+      $record_ids = array_map('trim', explode(',', $records));
+    }
 
     $publish_options = [
       'schema_name' => $schema_name,
       'batch_size' => $batch_size,
+      'record_ids' => $record_ids,
       'republish' => $republish,
       'migration_file' => $migration_file,
       'lenient_migration' => $lenient_migration,
