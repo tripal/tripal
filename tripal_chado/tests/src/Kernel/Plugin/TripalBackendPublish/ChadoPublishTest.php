@@ -134,11 +134,6 @@ class ChadoPublishTest extends ChadoTestKernelBase {
           'pub_id' => $pub_id,
         ])->execute();
     }
-    // Add a title to the null publication to avoid a warning message.
-    $this->connection->update('1:pub')
-      ->fields([
-        'title' => 'Null Publication',
-      ])->condition('pub_id', 1, '=')->execute();
 
     // Create the terms for the field property storage types.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
