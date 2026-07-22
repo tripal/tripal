@@ -375,6 +375,14 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $final_drupal_records = $this->getPublicTableRecords('tripal_entity__organism_genus', 'organism_genus_record_id');
     $this->assertEquals($initial_chado_records, $final_chado_records, 'Unexpected change to chado organism table');
     $this->assertEmpty($final_drupal_records, 'There are field records remaining that were not unpublished');
+
+    // Test micro-publish by publising only two of the organisms.
+    $record_ids = [4, 7];
+    $publish_options = ['record_ids' => $record_ids, 'bundle' => 'organism', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
+    $published_entities = $this->chado_publish->publish($publish_options);
+    $this->assertCount(2, $published_entities, 'Did not publish the restricted set of 2 organisms');
+    $final_drupal_records = $this->getPublicTableRecords('tripal_entity__organism_genus', 'organism_genus_record_id');
+    $this->assertCount(2, $final_drupal_records, 'Drupal field table does not contain the restricted set of 2 organisms');
   }
 
   /**
