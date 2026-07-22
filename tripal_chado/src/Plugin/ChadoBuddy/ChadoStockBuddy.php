@@ -1071,7 +1071,12 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
 
     try {
       // Check if this relationship already exists between the two stocks.
-      // Primary key: subject_id + object_id + type_id + rank.
+      // We are checking using the primary key:
+      // subject_id + object_id + type_id + rank (if provided).
+      // NOTE: If a relationship exists with this primary key but the user
+      // specified a different value for stock_relationship.value, the user
+      // will only be told that the relationship already exists, and the value
+      // will not be updated.
       $query = $this->chado_connection->select('1:stock_relationship', 'SR');
       $query->condition('SR.subject_id', $subject_stock[0]->getValue('stock.stock_id'), '=');
       $query->condition('SR.object_id', $object_stock[0]->getValue('stock.stock_id'), '=');
