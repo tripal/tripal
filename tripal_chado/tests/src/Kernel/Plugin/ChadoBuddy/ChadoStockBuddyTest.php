@@ -1039,6 +1039,135 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
   }
 
   /**
+   * Test method for relateStock().
+   */
+  public function testRelateStock() {
+    // Insert an organism needed for our chado stock buddy record.
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $organism_instance = $type->createInstance('chado_organism_buddy', []);
+    $organism_instance->insertOrganism([
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+      'organism.abbreviation' => 'Trp',
+    ]);
+
+    // Insert a test stock record to be our subject in the relationship.
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $stock_instance = $type->createInstance('chado_stock_buddy', []);
+
+    $subject_stock_record = $stock_instance->insertStock([
+      'stock.name' => 'Stock1',
+      'stock.uniquename' => 'stock1',
+      // Cvterm ID for 'accession'.
+      'stock.type_id' => 3,
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+    ]);
+
+    // Insert a second test stock record to be our object in the relationship.
+    $object_stock_record = $stock_instance->insertStock([
+      'stock.name' => 'Stock2',
+      'stock.uniquename' => 'stock2',
+      // Cvterm ID for 'accession'.
+      'stock.type_id' => 3,
+      'organism.genus' => 'Tripalus',
+      'organism.species' => 'databasica',
+    ]);
+
+    // Insert a test cvterm to be used as the relationship type.
+    $cvterm_instance = $type->createInstance('chado_cvterm_buddy', []);
+    // None of the values make sense together, don't come for me *hides*!
+    $cvterm_record = $cvterm_instance->insertCvterm([
+      'cvterm.name' => 'in_a_relationship_with',
+      'cvterm.definition' => 'def001',
+      'cv.name' => 'local',
+      'db.name' => 'local',
+      'dbxref.accession' => 'newAcc001',
+    ]);
+
+    // Relate the two stock records.
+    $expected_status = 1;
+    $status = $stock_instance->relateStock(['buddy_record' => $subject_stock_record], ['buddy_record' => $object_stock_record], ['buddy_record' => $cvterm_record]);
+    $this->assertIsInt($status, "We did not retrieve an integer when relating two stock records");
+    $this->assertEquals($expected_status, $status, "We did not retrieve the expected status when relating two stock records for the first time.");
+
+    // Verify the stock_relationship table has our new record.
+    $rel_table_query = $this->chado_connection->select('1:stock_relationship', 'sr')
+      ->fields('sr')
+      ->execute();
+    $results = $rel_table_query->fetchAll();
+    $this->assertIsArray($results, "We should have been able to select from the stock_relationship table");
+    $this->assertCount(1, $results, "There should be 1 \"stock_relationship\" record inserted");
+    $expected_stock_subject_id = $subject_stock_record->getValue('stock.stock_id');
+    $retrieved_stock_subject_id = $results[0]->subject_id;
+    $this->assertEquals($expected_stock_subject_id, $retrieved_stock_subject_id,
+      "We did not get the subject_id from \"stock_relationship\" that should have been set by relateStock()");
+    $expected_stock_object_id = $object_stock_record->getValue('stock.stock_id');
+    $retrieved_stock_object_id = $results[0]->object_id;
+    $this->assertEquals($expected_stock_object_id, $retrieved_stock_object_id,
+      "We did not get the object_id from \"stock_relationship\" that should have been set by relateStock()");
+    $expected_cvterm_id = $cvterm_record->getValue('cvterm.cvterm_id');
+    $retrieved_cvterm_id = $results[0]->type_id;
+    $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
+      "We did not get the type_id from \"stock_relationship\" that should have been set by relateStock()");
+
+    // Repeat the same relationship, it should return a status of 2 (EXISTING).
+    $expected_status = 2;
+    $status = $stock_instance->relateStock(['buddy_record' => $subject_stock_record], ['buddy_record' => $object_stock_record], ['buddy_record' => $cvterm_record]);
+    $this->assertIsInt($status, "We did not retrieve an integer when relating two stock records");
+    $this->assertEquals($expected_status, $status, "We did not retrieve the expected status when relating the same two stock records a second time.");
+    // Verify we still have one record.
+    $rel_table_query = $this->chado_connection->select('1:stock_relationship', 'sr')
+      ->fields('sr')
+      ->execute();
+    $results = $rel_table_query->fetchAll();
+    $this->assertIsArray($results, "We should have been able to select from the stock_relationship table");
+    $this->assertCount(1, $results, "There should be 1 \"stock_relationship\" record inserted");
+
+    // This time, set the rank to 1. We expect a new relationship to be created
+    // since rank is part of the primary key, so the status should be 1 (NEW).
+    $expected_status = 1;
+    $status = $stock_instance->relateStock(['buddy_record' => $subject_stock_record], ['buddy_record' => $object_stock_record], ['buddy_record' => $cvterm_record], ['stock_relationship.rank' => 1]);
+    $this->assertIsInt($status, "We did not retrieve an integer when relating two stock records");
+    $this->assertEquals($expected_status, $status, "We did not retrieve the expected status when relating the same two stock records a third time, but this time with a different rank.");
+    // Verify we have two records.
+    $rel_table_query = $this->chado_connection->select('1:stock_relationship', 'sr')
+      ->fields('sr')
+      ->execute();
+    $results = $rel_table_query->fetchAll();
+    $this->assertIsArray($results, "We should have been able to select from the stock_relationship table");
+    $this->assertCount(2, $results, "There should be 2 \"stock_relationship\" records inserted");
+    // Check the rank values.
+    $this->assertEquals(0, $results[0]->rank, "The first stock_relationship record should have a rank of 0.");
+    $this->assertEquals(1, $results[1]->rank, "The second stock_relationship record should have a rank of 1.");
+    // Then make sure every other field matches.
+    foreach ($results[0] as $field => $value) {
+      $this->assertObjectHasProperty($field, $results[1], "The field '$field' from the first stock_relationship record was not found in the second stock_relationship record.");
+      if ($field !== 'rank' && $field !== 'stock_relationship_id') {
+        $this->assertEquals($value, $results[1]->$field, "The field '$field' from the first stock_relationship record should match the value of the same field in the second stock_relationship record since we specified a different rank.");
+      }
+    }
+
+    // Try the same relationship again without a rank to trigger an exception.
+    try {
+      $status = $stock_instance->relateStock(['buddy_record' => $subject_stock_record], ['buddy_record' => $object_stock_record], ['buddy_record' => $cvterm_record]);
+      $this->fail("We did not trigger an exception when relating the same two stock records a fourth time without specifying a unique rank.");
+    }
+    catch (\Exception $e) {
+      $this->assertStringContainsString("ChadoBuddy relateStock error, more than one stock_relationship record already exists between the two stocks with the specified relationship type.", $e->getMessage(), "We did not get the expected exception message when relating the same two stock records a fourth time without specifying a unique rank.");
+    }
+
+    // Confirm we still have two records.
+    $rel_table_query = $this->chado_connection->select('1:stock_relationship', 'sr')
+      ->fields('sr')
+      ->execute();
+    $results = $rel_table_query->fetchAll();
+    $this->assertIsArray($results, "We should have been able to select from the stock_relationship table");
+    $this->assertCount(2, $results, "There should still be 2 \"stock_relationship\" records inserted after attempting to relate the same two stock records a fourth time without specifying a unique rank.");
+
+  }
+
+  /**
    * Data Provider: Trigger exceptions in ChadoStockBuddy methods.
    *
    * @return array
@@ -1465,6 +1594,165 @@ class ChadoStockBuddyTest extends ChadoTestBuddyBase {
         ],
       ],
       "ChadoBuddy associateStock database error",
+    ];
+
+    // #25: Try to relate a stock that doesn't exist (subject stock).
+    $scenarios[] = [
+      'relateStock',
+      [
+        [
+          'stock.name' => 'NonExistentStock',
+          'stock.uniquename' => 'nonexistentstock',
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+        [
+          'stock.name' => 'BonusStock',
+          'stock.uniquename' => 'bonusstock',
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+        [
+          'cvterm.cvterm_id' => 250,
+        ],
+        [],
+        [],
+      ],
+      "ChadoBuddy relateStock error, could not find a stock which matched the specified subject values:",
+    ];
+
+    // #26: Try to relate a stock that doesn't exist (object stock).
+    $scenarios[] = [
+      'relateStock',
+      [
+        [
+          'stock.name' => 'ExistingStock',
+          'stock.uniquename' => 'existingstock',
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+        [
+          'stock.name' => 'NonExistentStock',
+          'stock.uniquename' => 'nonexistentstock',
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+        [
+          'cvterm.cvterm_id' => 250,
+        ],
+        [],
+        [],
+      ],
+      "ChadoBuddy relateStock error, could not find a stock which matched the specified object values:",
+    ];
+
+    // #27: More than one stock matches the subject values for relateStock().
+    $scenarios[] = [
+      'relateStock',
+      [
+        [
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+        [
+          'stock.name' => 'BonusStock',
+          'stock.uniquename' => 'bonusstock',
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+        [
+          'cvterm.cvterm_id' => 250,
+        ],
+        [],
+        [],
+      ],
+      "ChadoBuddy relateStock error, more than one stock record matched the specified subject values:",
+    ];
+
+    // #28: More than one stock matches the object values for relateStock().
+    $scenarios[] = [
+      'relateStock',
+      [
+        [
+          'stock.name' => 'ExistingStock',
+          'stock.uniquename' => 'existingstock',
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+        [
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+        [
+          'cvterm.cvterm_id' => 250,
+        ],
+        [],
+        [],
+      ],
+      "ChadoBuddy relateStock error, more than one stock record matched the specified object values:",
+    ];
+
+    // #29: Try to relate stocks with a relationship type that doesn't exist.
+    $scenarios[] = [
+      'relateStock',
+      [
+        [
+          'stock.name' => 'ExistingStock',
+          'stock.uniquename' => 'existingstock',
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+        [
+          'stock.name' => 'BonusStock',
+          'stock.uniquename' => 'bonusstock',
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+        [
+          'cvterm.name' => 'notacvterm',
+          'cv.name' => 'germplasm_ontology',
+        ],
+        [],
+        [],
+      ],
+      "ChadoBuddy relateStock error, could not find a cvterm which matched the specified values:",
+    ];
+
+    // #30: Try to relate stocks where more than one relationship type is found.
+    $scenarios[] = [
+      'relateStock',
+      [
+        [
+          'stock.name' => 'ExistingStock',
+          'stock.uniquename' => 'existingstock',
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+        [
+          'stock.name' => 'BonusStock',
+          'stock.uniquename' => 'bonusstock',
+          'stock.type_id' => 3,
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+        ],
+        [
+          'cv.name' => 'germplasm_ontology',
+        ],
+        [],
+        [],
+      ],
+      "ChadoBuddy relateStock error, more than one cvterm record matched the specified values:",
     ];
 
     return $scenarios;
