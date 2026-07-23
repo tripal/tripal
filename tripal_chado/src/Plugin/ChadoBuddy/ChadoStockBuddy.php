@@ -145,7 +145,7 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
    * @param array $options
    *   (Optional) Associative array of options with these supported keys:
    *   - 'case_insensitive' - a single key, or an array of keys
-   *     to query case insensitively.
+   *     to query case insensitively. Default is FALSE.
    *   - 'skip_validate' - if TRUE, skips the input validation step. This option
    *     is used internally by other methods that have already validated input.
    *     Default is FALSE.
@@ -951,6 +951,178 @@ class ChadoStockBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfac
     }
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy associateStock database error ' . $e->getMessage());
+    }
+  }
+
+  /**
+   * Add a record to the stock_relationship table.
+   *
+   * @param array $subject_values
+   *   An array where the key is a column in chado and the value describes the
+   *   stock that you want to be the subject of the relationship.
+   *   Valid keys include:
+   *     - stock.dbxref_id
+   *     - stock.organism_id
+   *     - stock.name
+   *     - stock.uniquename
+   *     - stock.description
+   *     - stock.type_id
+   *     - stock.is_obsolete
+   *     - organism.genus
+   *     - organism.species
+   *     - organism.infraspecific_name
+   *     - organism.common_name
+   *     - cvterm.name
+   *     - cvterm.is_obsolete
+   *     - cv.name
+   *     - dbxref.accession
+   *     - db.name
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys.
+   * @param array $object_values
+   *   An array where the key is a column in chado and the value describes the
+   *   stock that you want to be the object of the relationship.
+   *   Valid keys include the same ones listed for $subject_values.
+   * @param array $rel_type_values
+   *   An array where the key is a column in chado and the value describes the
+   *   cvterm that you want to use as the relationship type. Valid keys include:
+   *     - cv.cv_id
+   *     - cv.name
+   *     - cv.definition
+   *     - cvterm.cvterm_id
+   *     - cvterm.cv_id
+   *     - cvterm.name
+   *     - cvterm.definition
+   *     - cvterm.is_obsolete
+   *     - cvterm.is_relationshiptype
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id
+   *     - dbxref.description
+   *     - dbxref.accession
+   *     - dbxref.version
+   *     - db.db_id
+   *     - db.name
+   *     - db.description
+   *     - db.urlprefix
+   *     - db.url
+   *     - buddy_record (object): a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys.
+   * @param array $stock_rel_values
+   *   (Optional) An array where the key is a non-required column in the
+   *   stock_relationship table and the value is the value to insert for that
+   *   column. Default values are set to null and 0, respectively. Valid keys
+   *   are: stock_relationship.value and stock_relationship.rank.
+   * @param array $options
+   *   (Optional)
+   *   Associative array of options.
+   *     - 'case_insensitive' - a single key, or an array of keys
+   *     to query for stocks and cvterms case insensitively. Default is FALSE.
+   *     @todo Allow this option to be an array, where the keys refer to each of
+   *     the 3 input parameters so that this option can be applied
+   *     independently. If only TRUE or FALSE is provided, then it will be
+   *     applied to all 3 input parameters.
+   *
+   * @return int
+   *   Indicates whether the relationship was
+   *   - created (ChadoBuddyPluginBase::NEW = 1)
+   *   - already existed (ChadoBuddyPluginBase::EXISTING = 2)
+   *   If the relationship request was not successful, an exception is thrown.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   - If none or more than one stock record matches the values passed in for
+   *     either the subject or object stock.
+   *   - If none or more than one cvterm record matches the values passed in for
+   *     the relationship type.
+   *   - If more than one stock_relationship record already exists.
+   *   - If a database exception is encountered when inserting the new
+   *     stock_relationship record.
+   */
+  public function relateStock(array $subject_values, array $object_values, array $rel_type_values, array $stock_rel_values = [], array $options = []) {
+
+    // Get the subject stock record.
+    $subject_stock = $this->getStock($subject_values, $options);
+    if (count($subject_stock) < 1) {
+      throw new ChadoBuddyException("ChadoBuddy relateStock error, could not find a stock which matched the specified subject values:\n" . print_r($subject_values, TRUE));
+    }
+    elseif (count($subject_stock) > 1) {
+      throw new ChadoBuddyException("ChadoBuddy relateStock error, more than one stock record matched the specified subject values:\n" . print_r($subject_values, TRUE));
+    }
+
+    // Get the object stock record.
+    $object_stock = $this->getStock($object_values, $options);
+    if (count($object_stock) < 1) {
+      throw new ChadoBuddyException("ChadoBuddy relateStock error, could not find a stock which matched the specified object values:\n" . print_r($object_values, TRUE));
+    }
+    elseif (count($object_stock) > 1) {
+      throw new ChadoBuddyException("ChadoBuddy relateStock error, more than one stock record matched the specified object values:\n" . print_r($object_values, TRUE));
+    }
+
+    // Get the relationship type cvterm record.
+    if (!isset($this->cvterm_buddy)) {
+      $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
+    }
+    $rel_cvterm = $this->cvterm_buddy->getCvterm($rel_type_values, $options);
+    if (count($rel_cvterm) < 1) {
+      throw new ChadoBuddyException("ChadoBuddy relateStock error, could not find a cvterm which matched the specified values:\n" . print_r($rel_type_values, TRUE));
+    }
+    elseif (count($rel_cvterm) > 1) {
+      throw new ChadoBuddyException("ChadoBuddy relateStock error, more than one cvterm record matched the specified values:\n" . print_r($rel_type_values, TRUE));
+    }
+
+    try {
+      // Check if this relationship already exists between the two stocks.
+      // We are checking using the primary key:
+      // subject_id + object_id + type_id + rank (if provided).
+      // NOTE: If a relationship exists with this primary key but the user
+      // specified a different value for stock_relationship.value, the user
+      // will only be told that the relationship already exists, and the value
+      // will not be updated.
+      $query = $this->chado_connection->select('1:stock_relationship', 'SR');
+      $query->condition('SR.subject_id', $subject_stock[0]->getValue('stock.stock_id'), '=');
+      $query->condition('SR.object_id', $object_stock[0]->getValue('stock.stock_id'), '=');
+      $query->condition('SR.type_id', $rel_cvterm[0]->getValue('cvterm.cvterm_id'), '=');
+      if (array_key_exists('stock_relationship.rank', $stock_rel_values)) {
+        $query->condition('SR.rank', $stock_rel_values['stock_relationship.rank'], '=');
+      }
+      $count = $query->countQuery()->execute()->fetchField();
+
+      if ($count < 1) {
+        // Set defaults for optional columns in stock_relationship table if not
+        // provided.
+        $defaults = [
+          'stock_relationship.value' => NULL,
+          'stock_relationship.rank' => 0,
+        ];
+        $stock_rel_values = array_merge($defaults, $stock_rel_values);
+        $this->validateInput($stock_rel_values, array_keys($defaults));
+        $stock_rel_values = $this->removeTablePrefix($stock_rel_values);
+
+        // Add only the information needed for the stock_relationship table.
+        $fields = [
+          'subject_id' => $subject_stock[0]->getValue('stock.stock_id'),
+          'object_id' => $object_stock[0]->getValue('stock.stock_id'),
+          'type_id' => $rel_cvterm[0]->getValue('cvterm.cvterm_id'),
+        ];
+
+        $fields = array_merge($fields, $stock_rel_values);
+
+        // Insert the new relationship.
+        $query = $this->chado_connection->insert('1:stock_relationship');
+        $query->fields($fields);
+        $query->execute();
+        // Return NEW to indicate the relationship was created.
+        return self::NEW;
+      }
+      elseif ($count == 1) {
+        // Return EXISTING to indicate the relationship already exists.
+        return self::EXISTING;
+      }
+      else {
+        throw new ChadoBuddyException("ChadoBuddy relateStock error, more than one stock_relationship record already exists between the two stocks with the specified relationship type.\nSUBJECT: " . print_r($subject_stock[0]->getValues(), TRUE) . "\nOBJECT:" . print_r($object_stock[0]->getValues(), TRUE) . "\n RELATIONSHIP TYPE: " . print_r($rel_cvterm[0]->getValues(), TRUE) . "\nRANK: " . print_r($stock_rel_values['stock_relationship.rank'] ?? 'not specified', TRUE));
+      }
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy relateStock database error ' . $e->getMessage());
     }
   }
 
