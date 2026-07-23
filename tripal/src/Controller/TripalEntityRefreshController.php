@@ -3,7 +3,6 @@
 namespace Drupal\tripal\Controller;
 
 use Drupal\Core\Cache\Cache;
-#use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
@@ -17,13 +16,6 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class TripalEntityRefreshController extends ControllerBase {
 
-#  /**
-#   * Drupal configuration service. Used to get chado schema.
-#   *
-#   * @var Drupal\Core\Config\ConfigFactory
-#   */
-#  protected ConfigFactory $config_factory;
-#
   /**
    * The publish manager service.
    *
@@ -35,10 +27,8 @@ class TripalEntityRefreshController extends ControllerBase {
    * Provides injected service.
    */
   public function __construct(
-#    ConfigFactory $config_factory,
     TripalBackendPublishManager $publish_manager,
   ) {
-#    $this->config_factory = $config_factory;
     $this->publish_manager = $publish_manager;
   }
 
@@ -47,7 +37,6 @@ class TripalEntityRefreshController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-#      $container->get('config.factory'),
       $container->get('tripal.backend_publish'),
     );
   }
@@ -70,13 +59,6 @@ class TripalEntityRefreshController extends ControllerBase {
     }
     else {
       $datastore = array_key_first($field_storage_info);
-#      $schema_name = NULL;
-#      if ($datastore == 'chado_storage') {
-#        $settings = $this->config_factory->get('tripal_chado.settings');
-#        if ($settings) {
-#          $schema_name = $settings->get('default_schema');
-#        }
-#      }
       $bundle_id = $tripal_entity->getBundle()->getID();
       $pkey = $tripal_entity->getBackendRecordId($datastore);
 
@@ -98,9 +80,6 @@ class TripalEntityRefreshController extends ControllerBase {
           'datastore' => $datastore,
           'job' => NULL,
         ];
-        # if ($schema_name) {
-        #   $publish_options['schema_name'] = $schema_name';
-        # }
         $publish_instance->publish($publish_options);
 
         // Clear cache for this entity.
