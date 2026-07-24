@@ -15,6 +15,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
  */
 #[TripalFieldType(
   id: 'chado_phylotreevis_type_default',
+  category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Phylogenetic Visualization Field Type'),
   description: new TranslatableMarkup('Visualization of a phylogenetic tree.'),
   default_widget: 'chado_phylotreevis_widget_default',
