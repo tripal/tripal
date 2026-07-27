@@ -485,7 +485,7 @@ class ChadoManageCommands extends DrushCommands {
     }
     $record_ids = NULL;
     if ($records) {
-      $record_ids = array_map('trim', explode(',', $records));
+      $record_ids = array_filter(array_map('trim', explode(',', $records)), 'strlen');
     }
 
     $publish_options = [
