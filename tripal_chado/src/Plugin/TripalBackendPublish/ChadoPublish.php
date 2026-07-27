@@ -1490,7 +1490,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     $valid = [];
     $invalid = [];
     foreach ($record_ids as $record_id) {
-      $query = $this->chado_connection->select($this->base_table);
+      $query = $this->chado_connection->select('1:' . $this->base_table);
       $query->condition($pkey, $record_id, '=');
       $count = $query->countQuery()->execute()->fetchField();
       if ($count == 0) {
