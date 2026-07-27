@@ -1447,9 +1447,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       $this->logger->notice('Publishing only specified records in the "' . $this->base_table . '" chado table');
       // Because this is from user input, make sure there are no duplicates.
       $record_ids = array_unique($record_ids);
-      if (!$this->validateRecordIds($record_ids)) {
-        return [];
-      }
+      $record_ids = $this->validateRecordIds($record_ids);
     }
 
     // Get a list of already-published entities. The key will be the
@@ -1470,11 +1468,11 @@ class ChadoPublish extends TripalBackendPublishBase {
    * @param array $record_ids
    *   The pkey values to validate.
    *
-   * @return bool
-   *   TRUE if all records exist, FALSE if invalid record(s) included,
-   *   and in this case also prints a message to the logger.
+   * @return array
+   *   Returns the record IDs that exist and are valid.
+   *   If any were invalid, also prints a message to the logger.
    */
-  protected function validateRecordIds(array $record_ids): bool {
+  protected function validateRecordIds(array $record_ids): array {
     $schema = $this->chado_connection->schema();
     $parameters = [
       'format' => 'Drupal',
@@ -1489,6 +1487,7 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     // The list is from user input so should not be long, so we can
     // validate in a loop to determine exactly which are invalid.
+    $valid = [];
     $invalid = [];
     foreach ($record_ids as $record_id) {
       $query = $this->chado_connection->select($this->base_table);
@@ -1497,11 +1496,14 @@ class ChadoPublish extends TripalBackendPublishBase {
       if ($count == 0) {
         $invalid[] = $record_id;
       }
+      else {
+        $valid[] = $record_id;
+      }
     }
     if ($invalid) {
-      $this->logger->error('The following record(s) do not exist: ' . implode(', ', $invalid));
+      $this->logger->warning('The following record(s) do not exist: ' . implode(', ', $invalid));
     }
-    return empty($invalid);
+    return $valid;
   }
 
   /**
