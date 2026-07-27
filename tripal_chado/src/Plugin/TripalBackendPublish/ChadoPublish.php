@@ -9,6 +9,7 @@ use Drupal\tripal\TripalBackendPublish\Attribute\TripalBackendPublish;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
 use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
+use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
  * Chado-specific TripalEntity publish.
@@ -21,6 +22,13 @@ use Drupal\tripal\TripalStorage\StoragePropertyValue;
 class ChadoPublish extends TripalBackendPublishBase {
 
   use StringTranslationTrait;
+
+  /**
+   * A Database query interface for querying Chado using Tripal DBX.
+   *
+   * @var Drupal\tripal_chado\Database\ChadoConnection
+   */
+  protected ChadoConnection $chado_connection;
 
   /**
    * The base table of the bundle.
@@ -296,7 +304,6 @@ class ChadoPublish extends TripalBackendPublishBase {
         [$linker_table, $linker_column] = explode($table_column_delimiter, $storage_plugin_settings['linker_table_and_column']);
       }
       // Look up the object table from the foreign key of the $linker_column.
-      $chado = \Drupal::service('tripal_chado.database');
       $parameters = [
         'format' => 'Drupal',
         'source' => [
@@ -305,7 +312,7 @@ class ChadoPublish extends TripalBackendPublishBase {
           'database',
         ],
       ];
-      $linker_schema_def = $chado->schema()->getTableDef($linker_table, $parameters);
+      $linker_schema_def = $this->chado_connection->schema()->getTableDef($linker_table, $parameters);
       $foreign_keys = $linker_schema_def['foreign keys'] ?? [];
       foreach ($foreign_keys as $table => $info) {
         if ($info['columns'][$linker_column] ?? FALSE) {
@@ -674,9 +681,8 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected function findOrphanedEntities(array $entity_ids): array {
     $orphaned_entity_ids = [];
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
-    $chado = \Drupal::service('tripal_chado.database');
 
-    $schema = $chado->schema();
+    $schema = $this->chado_connection->schema();
     $parameters = [
       'format' => 'Drupal',
       'source' => [
@@ -695,7 +701,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     // that are no longer present in chado.
     $batches = $this->divideIntoBatches($published_entity_ids);
     foreach ($batches as $batch) {
-      $query = $chado->select('1:' . $this->base_table, 'B');
+      $query = $this->chado_connection->select('1:' . $this->base_table, 'B');
       $query->addField('B', $pkey, 'pkey');
       $query->condition($pkey, array_keys($batch), 'IN');
       $results = $query->execute()->fetchAllAssoc('pkey');
@@ -1439,6 +1445,11 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
     else {
       $this->logger->notice('Publishing only specified records in the "' . $this->base_table . '" chado table');
+      // Because this is from user input, make sure there are no duplicates.
+      $record_ids = array_unique($record_ids);
+      if (!$this->validateRecordIds($record_ids)) {
+        return [];
+      }
     }
 
     // Get a list of already-published entities. The key will be the
@@ -1451,6 +1462,46 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
 
     return $record_ids;
+  }
+
+  /**
+   * Validates pkey values to make sure they exist.
+   *
+   * @param array $record_ids
+   *   The pkey values to validate.
+   *
+   * @return bool
+   *   TRUE if all records exist, FALSE if invalid record(s) included,
+   *   and in this case also prints a message to the logger.
+   */
+  protected function validateRecordIds(array $record_ids): bool {
+    $schema = $this->chado_connection->schema();
+    $parameters = [
+      'format' => 'Drupal',
+      'source' => [
+        'file',
+        'tripal',
+        'database',
+      ],
+    ];
+    $table_def = $schema->getTableDef($this->base_table, $parameters);
+    $pkey = $table_def['primary key'];
+
+    // The list is from user input so should not be long, so we can
+    // validate in a loop to determine exactly which are invalid.
+    $invalid = [];
+    foreach ($record_ids as $record_id) {
+      $query = $this->chado_connection->select($this->base_table);
+      $query->condition($pkey, $record_id, '=');
+      $count = $query->countQuery()->execute()->fetchField();
+      if ($count == 0) {
+        $invalid[] = $record_id;
+      }
+    }
+    if ($invalid) {
+      $this->logger->error('The following record(s) do not exist: ' . implode(', ', $invalid));
+    }
+    return empty($invalid);
   }
 
   /**
@@ -1474,6 +1525,9 @@ class ChadoPublish extends TripalBackendPublishBase {
    */
   public function publishInit(array $options): bool {
     $this->logger->notice('Initializing publish');
+
+    // @todo inject this service.
+    $this->chado_connection = \Drupal::service('tripal_chado.database');
 
     // Required options.
     $this->bundle = $options['bundle'] ?? '';
