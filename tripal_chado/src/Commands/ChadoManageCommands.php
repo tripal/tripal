@@ -523,6 +523,7 @@ class ChadoManageCommands extends DrushCommands {
   )]
   #[CLI\Option(name: 'schema-name', description: 'The name of the chado schema to use.')]
   #[CLI\Option(name: 'all', description: 'Unpublish all records of the specified content type. Without this option, only orphaned records are unpublished.')]
+  #[CLI\Option(name: 'records', description: 'A comma-delimited list of the chado primary key values of one or more records to unpublish.')]
   #[CLI\Usage(
     name: 'drush trp-chado-unpublish contact',
     description: 'Submits a standard chado publish job to unpublish only orphaned records in the contact content type.',
@@ -536,6 +537,7 @@ class ChadoManageCommands extends DrushCommands {
     array $options = [
       'schema-name' => NULL,
       'datastore' => NULL,
+      'records' => NULL,
       'all' => NULL,
     ],
   ): void {
@@ -544,10 +546,17 @@ class ChadoManageCommands extends DrushCommands {
     $schema_name = $options['schema-name'] ?? $this->config_factory->get('tripal_chado.settings')->get('default_schema');
     $datastore = $options['datastore'] ?? 'chado_storage';
     $option_all = $options['all'] ?? FALSE;
+    $records = $options['records'] ?? '';
+    $record_ids = NULL;
+    if ($records) {
+      $option_all = TRUE;
+      $record_ids = array_filter(array_map('trim', explode(',', $records)), 'strlen');
+    }
 
     $publish_options = [
       'schema_name' => $schema_name,
       'orphaned' => !$option_all,
+      'record_ids' => $record_ids,
       'unpublish' => TRUE,
       'bundle' => $bundle,
       'datastore' => $datastore,

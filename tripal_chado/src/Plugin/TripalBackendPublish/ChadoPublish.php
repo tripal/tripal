@@ -1444,7 +1444,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       $record_ids = $this->storage->findAllRecordIds($this->bundle);
     }
     else {
-      $this->logger->notice('Publishing only specified records in the "' . $this->base_table . '" chado table');
+      $this->logger->notice('Processing only specified records in the "' . $this->base_table . '" chado table');
       // Because this is from user input, make sure there are no duplicates.
       $record_ids = array_unique($record_ids);
       $record_ids = $this->validateRecordIds($record_ids);
@@ -1880,16 +1880,29 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     // Populates the $this->field_info variable with field information.
     $this->setFieldInfo();
-
-    // Retrieve a list of all published entities for this bundle.
-    // Key is entity ID, value is chado record ID.
-    $entity_ids = $this->getEntityIDs();
-
-    // If in orphaned mode, generate a subset of which entity IDs to unpublish.
     $orphaned_text = '';
-    if ($options['orphaned'] ?? TRUE) {
-      $entity_ids = $this->findOrphanedEntities($entity_ids);
-      $orphaned_text = 'orphaned ';
+
+    // If specific chado record pkeys were supplied, unpublish only those.
+    // This overrides the state of the orphaned flag.
+    if ($options['record_ids'] ?? []) {
+      $entity_ids = [];
+      foreach ($options['record_ids'] as $record_id) {
+        $entity_id = $this->entity_lookup_manager->getEntityId($record_id, NULL, NULL, $this->base_table);
+        if ($entity_id) {
+          $entity_ids[$entity_id] = $entity_id;
+        }
+      }
+    }
+    else {
+      // Retrieve a list of all published entities for this bundle.
+      // Key is entity ID, value is chado record ID.
+      $entity_ids = $this->getEntityIDs();
+
+      // If in orphaned mode, generate a subset of which entity IDs to unpublish.
+      if ($options['orphaned'] ?? TRUE) {
+        $entity_ids = $this->findOrphanedEntities($entity_ids);
+        $orphaned_text = 'orphaned ';
+      }
     }
 
     // Let user know what and how much will be unpublished.
