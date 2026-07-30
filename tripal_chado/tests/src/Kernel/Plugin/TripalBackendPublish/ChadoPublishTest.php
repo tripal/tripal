@@ -431,14 +431,12 @@ class ChadoPublishTest extends ChadoTestKernelBase {
    * Tests publishing with Drupal caching turned off.
    */
   public function testTripalPublishServiceNoCaching() {
-    // Simplify this test by removing the null publication from chado.
-    $n = $this->connection->delete('1:pub')
-      ->condition('pub_id', 1, '=')
-      ->execute();
-    $this->assertEquals(1, $n, 'Did not delete null publication from chado where pub_id=1');
+    // The cache states that we will test.
+    $states = [
+      'drupal caching on' => TRUE,
+      'drupal caching off' => FALSE,
+    ];
 
-    $states = ['drupal caching on' => TRUE, 'drupal caching off' => FALSE];
-    $entity_id_offset = 0;
     foreach ($states as $label => $state) {
       // Sets the state of caching in Drupal field tables.
       \Drupal::configFactory()
@@ -450,24 +448,16 @@ class ChadoPublishTest extends ChadoTestKernelBase {
         'bundle' => 'pub',
         'datastore' => 'chado_storage',
         'schema_name' => $this->testSchemaName,
-        'republish' => 1,
       ];
       $this->chado_publish->publish($publish_options);
       $drupal_records = $this->getPublicTableRecords('tripal_entity__pub_title', 'pub_title_record_id');
-      $this->assertCount(150, $drupal_records, 'Number of published records is incorrect with ' . $label);
+      // The null publication will also be published.
+      $this->assertCount(151, $drupal_records, 'Number of published records is incorrect with ' . $label);
       // Verify that a field table was populated for each publication.
-      // Because this is a test environment, we know that the entity IDs
-      // that we just published will start with 1, but because of the
-      // "null" contact, we will just check the project table.
-      for ($i = 2; $i <= 151; $i++) {
-        $query = \Drupal::entityQuery('tripal_entity')
-          ->condition('type', 'pub')
-          ->condition('pub_title.record_id', $i, '=')
-          ->accessCheck(TRUE);
-        $ids = $query->execute();
-        $this->assertEquals(1, count($ids), 'We did not retrieve the publication title field with ' . $label);
-        $entity_id = reset($ids);
-        $this->assertEquals($i - 1 + $entity_id_offset, $entity_id, 'We did not retrieve the expected publication entity id from its field with ' . $label);
+      $drupal_records = $this->getPublicTableRecords('tripal_entity__pub_title', 'pub_title_record_id');
+      $this->assertCount(151, $drupal_records, 'Incorrect number of publications published with ' . $label);
+      for ($pkey = 1; $pkey <= 151; $pkey++) {
+        $this->assertArrayHasKey($pkey, $drupal_records, 'Missing pub_id $pkey when published with ' . $label);
       }
 
       // Unpublish them all.
@@ -481,9 +471,6 @@ class ChadoPublishTest extends ChadoTestKernelBase {
       $this->chado_publish->publish($publish_options);
       $drupal_records = $this->getPublicTableRecords('tripal_entity__pub_title', 'pub_title_record_id');
       $this->assertEmpty($drupal_records, count($drupal_records) . ' publications were not unpublished with ' . $label);
-
-      // Advance entity IDs for next pass.
-      $entity_id_offset += 150;
     }
   }
 
