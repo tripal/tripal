@@ -438,6 +438,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $this->assertEquals(1, $n, 'Did not delete null publication from chado where pub_id=1');
 
     $states = ['drupal caching on' => TRUE, 'drupal caching off' => FALSE];
+    $entity_id_offset = 0;
     foreach ($states as $label => $state) {
       // Sets the state of caching in Drupal field tables.
       \Drupal::configFactory()
@@ -451,11 +452,10 @@ class ChadoPublishTest extends ChadoTestKernelBase {
         'schema_name' => $this->testSchemaName,
         'republish' => 1,
       ];
-      $published_entities = $this->chado_publish->publish($publish_options);
-      // Expected count here is same as max_delta.
-      $this->assertCount(100, $published_entities,
-        'We did not publish the expected number of entities with ' . $label);
-      // Verify that a field table was populated
+      $this->chado_publish->publish($publish_options);
+      $drupal_records = $this->getPublicTableRecords('tripal_entity__pub_title', 'pub_title_record_id');
+      $this->assertCount(150, $drupal_records, 'Number of published records is incorrect with ' . $label);
+      // Verify that a field table was populated for each publication.
       // Because this is a test environment, we know that the entity IDs
       // that we just published will start with 1, but because of the
       // "null" contact, we will just check the project table.
@@ -467,8 +467,23 @@ class ChadoPublishTest extends ChadoTestKernelBase {
         $ids = $query->execute();
         $this->assertEquals(1, count($ids), 'We did not retrieve the publication title field with ' . $label);
         $entity_id = reset($ids);
-        $this->assertEquals($i - 1, $entity_id, 'We did not retrieve the expected publication entity id from its field with ' . $label);
+        $this->assertEquals($i - 1 + $entity_id_offset, $entity_id, 'We did not retrieve the expected publication entity id from its field with ' . $label);
       }
+
+      // Unpublish them all.
+      $publish_options = [
+        'bundle' => 'pub',
+        'datastore' => 'chado_storage',
+        'schema_name' => $this->testSchemaName,
+        'unpublish' => TRUE,
+        'orphaned' => FALSE,
+      ];
+      $this->chado_publish->publish($publish_options);
+      $drupal_records = $this->getPublicTableRecords('tripal_entity__pub_title', 'pub_title_record_id');
+      $this->assertEmpty($drupal_records, count($drupal_records) . ' publications were not unpublished with ' . $label);
+
+      // Advance entity IDs for next pass.
+      $entity_id_offset += 150;
     }
   }
 
