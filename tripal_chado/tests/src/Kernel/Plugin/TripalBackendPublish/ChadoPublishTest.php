@@ -428,6 +428,51 @@ class ChadoPublishTest extends ChadoTestKernelBase {
   }
 
   /**
+   * Tests publishing with Drupal caching turned off.
+   */
+  public function testTripalPublishServiceNoCaching() {
+    // Simplify this test by removing the null publication from chado.
+    $n = $this->connection->delete('1:pub')
+      ->condition('pub_id', 1, '=')
+      ->execute();
+    $this->assertEquals(1, $n, 'Did not delete null publication from chado where pub_id=1');
+
+    $states = ['drupal caching on' => TRUE, 'drupal caching off' => FALSE];
+    foreach ($states as $label => $state) {
+      // Sets the state of caching in Drupal field tables.
+      \Drupal::configFactory()
+        ->getEditable('tripal.settings')
+        ->set('tripal_entity_type.default_cache_backend_field_values', $state)
+        ->save();
+
+      $publish_options = [
+        'bundle' => 'pub',
+        'datastore' => 'chado_storage',
+        'schema_name' => $this->testSchemaName,
+        'republish' => 1,
+      ];
+      $published_entities = $this->chado_publish->publish($publish_options);
+      // Expected count here is same as max_delta.
+      $this->assertCount(100, $published_entities,
+        'We did not publish the expected number of entities with ' . $label);
+      // Verify that a field table was populated
+      // Because this is a test environment, we know that the entity IDs
+      // that we just published will start with 1, but because of the
+      // "null" contact, we will just check the project table.
+      for ($i = 2; $i <= 151; $i++) {
+        $query = \Drupal::entityQuery('tripal_entity')
+          ->condition('type', 'pub')
+          ->condition('pub_title.record_id', $i, '=')
+          ->accessCheck(TRUE);
+        $ids = $query->execute();
+        $this->assertEquals(1, count($ids), 'We did not retrieve the publication title field with ' . $label);
+        $entity_id = reset($ids);
+        $this->assertEquals($i - 1, $entity_id, 'We did not retrieve the expected publication entity id from its field with ' . $label);
+      }
+    }
+  }
+
+  /**
    * Returns a count of number of entries in a Drupal field table.
    *
    * @param string $table_name
