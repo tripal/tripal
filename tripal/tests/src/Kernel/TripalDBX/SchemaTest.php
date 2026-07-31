@@ -7,6 +7,7 @@ use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Config\DatabaseStorage;
 use Drupal\Core\Database\Database;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal\TripalDBX\TripalDbxSchema;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -254,7 +255,7 @@ class SchemaTest extends TripalTestKernelBase {
     }
     // Create a mock for the abstract class.
     $scmock = $this->getMockBuilder(TripalDbxSchema::class)
-      ->onlyMethods(['getSchemaDef'])
+      ->onlyMethods(['getSchemaDef', 'constraintExists'])
       ->setConstructorArgs([$tdbx])
       ->getMock();
 
@@ -303,6 +304,70 @@ class SchemaTest extends TripalTestKernelBase {
       $prefix_info,
       'Prefix ok.'
     );
+  }
+
+  /**
+   * Tests specificity of functions for a named schema.
+   */
+  public function testTripalDbxMultipleSchema() {
+    $tripaldbx = new TripalDbx();
+    $this->allowTestSchemas();
+    $test_schema_base_name = \Drupal::config('tripal.settings')
+      ->get('test_schema_base_names')['default'];
+
+    // Create two schema.
+    // - First one.
+    $sch_1 = $test_schema_base_name . mt_rand(10000000, 99999999);
+    $tripaldbx->createSchema($sch_1);
+    $tbx1 = $this->getMockBuilder(TripalDbxConnection::class)
+      ->onlyMethods(['findVersion', 'getAvailableInstances', 'executeSqlFile'])
+      ->setConstructorArgs([$sch_1])
+      ->getMock();
+    // - Second one.
+    $sch_2 = $test_schema_base_name . mt_rand(10000000, 99999999);
+    $tripaldbx->createSchema($sch_2);
+    $tbx2 = $this->getMockBuilder(TripalDbxConnection::class)
+      ->onlyMethods(['findVersion', 'getAvailableInstances', 'executeSqlFile'])
+      ->setConstructorArgs([$sch_2])
+      ->getMock();
+
+    // Add a table to both schemas.
+    $table_sql = "CREATE TABLE testtable (
+      id serial NOT NULL,
+      foreign_id int NULL,
+      fieldbigint bigint NULL,
+      fieldsmallint smallint NULL,
+      fieldbool boolean NOT NULL DEFAULT false,
+      fieldreal real NULL DEFAULT 1.0,
+      fielddouble double precision NULL DEFAULT NULL,
+      fieldchar character varying(255) NULL,
+      fieldtext text NOT NULL,
+      fieldbytea bytea NULL DEFAULT 'x',
+      CONSTRAINT testtable_pkey PRIMARY KEY (id)
+    )";
+    $tbx1->query($table_sql);
+    $tbx2->query($table_sql);
+
+    // Create a constraint in schema1 that is not in schema2.
+    $spec = [
+      'table' => 'testtable',
+      'column' => 'fieldreal',
+      'constraint_name' => 'testtable_fieldreal_c1',
+    ];
+    $tbx1->query('ALTER TABLE {1:' . $spec['table'] . '}
+      ADD CONSTRAINT ' . $spec['constraint_name'] .
+      ' UNIQUE (' . $spec['column'] . ')'
+    );
+
+    // Now check that the constraint does exist in schema1...
+    $scmock1 = $this->getTripalDbxSchemaMock($tbx1);
+    $this->assertTrue($scmock1->constraintExists($spec['table'], $spec['constraint_name'], 'UNIQUE'),
+      "The constraint should exist in Schema1 since that is where we created it.");
+
+    // But does NOT exist in schema 2.
+    $scmock2 = $this->getTripalDbxSchemaMock($tbx2);
+    $this->assertFalse($scmock2->constraintExists($spec['table'], $spec['constraint_name'], 'UNIQUE'),
+      "The constraint should NOT exist in Schema2.");
   }
 
   /**
