@@ -423,7 +423,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
         $properties[$type->getKey()] = DataDefinition::create("string");
       }
       elseif ($type instanceof RealStoragePropertyType) {
-        $properties[$type->getKey()] = DataDefinition::create("float");
+        // We use decimal instead of float to allow arbitrary precision.
+        $properties[$type->getKey()] = DataDefinition::create("decimal");
       }
       else {
         throw new \RuntimeException('Unknown Tripal Property Type class "' . get_class($type) . '"');
@@ -480,8 +481,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       }
       elseif ($type instanceof RealStoragePropertyType) {
         $column = [
-          "type" => "real",
-          "pgsql_type" => "real",
+          "type" => "decimal",
+          "pgsql_type" => "numeric",
         ];
         $schema["columns"][$type->getKey()] = $column;
       }
