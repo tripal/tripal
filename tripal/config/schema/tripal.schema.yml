@@ -248,6 +248,10 @@ field.formatter.settings.default_tripal_integer_type_formatter:
       type: string
       label: 'Thousand marker'
       nullable: true
+    decimal_separator:
+      type: string
+      label: 'Decimal separator'
+      nullable: true
 
 field.formatter.settings.tripal_markup_formatter:
   type: mapping
