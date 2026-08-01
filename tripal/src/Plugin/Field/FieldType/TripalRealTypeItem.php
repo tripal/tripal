@@ -74,7 +74,7 @@ class TripalRealTypeItem extends TripalFieldItemBase {
     }
 
     return [
-      new IntStoragePropertyType($entity_type_id, self::$id, 'value', $term, [], 'tripal_default_id_space'),
+      new RealStoragePropertyType($entity_type_id, self::$id, 'value', $term, [], 'tripal_default_id_space'),
     ];
   }
 
