@@ -128,4 +128,48 @@ class ChadoRealTypeDefault extends ChadoFieldItemBase {
     return $compatible;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function discover(
+    TripalEntityType $bundle,
+    string $field_id,
+    array $field_types,
+    array $field_instances,
+    array $options = [],
+  ): array {
+    $field_list = [];
+
+    $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
+    if (!$base_table) {
+      return $field_list;
+    }
+
+    // Find all floating point columns in the base table.
+    $table_def = self::getChadoTableDef($base_table);
+    foreach ($table_def['fields'] as $column => $col_def) {
+      $col_type = $col_def['pgsql_type'] ?? $col_def['type'];
+      if (!in_array($col_type, self::$valid_base_column_types)) {
+        continue;
+      }
+
+      $term = self::getColumnTermId($base_table, $column, 'NCIT:C25712');
+      [$termIdSpace, $termAccession] = explode(':', $term, 2);
+
+      $col_options = $options + [
+        'id' => self::$id,
+        'base_column' => $column,
+        'label' => $column,
+        'termIdSpace' => $termIdSpace,
+        'termAccession' => $termAccession,
+        'description' => 'A floating point number stored in the ' . $column . ' column.',
+      ];
+
+      $discovered = parent::discover($bundle, $field_id, $field_types, $field_instances, $col_options);
+      $field_list = array_merge($field_list, $discovered);
+    }
+
+    return $field_list;
+  }
+
 }
