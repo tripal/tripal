@@ -600,11 +600,13 @@ EOD;
       SELECT TRUE
       FROM information_schema.table_constraints
       WHERE table_name ILIKE :table
+        AND table_schema ILIKE :schema
         AND constraint_type ILIKE :type
         AND constraint_name ILIKE :name
       ;",
       [
         ':table' => $table,
+        ':schema' => $this->connection->getSchemaName(),
         ':name' => $constraint_name,
         ':type' => $type,
       ])
