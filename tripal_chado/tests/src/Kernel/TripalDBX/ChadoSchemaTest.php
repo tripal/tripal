@@ -326,6 +326,15 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
     // But does NOT exist in schema 2.
     $this->assertFalse($chado2->schema()->constraintExists($spec['table'], $spec['constraint_name'], 'UNIQUE'),
       "The constraint should NOT exist in Schema2.");
+
+    // Now check the primary key constraint is schema specific to the schema.
+    $chado2->query('ALTER TABLE {1:organism}
+      DROP CONSTRAINT organism_pkey CASCADE'
+    );
+    $this->assertFalse($chado2->schema()->primaryKeyExists('organism', 'organism_id'),
+      "The primary key constraint should NOT exist in Schema2 since we dropped it.");
+    $this->assertTrue($chado1->schema()->primaryKeyExists('organism', 'organism_id'),
+      "The primary key constraint should still exist in Schema1 since we did not drop it there.");
   }
 
   /**
