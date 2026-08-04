@@ -300,6 +300,35 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
   }
 
   /**
+   * Tests that the constraints in the schema definition are valid.
+   *
+   * @todo implement this test.
+   */
+  public function testConstraintChecks() {
+    $chado1 = $this->getTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
+    $chado2 = $this->getTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
+
+    // Create a constraint in schema1 that is not in schema2.
+    $spec = [
+      'table' => 'organism',
+      'column' => 'common_name',
+      'constraint_name' => 'organism_common_name_c1',
+    ];
+    $chado1->query('ALTER TABLE {1:' . $spec['table'] . '}
+      ADD CONSTRAINT ' . $spec['constraint_name'] .
+      ' UNIQUE (' . $spec['column'] . ')'
+    );
+
+    // Now check that the constraint does exist in schema1...
+    $this->assertTrue($chado1->schema()->constraintExists($spec['table'], $spec['constraint_name'], 'UNIQUE'),
+      "The constraint should exist in Schema1 since that is where we created it.");
+
+    // But does NOT exist in schema 2.
+    $this->assertFalse($chado2->schema()->constraintExists($spec['table'], $spec['constraint_name'], 'UNIQUE'),
+      "The constraint should NOT exist in Schema2.");
+  }
+
+  /**
    * Confirms that a Schema Definition array is valid.
    *
    * @param array $schema_def
