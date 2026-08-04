@@ -301,8 +301,6 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
 
   /**
    * Tests that the constraints in the schema definition are valid.
-   *
-   * @todo implement this test.
    */
   public function testConstraintChecks() {
     $chado1 = $this->getTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
