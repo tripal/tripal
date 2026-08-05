@@ -192,6 +192,11 @@ class TripalEntityLookup {
    *   returned array may have more than one entity id. This would happen
    *   in Tripal 3, for example if an analysis is published as both
    *   "Analysis", and as "Genome Assembly".
+   *
+   * @throws \Exception
+   *   If the content type has no required fields. This can happen if
+   *   a user created a new content type and did not mark any of the
+   *   fields as required.
    */
   public function getEntityIdFromRecordId($record_id, $bundle_id, $entity_type) : array {
 
@@ -199,8 +204,8 @@ class TripalEntityLookup {
     $required_fields = $this->getRequiredFields($bundle_id, $entity_type);
     if (!$required_fields) {
       // Everything is based on the assumption that there is at least one
-      // required field for every content type. If not, we cannot create a link.
-      return $ids;
+      // required field for every content type. If not, we cannot continue.
+      throw new \Exception("Bundle \"$bundle_id\" does not have any reqired fields. At lease one is needed to lookup entity ID from record ID.");
     }
 
     // We only need to evaluate for one of the required fields,
@@ -272,6 +277,11 @@ class TripalEntityLookup {
    * @return array
    *   A list of all published entities in the bundle.
    *   The key will be the chado table record ID, the values will be the entity IDs.
+   *
+   * @throws \Exception
+   *   If the content type has no required fields. This can happen if
+   *   a user created a new content type and did not mark any of the
+   *   fields as required.
    */
   public function getPublishedEntityIds($bundle_id, $entity_type = 'tripal_entity') : array {
 
@@ -280,7 +290,7 @@ class TripalEntityLookup {
     if (!$required_fields) {
       // Everything is based on the assumption that there is at least one
       // required field for every content type. If not, we cannot continue.
-      return $ids;
+      throw new \Exception("Bundle \"$bundle_id\" does not have any reqired fields. At lease one is needed to lookup entity ID from record ID.");
     }
 
     // We only need to evaluate for one of the required fields,
