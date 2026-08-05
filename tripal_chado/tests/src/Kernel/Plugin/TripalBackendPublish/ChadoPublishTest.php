@@ -393,7 +393,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $this->mock_warning = '';
     $publish_options = ['bundle' => 'organism', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
     $published_entities = $this->chado_publish->publish($publish_options);
-    $this->assertStringContainsString('Bundle "organism" does not have any reqired fields', $this->mock_warning, 'Expected an exception message');
+    $this->assertStringContainsString('Bundle "organism" does not have any required fields', $this->mock_warning, 'Expected an exception message');
   }
 
   /**
