@@ -9,6 +9,7 @@ use Drupal\tripal\TripalBackendPublish\Attribute\TripalBackendPublish;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
 use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
+use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
  * Chado-specific TripalEntity publish.
@@ -21,6 +22,13 @@ use Drupal\tripal\TripalStorage\StoragePropertyValue;
 class ChadoPublish extends TripalBackendPublishBase {
 
   use StringTranslationTrait;
+
+  /**
+   * A Database query interface for querying Chado using Tripal DBX.
+   *
+   * @var Drupal\tripal_chado\Database\ChadoConnection
+   */
+  protected ChadoConnection $chado_connection;
 
   /**
    * The base table of the bundle.
@@ -296,7 +304,6 @@ class ChadoPublish extends TripalBackendPublishBase {
         [$linker_table, $linker_column] = explode($table_column_delimiter, $storage_plugin_settings['linker_table_and_column']);
       }
       // Look up the object table from the foreign key of the $linker_column.
-      $chado = \Drupal::service('tripal_chado.database');
       $parameters = [
         'format' => 'Drupal',
         'source' => [
@@ -305,7 +312,7 @@ class ChadoPublish extends TripalBackendPublishBase {
           'database',
         ],
       ];
-      $linker_schema_def = $chado->schema()->getTableDef($linker_table, $parameters);
+      $linker_schema_def = $this->chado_connection->schema()->getTableDef($linker_table, $parameters);
       $foreign_keys = $linker_schema_def['foreign keys'] ?? [];
       foreach ($foreign_keys as $table => $info) {
         if ($info['columns'][$linker_column] ?? FALSE) {
@@ -674,9 +681,8 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected function findOrphanedEntities(array $entity_ids): array {
     $orphaned_entity_ids = [];
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
-    $chado = \Drupal::service('tripal_chado.database');
 
-    $schema = $chado->schema();
+    $schema = $this->chado_connection->schema();
     $parameters = [
       'format' => 'Drupal',
       'source' => [
@@ -695,7 +701,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     // that are no longer present in chado.
     $batches = $this->divideIntoBatches($published_entity_ids);
     foreach ($batches as $batch) {
-      $query = $chado->select('1:' . $this->base_table, 'B');
+      $query = $this->chado_connection->select('1:' . $this->base_table, 'B');
       $query->addField('B', $pkey, 'pkey');
       $query->condition($pkey, array_keys($batch), 'IN');
       $results = $query->execute()->fetchAllAssoc('pkey');
@@ -1404,10 +1410,16 @@ class ChadoPublish extends TripalBackendPublishBase {
   /**
    * Retrieves an array of chado record pkeys eligible for publishing.
    *
+   * @param array|null $record_ids
+   *   By default all records in a table are processed.
+   *   This paramater may be used to pass a subset of records to publish.
+   *   This allows for publishing only one or a few records that may have
+   *   been created or modified by an importer or other tool.
+   *
    * @return array
-   *   An array of chado record IDs in no particular order
+   *   An array of chado record IDs in no particular order.
    */
-  protected function getRecordIds() {
+  protected function getRecordIds(?array $record_ids = NULL) {
 
     // Populates the $this->field_info variable with field information.
     $this->setFieldInfo();
@@ -1423,12 +1435,20 @@ class ChadoPublish extends TripalBackendPublishBase {
     $this->addFixedTypeValues();
     $this->addNonRequiredValues();
 
-    // We retrieve a list of all primary keys for the base table of the
-    // content type. This allows us to later divide publishing into small
-    // batches to reduce the amount of memory required if there are
-    // thousands of records to publish.
-    $this->logger->notice('Finding all candidate records in the "' . $this->base_table . '" chado table');
-    $record_ids = $this->storage->findAllRecordIds($this->bundle);
+    if (is_null($record_ids)) {
+      // We retrieve a list of all primary keys for the base table of the
+      // content type. This allows us to later divide publishing into small
+      // batches to reduce the amount of memory required if there are
+      // thousands of records to publish.
+      $this->logger->notice('Finding all candidate records in the "' . $this->base_table . '" chado table');
+      $record_ids = $this->storage->findAllRecordIds($this->bundle);
+    }
+    else {
+      $this->logger->notice('Processing only specified records in the "' . $this->base_table . '" chado table');
+      // Because this is from user input, make sure there are no duplicates.
+      $record_ids = array_unique($record_ids);
+      $record_ids = $this->validateRecordIds($record_ids);
+    }
 
     // Get a list of already-published entities. The key will be the
     // chado table record ID, the values will be the entity IDs.
@@ -1447,6 +1467,50 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
 
     return $record_ids;
+  }
+
+  /**
+   * Validates pkey values to make sure they exist.
+   *
+   * @param array $record_ids
+   *   The pkey values to validate.
+   *
+   * @return array
+   *   Returns the record IDs that exist and are valid.
+   *   If any were invalid, also prints a message to the logger.
+   */
+  protected function validateRecordIds(array $record_ids): array {
+    $schema = $this->chado_connection->schema();
+    $parameters = [
+      'format' => 'Drupal',
+      'source' => [
+        'file',
+        'tripal',
+        'database',
+      ],
+    ];
+    $table_def = $schema->getTableDef($this->base_table, $parameters);
+    $pkey = $table_def['primary key'];
+
+    // The list is from user input so should not be long, so we can
+    // validate in a loop to determine exactly which are invalid.
+    $valid = [];
+    $invalid = [];
+    foreach ($record_ids as $record_id) {
+      $query = $this->chado_connection->select('1:' . $this->base_table);
+      $query->condition($pkey, $record_id, '=');
+      $count = $query->countQuery()->execute()->fetchField();
+      if ($count == 0) {
+        $invalid[] = $record_id;
+      }
+      else {
+        $valid[] = $record_id;
+      }
+    }
+    if ($invalid) {
+      $this->logger->warning('The following record(s) do not exist: ' . implode(', ', $invalid));
+    }
+    return $valid;
   }
 
   /**
@@ -1470,6 +1534,9 @@ class ChadoPublish extends TripalBackendPublishBase {
    */
   public function publishInit(array $options): bool {
     $this->logger->notice('Initializing publish');
+
+    // @todo inject this service.
+    $this->chado_connection = \Drupal::service('tripal_chado.database');
 
     // Required options.
     $this->bundle = $options['bundle'] ?? '';
@@ -1619,6 +1686,9 @@ class ChadoPublish extends TripalBackendPublishBase {
    *     'job' - A Tripal job object
    *     'batch_size' - Maximum number of records to publish per batch,
    *         defaults to 1000.
+   *     'record_ids' - An array of one or more record pkey values to
+   *         publish. This provides a way to publish only records that have
+   *         been created or updated by some tool or process.
    *     'migration_file' - During migration of a Tripal 3 site, we would
    *         like to preserve the numeric entity IDs. This option specifies
    *         the name of a file generated by the
@@ -1641,7 +1711,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
 
     // Retrieve all chado record IDs for this bundle.
-    $record_ids = $this->getRecordIds();
+    $record_ids = $this->getRecordIds($options['record_ids'] ?? NULL);
 
     // Take the unpublish branch if specified.
     if ($options['unpublish'] ?? FALSE) {
@@ -1817,16 +1887,29 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     // Populates the $this->field_info variable with field information.
     $this->setFieldInfo();
-
-    // Retrieve a list of all published entities for this bundle.
-    // Key is entity ID, value is chado record ID.
-    $entity_ids = $this->getEntityIDs();
-
-    // If in orphaned mode, generate a subset of which entity IDs to unpublish.
     $orphaned_text = '';
-    if ($options['orphaned'] ?? TRUE) {
-      $entity_ids = $this->findOrphanedEntities($entity_ids);
-      $orphaned_text = 'orphaned ';
+
+    // If specific chado record pkeys were supplied, unpublish only those.
+    // This overrides the state of the orphaned flag.
+    if ($options['record_ids'] ?? []) {
+      $entity_ids = [];
+      foreach ($options['record_ids'] as $record_id) {
+        $entity_id = $this->entity_lookup_manager->getEntityId($record_id, NULL, NULL, $this->base_table);
+        if ($entity_id) {
+          $entity_ids[$entity_id] = $entity_id;
+        }
+      }
+    }
+    else {
+      // Retrieve a list of all published entities for this bundle.
+      // Key is entity ID, value is chado record ID.
+      $entity_ids = $this->getEntityIDs();
+
+      // If in orphaned mode, generate a subset of which entity IDs to unpublish.
+      if ($options['orphaned'] ?? TRUE) {
+        $entity_ids = $this->findOrphanedEntities($entity_ids);
+        $orphaned_text = 'orphaned ';
+      }
     }
 
     // Let user know what and how much will be unpublished.

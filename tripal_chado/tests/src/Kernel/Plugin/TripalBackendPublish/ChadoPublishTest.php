@@ -2,12 +2,15 @@
 
 namespace Drupal\Tests\tripal\Kernel\Plugin\TripalBackendPublish;
 
+use Drupal\tripal\Controller\TripalEntityRefreshController;
+use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests the publish service for chado-based content types.
@@ -139,11 +142,6 @@ class ChadoPublishTest extends ChadoTestKernelBase {
           'pub_id' => $pub_id,
         ])->execute();
     }
-    // Add a title to the null publication to avoid a warning message.
-    $this->connection->update('1:pub')
-      ->fields([
-        'title' => 'Null Publication',
-      ])->condition('pub_id', 1, '=')->execute();
 
     // Create the terms for the field property storage types.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
@@ -381,6 +379,19 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $this->assertEquals($initial_chado_records, $final_chado_records, 'Unexpected change to chado organism table');
     $this->assertEmpty($final_drupal_records, 'There are field records remaining that were not unpublished');
 
+    // Test micro-publish by publishing only two of the organisms.
+    $record_ids = [4, 7];
+    $publish_options = [
+      'record_ids' => $record_ids,
+      'bundle' => 'organism',
+      'datastore' => 'chado_storage',
+      'schema_name' => $this->testSchemaName,
+    ];
+    $published_entities = $this->chado_publish->publish($publish_options);
+    $this->assertCount(2, $published_entities, 'Did not publish the restricted set of 2 organisms');
+    $final_drupal_records = $this->getPublicTableRecords('tripal_entity__organism_genus', 'organism_genus_record_id');
+    $this->assertCount(2, $final_drupal_records, 'Drupal field table does not contain the restricted set of 2 organisms');
+
     // Test that an exception is thrown if the bundle has no required fields.
     // We will just remove the cached values for simplicity.
     $cache_id = 'tripal_required_fields';
@@ -393,7 +404,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $this->mock_warning = '';
     $publish_options = ['bundle' => 'organism', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
     $published_entities = $this->chado_publish->publish($publish_options);
-    $this->assertStringContainsString('Bundle "organism" does not have any required fields', $this->mock_warning, 'Expected an exception message');
+    $this->assertStringContainsString('Bundle "organism" does not have any required fields', $this->mock_warning, 'Expected an error message');
   }
 
   /**
@@ -443,6 +454,58 @@ class ChadoPublishTest extends ChadoTestKernelBase {
       $this->assertEquals(1, count($ids), 'We did not retrieve the project name field');
       $entity_id = reset($ids);
       $this->assertEquals($i, $entity_id, 'We did not retrieve the expected project entity id from its field');
+    }
+  }
+
+  /**
+   * Test the refresh functionality used on an entity page.
+   *
+   * We are just testing the TripalEntityRefreshController, not the routing.
+   */
+  public function testTripalEntityRefreshController() {
+    // Publish the organism records from setUp().
+    $publish_options = ['bundle' => 'organism', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
+    $published_entities = $this->chado_publish->publish($publish_options);
+    $this->assertCount(3, $published_entities,
+      "We did not publish the expected number of entities.");
+
+    // Change values in chado to verify that refresh updates it.
+    $this->connection->update('1:organism',)
+      ->condition('organism_id', 2, '=')
+      ->fields([
+        'genus' => 'Refreshtripalus',
+        'species' => 'Refreshdatabasica 2',
+      ])->execute();
+
+    // Instantiate the refresh controller that we want to test.
+    $publish_manager = \Drupal::service('tripal.backend_publish');
+    $controller = TripalEntityRefreshController::create($this->container);
+
+    /** @var Symfony\Component\HttpFoundation\Request */
+    $request = Request::create('/organism/2/refresh?destination=/organism/2', 'GET', []);
+    $entity = TripalEntity::load(2);
+
+    // Perform the call to the refresh controller.
+    $controller->refresh($request, $entity);
+
+    // Verify the modified chado values have been republished.
+    $records = $this->getPublicTableRecords('tripal_entity__organism_genus', 'organism_genus_record_id');
+    $expectations = [
+      1 => '<p>Tripalus</p>',
+      2 => 'Refreshtripalus',
+      3 => '<p>Tripalus</p>',
+    ];
+    foreach ($expectations as $key => $value) {
+      $this->assertEquals($value, $records[$key]->organism_genus_value, 'Value in drupal field table is not what we expect');
+    }
+    $records = $this->getPublicTableRecords('tripal_entity__organism_species', 'organism_species_record_id');
+    $expectations = [
+      1 => 'databasica 1',
+      2 => 'Refreshdatabasica 2',
+      3 => 'databasica 3',
+    ];
+    foreach ($expectations as $key => $value) {
+      $this->assertEquals($value, $records[$key]->organism_species_value, 'Value in drupal field table is not what we expect');
     }
   }
 
