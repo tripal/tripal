@@ -215,7 +215,7 @@ entity.tripal_entity.refresh:
       tripal_entity:
         type: 'entity:tripal_entity'
   requirements:
-    _permission: 'manage tripal content types'
+    _permission: 'administer tripal'
     tripal_entity: '\d+'
 
 ##
