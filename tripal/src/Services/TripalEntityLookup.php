@@ -205,7 +205,7 @@ class TripalEntityLookup {
     if (!$required_fields) {
       // Everything is based on the assumption that there is at least one
       // required field for every content type. If not, we cannot continue.
-      throw new \Exception("Bundle \"$bundle_id\" does not have any required fields. At lease one is needed to lookup entity ID from record ID.");
+      throw new \Exception("Bundle \"$bundle_id\" does not have any required fields. At least one is needed to lookup entity ID from record ID.");
     }
 
     // We only need to evaluate for one of the required fields,
@@ -290,7 +290,7 @@ class TripalEntityLookup {
     if (!$required_fields) {
       // Everything is based on the assumption that there is at least one
       // required field for every content type. If not, we cannot continue.
-      throw new \Exception("Bundle \"$bundle_id\" does not have any required fields. At lease one is needed to lookup entity ID from record ID.");
+      throw new \Exception("Bundle \"$bundle_id\" does not have any required fields. At least one is needed to lookup entity ID from record ID.");
     }
 
     // We only need to evaluate for one of the required fields,
