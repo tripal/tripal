@@ -35,7 +35,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
   protected $chado_publish;
 
   /**
-   * The most recent error message from the mocked tripal logger.
+   * The most recent warning and error messages from the mocked tripal logger.
    *
    * @var string
    */
@@ -55,9 +55,14 @@ class ChadoPublishTest extends ChadoTestKernelBase {
 
     // Create a mocked logger so we can access error messages from the Tripal logger.
     $mock_logger = $this->getMockBuilder(TripalLogger::class)
-      ->onlyMethods(['warning'])
+      ->onlyMethods(['warning', 'error'])
       ->getMock();
     $mock_logger->method('warning')
+      ->willReturnCallback(function ($message, $context, $options) {
+          $this->mock_warning .= str_replace(array_keys($context), $context, $message);
+          return NULL;
+      });
+    $mock_logger->method('error')
       ->willReturnCallback(function ($message, $context, $options) {
           $this->mock_warning .= str_replace(array_keys($context), $context, $message);
           return NULL;
@@ -375,6 +380,20 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $final_drupal_records = $this->getPublicTableRecords('tripal_entity__organism_genus', 'organism_genus_record_id');
     $this->assertEquals($initial_chado_records, $final_chado_records, 'Unexpected change to chado organism table');
     $this->assertEmpty($final_drupal_records, 'There are field records remaining that were not unpublished');
+
+    // Test that an exception is thrown if the bundle has no required fields.
+    // We will just remove the cached values for simplicity.
+    $cache_id = 'tripal_required_fields';
+    $cache = \Drupal::cache()->get($cache_id);
+    $data = $cache->data;
+    $data['organism'] = [];
+    \Drupal::cache()->set($cache_id, $data, time() + 3600);
+
+    // Now publish, and expecte a logger error message to be generated.
+    $this->mock_warning = '';
+    $publish_options = ['bundle' => 'organism', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
+    $published_entities = $this->chado_publish->publish($publish_options);
+    $this->assertStringContainsString('Bundle "organism" does not have any reqired fields', $this->mock_warning, 'Expected an exception message');
   }
 
   /**
