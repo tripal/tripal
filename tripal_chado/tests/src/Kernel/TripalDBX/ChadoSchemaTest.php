@@ -93,12 +93,12 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
   /**
    * Tests ChadoSchema::getMainTables() on all Chado schema versions.
    *
-   * @dataProvider provideChadoSchemaVersions
-   *
    * @param string $version
    *   The version of chado to test against.
    * @param int $init_level
    *   The init level to create the test database with.
+   *
+   * @dataProvider provideChadoSchemaVersions
    */
   #[DataProvider('provideChadoSchemaVersions')]
   public function testGetMainTables(string $version, int $init_level) {
@@ -132,20 +132,20 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
    * Test the ChadoSchema::getDefault() method on all Chado schema versions.
    *
    * We will test that the default chado in this test returns the name set
-   * by the chadoTestTrait when a new test schema was created. The chadoTestTrait
-   * also sets the new chado schema created for testing to the default within
-   * the test environment.
+   * by the chadoTestTrait when a new test schema was created.
+   * The ChadoTestTrait also sets the new chado schema created for testing to
+   * the default within the test environment.
    *
    * There is no way to programatically set the default chado, so we will not
    * test changing the default and seeing if the default is still reported
    * correctly afterwards.
    *
-   * @dataProvider provideChadoSchemaVersions
-   *
    * @param string $version
    *   The version of chado to test against.
    * @param int $init_level
    *   The init level to create the test database with.
+   *
+   * @dataProvider provideChadoSchemaVersions
    */
   #[DataProvider('provideChadoSchemaVersions')]
   public function testGetDefault(string $version, int $init_level) {
@@ -219,14 +219,14 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
   /**
    * Tests ChadoSchema::getSchemaDef() on all Chado schema versions.
    *
-   * @dataProvider provideSchemaDefParams
-   *
    * @param string $version
    *   The version of chado to test against.
    * @param int $init_level
    *   The init level to create the test database with.
    * @param array $options
    *   Parameters to use when testing ChadoSchema::getSchemaDef().
+   *
+   * @dataProvider provideSchemaDefParams
    */
   #[DataProvider('provideSchemaDefParams')]
   public function testGetChadoSchemaDef(string $version, int $init_level, array $options) {
@@ -263,7 +263,7 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
       "ChadoSchema::getSchemaDef with format none should return empty array."
     );
 
-    // Test with the options actually provided (i.e. with version not specified).
+    // Test with the options actually provided (i.e. with default version).
     $schema_def = $schema->getSchemaDef($options);
     $this->assertValidSchemaDef(
       $schema_def,
@@ -297,6 +297,42 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
       $schema_def2,
       "The schema definition provided should be the same after clearing the cache as it was before."
     );
+  }
+
+  /**
+   * Tests that the constraints in the schema definition are valid.
+   */
+  public function testConstraintChecks() {
+    $chado1 = $this->getTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
+    $chado2 = $this->getTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
+
+    // Create a constraint in schema1 that is not in schema2.
+    $spec = [
+      'table' => 'organism',
+      'column' => 'common_name',
+      'constraint_name' => 'organism_common_name_c1',
+    ];
+    $chado1->query('ALTER TABLE {1:' . $spec['table'] . '}
+      ADD CONSTRAINT ' . $spec['constraint_name'] .
+      ' UNIQUE (' . $spec['column'] . ')'
+    );
+
+    // Now check that the constraint does exist in schema1...
+    $this->assertTrue($chado1->schema()->constraintExists($spec['table'], $spec['constraint_name'], 'UNIQUE'),
+      "The constraint should exist in Schema1 since that is where we created it.");
+
+    // But does NOT exist in schema 2.
+    $this->assertFalse($chado2->schema()->constraintExists($spec['table'], $spec['constraint_name'], 'UNIQUE'),
+      "The constraint should NOT exist in Schema2.");
+
+    // Now check the primary key constraint is schema specific to the schema.
+    $chado2->query('ALTER TABLE {1:organism}
+      DROP CONSTRAINT organism_pkey CASCADE'
+    );
+    $this->assertFalse($chado2->schema()->primaryKeyExists('organism', 'organism_id'),
+      "The primary key constraint should NOT exist in Schema2 since we dropped it.");
+    $this->assertTrue($chado1->schema()->primaryKeyExists('organism', 'organism_id'),
+      "The primary key constraint should still exist in Schema1 since we did not drop it there.");
   }
 
   /**
