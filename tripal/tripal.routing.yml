@@ -215,7 +215,7 @@ entity.tripal_entity.refresh:
       tripal_entity:
         type: 'entity:tripal_entity'
   requirements:
-    _permission: 'administer tripal'
+    _entity_access: 'tripal_entity.unpublish'
     tripal_entity: '\d+'
 
 ##
