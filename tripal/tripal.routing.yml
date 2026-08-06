@@ -212,6 +212,21 @@ entity.tripal_entity.unpublish_form:
     _entity_access: 'tripal_entity.unpublish'
     tripal_entity: '\d+'
 
+# Adds a Refresh link to Tripal entity pages.
+entity.tripal_entity.refresh:
+  path: 'bio_data/{tripal_entity}/refresh'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalEntityRefreshController::refresh'
+  options:
+    _access_checks:
+      - 'access_check.entity'
+    parameters:
+      tripal_entity:
+        type: 'entity:tripal_entity'
+  requirements:
+    _entity_access: 'tripal_entity.update'
+    tripal_entity: '\d+'
+
 ##
 # Controlled Vocabularies.
 ##
