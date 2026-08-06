@@ -512,25 +512,22 @@ class ChadoPublishTest extends ChadoTestKernelBase {
         'datastore' => 'chado_storage',
         'schema_name' => $this->testSchemaName,
       ];
+     $expected_count = 151;
+
       $this->chado_publish->publish($publish_options);
       $drupal_records = $this->getPublicTableRecords('tripal_entity__pub_title', 'pub_title_record_id');
       // The null publication will also be published.
-      $this->assertCount(151, $drupal_records, 'Number of published records is incorrect with ' . $label);
+      $this->assertCount($expected_count, $drupal_records, 'Number of published records is incorrect with ' . $label);
       // Verify that a field table was populated for each publication.
       $drupal_records = $this->getPublicTableRecords('tripal_entity__pub_title', 'pub_title_record_id');
-      $this->assertCount(151, $drupal_records, 'Incorrect number of publications published with ' . $label);
-      for ($pkey = 1; $pkey <= 151; $pkey++) {
+      $this->assertCount($expected_count, $drupal_records, 'Incorrect number of publications published with ' . $label);
+      for ($pkey = 1; $pkey <= $expected_count; $pkey++) {
         $this->assertArrayHasKey($pkey, $drupal_records, 'Missing pub_id $pkey when published with ' . $label);
       }
 
       // Unpublish them all.
-      $publish_options = [
-        'bundle' => 'pub',
-        'datastore' => 'chado_storage',
-        'schema_name' => $this->testSchemaName,
-        'unpublish' => TRUE,
-        'orphaned' => FALSE,
-      ];
+      $publish_options['unpublish'] = TRUE;
+      $publish_options['orphaned'] = FALSE;
       $this->chado_publish->publish($publish_options);
       $drupal_records = $this->getPublicTableRecords('tripal_entity__pub_title', 'pub_title_record_id');
       $this->assertEmpty($drupal_records, count($drupal_records) . ' publications were not unpublished with ' . $label);
