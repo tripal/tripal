@@ -31,7 +31,7 @@ class DefaultTripalRealTypeFormatter extends TripalFormatterBase {
     $settings['thousand_separator'] = '';
     $settings['decimal_separator'] = '.';
     $settings['decimal_places'] = '';
-    $settings['hide_condition'] = 'never';
+    $settings['hide_condition'] = 'never_hide';
     $settings['hide_value'] = '';
     return $settings;
   }
@@ -48,27 +48,22 @@ class DefaultTripalRealTypeFormatter extends TripalFormatterBase {
     $decimal_places = $this->getSetting('decimal_places') ?? '';
     $hide_condition = $this->getSetting('hide_condition') ?? 'never';
     $hide_value = $this->getSetting('hide_value') ?? '';
-#dpm($this->getSettings(), 'CPF1 settings');
     foreach($items as $delta => $item) {
       $value = $item->get("value")->getValue() ?? '';
       $hide = ((($hide_condition == '') and !$value)
            or (($hide_condition == 'if_value') and ($value == $hide_value)));
-#print "\nCP3 hide_condition \"$hide_condition\" hide_value ";var_dump($hide_value);
-#print "CP4 value ";var_dump($value);
-#print "CP5 hide ";var_dump($hide);
       if (!$hide) {
         if (strlen($value) && (strlen($thousand_separator) || strlen($decimal_places))) {
-          // If the decimal places setting is not specified (i.e. default),
-          // then we need a value for number_format(), so find the actual
-          // number of decimal places in the current value.
+          // If the decimal places setting is not specified, and by default
+          // it is not, then we need to calculate the value to use for
+          // number_format(). This is done by finding the actual number of
+          // decimal places in the current value.
           if (!$decimal_places) {
             $decimal_places = 0;
-            if (preg_match('/' . preg_quote($decial_separator, '/') . '(.*)$/', $value, $matches)) {
+            if (preg_match('/' . preg_quote($decimal_separator, '/') . '(.*)$/', $value, $matches)) {
               $decimal_places = strlen($matches[1]);
             }
-#dpm($decimal_places, "CPF2 DP from \"$value\""); //;;;
           }
-#dpm($value, "CPF3 value, decimal_places=$decimal_places");
           $value = number_format(floatval($value), $decimal_places, $decimal_separator, $thousand_separator);
         }
         $elements[$delta] = [

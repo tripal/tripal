@@ -1282,7 +1282,7 @@ function tripal_chado_update_10421() {
 }
 
 /**
- * Some chado table columns have terms that were not created.
+ * Some chado table columns use terms that were not defined. PR 2546.
  */
 function tripal_chado_update_10422() {
   try {
