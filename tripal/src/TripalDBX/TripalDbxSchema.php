@@ -600,11 +600,13 @@ EOD;
       SELECT TRUE
       FROM information_schema.table_constraints
       WHERE table_name ILIKE :table
+        AND table_schema ILIKE :schema
         AND constraint_type ILIKE :type
         AND constraint_name ILIKE :name
       ;",
       [
         ':table' => $table,
+        ':schema' => $this->connection->getSchemaName(),
         ':name' => $constraint_name,
         ':type' => $type,
       ])
@@ -672,8 +674,13 @@ EOD;
     $constraint_exists = $this->connection->query(
       "SELECT TRUE
       FROM information_schema.table_constraints
-      WHERE table_name ILIKE :table AND constraint_type = 'PRIMARY KEY';",
-      [':table' => $table])->fetchField();
+      WHERE table_name ILIKE :table
+        AND table_schema ILIKE :schema
+        AND constraint_type = 'PRIMARY KEY';",
+      [
+        ':table' => $table,
+        ':schema' => $this->connection->getSchemaName(),
+      ])->fetchField();
 
     return $constraint_exists;
   }
