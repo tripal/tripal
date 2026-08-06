@@ -38,7 +38,7 @@ class ChadoFeatureWidgetDefault extends ChadoWidgetBase {
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
     $link = $item_vals['link'] ?? 0;
-    $feature_id = $item_vals['feature_id'] ?? 0;
+    $feature_id = $item_vals[$linker_fkey_column] ?? 0;
 
     $elements = [];
     $elements['record_id'] = [
