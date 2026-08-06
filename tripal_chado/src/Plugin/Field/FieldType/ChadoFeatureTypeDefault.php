@@ -6,6 +6,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
+use Drupal\tripal_chado\TripalStorage\ChadoDatetimeStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
@@ -137,6 +138,8 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     $value['feature_common_name'] = '';
     $value['feature_database_accession'] = '';
     $value['feature_database_name'] = '';
+    $value['feature_timeaccessioned'] = '2001-01-01 01:01:01';
+    $value['feature_timelastmodified'] = '2001-01-01 01:01:01';
 
     return [$value];
   }
@@ -183,7 +186,8 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     $is_analysis_term = self::getColumnTermId($object_table, 'is_analysis', 'local:is_analysis');
     // Boolean.
     $is_obsolete_term = self::getColumnTermId($object_table, 'is_obsolete', 'local:is_obsolete');
-    // @todo timeaccessioned, timelastmodified not yet implemented
+    $timeaccessioned_term = self::getColumnTermId($object_table, 'timeaccessioned', 'local:timeaccessioned');
+    $timelastmodified_term = self::getColumnTermId($object_table, 'timelastmodified', 'local:timelastmodified');
     // Columns from linked tables.
     $dbxref_term = self::getColumnTermId('dbxref', 'accession', 'data:2091');
     $db_term = self::getColumnTermId('db', 'name', 'ERO:0001716');
@@ -349,7 +353,22 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'as' => 'feature_is_obsolete',
     ]);
 
-    // @todo timeaccessioned, timelastmodified not yet implemented - not null, default CURRENT_TIMESTAMP
+    // Feature timeaccessioned - not null, default CURRENT_TIMESTAMP.
+    $properties[] = new ChadoDatetimeStoragePropertyType($entity_type_id, self::$id, 'feature_timeaccessioned', $timeaccessioned_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';timeaccessioned',
+      'as' => 'feature_timeaccessioned',
+    ]);
+
+    // Feature timelastmodified - not null, default CURRENT_TIMESTAMP.
+    $properties[] = new ChadoDatetimeStoragePropertyType($entity_type_id, self::$id, 'feature_timelastmodified', $timelastmodified_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';timelastmodified',
+      'as' => 'feature_timelastmodified',
+    ]);
+
     // The type of feature.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'feature_type', $type_term, $type_len, [
       'action' => 'read_value',
