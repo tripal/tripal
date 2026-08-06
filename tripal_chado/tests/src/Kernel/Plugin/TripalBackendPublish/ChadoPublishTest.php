@@ -400,7 +400,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $data['organism'] = [];
     \Drupal::cache()->set($cache_id, $data, time() + 3600);
 
-    // Now publish, and expecte a logger error message to be generated.
+    // Now publish, and expect a logger error message to be generated.
     $this->mock_warning = '';
     $publish_options = ['bundle' => 'organism', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
     $published_entities = $this->chado_publish->publish($publish_options);
