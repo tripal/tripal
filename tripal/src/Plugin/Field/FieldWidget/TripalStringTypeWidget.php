@@ -41,7 +41,7 @@ class TripalStringTypeWidget extends TripalWidgetBase {
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     foreach ($values as $key => $item) {
-      if ($item['value'] === '' && $this->getSetting('null_if_empty')) {
+      if (array_key_exists('value', $item) && $item['value'] === '' && $this->getSetting('null_if_empty')) {
         $values[$key]['value'] = NULL;
       }
     }
