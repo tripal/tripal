@@ -77,7 +77,7 @@ class TripalStringTypeWidget extends TripalWidgetBase {
   public function settingsSummary() {
     $summary = parent::settingsSummary();
     $summary[] = $this->t('Store NULL if empty: @setting',
-      ['@setting' => $this->getSetting('null_if_empty') ? $this->t('yes') : $this->t('no')]);
+      ['@setting' => $this->getSetting('null_if_empty') ? $this->t('Yes') : $this->t('No')]);
     return $summary;
   }
 
