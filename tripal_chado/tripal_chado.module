@@ -22,8 +22,6 @@ require_once 'src/api/tripal_chado.phylotree.api.php';
 require_once 'src/api/tripal_chado.phylotree_newick.api.php';
 require_once 'src/legacyFunctions.php';
 
-require_once 'src/api/tripal_chado.viewsdata.inc';
-
 /**
  * Implements hook_help().
  *
@@ -70,4 +68,16 @@ function tripal_chado_rebuild() {
 #[LegacyHook]
 function tripal_chado_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   \Drupal::service('tripal_chado.hooks')->formAlter($form, $form_state, $form_id);
+}
+
+/**
+ * Implements hook_views_data.
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_chado\Hook\TripalChadoHooks in
+ * tripal_chado/src/Hook/TripalChadoHooks.php.
+ */
+#[LegacyHook]
+function tripal_chado_views_data() {
+  return \Drupal::service('tripal_chado.hooks')->viewsData();
 }
