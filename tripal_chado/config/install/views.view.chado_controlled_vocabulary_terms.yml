@@ -724,10 +724,10 @@ display:
       sorts: {  }
       arguments: {  }
       filters:
-        name:
-          id: name
+        definition_1:
+          id: definition_1
           table: cv
-          field: name
+          field: definition
           relationship: none
           group_type: group
           admin_label: ''
@@ -737,14 +737,14 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: name_op
+            operator_id: definition_1_op
             label: Vocabulary
             description: ''
             use_operator: false
-            operator: name_op
+            operator: definition_1_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: name
+            identifier: definition_1
             required: false
             remember: false
             multiple: false
@@ -753,28 +753,16 @@ display:
             placeholder: ''
           is_grouped: false
           group_info:
-            label: 'Controlled Vocabulary Name'
+            label: ''
             description: ''
-            identifier: name
+            identifier: ''
             optional: true
             widget: select
             multiple: false
             remember: false
             default_group: All
             default_group_multiple: {  }
-            group_items:
-              1:
-                title: ''
-                operator: contains
-                value: ''
-              2:
-                title: ''
-                operator: contains
-                value: ''
-              3:
-                title: ''
-                operator: contains
-                value: ''
+            group_items: {  }
         name_1:
           id: name_1
           table: cvterm
