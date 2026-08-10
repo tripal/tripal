@@ -146,7 +146,7 @@ class TripalTextTypeWidget extends TripalWidgetBase {
     $summary[] = $this->t("Text Format: @format", ['@format' => $format_label]);
     $summary[] = $this->t("Number of Rows: @rows", ['@rows' => $num_rows]);
     $summary[] = $this->t('Store NULL if empty: @setting',
-      ['@setting' => $this->getSetting('null_if_empty') ? $this->t('yes') : $this->t('no')]);
+      ['@setting' => $this->getSetting('null_if_empty') ? $this->t('Yes') : $this->t('No')]);
     return $summary;
   }
 }
