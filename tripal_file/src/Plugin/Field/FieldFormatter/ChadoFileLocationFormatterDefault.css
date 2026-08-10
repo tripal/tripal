@@ -1,0 +1,17 @@
+.chado-file-location-table {
+  border-collapse: collapse;
+}
+.chado-file-location-table th {
+  border: none;
+  padding: 10px;
+}
+.chado-file-location-table tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+.chado-file-location-table tr:nth-child(even) {
+  background-color: #e9e9e9;
+}
+.chado-file-location-table td {
+  border: 1px solid #DDDDDD;
+  padding: 10px;
+}

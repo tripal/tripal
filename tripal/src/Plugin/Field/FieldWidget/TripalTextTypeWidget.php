@@ -64,8 +64,13 @@ class TripalTextTypeWidget extends TripalWidgetBase {
 
     // The text_format element returns an item consisting of both a value and a
     // format. We only want to keep the format.
+    // We also switch an empty string to a NULL depending on settings.
     foreach ($values as $key => $item) {
-      $values[$key]['value'] = $item['value']['value'];
+      $value = $item['value']['value'];
+      if ($value === '' && $this->getSetting('null_if_empty')) {
+        $value = NULL;
+      }
+      $values[$key]['value'] = $value;
     }
     return $values;
   }
@@ -74,10 +79,11 @@ class TripalTextTypeWidget extends TripalWidgetBase {
    * {@inheritdoc}
    */
   public static function defaultSettings() {
-    return [
-      'filter_format' => 'basic_html',
-      'num_rows' => 5,
-    ] + parent::defaultSettings();
+    $defaultSettings = parent::defaultSettings();
+    $defaultSettings['filter_format'] = 'basic_html';
+    $defaultSettings['num_rows'] = 5;
+    $defaultSettings['null_if_empty'] = FALSE;
+    return $defaultSettings;
   }
 
   /**
@@ -115,6 +121,13 @@ class TripalTextTypeWidget extends TripalWidgetBase {
       '#required' => TRUE,
     ];
 
+   $element['null_if_empty'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Store NULL for empty string'),
+      '#description' => $this->t('If the form element contains an empty string, store a NULL in the database table instead of the empty string.'),
+      '#default_value' => $this->getSetting('null_if_empty') ?? 0,
+    ];
+
     return $element;
   }
 
@@ -132,7 +145,8 @@ class TripalTextTypeWidget extends TripalWidgetBase {
 
     $summary[] = $this->t("Text Format: @format", ['@format' => $format_label]);
     $summary[] = $this->t("Number of Rows: @rows", ['@rows' => $num_rows]);
-
+    $summary[] = $this->t('Store NULL if empty: @setting',
+      ['@setting' => $this->getSetting('null_if_empty') ? $this->t('yes') : $this->t('no')]);
     return $summary;
   }
 }
