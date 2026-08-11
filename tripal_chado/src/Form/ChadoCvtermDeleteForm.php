@@ -126,12 +126,14 @@ class ChadoCvtermDeleteForm extends FormBase {
       ];
       $form['submit'] = [
         '#type' => 'submit',
-        '#value' => 'Delete',
+        '#name' => 'delete',
+        '#value' => $this->t('Delete'),
       ];
     }
     $form['cancel'] = [
       '#type' => 'submit',
-      '#value' => 'Cancel',
+      '#name' => 'cancel',
+      '#value' => $this->t('Cancel'),
     ];
     return $form;
   }
@@ -148,7 +150,7 @@ class ChadoCvtermDeleteForm extends FormBase {
     $triggering_element = $form_state->getTriggeringElement();
     $user_input = $form_state->getUserInput();
 
-    if ($triggering_element['#value'] == 'Delete') {
+    if ($triggering_element['#name'] == 'delete') {
       $cvterm_id = $form_state->getValue('cvterm_id');
       $cvterm_name = $form_state->getValue('cvterm_name');
       $drop_dbxref = $user_input['drop_dbxref'];

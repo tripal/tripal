@@ -117,12 +117,14 @@ class ChadoDbDeleteForm extends FormBase {
       ];
       $form['submit'] = [
         '#type' => 'submit',
-        '#value' => 'Delete',
+        '#name' => 'delete',
+        '#value' => $this->t('Delete'),
       ];
     }
     $form['cancel'] = [
       '#type' => 'submit',
-      '#value' => 'Cancel',
+      '#name' => 'cancel',
+      '#value' => $this->t('Cancel'),
     ];
     return $form;
   }
@@ -138,7 +140,7 @@ class ChadoDbDeleteForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $triggering_element = $form_state->getTriggeringElement();
 
-    if ($triggering_element['#value'] == 'Delete') {
+    if ($triggering_element['#name'] == 'delete') {
       $db_id = $form_state->getValue('db_id');
       $db_name = $form_state->getValue('db_name');
       try {
