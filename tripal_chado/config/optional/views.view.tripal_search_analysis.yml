@@ -1,0 +1,987 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.tripal_entity.analysis_algorithm
+    - field.storage.tripal_entity.analysis_description
+    - field.storage.tripal_entity.analysis_name
+    - field.storage.tripal_entity.analysis_software
+    - field.storage.tripal_entity.analysis_source
+    - field.storage.tripal_entity.analysis_timeexecuted
+    - system.menu.data-search
+    - tripal.content_type.analysis
+  module:
+    - datetime
+    - tripal
+    - tripal_chado
+id: tripal_search_analysis
+label: Analysis
+module: views
+description: 'An individual analysis, workflow or pipeline that was performed using statistical or computational means.'
+tag: ''
+base_table: tripal_entity
+base_field: id
+display:
+  default:
+    id: default
+    display_title: Default
+    display_plugin: default
+    position: 0
+    display_options:
+      title: 'Analysis Search'
+      fields:
+        view_tripal_entity:
+          id: view_tripal_entity
+          table: tripal_entity
+          field: view_tripal_entity
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: tripal_entity
+          plugin_id: entity_link
+          label: 'Link to Tripal Content'
+          exclude: true
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          text: view
+          output_url_as_text: true
+          absolute: false
+        analysis_name:
+          id: analysis_name
+          table: tripal_entity__analysis_name
+          field: analysis_name
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: Name
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: true
+            path: '{{ view_tripal_entity }}'
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: chado_string_type_formatter
+          settings:
+            field_prefix: ''
+            field_suffix: ''
+            hide_condition: ''
+            hide_value: ''
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        analysis_description:
+          id: analysis_description
+          table: tripal_entity__analysis_description
+          field: analysis_description
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: Description
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 250
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: true
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: chado_text_type_formatter
+          settings:
+            field_prefix: ''
+            field_suffix: ''
+            hide_condition: ''
+            hide_value: ''
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        analysis_source:
+          id: analysis_source
+          table: tripal_entity__analysis_source
+          field: analysis_source
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: 'Data Source Name'
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: chado_string_type_formatter
+          settings:
+            field_prefix: ''
+            field_suffix: ''
+            hide_condition: ''
+            hide_value: ''
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        analysis_software:
+          id: analysis_software
+          table: tripal_entity__analysis_software
+          field: analysis_software
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: 'Software Name'
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: chado_string_type_formatter
+          settings:
+            field_prefix: ''
+            field_suffix: ''
+            hide_condition: ''
+            hide_value: ''
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        analysis_algorithm:
+          id: analysis_algorithm
+          table: tripal_entity__analysis_algorithm
+          field: analysis_algorithm
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: Algorithm
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: chado_string_type_formatter
+          settings:
+            field_prefix: ''
+            field_suffix: ''
+            hide_condition: ''
+            hide_value: ''
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        analysis_timeexecuted:
+          id: analysis_timeexecuted
+          table: tripal_entity__analysis_timeexecuted
+          field: analysis_timeexecuted
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: 'Date and Time Executed'
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: chado_datetime_type_formatter
+          settings:
+            field_prefix: ''
+            field_suffix: ''
+            hide_condition: if_value
+            hide_value: '-infinity'
+            date_format: 'Y-m-d H:i:s'
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        operations:
+          id: operations
+          table: tripal_entity
+          field: operations
+          relationship: none
+          group_type: group
+          admin_label: ''
+          entity_type: null
+          entity_field: null
+          plugin_id: entity_operations
+          label: ''
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: false
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          destination: false
+      pager:
+        type: mini
+        options:
+          offset: 0
+          pagination_heading_level: h4
+          items_per_page: 25
+          total_pages: null
+          id: 0
+          tags:
+            next: ››
+            previous: ‹‹
+          expose:
+            items_per_page: false
+            items_per_page_label: 'Items per page'
+            items_per_page_options: '5, 10, 25, 50'
+            items_per_page_options_all: false
+            items_per_page_options_all_label: '- All -'
+            offset: false
+            offset_label: Offset
+      exposed_form:
+        type: basic
+        options:
+          submit_button: Apply
+          reset_button: false
+          reset_button_label: Reset
+          exposed_sorts_label: 'Sort by'
+          expose_sort_order: true
+          sort_asc_label: Asc
+          sort_desc_label: Desc
+      access:
+        type: tripal_content_views_access
+        options:
+          content_types:
+            analysis: analysis
+          mode: all
+          operation: view
+      cache:
+        type: tag
+        options: {  }
+      empty:
+        area:
+          id: area
+          table: views
+          field: area
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: text
+          empty: true
+          content:
+            value: 'No [view:label] records matched the supplied criteria.'
+            format: basic_html
+          tokenize: false
+      sorts: {  }
+      arguments: {  }
+      filters:
+        type:
+          id: type
+          table: tripal_entity
+          field: type
+          entity_type: tripal_entity
+          entity_field: type
+          plugin_id: bundle
+          value:
+            analysis: analysis
+          group: 1
+        analysis_name_value:
+          id: analysis_name_value
+          table: tripal_entity__analysis_name
+          field: analysis_name_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: string
+          operator: contains
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: analysis_name_value_op
+            label: Name
+            description: ''
+            use_operator: false
+            operator: analysis_name_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: analysis_name_value
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+        analysis_description_value:
+          id: analysis_description_value
+          table: tripal_entity__analysis_description
+          field: analysis_description_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: string
+          operator: contains
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: analysis_description_value_op
+            label: Description
+            description: ''
+            use_operator: false
+            operator: analysis_description_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: analysis_description_value
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+        analysis_source_value:
+          id: analysis_source_value
+          table: tripal_entity__analysis_source
+          field: analysis_source_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: string
+          operator: contains
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: analysis_source_value_op
+            label: 'Data Source Name'
+            description: ''
+            use_operator: false
+            operator: analysis_source_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: analysis_source_value
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          filter_type: '0'
+        analysis_software_value:
+          id: analysis_software_value
+          table: tripal_entity__analysis_software
+          field: analysis_software_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: string
+          operator: contains
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: analysis_software_value_op
+            label: 'Software Name'
+            description: ''
+            use_operator: false
+            operator: analysis_software_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: analysis_software_value
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          filter_type: '0'
+        analysis_algorithm_value:
+          id: analysis_algorithm_value
+          table: tripal_entity__analysis_algorithm
+          field: analysis_algorithm_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: string
+          operator: contains
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: analysis_algorithm_value_op
+            label: Algorithm
+            description: ''
+            use_operator: false
+            operator: analysis_algorithm_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: analysis_algorithm_value
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+          filter_type: '0'
+        analysis_timeexecuted_value:
+          id: analysis_timeexecuted_value
+          table: tripal_entity__analysis_timeexecuted
+          field: analysis_timeexecuted_value
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: datetime
+          operator: between
+          value:
+            min: ''
+            max: ''
+            value: ''
+            type: date
+          group: 1
+          exposed: true
+          expose:
+            operator_id: analysis_timeexecuted_value_op
+            label: 'Date and Time Executed'
+            description: ''
+            use_operator: false
+            operator: analysis_timeexecuted_value_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: analysis_timeexecuted_value
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            min_placeholder: ''
+            max_placeholder: ''
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+      filter_groups:
+        operator: AND
+        groups:
+          1: AND
+      style:
+        type: table
+        options:
+          grouping: {  }
+          row_class: views-tripal-entity-row-default
+          default_row_class: true
+          columns:
+            view_tripal_entity: view_tripal_entity
+            analysis_name: analysis_name
+            analysis_description: analysis_description
+            analysis_source: analysis_source
+            analysis_software: analysis_software
+            analysis_algorithm: analysis_algorithm
+            analysis_timeexecuted: analysis_timeexecuted
+            operations: operations
+          default: analysis_name
+          info:
+            view_tripal_entity:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            analysis_name:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            analysis_description:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            analysis_source:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            analysis_software:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            analysis_algorithm:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            analysis_timeexecuted:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            operations:
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+          override: true
+          sticky: false
+          summary: ''
+          empty_table: false
+          caption: ''
+          description: ''
+      row:
+        type: fields
+      query:
+        type: views_query
+        options:
+          query_comment: ''
+          disable_sql_rewrite: false
+          distinct: false
+          replica: false
+          query_tags: {  }
+      relationships: {  }
+      use_more: false
+      use_more_always: false
+      use_more_text: more
+      header: {  }
+      footer: {  }
+      display_extenders: {  }
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+      tags:
+        - 'config:field.storage.tripal_entity.analysis_algorithm'
+        - 'config:field.storage.tripal_entity.analysis_description'
+        - 'config:field.storage.tripal_entity.analysis_name'
+        - 'config:field.storage.tripal_entity.analysis_software'
+        - 'config:field.storage.tripal_entity.analysis_source'
+        - 'config:field.storage.tripal_entity.analysis_timeexecuted'
+  page_1:
+    id: page_1
+    display_title: Page
+    display_plugin: page
+    position: 1
+    display_options:
+      exposed_block: false
+      display_extenders: {  }
+      path: data-search/analysis
+      menu:
+        type: normal
+        title: Analysis
+        description: ''
+        weight: 0
+        expanded: false
+        menu_name: data-search
+        parent: ''
+        context: '0'
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+      tags:
+        - 'config:field.storage.tripal_entity.analysis_algorithm'
+        - 'config:field.storage.tripal_entity.analysis_description'
+        - 'config:field.storage.tripal_entity.analysis_name'
+        - 'config:field.storage.tripal_entity.analysis_software'
+        - 'config:field.storage.tripal_entity.analysis_source'
+        - 'config:field.storage.tripal_entity.analysis_timeexecuted'

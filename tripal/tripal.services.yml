@@ -18,6 +18,7 @@ services:
     arguments:
       - '@entity_type.manager'
       - '@extension.list.module'
+      - '@module_handler'
   tripal.token_parser:
     class: 'Drupal\tripal\Services\TripalTokenParser'
   tripal.dbx:

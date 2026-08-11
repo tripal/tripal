@@ -8,6 +8,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\tripal\Services\SyncTripalFieldStorage;
 use Drupal\tripal\Services\TripalEntityTypeCollection;
 use Drupal\tripal\Services\TripalFieldCollection;
+use Drupal\tripal\Services\TripalRebuildService;
 use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
 
@@ -28,6 +29,7 @@ class TripalCommands extends DrushCommands {
     protected EntityTypeManagerInterface $entityTypeManager,
     protected TripalEntityTypeCollection $entityTypeCollectionService,
     protected TripalFieldCollection $fieldCollectionService,
+    protected TripalRebuildService $rebuildService,
     protected SyncTripalFieldStorage $syncFieldStorageService,
   ) {
     // Parent currently doesn't do anything here.
@@ -247,6 +249,9 @@ class TripalCommands extends DrushCommands {
 
     // Import the fields.
     $this->fieldCollectionService->install($chosen_collection_ids);
+
+    // Call rebuild to install any drupal views that may exist.
+    $this->rebuildService->rebuildViews();
   }
 
   /**

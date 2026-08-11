@@ -85,3 +85,11 @@ tripal-field-ui:
       css/tripal.field_ui.css: {}
   dependencies:
     - 'field_ui/drupal.field_ui.manage_fields'
+
+tripal-entity-views:
+  version: '1.x'
+  css:
+    theme:
+      css/tripal.entity.views.css: {}
+  dependencies:
+    - 'core/views'
