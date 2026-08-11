@@ -149,7 +149,7 @@ class ChadoCvForm extends FormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
 
-    // The action will be either 'edit' or 'add'.
+    // The action will just be for 'add'.
     $action = $values['action'];
 
     // Validate that an existing cv does not match the new cv.

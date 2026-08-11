@@ -57,8 +57,8 @@ class ChadoDbForm extends FormBase {
    * @param Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    * @param int|null $db_id
-   *   If editing, the cv primary key.
-   *   If adding a new CV, this will be null.
+   *   If editing, the db primary key.
+   *   If adding a new database, this will be null.
    *
    * @return array
    *   Render array containing elements for the form.
@@ -72,7 +72,7 @@ class ChadoDbForm extends FormBase {
       $action = 'edit';
       $db_records = $this->dbxref_buddy->getDb(['db.db_id' => $db_id]);
       if (!$db_records) {
-        throw new \Exception("Invalid db_id \"$db_id\" passed to chado_db_form");
+        throw new \Exception("Invalid db_id \"$db_id\" passed to " . $this->getFormId());
       }
       $db_record = reset($db_records);
     }
@@ -169,10 +169,10 @@ class ChadoDbForm extends FormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
 
-    // The action will be either 'edit' or 'add'.
+    // The action will just be for 'add'.
     $action = $values['action'];
 
-    // Validate that an existing cv does not match the new cv.
+    // Validate that an existing database name does not match the new database name.
     if ($action == 'add') {
       $records = $this->dbxref_buddy->getDb([
         'db.name' => $values['db_name'],
