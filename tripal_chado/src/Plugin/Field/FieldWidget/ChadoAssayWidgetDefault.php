@@ -38,7 +38,7 @@ class ChadoAssayWidgetDefault extends ChadoWidgetBase {
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
     $link = $item_vals['link'] ?? 0;
-    $assay_id = $item_vals['assay_id'] ?? 0;
+    $assay_id = $item_vals[$linker_fkey_column] ?? 0;
 
     $elements = [];
     $elements['record_id'] = [
