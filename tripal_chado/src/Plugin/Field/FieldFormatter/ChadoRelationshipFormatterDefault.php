@@ -16,6 +16,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
   description: new TranslatableMarkup('A chado relationship formatter'),
   field_types: [
     'chado_relationship_type_default',
+    'chado_relationship_by_role_type_default',
   ],
   valid_tokens: [
     '[accession]',
@@ -64,7 +65,7 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
         $direction = -1;
       }
 
-      // As we did in Tripal 3, the term is processed up a bit to make for nicer display
+      // As we did in Tripal 3, the term is processed up a bit to make for nicer display.
       $this->formatTypeName($values);
 
       // Create a clickable link to the corresponding related entity when one exists.
@@ -79,7 +80,7 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
       }
 
       // Lookup subject and object entity bundle names. ID may be -1 if unpublished.
-      // e.g. for features: mRNA xxx is part of Gene yyy
+      // e.g. for features: mRNA xxx is part of Gene yyy.
       $values['subject_bundle'] = $lookup_manager->getBundleLabel($values['subject_entity_id']);
       $values['object_bundle'] = $lookup_manager->getBundleLabel($values['object_entity_id']);
 
@@ -138,13 +139,14 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
   protected function get_rel_verb(string $rel_type): string {
     $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
     $verb = '';
-    // can skip anything already starting with 'is' or 'has'
+    // Can skip anything already starting with 'is' or 'has'.
     if (!preg_match('/^(is|has) /', $rel_type_clean)) {
       switch ($rel_type_clean) {
         case 'integral part of':
         case 'instance of':
           $verb = 'is an';
           break;
+
         case 'genome of':
         case 'part of':
         case 'position of':
@@ -154,6 +156,7 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
         case 'variant of':
           $verb = 'is a';
           break;
+
         case 'connects on':
         case 'contains':
         case 'derives from':
@@ -163,6 +166,7 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
         case 'overlaps':
         case 'starts':
           break;
+
         default:
           $verb = 'is';
       }
@@ -173,4 +177,5 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
     }
     return $verb;
   }
+
 }
