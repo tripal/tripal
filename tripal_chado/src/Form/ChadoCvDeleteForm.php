@@ -66,7 +66,7 @@ class ChadoCvDeleteForm extends FormBase {
     // Get values of the CV.
     $cv_records = $this->cvterm_buddy->getCv(['cv.cv_id' => $cv_id]);
     if (!$cv_records) {
-      throw new \Exception("Invalid cv_id \"$cv_id\" passed to chado_cv_delete_form");
+      throw new \Exception("Invalid cv_id \"$cv_id\" passed to " .  $this->getFormId());
     }
     $cv_record = reset($cv_records);
 
@@ -126,7 +126,7 @@ class ChadoCvDeleteForm extends FormBase {
   }
 
   /**
-   * Form submit hook for the tripal_chado_cv_delete_form form.
+   * Form submit hook for the chado_cv_delete_form form.
    *
    * @param array &$form
    *   The form array definition.

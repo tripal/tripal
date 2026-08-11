@@ -79,7 +79,7 @@ class ChadoCvForm extends FormBase {
       $action = 'edit';
       $cv_records = $this->cvterm_buddy->getCv(['cv.cv_id' => $cv_id]);
       if (!$cv_records) {
-        throw new \Exception("Invalid cv_id \"$cv_id\" passed to chado_cv_form");
+        throw new \Exception("Invalid cv_id \"$cv_id\" passed to " . $this->getFormId());
       }
       $cv_record = reset($cv_records);
     }
@@ -104,7 +104,6 @@ class ChadoCvForm extends FormBase {
     ];
 
     $form['cv_name'] = [
-      '#disabled' => FALSE,
       '#type' => 'textfield',
       '#maxlength' => 255,
       '#title' => $this->t('Controlled Vocabulary (Ontology) Name'),
@@ -114,7 +113,6 @@ class ChadoCvForm extends FormBase {
     ];
 
     $form['cv_definition'] = [
-      '#disabled' => FALSE,
       '#type' => 'textarea',
       '#title' => $this->t('Controlled Vocabulary Definition'),
       '#description' => $this->t('Enter the definition of the controlled vocabulary'),
