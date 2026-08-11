@@ -72,8 +72,8 @@
     'submit_output':
       - ''
     'submit_messages':
-      - 'error: The specified accession and version already exists for this database'
-      - 'error: The specified vocabulary term and value of "Is Obsolete" already exists for this vocabulary'
+      - 'error: The specified accession and version already exist for this database'
+      - 'error: The specified vocabulary term and value of "Is Obsolete" already exist for this vocabulary'
 'Controlled vocabulary term edit form with an existing term':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvtermForm'
     'setup':
@@ -164,7 +164,7 @@
     'submit_values':
       'drop_dbxref': 1
     'triggering_element':
-      '#value': 'Delete'
+      '#name': 'delete'
     'submit_expectations':
       'cvterm_id': 3
     'submit_output':
@@ -210,7 +210,7 @@
     'submit_values':
       'drop_dbxref': 0
     'triggering_element':
-      '#value': 'Delete'
+      '#name': 'delete'
     'submit_expectations':
       'cvterm_id': 3
     'submit_output':
@@ -248,7 +248,7 @@
       'cancel':
         '#value': 'Cancel'
     'triggering_element':
-      '#value': 'Delete'
+      '#name': 'delete'
     'submit_fails': true
     'submit_output':
       - 'Redirecting to'

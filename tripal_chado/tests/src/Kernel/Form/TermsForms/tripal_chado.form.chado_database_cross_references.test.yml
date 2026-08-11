@@ -156,7 +156,7 @@
       'cancel':
         '#value': 'Cancel'
     'triggering_element':
-      '#value': 'Delete'
+      '#name': 'delete'
     'submit_expectations':
       'dbxref_id': 3495
     'submit_output':

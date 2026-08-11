@@ -143,7 +143,7 @@ class ChadoDbxrefDeleteForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $triggering_element = $form_state->getTriggeringElement();
 
-    if ($triggering_element['#name'] == 'delete') {
+    if (($triggering_element['#name'] ?? '') == 'delete') {
       $dbxref_id = $form_state->getValue('dbxref_id');
       $db_name = $form_state->getValue('db_name');
       $dbxref_accession = $form_state->getValue('dbxref_accession');
