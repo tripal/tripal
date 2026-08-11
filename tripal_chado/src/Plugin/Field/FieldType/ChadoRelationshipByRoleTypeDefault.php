@@ -2,10 +2,17 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
+use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
+use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- *
+ * Plugin implementation of default Tripal relationship by role field type.
  */
 #[TripalFieldType(
   id: 'chado_relationship_by_role_type_default',
@@ -16,12 +23,13 @@ use Drupal\tripal\TripalField\Attribute\TripalFieldType;
   default_formatter: 'chado_relationship_formatter_default',
 )]
 class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
+
   /**
    * The id for this field. Must match the attribute value.
    *
    * @var string
    */
-  public static $id = 'chado_contact_by_role_type_default';
+  public static $id = 'chado_relationship_by_role_type_default';
 
   /**
    * Indicate if we should provide a column selector in the add field form.
@@ -118,6 +126,158 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
 
     $schemaObj = \Drupal::service('tripal_chado.database')->schema();
     $mappingObj = \Drupal::entityTypeManager()->getStorage('chado_term_mapping')->load('core_mapping');
+
+    // Get the column, term and any other schema-related details.
+    // BASE TABLE.
+    $base_schema_def = $schemaObj->getTableDef($base_table, ['format' => 'Drupal']);
+    // - primary key
+    $base_pkey_col = $base_schema_def['primary key'];
+    $terms['base_pkey'] = $terms['record_id'];
+
+    $base_column = $storage_settings['base_column'];
+    $terms['base_column'] = $mappingObj->getColumnTermId($base_table, $base_column, 'schema:name');
+
+    // Relationship table.
+    $linker_table = $storage_settings['linker_table'] ?? ($base_table . '_relationship');
+    $linker_schema_def = $schemaObj->getTableDef($linker_table, $schema);
+    $linker_pkey_col = $linker_schema_def['primary key'];
+    // Relationship table column naming is not consistent for
+    // nd_reagent and project.
+    $linker_subject_col = $storage_settings['subject_column'] ?? NULL;
+    $linker_object_col = $storage_settings['object_column'] ?? NULL;
+    if (!$linker_subject_col || !$linker_object_col) {
+      // When this field is added through the UI, these will not have been
+      // set yet, so save the settings.
+      [$linker_subject_col, $linker_object_col] = self::getRelationshipColumns($chado, $base_table, $linker_table);
+      $storage_settings['subject_column'] = $linker_subject_col;
+      $storage_settings['object_column'] = $linker_object_col;
+      $field_definition->setSetting('storage_plugin_settings', $storage_settings);
+    }
+    $linker_type_col = 'type_id';
+    $terms['linker_subject'] = $mappingObj->getColumnTermId($linker_table, $linker_subject_col, 'local:relationship_subject');
+    $terms['linker_object'] = $mappingObj->getColumnTermId($linker_table, $linker_object_col, 'local:relationship_object');
+    $terms['linker_type'] = $mappingObj->getColumnTermId($linker_table, $linker_type_col, 'schema:additionalType');
+
+    // Columns from linked tables to specify the relationship type.
+    $cvterm_schema_def = $schemaObj->getTableDef('cvterm', ['format' => 'Drupal']);
+    $terms['type_name'] = $mappingObj->getColumnTermId('cvterm', 'name') ?: 'schema:additionalType';
+    $max_lengths['type_name'] = $cvterm_schema_def['fields']['name']['size'];
+
+    // Value.
+    $terms['relationship_value'] = $mappingObj->getColumnTermId($linker_table, 'value') ?: 'NCIT:C25712';
+
+    // Rank.
+    $terms['relationship_rank'] = $mappingObj->getColumnTermId($linker_table, 'rank') ?: 'OBCS:0000117';
+
+    // Create a table alias for the linker table in order to ensure
+    // relationship links with other roles are not combined. Use the field
+    // CV term to scope the alias to this field's role .
+    $field_settings = $field_definition->getSettings();
+    $term = $field_settings['termIdSpace'] . ':' . $field_settings['termAccession'];
+    $table_alias = $linker_table . '_' . preg_replace('/[^a-z0-9]+/', '', strtolower($term));
+    $table_mapping = [$table_alias => $linker_table];
+
+    $properties = [];
+
+    // Define the base table record id.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $terms['base_pkey'], [
+      'action' => 'store_id',
+      'drupal_store' => TRUE,
+      'path' => $base_table . '.' . $base_pkey_col,
+    ]);
+
+    // Drupal entity IDs for subject/object.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_entity_id', self::$drupal_entity_term, [
+      'action' => 'function',
+      'drupal_store' => TRUE,
+      'namespace' => self::$chadostorage_namespace,
+      'function' => self::$drupal_entity_callback,
+      'ftable' => $base_table,
+      'fkey' => 'subject_id',
+    ]);
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_entity_id', self::$drupal_entity_term, [
+      'action' => 'function',
+      'drupal_store' => TRUE,
+      'namespace' => self::$chadostorage_namespace,
+      'function' => self::$drupal_entity_callback,
+      'ftable' => $base_table,
+      'fkey' => 'object_id',
+    ]);
+
+    // Define the relationship linker pkey using the alias.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', self::$record_id_term, [
+      'action' => 'store_pkey',
+      'drupal_store' => TRUE,
+      'path' => $table_alias . '.' . $linker_pkey_col,
+      'table_alias_mapping' => $table_mapping,
+    ]);
+
+    // Links between base and linker (subject/object) using alias mapping.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_id', $terms['linker_subject'], [
+      'action' => 'store_link',
+      'drupal_store' => TRUE,
+      'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $linker_subject_col,
+      'table_alias_mapping' => $table_mapping,
+      'as' => 'subject_id',
+    ]);
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_id', $terms['linker_object'], [
+      'action' => 'store_link',
+      'drupal_store' => TRUE,
+      'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $linker_object_col,
+      'table_alias_mapping' => $table_mapping,
+      'as' => 'object_id',
+    ]);
+
+    // Names for subject/object.
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'subject_name', $terms['base_column'], [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $table_alias . '.' . $linker_subject_col . '>' . $base_table . '.' . $base_pkey_col . ';' . $base_column,
+      'table_alias_mapping' => $table_mapping,
+      'as' => 'subject_name',
+    ]);
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'object_name', $terms['base_column'], [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $table_alias . '.' . $linker_object_col . '>' . $base_table . '.' . $base_pkey_col . ';' . $base_column,
+      'table_alias_mapping' => $table_mapping,
+      'as' => 'object_name',
+    ]);
+
+    // Type id and name via alias.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $terms['linker_type'], [
+      'action' => 'store',
+      'drupal_store' => FALSE,
+      'path' => $table_alias . '.' . $linker_type_col,
+      'table_alias_mapping' => $table_mapping,
+      'delete_if_empty' => TRUE,
+      'empty_value' => 0,
+    ]);
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'type_name', $terms['type_name'], $max_lengths['type_name'], [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $table_alias . '.' . $linker_type_col . '>cvterm.cvterm_id;name',
+      'table_alias_mapping' => $table_mapping,
+      'as' => 'type_name',
+    ]);
+
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'relationship_value', $terms['relationship_value'], [
+      'action' => 'store',
+      'drupal_store' => FALSE,
+      'path' => $table_alias . '.value',
+      'table_alias_mapping' => $table_mapping,
+      'as' => 'relationship_value',
+    ]);
+
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'relationship_rank', $terms['relationship_rank'], [
+      'action' => 'store',
+      'drupal_store' => FALSE,
+      'path' => $table_alias . '.rank',
+      'table_alias_mapping' => $table_mapping,
+      'as' => 'relationship_rank',
+    ]);
+
+    return $properties;
   }
 
   /**
