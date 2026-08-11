@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
+use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
@@ -126,6 +127,7 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
 
     $schemaObj = \Drupal::service('tripal_chado.database')->schema();
     $mappingObj = \Drupal::entityTypeManager()->getStorage('chado_term_mapping')->load('core_mapping');
+    $chado = \Drupal::service('tripal_chado.database');
 
     // Get the column, term and any other schema-related details.
     // BASE TABLE.
@@ -139,7 +141,7 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
 
     // Relationship table.
     $linker_table = $storage_settings['linker_table'] ?? ($base_table . '_relationship');
-    $linker_schema_def = $schemaObj->getTableDef($linker_table, $schema);
+    $linker_schema_def = $schemaObj->getTableDef($linker_table, ['format' => 'Drupal']);
     $linker_pkey_col = $linker_schema_def['primary key'];
     // Relationship table column naming is not consistent for
     // nd_reagent and project.
@@ -302,6 +304,8 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
     // Ensure that the relationship table has a type_id.
     $has_type_id = FALSE;
 
+    $schemaObj = \Drupal::service('tripal_chado.database')->schema();
+
     // Check there is a type_id field.
     $has_type_id = $schemaObj->fieldExists($relationship_table, 'type_id');
     if (!$has_type_id) {
@@ -313,6 +317,42 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
       return TRUE;
     }
     return FALSE;
+  }
+
+  /**
+   * Returns the names of the relationship subject and object columns.
+   *
+   * This lookup is necessary because column names are not consistent
+   * for nd_reagent and project.
+   *
+   * @param Drupal\tripal_chado\Database\ChadoConnection $chado
+   *   Connection to Chado database.
+   * @param string $base_table
+   *   The name of the base table, e.g. "project".
+   * @param string $relationship_table
+   *   The name of the relationship table, e.g. "project_relationship".
+   *
+   * @return array
+   *   Array with two elements, the names of subject and object columns.
+   */
+  protected static function getRelationshipColumns(ChadoConnection $chado, string $base_table, string $relationship_table): array {
+    $subject_column = '';
+    $object_column = '';
+    // The subject and object columns will be among the foreign keys
+    // to the base table.
+    $schema = $chado->schema();
+    $foreign_key_def = self::getChadoForeignKeyDef($relationship_table, $base_table, $schema);
+    if ($foreign_key_def) {
+      foreach (array_keys($foreign_key_def['columns']) as $relationship_column) {
+        if (preg_match('/subject/', $relationship_column)) {
+          $subject_column = $relationship_column;
+        }
+        elseif (preg_match('/object/', $relationship_column)) {
+          $object_column = $relationship_column;
+        }
+      }
+    }
+    return [$subject_column, $object_column];
   }
 
 }
