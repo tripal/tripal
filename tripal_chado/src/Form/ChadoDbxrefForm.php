@@ -73,7 +73,7 @@ class ChadoDbxrefForm extends FormBase {
       $action = 'edit';
       $dbxref_records = $this->dbxref_buddy->getDbxref(['dbxref.dbxref_id' => $dbxref_id]);
       if (!$dbxref_records) {
-        throw new \Exception("Invalid dbxref_id \"$dbxref_id\" passed to chado_dbxref_form");
+        throw new \Exception("Invalid dbxref_id \"$dbxref_id\" passed to " . $this->getFormId());
       }
       $dbxref_record = reset($dbxref_records);
     }
@@ -215,7 +215,7 @@ class ChadoDbxrefForm extends FormBase {
         $success = TRUE;
       }
       catch (ChadoBuddyException $e) {
-        $this->messenger()->addError($this->t('Unable to add the cross reference "@db:@acc": @error',
+        $this->messenger()->addError($this->t('Unable to add the database crossreference "@db:@acc": @error',
           ['@db' => $values['db_name'], '@acc' => $values['dbxref_accession'], '@error' => $e->getMessage()]));
       }
     }
@@ -230,7 +230,7 @@ class ChadoDbxrefForm extends FormBase {
         $success = TRUE;
       }
       catch (ChadoBuddyException $e) {
-        $this->messenger()->addError($this->t('Unable to update the cross reference "@db:@acc": @error',
+        $this->messenger()->addError($this->t('Unable to update the database crossreference "@db:@acc": @error',
           ['@db' => $values['db_name'], '@acc' => $values['dbxref_accession'], '@error' => $e->getMessage()]));
       }
     }

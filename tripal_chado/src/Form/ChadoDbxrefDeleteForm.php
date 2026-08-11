@@ -66,7 +66,7 @@ class ChadoDbxrefDeleteForm extends FormBase {
     // Get values of the CV term.
     $dbxref_records = $this->dbxref_buddy->getDbxref(['dbxref.dbxref_id' => $dbxref_id]);
     if (!$dbxref_records) {
-      throw new \Exception("Invalid dbxref_id \"$dbxref_id\" passed to chado_dbxref_delete_form");
+      throw new \Exception("Invalid dbxref_id \"$dbxref_id\" passed to " . $this->getFormId());
     }
     $dbxref_record = reset($dbxref_records);
 
@@ -133,7 +133,7 @@ class ChadoDbxrefDeleteForm extends FormBase {
   }
 
   /**
-   * Form submit hook for the tripal_chado_dbxref_delete_form form.
+   * Form submit hook for the chado_dbxref_delete_form form.
    *
    * @param array &$form
    *   The form array definition.
