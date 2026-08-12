@@ -16,7 +16,7 @@ use Drupal\tripal\Entity\TripalEntityType;
  */
 #[FieldType(
   id: 'chado_license_type_default',
-  category: 'tripal_file',
+  category: 'tripal_chado',
   label: new TranslatableMarkup('Chado License'),
   description: new TranslatableMarkup('A license document that applies to this content, typically indicated by URL.'),
   default_widget: 'chado_license_widget_default',

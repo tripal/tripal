@@ -145,6 +145,10 @@ class TripalFileRebuildService {
               $fkey_name = $table_name . '_' . $column . '_fkey';
               $this->addTypeIdForeignKey($new_schema, $full_table_name, $fkey_name);
             }
+
+            if (method_exists($transaction_chado, 'commitOrRelease')) {
+              $transaction_chado->commitOrRelease();
+            }
           }
           catch (\Exception $e) {
             $transaction_chado->rollback();
