@@ -74,6 +74,7 @@ class ChadoPatchServiceTest extends ChadoTestKernelBase {
     // Verify records in the database match the expectations defined
     // in our test yaml file.
     $file_contents = file_get_contents($test_yaml);
+    $this->assertNotEmpty($file_contents, "No information read from scenarios yaml file \"$test_yaml\"");
     $yaml_data = Yaml::parse($file_contents);
     foreach ($yaml_data as $record) {
       $this->checkPatchedRecord($record);
