@@ -53,7 +53,7 @@
     'submit_output':
       - ''
     'submit_messages':
-      - 'Unable to add the cross reference "local (15):is_analysis"'
+      - 'Unable to add the database crossreference "local (15):is_analysis"'
       - 'duplicate key value violates unique constraint'
 'Database cross reference edit form with an existing dbxref':
   - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbxrefForm'
