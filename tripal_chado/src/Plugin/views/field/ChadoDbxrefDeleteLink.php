@@ -31,9 +31,8 @@ class ChadoDbxrefDeleteLink extends FieldPluginBase {
     $dbxref_id = $values->dbxref_id;
     $url = Url::fromUserInput('/admin/tripal/storage/chado/dbxref_delete/' . $dbxref_id)->toString();
     $link = Link::fromTextAndUrl('Delete', $url)->toString()->getGeneratedLink();
-    $markup = new Markup();
 
-    return $markup->create($link);
+    return Markup::create($link);
   }
 
 }

@@ -31,9 +31,8 @@ class ChadoDbDeleteLink extends FieldPluginBase {
     $db_id = $values->db_id;
     $url = Url::fromUserInput('/admin/tripal/storage/chado/db_delete/' . $db_id)->toString();
     $link = Link::fromTextAndUrl('Delete', $url)->toString()->getGeneratedLink();
-    $markup = new Markup();
 
-    return $markup->create($link);
+    return Markup::create($link);
   }
 
 }

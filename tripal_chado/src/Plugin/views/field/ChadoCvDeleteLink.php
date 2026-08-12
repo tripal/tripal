@@ -31,9 +31,8 @@ class ChadoCvDeleteLink extends FieldPluginBase {
     $cv_id = $values->cv_id;
     $url = Url::fromUserInput('/admin/tripal/storage/chado/cv_delete/' . $cv_id);
     $link = Link::fromTextAndUrl('Delete', $url)->toString()->getGeneratedLink();
-    $markup = new Markup();
 
-    return $markup->create($link);
+    return Markup::create($link);
   }
 
 }
