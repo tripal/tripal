@@ -1143,7 +1143,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   Keys recognized here:
    *   - 'display': Used to override default display settings.
    *     For example, to hide the field label, we would use:
-   *     'display' => ['default']['label'] = 'hidden'.
+   *     'display' => ['view']['default']['label'] = 'hidden'.
    *
    * @return array
    *   The same array with plugin IDs added.
