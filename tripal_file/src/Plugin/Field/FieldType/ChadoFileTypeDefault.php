@@ -309,6 +309,15 @@ class ChadoFileTypeDefault extends ChadoFieldItemBase {
       'termAccession' => '000396',
       'description' => 'A file is an information-bearing object that contains a physical embodiment of some information using a particular character encoding.',
       'cardinality' => -1,
+      // Because we use a table with column headings in the formatter,
+      // the field label is not needed.
+      'display' => [
+        'view' => [
+          'default' => [
+            'label' => 'hidden',
+          ],
+        ],
+      ],
     ];
 
     // Call the parent discover() with this field's specific options.
