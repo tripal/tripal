@@ -125,9 +125,9 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
     ];
     $max_lengths = [];
 
-    $schemaObj = \Drupal::service('tripal_chado.database')->schema();
-    $mappingObj = \Drupal::entityTypeManager()->getStorage('chado_term_mapping')->load('core_mapping');
     $chado = \Drupal::service('tripal_chado.database');
+    $schemaObj = $chado->schema();
+    $mappingObj = \Drupal::entityTypeManager()->getStorage('chado_term_mapping')->load('core_mapping');
 
     // Get the column, term and any other schema-related details.
     // BASE TABLE.
@@ -143,6 +143,7 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
     $linker_table = $storage_settings['linker_table'] ?? ($base_table . '_relationship');
     $linker_schema_def = $schemaObj->getTableDef($linker_table, ['format' => 'Drupal']);
     $linker_pkey_col = $linker_schema_def['primary key'];
+    $terms['linker_pkey'] = $terms['record_id'];
     // Relationship table column naming is not consistent for
     // nd_reagent and project.
     $linker_subject_col = $storage_settings['subject_column'] ?? NULL;
@@ -162,7 +163,7 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
 
     // Columns from linked tables to specify the relationship type.
     $cvterm_schema_def = $schemaObj->getTableDef('cvterm', ['format' => 'Drupal']);
-    $terms['type_name'] = $mappingObj->getColumnTermId('cvterm', 'name') ?: 'schema:additionalType';
+    $terms['type_name'] = $mappingObj->getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $max_lengths['type_name'] = $cvterm_schema_def['fields']['name']['size'];
 
     // Value.
@@ -207,7 +208,7 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
     ]);
 
     // Define the relationship linker pkey using the alias.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', self::$record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $terms['linker_pkey'], [
       'action' => 'store_pkey',
       'drupal_store' => TRUE,
       'path' => $table_alias . '.' . $linker_pkey_col,
@@ -263,23 +264,60 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
       'as' => 'type_name',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'relationship_value', $terms['relationship_value'], [
-      'action' => 'store',
-      'drupal_store' => FALSE,
-      'path' => $table_alias . '.value',
-      'table_alias_mapping' => $table_mapping,
-      'as' => 'relationship_value',
-    ]);
+    if (array_key_exists('value', $linker_schema_def['fields'])) {
+      $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'relationship_value', $terms['relationship_value'], [
+        'action' => 'store',
+        'drupal_store' => FALSE,
+        'path' => $table_alias . '.value',
+        'table_alias_mapping' => $table_mapping,
+        'as' => 'relationship_value',
+      ]);
+    }
 
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'relationship_rank', $terms['relationship_rank'], [
-      'action' => 'store',
-      'drupal_store' => FALSE,
-      'path' => $table_alias . '.rank',
-      'table_alias_mapping' => $table_mapping,
-      'as' => 'relationship_rank',
-    ]);
+    if (array_key_exists('rank', $linker_schema_def['fields'])) {
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'relationship_rank', $terms['relationship_rank'], [
+        'action' => 'store',
+        'drupal_store' => FALSE,
+        'path' => $table_alias . '.rank',
+        'table_alias_mapping' => $table_mapping,
+        'as' => 'relationship_rank',
+      ]);
+    }
 
     return $properties;
+  }
+
+  /**
+   * We need to set the type_id property value to match the field's term.
+   *
+   * To do this we'll override the tripalValuesTemplate() and give the
+   * `type_id` property a default value.
+   *
+   * {@inheritdoc}
+   *
+   * @see \Drupal\tripal\TripalField\TripalFieldItemBase::tripalValuesTemplate()
+   */
+  public function tripalValuesTemplate($field_definition, $default_value = NULL) {
+    $prop_values = parent::tripalValuesTemplate($field_definition, $default_value);
+
+    $settings = $field_definition->getSettings();
+    $termIdSpace = $settings['termIdSpace'];
+    $termAccession = $settings['termAccession'];
+
+    /** @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager $idSpace_manager **/
+    /** @var \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase $idSpace **/
+    /** @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term **/
+    $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $idSpace = $idSpace_manager->loadCollection($termIdSpace);
+    $term = $idSpace->getTerm($termAccession);
+
+    foreach ($prop_values as $index => $prop_value) {
+      if ($prop_value->getKey() == 'type_id') {
+        $prop_values[$index]->setValue($term->getInternalId());
+      }
+    }
+
+    return $prop_values;
   }
 
   /**

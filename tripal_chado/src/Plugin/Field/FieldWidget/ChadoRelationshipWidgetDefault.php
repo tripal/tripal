@@ -60,6 +60,9 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       $object_name .= ' (' . $object_id . ')';
     }
 
+    $show_term = array_key_exists('type_id', $property_definitions)
+      && ($field_definition->getType() !== 'chado_relationship_by_role_type_default');
+
     $reverse_default = 0;
     $related_default = $object_name;
     $related_id = $object_id;
@@ -104,15 +107,17 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       $cv_autocomplete = new ChadoCVTermAutocompleteController();
       $term_autocomplete_default = $cv_autocomplete->formatCVterm($type_id);
     }
-    $element['term'] = [
-      '#type' => 'textfield',
-      '#required' => FALSE,
-      '#default_value' => $term_autocomplete_default,
-      '#disabled' => FALSE,
-      '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 10],
-      '#element_validate' => [[static::class, 'validateAutocomplete']],
-    ];
+    if ($show_term) {
+      $element['term'] = [
+        '#type' => 'textfield',
+        '#required' => FALSE,
+        '#default_value' => $term_autocomplete_default,
+        '#disabled' => FALSE,
+        '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
+        '#autocomplete_route_parameters' => ['count' => 10],
+        '#element_validate' => [[static::class, 'validateAutocomplete']],
+      ];
+    }
 
     // Related record.
     $element['related_record'] = [
@@ -132,24 +137,32 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       '#element_validate' => [[static::class, 'validateRelatedRecord']],
     ];
 
-    $element['reverse'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Reverse'),
-      '#default_value' => $reverse_default,
-    ];
+    if ($show_term) {
+      $element['reverse'] = [
+        '#type' => 'checkbox',
+        '#title' => t('Reverse'),
+        '#default_value' => $reverse_default,
+      ];
+    }
 
     // To reduce clutter, only display these items on the first row.
     if ($delta == 0) {
-      $element['term']['#title'] = t('Controlled Vocabulary Term');
+      if ($show_term) {
+        $element['term']['#title'] = t('Controlled Vocabulary Term');
+      }
       $element['related_record']['#title'] = $this->t('Related @table record', ['@table' => $base_table]);
-      $element['reverse']['#description'] = $this->t('if this is the subject of the relationship',
-          ['@table' => $base_table]);
+      if ($show_term) {
+        $element['reverse']['#description'] = $this->t('if this is the subject of the relationship',
+            ['@table' => $base_table]);
+      }
     }
 
     // We also need a div to have a specific combined wrapper in addition to the fieldset.
-    $element['term']['#prefix'] = '<div class="chado-relationship-field-wrapper form-item">'
-        . ($element['term']['#prefix'] ?? '');
-    $element['direction']['#suffix'] = ($element['direction']['#suffix'] ?? '') . '</div>';
+    if ($show_term) {
+      $element['term']['#prefix'] = '<div class="chado-relationship-field-wrapper form-item">'
+          . ($element['term']['#prefix'] ?? '');
+      $element['reverse']['#suffix'] = ($element['reverse']['#suffix'] ?? '') . '</div>';
+    }
 
     // If there is a relationship value and it is not already set,
     // then we want to use '' as the default.
@@ -385,30 +398,35 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
 
       // Use autocomplete to replace the term with its cvterm_id value.
       $cvterm_id = 0;
-      if ($value['term']) {
-        $cv_autocomplete = new ChadoCVTermAutocompleteController();
-        $cvterm_id = $cv_autocomplete->getCVtermId($value['term']);
+      $record_id = $value['record_id'];
+      $related_record_id = 0;
+      if ($value['related_record']) {
+        $generic_autocomplete = new ChadoGenericAutocompleteController();
+        $related_record_id = $generic_autocomplete->getPkeyId($value['related_record']);
 
-        // Use the autocomplete to convert the related record to its numeric ID value.
-        $record_id = $value['record_id'];
-        $related_record_id = 0;
-        if ($value['related_record']) {
-          // If you add a term but no record, it will just be ignored, thus
-          // we don't add the term until this point, when we know there is a record.
+        if (!empty($value['term'])) {
+          $cv_autocomplete = new ChadoCVTermAutocompleteController();
+          $cvterm_id = $cv_autocomplete->getCVtermId($value['term']);
           $new_value['type_id'] = $cvterm_id;
-          $generic_autocomplete = new ChadoGenericAutocompleteController();
-          $related_record_id = $generic_autocomplete->getPkeyId($value['related_record']);
+        }
+        else {
+          $termIdSpace = $this->getFieldSetting('termIdSpace');
+          $termAccession = $this->getFieldSetting('termAccession');
 
-          // We need to know the orientation to put the appropriate
-          // values in the subject and object columns.
-          if ($value['reverse'] == 1) {
-            $new_value['subject_id'] = $related_record_id;
-            $new_value['object_id'] = $record_id;
-          }
-          else {
-            $new_value['subject_id'] = $record_id;
-            $new_value['object_id'] = $related_record_id;
-          }
+          $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+          $idSpace = $idSpace_manager->loadCollection($termIdSpace);
+          $term = $idSpace->getTerm($termAccession);
+
+          $new_value['type_id'] = $term->getInternalId();
+        }
+
+        if (!empty($value['reverse']) && ($value['reverse'] == 1)) {
+          $new_value['subject_id'] = $related_record_id;
+          $new_value['object_id'] = $record_id;
+        }
+        else {
+          $new_value['subject_id'] = $record_id;
+          $new_value['object_id'] = $related_record_id;
         }
       }
 
