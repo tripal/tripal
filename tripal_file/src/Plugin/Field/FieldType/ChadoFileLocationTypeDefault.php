@@ -240,6 +240,15 @@ class ChadoFileLocationTypeDefault extends ChadoFieldItemBase {
       'termAccession' => 'itemLocation',
       'description' => 'The location of the file.',
       'cardinality' => -1,
+      // Because we use a table with column headings in the formatter,
+      // the field label is not needed.
+      'display' => [
+        'view' => [
+          'default' => [
+            'label' => 'hidden',
+          ],
+        ],
+      ],
     ];
 
     // Call the parent discover() with this field's specific options.

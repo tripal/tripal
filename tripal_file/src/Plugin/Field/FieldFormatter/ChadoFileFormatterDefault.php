@@ -34,6 +34,7 @@ class ChadoFileFormatterDefault extends ChadoFormatterBase {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
+    $elements['#attached']['library'][] = 'tripal_file/tripal_file.field.ChadoFileFormatterDefault';
     $rows = [];
     $header = [
       $this->t('File'),
@@ -50,10 +51,14 @@ class ChadoFileFormatterDefault extends ChadoFormatterBase {
       ];
 
       // Create a clickable link to the corresponding entity when one exists.
-      $renderable_item = $lookup_manager->getRenderableItem($values['name'], $values['entity_id']);
-      $link = Link::fromTextAndUrl($renderable_item['#title'], $renderable_item['#url']);
-
-      $row = [$link, $values['type']];
+      if ($values['entity_id'] > 0) {
+        $renderable_item = $lookup_manager->getRenderableItem($values['name'], $values['entity_id']);
+        $link = Link::fromTextAndUrl($renderable_item['#title'], $renderable_item['#url']);
+        $row = [$link, $values['type']];
+      }
+      else {
+        $row = [$values['name'], $values['type']];
+      }
       $rows[$delta] = $row;
     }
 
@@ -62,7 +67,7 @@ class ChadoFileFormatterDefault extends ChadoFormatterBase {
         '#theme' => 'table',
         '#header' => $header,
         '#rows' => $rows,
-        '#wrapper_attributes' => ['class' => 'container'],
+        '#attributes' => ['class' => 'chado-file-table'],
       ];
     }
 
