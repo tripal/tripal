@@ -37,7 +37,7 @@ class ChadoFileLocationFormatterDefault extends ChadoFormatterBase {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
-    $elements['#attached']['library'][] = 'tripal_file/tripal_file.field.ChadoFileLocationFormatterDefault';
+    $elements['#attached']['library'][] = 'tripal_file/tripal_file.field.ChadoFileFormatterDefault';
     $rows = [];
     $header = [
       $this->t('Download File Name'),
@@ -88,7 +88,7 @@ class ChadoFileLocationFormatterDefault extends ChadoFormatterBase {
         '#theme' => 'table',
         '#header' => $header,
         '#rows' => $rows,
-        '#attributes' => ['class' => 'chado-file-location-table'],
+        '#attributes' => ['class' => 'chado-file-table'],
       ];
     }
 
