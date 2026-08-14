@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
+use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
@@ -63,6 +64,38 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
       $direction = 1;
       if ($values['subject_id'] == $values['record_id']) {
         $direction = -1;
+      }
+
+      // If this is a "by role" field the type_name may not be stored
+      // on the item. Attempt to resolve it from the type_id or from the
+      // field settings so the formatter can display a meaningful name.
+      if (empty($values['type_name'])) {
+        $field_definition = $items->getFieldDefinition();
+        if ($field_definition->getType() === 'chado_relationship_by_role_type_default') {
+          $type_id = (int) $item->get('type_id')->getString();
+          if ($type_id) {
+            $cv_autocomplete = new ChadoCVTermAutocompleteController();
+            $formatted = $cv_autocomplete->formatCVterm($type_id);
+            // formatCVterm returns "name (DB:accession)", extract the name.
+            if ($formatted) {
+              $values['type_name'] = preg_replace('/\s*\([^)]*\)$/', '', $formatted);
+            }
+          }
+          else {
+            // As a fallback, try to read term info from field settings.
+            $settings = $field_definition->getSettings();
+            if (!empty($settings['termIdSpace']) && !empty($settings['termAccession'])) {
+              $idspace = $settings['termIdSpace'];
+              $accession = $settings['termAccession'];
+              $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+              $idSpace = $idSpace_manager->loadCollection($idspace);
+              $term = $idSpace ? $idSpace->getTerm($accession) : NULL;
+              if ($term) {
+                $values['type_name'] = $term->getName();
+              }
+            }
+          }
+        }
       }
 
       // As we did in Tripal 3, the term is processed up a bit to make for nicer display.
