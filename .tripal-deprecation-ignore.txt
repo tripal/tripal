@@ -80,3 +80,9 @@
 # Deprecation: Since Drupal 11.5: Using the SYMFONY_DEPRECATIONS_HELPER environment variable to configure test runs is deprecated in drupal:11.5.0 and is removed from drupal:12.0.0. See https://www.drupal.org/node/3594014
 # Example test that triggers this: ConfigTest::testConfigYaml
 %SYMFONY_DEPRECATIONS_HELPER environment variable to configure test runs is deprecated%
+
+# Module: Drupal 11.5
+# Location: themes/contrib/gin/gin.theme
+# Deprecation: Using gin.theme is deprecated in drupal:11.5.0 and is removed from drupal:13.0.0. Use classes instead. See https://www.drupal.org/node/3581222
+# Example test that triggers this: testTripalAccessOwnContentCheck
+%Using gin.theme is deprecated in drupal:11.5.0%
