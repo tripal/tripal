@@ -1271,13 +1271,14 @@ function tripal_chado_update_10420() {
 }
 
 /**
- * Adds field properties for datetime chado columns. PR 2524.
+ * Adds field properties for datetime chado columns. PR 2524 + PR 2560.
  */
-function tripal_chado_update_10421() {
+function tripal_chado_update_10422() {
+  // This hook was renumbered from 10421 to 10422 by PR 2560 to fix a bug.
   tripal_chado_field_reload(['chado_analysis_type_default'], ['analysis_timeexecuted'], FALSE);
   // Tripal doesn't define any default instances of these fields,
   // but they may have been discovered.
-  tripal_chado_field_reload(['chado_feature_type_default'], ['gene_timeaccessioned', 'gene_timelastmodified', 'mrna_timeaccessioned', 'mrna_timelastmodified'], FALSE);
+  tripal_chado_field_reload(['chado_feature_type_default'], ['feature_timeaccessioned', 'feature_timelastmodified'], FALSE);
   tripal_chado_field_reload(['chado_assay_type_default'], ['assay_assaydate'], FALSE);
 }
 
