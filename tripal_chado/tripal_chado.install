@@ -1285,7 +1285,7 @@ function tripal_chado_update_10422() {
 /**
  * Fix blank descriptions and invalid urls in db and cv records. PR 2462.
  */
-function tripal_chado_update_10422() {
+function tripal_chado_update_10423() {
   try {
     $messenger = \Drupal::messenger();
     $chado_patch_service = \Drupal::service('tripal_chado.patch_service');
