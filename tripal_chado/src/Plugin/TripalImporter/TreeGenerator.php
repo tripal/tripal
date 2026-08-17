@@ -653,12 +653,11 @@ class TreeGenerator extends ChadoImporterBase implements ContainerFactoryPluginI
         return 2;
       }
 
-      // Prepare organism buddy, organism array parameter.
+      // Prepare organism buddy, organism array parameter, this has all of
+      // the columns in the organism table unique key.
       $organism_param = [];
       foreach (['genus', 'species', 'infraspecific_name', 'type_id'] as $fld) {
-        if (!empty($organism->{$fld})) {
-          $organism_param['organism.' . $fld] = $organism->{$fld};
-        }
+        $organism_param['organism.' . $fld] = $organism->{$fld};
       }
 
       $sci_name = $this->organism_buddy->getOrganismScientificName($organism_param);
