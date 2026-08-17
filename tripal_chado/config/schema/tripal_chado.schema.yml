@@ -559,6 +559,39 @@ field.formatter.settings.chado_pub_formatter_default:
   type: mapping
   mapping: {}
 
+## Relationship By Role Linker Field.
+field.field_settings.chado_relationship_by_role_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_relationship_by_role_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping:
+    storage_plugin_settings:
+      type: mapping
+      label: 'Tripal Storage-specific Settings'
+      mapping:
+        base_table:
+          type: 'string'
+          label: 'The base table of the content type (e.g. contact).'
+          nullable: FALSE
+        base_column:
+          type: 'string'
+          label: 'The primary key of the base table (e.g. contact_id).'
+          nullable: FALSE
+        linker_table:
+          type: 'string'
+          label: 'The table linking two versions of the base table together (e.g. contact_relationship).'
+          nullable: TRUE
+        subject_column:
+          type: 'string'
+          label: 'The column in the relationship table which is a foreign key for the relationship subject pointing to the base table.'
+          nullable: TRUE
+        object_column:
+          type: 'string'
+          label: 'The column in the relationship table which is a foreign key for the relationship object pointing to the base table.'
+          nullable: TRUE
+
 ## Relationship Field.
 field.field_settings.chado_relationship_type_default:
   type: mapping
