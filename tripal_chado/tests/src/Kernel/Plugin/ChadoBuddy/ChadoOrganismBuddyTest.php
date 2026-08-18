@@ -220,6 +220,24 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     ]);
     $this->assertEquals('Tripalus databasica brandnewcvtermname varietum', $infraspecific_newrank_organism_name, 'We did not retrieve the correct scientific name for an organism we updated with infraspecific rank: Tripalus databasica brandnewcvtermname varietum');
 
+    // TEST: Try to grab an organism without infraspecies when only
+    // an organism with infraspecies exists. Expect no organism returned.
+    $infraspecific_organism_values = [
+      'organism.genus' => 'Genus03',
+      'organism.species' => 'species03',
+      'organism.type_id' => 1,
+      'organism.infraspecific_name' => 'infra03',
+    ];
+    $instance->insertOrganism($infraspecific_organism_values);
+    $infraspecific_organism_name = $instance->getOrganismScientificName($infraspecific_organism_values);
+    $this->assertEquals('Genus03 species03 null infra03', $infraspecific_organism_name, 'We did not retrieve the correct scientific name for an organism we inserted');
+    $no_infraspecific_organism_values = [
+      'organism.genus' => 'Genus03',
+      'organism.species' => 'species03',
+    ];
+    $no_infraspecific_rank_organism_name = $instance->getOrganismScientificName($no_infraspecific_organism_values);
+    $this->assertEmpty($no_infraspecific_rank_organism_name, 'We retrieved the incorrect organism (' . $no_infraspecific_rank_organism_name . ') for one without infraspecies (Genus03 species03)');
+
   }
 
   /**
