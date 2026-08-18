@@ -1,65 +1,65 @@
 system-under-test:
-  chado_version: 1.3.3.013
+  chado_version: '1.3.3.013'
   bundle:
-    label: Project
-    termIdSpace: NCIT
-    termAccession: C47885
-    id: project
+    label: 'Project'
+    termIdSpace: 'NCIT'
+    termAccession: 'C47885'
+    id: 'project'
     settings:
-      chado_base_table: project
+      chado_base_table: 'project'
   fields:
-    - name: project_description
-      type: chado_text_type_default
-      type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault
+    - name: 'project_description'
+      type: 'chado_text_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
       cardinality: 1
-      widget: chado_text_type_widget
-      formatter: chado_text_type_formatter
-      termIdSpace: schema
-      termAccession: description
+      widget: 'chado_text_type_widget'
+      formatter: 'chado_text_type_formatter'
+      termIdSpace: 'schema'
+      termAccession: 'description'
       settings:
-        termIdSpace: schema
-        termAccession: description
+        termIdSpace: 'schema'
+        termAccession: 'description'
         debug: false
         storage_plugin_settings:
-          base_column: description
-          base_table: project
-        storage_plugin_id: chado_storage
-    - name: project_name
-      type: chado_string_type_default
-      type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault
+          base_column: 'description'
+          base_table: 'project'
+        storage_plugin_id: 'chado_storage'
+    - name: 'project_name'
+      type: 'chado_string_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
       cardinality: 1
-      widget: chado_string_type_widget
-      formatter: chado_string_type_formatter
-      termIdSpace: schema
-      termAccession: name
+      widget: 'chado_string_type_widget'
+      formatter: 'chado_string_type_formatter'
+      termIdSpace: 'schema'
+      termAccession: 'name'
       settings:
-        termIdSpace: schema
-        termAccession: name
+        termIdSpace: 'schema'
+        termAccession: 'name'
         debug: false
         max_length: 255
         storage_plugin_settings:
-          base_column: name
-          base_table: project
-        storage_plugin_id: chado_storage
-    - name: project_experiment
-      type: chado_relationship_by_role_type_default
-      type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoRelationshipByRoleTypeDefault
+          base_column: 'name'
+          base_table: 'project'
+        storage_plugin_id: 'chado_storage'
+    - name: 'project_experiment'
+      type: 'chado_relationship_by_role_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoRelationshipByRoleTypeDefault'
       cardinality: -1
-      widget: chado_relationship_widget_default
-      formatter: chado_relationship_formatter_default
-      termIdSpace: SIO
+      widget: 'chado_relationship_widget_default'
+      formatter: 'chado_relationship_formatter_default'
+      termIdSpace: 'SIO'
       termAccession: '001066'
       settings:
-        termIdSpace: SIO
+        termIdSpace: 'SIO'
         termAccession: '001066'
         debug: false
         storage_plugin_settings:
-          base_table: project
-          base_column: name
-          linker_table: project_relationship
-          subject_column: subject_project_id
-          object_column: object_project_id
-        storage_plugin_id: chado_storage
+          base_table: 'project'
+          base_column: 'name'
+          linker_table: 'project_relationship'
+          subject_column: 'subject_project_id'
+          object_column: 'object_project_id'
+        storage_plugin_id: 'chado_storage'
 scenarios:
   - label: 'Default Values Only'
     description: 'Creates a page using only default values for each field.'
