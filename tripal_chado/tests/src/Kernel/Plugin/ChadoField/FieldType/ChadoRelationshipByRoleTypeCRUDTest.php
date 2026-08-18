@@ -129,7 +129,18 @@ class ChadoRelationshipByRoleTypeCRUDTest extends ChadoTestKernelBase {
       $this->system_under_test['chado_version']
     );
 
-    $project_name = "Awesome Study";
+    $project_name = "Awesome Study 1";
+    $project_description = 'This awesome project is created for testing purposes.';
+    $project_id = $this->chado_connection->insert('1:project')
+      ->fields([
+        'name' => $project_name,
+        'description' => $project_description,
+      ])
+      ->execute();
+    $this->assertIsNumeric($project_id,
+      'We should have been able to insert a project for use with testing.');
+
+    $project_name = "Awesome Study 2";
     $project_description = 'This awesome project is created for testing purposes.';
     $project_id = $this->chado_connection->insert('1:project')
       ->fields([
@@ -156,7 +167,7 @@ class ChadoRelationshipByRoleTypeCRUDTest extends ChadoTestKernelBase {
 
     $scenarios[] = [
       0,
-      "Default Values Only",
+      "Typical Scenario",
     ];
 
     return $scenarios;
@@ -217,7 +228,7 @@ class ChadoRelationshipByRoleTypeCRUDTest extends ChadoTestKernelBase {
    */
   public function testFieldTypeHelperMethods() {
     // Retrieve the first scenario.
-    $current_scenario = $this->getYamlScenario(0, 'Default Values Only');
+    $current_scenario = $this->getYamlScenario(0, 'Typical Scenario');
 
     // Create the entity with that value set.
     $entity = TripalEntity::create([
