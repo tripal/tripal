@@ -102,3 +102,45 @@ scenarios:
             object_name: 'Caecus Hendrerit Turpis'
             type_id: 248
             type_name: 'guides'
+    edit:
+      user_input:
+        project_description:
+          - record_id: 2
+            value: 'Abdo augue enim esse odio. Dolus magna populus quis singularis vindico.'
+        project_name:
+          - record_id: 2
+            value: 'Caecus Hendrerit Turpis'
+        project_experiment:
+          # Self-reference: subject/object both point at this entity's own
+          # project record (2), which was already published during create,
+          # so the entity lookup can resolve a real entity id this time.
+          - record_id: 2
+            linker_id: 1
+            subject_id: 2
+            subject_entity_id: 0
+            subject_name: ''
+            object_id: 2
+            object_entity_id: 0
+            object_name: ''
+            type_id: 248
+            type_name: ''
+            relationship_value: 'Caecus Hendrerit Turpis'
+            relationship_rank: 0
+      expected:
+        project_description:
+          - record_id: 2
+            value: 'Abdo augue enim esse odio. Dolus magna populus quis singularis vindico.'
+        project_name:
+          - record_id: 2
+            value: 'Caecus Hendrerit Turpis'
+        project_experiment:
+          - record_id: 2
+            linker_id: 2
+            subject_id: 2
+            subject_entity_id: 1
+            subject_name: 'Caecus Hendrerit Turpis'
+            object_id: 2
+            object_entity_id: 1
+            object_name: 'Caecus Hendrerit Turpis'
+            type_id: 248
+            type_name: 'guides'

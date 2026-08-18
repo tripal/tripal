@@ -342,12 +342,13 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
     // Ensure that the relationship table has a type_id.
     $has_type_id = FALSE;
 
-    $schemaObj = \Drupal::service('tripal_chado.database')->schema();
-
-    // Check there is a type_id field.
-    $has_type_id = $schemaObj->fieldExists($relationship_table, 'type_id');
-    if (!$has_type_id) {
-      \Drupal::messenger()->addError('The Relationship By Role field requires a type_id in the linking table. This is not present in Chado 1.31 but will likely be added in subsequent versions.');
+    // Only check for the type_id column if the relationship table exists,
+    // otherwise checking for the field would throw a database exception.
+    if ($has_linker) {
+      $has_type_id = $schema->fieldExists($relationship_table, 'type_id');
+      if (!$has_type_id) {
+        \Drupal::messenger()->addError('The Relationship By Role field requires a type_id in the linking table. This is not present in Chado 1.31 but will likely be added in subsequent versions.');
+      }
     }
 
     // Only compatible if there is a linker and it has a type_id.
