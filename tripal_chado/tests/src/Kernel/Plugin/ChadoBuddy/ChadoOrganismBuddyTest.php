@@ -234,10 +234,24 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     $no_infraspecific_organism_values = [
       'organism.genus' => 'Genus03',
       'organism.species' => 'species03',
+      'organism.type_id' => NULL,
+      'organism.infraspecific_name' => NULL,
+    ];
+    $exception_caught = FALSE;
+    try {
+      $no_infraspecific_rank_organism_name = $instance->getOrganismScientificName($no_infraspecific_organism_values);
+    }
+    catch (\Exception $e) {
+      $exception_caught = TRUE;
+    }
+    $this->assertTrue($exception_caught, 'Expected an exception for conditions not matching any organism');
+    // If we don't include infraspecies, the species should be returned.
+    $no_infraspecific_organism_values = [
+      'organism.genus' => 'Genus03',
+      'organism.species' => 'species03',
     ];
     $no_infraspecific_rank_organism_name = $instance->getOrganismScientificName($no_infraspecific_organism_values);
-    $this->assertEmpty($no_infraspecific_rank_organism_name, 'We retrieved the incorrect organism (' . $no_infraspecific_rank_organism_name . ') for one without infraspecies (Genus03 species03)');
-
+    $this->assertEquals('Genus03 species03 null infra03', $no_infraspecific_rank_organism_name, 'We failed to retrieve the expected organism: Genus03 species03 null infra03');
   }
 
   /**
@@ -661,6 +675,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
     ];
 
     // #3: Multiple organisms with the same genus and species.
+    // When no infraspecies in the name, must be likewise in the organism.
     $scenarios[] = [
       [
         [
@@ -678,7 +693,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       ],
       'Tripalus databasica',
       [],
-      2,
+      0,
     ];
 
     // #4: An organism with an abbreviation
