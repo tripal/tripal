@@ -173,7 +173,8 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
 
     // 2. Load the entity we just created so we can check the values.
     $created_entity = TripalEntity::load($entity->id());
-    $this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, '"' . $current_scenario['label'] . '" being created. ');
+    $this->assertFieldValuesMatch($current_scenario['create']['expected_field_values'], $created_entity, '"' . $current_scenario['label'] . '" being created in drupal.');
+    $this->assertChadoValuesMatch($current_scenario['create']['expected_chado_values'], $current_scenario['label'] . '" being created in chado.');
     // -- Title.
     $this->assertNotEquals($submitted_title, $created_entity->getTitle(), "The submitted title should never be used but it was when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['create']['title'], $created_entity->getTitle(), "We did not get the title we expected when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
@@ -194,7 +195,8 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
     // 4. Load the entity we just updated so we can check the values.
     $updated_entity = TripalEntity::load($created_entity->id());
     // @debug print_r($updated_entity->toArray());
-    $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, '"' . $current_scenario['label'] . '" being updated. ');
+    $this->assertFieldValuesMatch($current_scenario['edit']['expected_field_values'], $updated_entity, '"' . $current_scenario['label'] . '" being updated in drupal.');
+    $this->assertChadoValuesMatch($current_scenario['edit']['expected_chado_values'], $current_scenario['label'] . '" being updated in chado.');
     // -- Title.
     $this->assertNotEquals($submitted_title, $updated_entity->getTitle(), "The submitted title should never be used but it was when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['edit']['title'], $updated_entity->getTitle(), "We did not get the title we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");

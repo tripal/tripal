@@ -33,9 +33,6 @@
     <ini name="error_reporting" value="32767"/>
     <!-- Do not limit the amount of memory tests take to run. -->
     <ini name="memory_limit" value="-1"/>
-    <!-- Defines regular expressions for deprecations in external modules
-      that we want to ignore. Includes those defined by Drupal. -->
-    <env name="SYMFONY_DEPRECATIONS_HELPER" value="ignoreFile=../../../modules/contrib/tripal/.deprecation-ignore.txt"/>
     <!-- Handling of functional tests. See core/phpunit.xml.dist -->
     <env name="MINK_DRIVER_CLASS" value=""/>
     <env name="MINK_DRIVER_ARGS" value=""/>
@@ -52,6 +49,7 @@
     <testsuite name="unit">
       <directory>tripal/tests/src/Unit</directory>
       <directory>tripal_biodb/tests/src/Unit</directory>
+      <directory>tripal_chado/tests/src/Unit</directory>
     </testsuite>
     <testsuite name="functional">
       <directory>tripal/tests/src/Functional</directory>
@@ -62,6 +60,7 @@
       <directory>tripal_biodb/tests/src/Kernel</directory>
       <directory>tripal_chado/tests/src/Kernel</directory>
       <directory>tripal_layout/tests/src/Kernel</directory>
+      <directory>tripal_search_views/tests/src/Kernel</directory>
     </testsuite>
   </testsuites>
   <!-- Settings for coverage reports. -->
@@ -75,6 +74,8 @@
       <file>tripal_chado/tripal_chado.module</file>
       <directory suffix=".php">tripal_layout/src</directory>
       <file>tripal_layout/tripal_layout.module</file>
+      <directory suffix=".php">tripal_search_viewsh_views/src</directory>
+      <file>tripal_search_views/tripal_search_views.module</file>
     </include>
     <exclude>
       <!-- Exclude Interface classes from coverage -->

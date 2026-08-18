@@ -255,6 +255,7 @@ class ChadoCustomTable {
       // Don't set the schema if it's not valid.
       $errors = ChadoCustomTable::validateTableSchema($table_schema);
       if (!empty($errors)) {
+        $transaction_chado->rollback();
         return FALSE;
       }
 
@@ -282,7 +283,8 @@ class ChadoCustomTable {
       // not forcing a change then this shouldn't be allowed. We don't want to
       // update the saved schema with a table name mismatch.
       if ($force == FALSE and $this->table_name != $table_schema['table']) {
-        $logger->error('Cannot change the name of the table in the schema without forcing it..');
+        $logger->error('Cannot change the name of the table in the schema without forcing it.');
+        $transaction_chado->rollback();
         return FALSE;
       }
 
@@ -294,6 +296,7 @@ class ChadoCustomTable {
         // First check if the new table exists and if so return FALSE.
         if ($chado->schema()->tableExists($table_schema['table'])) {
           $logger->error('Cannot rename the table as another table exists with the same name.');
+          $transaction_chado->rollback();
           return FALSE;
         }
 
@@ -416,16 +419,17 @@ class ChadoCustomTable {
   private function deleteCustomTable(): bool {
     $logger = \Drupal::service('tripal.logger');
     $chado = $this->getChado();
-    $transaction_chado = $chado->startTransaction();
 
     $table_exists = $chado->schema()->tableExists($this->table_name);
     if (!$table_exists) {
       return TRUE;
     }
 
+    $transaction_chado = $chado->startTransaction();
     try {
       $chado->schema()->dropTable($this->table_name);
       if ($chado->schema()->tableExists($this->table_name)) {
+        $transaction_chado->rollback();
         $logger->error('Could not delete the ' . $this->table_name . ' table. Check the database server logs.');
         return FALSE;
       }

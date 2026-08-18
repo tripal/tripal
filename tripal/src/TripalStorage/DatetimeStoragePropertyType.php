@@ -5,12 +5,12 @@ namespace Drupal\tripal\TripalStorage;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
 
 /**
- * Defines the date time Tripal storage property type.
+ * Defines the datetime Tripal storage property type.
  */
-class DateTimeStoragePropertyType extends StoragePropertyTypeBase implements TripalStoragePropertyTypeInterface {
+class DatetimeStoragePropertyType extends StoragePropertyTypeBase implements TripalStoragePropertyTypeInterface {
 
   /**
-   * Constructs a new date time tripal storage property type.
+   * Constructs a new datetime tripal storage property type.
    *
    * @param string $entityType
    *   The entity type associated with this property type.
@@ -28,11 +28,11 @@ class DateTimeStoragePropertyType extends StoragePropertyTypeBase implements Tri
    *   allows a missing ID Space to be looked up in the backend storage.
    */
   public function __construct($entityType, $fieldType, $key, $term_id, $storage_settings = [], $idspace_plugin_id = '') {
-    parent::__construct($entityType, $fieldType, $key, $term_id, "dateTime", $storage_settings, $idspace_plugin_id);
+    parent::__construct($entityType, $fieldType, $key, $term_id, "text", $storage_settings, $idspace_plugin_id);
   }
 
   /**
-   * Returns the default empty value of the correct type for this property.
+   * The default empty value of correct type for this storage property type.
    *
    * @return string
    *   An empty string.

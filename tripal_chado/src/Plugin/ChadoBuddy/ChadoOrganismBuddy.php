@@ -4,14 +4,14 @@ namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
-use Drupal\tripal_chado\Database\ChadoConnection;
-use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
-use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
-use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
+use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
+use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
+use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the chado organism buddy.
@@ -28,14 +28,14 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
    *
    * @var \Drupal\tripal_chado\Database\ChadoConnection
    */
-  public ChadoConnection $chado_connection;
+  protected ChadoConnection $chado_connection;
 
   /**
    * Used to store the manager so we can create a buddy.
    *
    * @var \Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
    */
-  public ChadoBuddyPluginManager $buddy_manager;
+  protected ChadoBuddyPluginManager $buddy_manager;
 
   /**
    * Used to store the cvterm ChadoBuddy instance.

@@ -250,6 +250,7 @@ class ChadoMview extends ChadoCustomTable {
       $this->setLastUpdate(time());
 
       if (method_exists($transaction, 'commitOrRelease')) {
+        $transaction_chado->commitOrRelease();
         $transaction->commitOrRelease();
       }
     }

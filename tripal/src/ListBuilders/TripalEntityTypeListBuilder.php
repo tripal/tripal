@@ -62,25 +62,6 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function load() {
-    $entity_ids = $this
-      ->getEntityIds();
-    $entities = $this->storage
-      ->loadMultipleOverrideFree($entity_ids);
-
-    // Sort the entities using the entity class's sort() method.
-    // See \Drupal\Core\Config\Entity\ConfigEntityBase::sort().
-    uasort($entities, array(
-      $this->entityType
-        ->getClass(),
-      'sortByCategory',
-    ));
-    return $entities;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function render() {
     $build = parent::render();
 

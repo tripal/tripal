@@ -1,17 +1,18 @@
-ARG phpversion='8.3'
-ARG drupalversion='11.2.x'
+ARG phpversion='8.4'
+ARG drupalversion='11.3.x'
 ARG postgresqlversion='18'
 ARG buildplatform='linux/amd64'
 FROM --platform=${buildplatform} tripalproject/tripaldocker-drupal:drupal${drupalversion}-php${phpversion}-pgsql${postgresqlversion}
 
-## Redefine the core args so that they are within the build scope.
-ARG phpversion='8.3'
-ARG drupalversion='11.2.x'
-ARG postgresqlversion='18'
+## Redefine the global args so that they are within the build scope.
+# See https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
+ARG phpversion
+ARG drupalversion
+ARG postgresqlversion
 
 ## Now define the args only needed within the build scope.
 ARG modules='devel devel_php field_group field_group_table'
-ARG tripalmodules='tripal tripal_biodb tripal_chado tripal_layout'
+ARG tripalmodules='tripal tripal_biodb tripal_chado tripal_layout tripal_search_views'
 ARG chadoschema='chado'
 ARG installchado=TRUE
 ARG migratechado=FALSE
@@ -37,8 +38,9 @@ RUN service apache2 start \
   && rm -rf /tripal_app \
   && allmodules="${tripalmodules} ${modules}" \
   && vendor/bin/drush en ${allmodules} -y \
-  && rm web/modules/contrib/tripal/phpunit.xml \
-  && bash web/modules/contrib/tripal/set_phpunit_config.sh \
+  && cd web/modules/contrib/tripal \
+  && rm phpunit.xml \
+  && bash set_phpunit_config.sh \
   && service postgresql stop
 
 RUN service apache2 start \
