@@ -933,10 +933,15 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   /**
    * Retrieve the values of all TripalStorage Property Values for this field.
    *
+   * Note: This is a convenience function that returns the values for each
+   * property in this field. Think of it as a quick way to flatten the results
+   * of getTripalStoragePropertyValues() into a simple associative array of
+   * property key => value pairs.
+   *
    * @return array
-   *   A plan array where each element maps to the key and value of a
-   *   TripalStorage Property. The value is the result of
-   *   StoragePropertyValue->getValue().
+   *   An associative array where each element represents a property of this
+   *   field (i.e. TripalStoragePropertyValue). The key is the property name
+   *   and the value is the value of that property.
    */
   public function exportTripalStoragePropertyValues() {
     $export = [];
