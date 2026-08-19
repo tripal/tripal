@@ -129,27 +129,31 @@ class ChadoRelationshipByRoleTypeCRUDTest extends ChadoTestKernelBase {
       $this->system_under_test['chado_version']
     );
 
-    $project_name = "Awesome Study 1";
-    $project_description = 'This awesome project is created for testing purposes.';
-    $project_id = $this->chado_connection->insert('1:project')
+    $analysis_name = "Awesome Analysis 1";
+    $analysis_description = 'This analysis is created for testing purposes.';
+    $analysis_id = $this->chado_connection->insert('1:analysis')
       ->fields([
-        'name' => $project_name,
-        'description' => $project_description,
+        'name' => $analysis_name,
+        'description' => $analysis_description,
+        'program' => 'Tripal test program',
+        'programversion' => '1.0',
       ])
       ->execute();
-    $this->assertIsNumeric($project_id,
-      'We should have been able to insert a project for use with testing.');
+    $this->assertIsNumeric($analysis_id,
+      'We should have been able to insert an analysis for use with testing.');
 
-    $project_name = "Awesome Study 2";
-    $project_description = 'This awesome project is created for testing purposes.';
-    $project_id = $this->chado_connection->insert('1:project')
+    $analysis_name = "Awesome Analysis 2";
+    $analysis_description = 'This analysis is created for testing purposes.';
+    $analysis_id = $this->chado_connection->insert('1:analysis')
       ->fields([
-        'name' => $project_name,
-        'description' => $project_description,
+        'name' => $analysis_name,
+        'description' => $analysis_description,
+        'program' => 'Tripal test program',
+        'programversion' => '1.0',
       ])
       ->execute();
-    $this->assertIsNumeric($project_id,
-      'We should have been able to insert a project for use with testing.');
+    $this->assertIsNumeric($analysis_id,
+      'We should have been able to insert an analysis for use with testing.');
     // Next setup the environment according to the system under test.
     $this->setupChadoEntityFieldTestEnvironment($this->system_under_test);
     $this->installSchema('tripal_chado', ['tripal_custom_tables', 'tripal_mviews']);

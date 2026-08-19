@@ -1,14 +1,14 @@
 system-under-test:
   chado_version: '1.3.3.013'
   bundle:
-    label: 'Project'
-    termIdSpace: 'NCIT'
-    termAccession: 'C47885'
-    id: 'project'
+    label: 'Analysis'
+    termIdSpace: 'operation'
+    termAccession: '2945'
+    id: 'analysis'
     settings:
-      chado_base_table: 'project'
+      chado_base_table: 'analysis'
   fields:
-    - name: 'project_description'
+    - name: 'analysis_description'
       type: 'chado_text_type_default'
       type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
       cardinality: 1
@@ -22,9 +22,9 @@ system-under-test:
         debug: false
         storage_plugin_settings:
           base_column: 'description'
-          base_table: 'project'
+          base_table: 'analysis'
         storage_plugin_id: 'chado_storage'
-    - name: 'project_name'
+    - name: 'analysis_name'
       type: 'chado_string_type_default'
       type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
       cardinality: 1
@@ -39,9 +39,43 @@ system-under-test:
         max_length: 255
         storage_plugin_settings:
           base_column: 'name'
-          base_table: 'project'
+          base_table: 'analysis'
         storage_plugin_id: 'chado_storage'
-    - name: 'project_experiment'
+    - name: 'analysis_program'
+      type: 'chado_string_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+      cardinality: 1
+      widget: 'chado_string_type_widget'
+      formatter: 'chado_string_type_formatter'
+      termIdSpace: 'SWO'
+      termAccession: '0000001'
+      settings:
+        termIdSpace: 'SWO'
+        termAccession: '0000001'
+        debug: false
+        max_length: 255
+        storage_plugin_settings:
+          base_column: 'program'
+          base_table: 'analysis'
+        storage_plugin_id: 'chado_storage'
+    - name: 'analysis_programversion'
+      type: 'chado_string_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+      cardinality: 1
+      widget: 'chado_string_type_widget'
+      formatter: 'chado_string_type_formatter'
+      termIdSpace: 'IAO'
+      termAccession: '0000129'
+      settings:
+        termIdSpace: 'IAO'
+        termAccession: '0000129'
+        debug: false
+        max_length: 255
+        storage_plugin_settings:
+          base_column: 'programversion'
+          base_table: 'analysis'
+        storage_plugin_id: 'chado_storage'
+    - name: 'analysis_experiment'
       type: 'chado_relationship_by_role_type_default'
       type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoRelationshipByRoleTypeDefault'
       cardinality: -1
@@ -54,24 +88,30 @@ system-under-test:
         termAccession: '001066'
         debug: false
         storage_plugin_settings:
-          base_table: 'project'
+          base_table: 'analysis'
           base_column: 'name'
-          linker_table: 'project_relationship'
-          subject_column: 'subject_project_id'
-          object_column: 'object_project_id'
+          linker_table: 'analysis_relationship'
+          subject_column: 'subject_id'
+          object_column: 'object_id'
         storage_plugin_id: 'chado_storage'
 scenarios:
   - label: 'Typical Scenario'
     description: 'Create a page with standard fields.'
     create:
       user_input:
-        project_description:
+        analysis_description:
           - record_id: 0
             value: 'Abdo augue enim esse odio. Dolus magna populus quis singularis vindico.'
-        project_name:
+        analysis_name:
           - record_id: 0
             value: 'Caecus Hendrerit Turpis'
-        project_experiment:
+        analysis_program:
+          - record_id: 0
+            value: 'Tripal test program'
+        analysis_programversion:
+          - record_id: 0
+            value: '1.0'
+        analysis_experiment:
           - record_id: 0
             linker_id: 0
             subject_id: 0
@@ -79,17 +119,25 @@ scenarios:
             subject_name: ''
             object_id: 1
             object_entity_id: 1
-            object_name: 'Awesome Study 1'
+            object_name: 'Awesome Analysis 1'
             type_id: 248
             type_name: ''
+            relationship_value: 'Initial relationship value'
+            relationship_rank: 1
       expected:
-        project_description:
+        analysis_description:
           - record_id: 3
             value: 'Abdo augue enim esse odio. Dolus magna populus quis singularis vindico.'
-        project_name:
+        analysis_name:
           - record_id: 3
             value: 'Caecus Hendrerit Turpis'
-        project_experiment:
+        analysis_program:
+          - record_id: 3
+            value: 'Tripal test program'
+        analysis_programversion:
+          - record_id: 3
+            value: '1.0'
+        analysis_experiment:
           - record_id: 3
             linker_id: 1
             subject_id: 3
@@ -97,18 +145,26 @@ scenarios:
             subject_name: 'Caecus Hendrerit Turpis'
             object_id: 1
             object_entity_id: -1
-            object_name: 'Awesome Study 1'
+            object_name: 'Awesome Analysis 1'
             type_id: 248
             type_name: 'guides'
+            relationship_value: 'Initial relationship value'
+            relationship_rank: 1
     edit:
       user_input:
-        project_description:
+        analysis_description:
           - record_id: 3
             value: 'Abdo augue enim esse odio. Dolus magna populus quis singularis vindico.'
-        project_name:
+        analysis_name:
           - record_id: 3
             value: 'Caecus Hendrerit Turpis'
-        project_experiment:
+        analysis_program:
+          - record_id: 3
+            value: 'Tripal test program'
+        analysis_programversion:
+          - record_id: 3
+            value: '1.0'
+        analysis_experiment:
           - record_id: 3
             linker_id: 2
             subject_id: 3
@@ -116,17 +172,25 @@ scenarios:
             subject_name: 'Caecus Hendrerit Turpis'
             object_id: 2
             object_entity_id: 2
-            object_name: 'Awesome Study 2'
+            object_name: 'Awesome Analysis 2'
             type_id: 248
             type_name: 'guides'
+            relationship_value: 'Updated relationship value'
+            relationship_rank: 2
       expected:
-        project_description:
+        analysis_description:
           - record_id: 3
             value: 'Abdo augue enim esse odio. Dolus magna populus quis singularis vindico.'
-        project_name:
+        analysis_name:
           - record_id: 3
             value: 'Caecus Hendrerit Turpis'
-        project_experiment:
+        analysis_program:
+          - record_id: 3
+            value: 'Tripal test program'
+        analysis_programversion:
+          - record_id: 3
+            value: '1.0'
+        analysis_experiment:
           - record_id: 3
             linker_id: 2
             subject_id: 3
@@ -134,6 +198,8 @@ scenarios:
             subject_name: 'Caecus Hendrerit Turpis'
             object_id: 2
             object_entity_id: 2
-            object_name: 'Awesome Study 2'
+            object_name: 'Awesome Analysis 2'
             type_id: 248
             type_name: 'guides'
+            relationship_value: 'Updated relationship value'
+            relationship_rank: 2
