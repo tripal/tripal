@@ -1292,9 +1292,9 @@ function tripal_chado_update_10423() {
   // ID for a published entity. It is not unreasonable to make the name
   // field required for these.
   $field_ids = [
-    'tripal_entity.expression.biosample_name',
-    'tripal_entity.genomic.physical_map_name',
-    'tripal_entity.genetic.genetic_map_name',
+    'tripal_entity.biosample.biosample_name',
+    'tripal_entity.physical_map.physical_map_name',
+    'tripal_entity.genetic_map.genetic_map_name',
   ];
   tripal_chado_set_field_required_status($field_ids, TRUE, 'Could not set field required setting');
 }
