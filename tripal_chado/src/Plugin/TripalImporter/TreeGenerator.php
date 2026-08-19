@@ -300,7 +300,8 @@ class TreeGenerator extends ChadoImporterBase implements ContainerFactoryPluginI
       }
       elseif ($status == 3) {
         // Save a list of problematic organisms for a final warning message.
-        $message = 'id:' . $organism->organism_id . ' name:' . $this->organism_buddy->getOrganismScientificName($organism);
+        $organism_param = ['organism.organism_id' => $organism->organism_id];
+        $message = 'id:' . $organism->organism_id . ' name:' . $this->organism_buddy->getOrganismScientificName($organism_param);
         $omitted_organisms[] = $message;
       }
     }
@@ -415,14 +416,14 @@ class TreeGenerator extends ChadoImporterBase implements ContainerFactoryPluginI
         continue;
       }
 
-      $sci_name = $this->organism_buddy->getOrganismScientificName($organism);
+      $organism_param = ['organism.organism_id' => $organism->organism_id];
+      $sci_name = $this->organism_buddy->getOrganismScientificName($organism_param);
       $leaf_rank = 'species';
       if (property_exists($organism, 'type_id') and $organism->type_id and ($organism->type != 'no_rank')) {
         $leaf_rank = $organism->type;
       }
 
       // Now add in the leaf node, which is the organism.
-      $sci_name = $this->organism_buddy->getOrganismScientificName($organism);
       $node = [
         'name' => $sci_name,
         'depth' => $depth,
@@ -652,12 +653,11 @@ class TreeGenerator extends ChadoImporterBase implements ContainerFactoryPluginI
         return 2;
       }
 
-      // Prepare organism buddy, organism array parameter.
+      // Prepare organism buddy, organism array parameter, this has all of
+      // the columns in the organism table unique key.
       $organism_param = [];
       foreach (['genus', 'species', 'infraspecific_name', 'type_id'] as $fld) {
-        if (!empty($organism->{$fld})) {
-          $organism_param['organism.' . $fld] = $organism->{$fld};
-        }
+        $organism_param['organism.' . $fld] = $organism->{$fld};
       }
 
       $sci_name = $this->organism_buddy->getOrganismScientificName($organism_param);
