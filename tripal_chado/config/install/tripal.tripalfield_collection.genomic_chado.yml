@@ -1210,7 +1210,7 @@ fields:
         type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
-        required: false
+        required: true
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:

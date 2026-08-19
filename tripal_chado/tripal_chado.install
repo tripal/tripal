@@ -1281,3 +1281,20 @@ function tripal_chado_update_10422() {
   tripal_chado_field_reload(['chado_feature_type_default'], ['feature_timeaccessioned', 'feature_timelastmodified'], FALSE);
   tripal_chado_field_reload(['chado_assay_type_default'], ['assay_assaydate'], FALSE);
 }
+
+/**
+ * Sets some fields as required to allow republish.
+ */
+function tripal_chado_update_10423() {
+  // This hook added by PR 2556. The corresponding columns are not defined
+  // as NOT NULL by chado, but we require that every content type has at
+  // least one required field, so that republish can determine chado record
+  // ID for a published entity. It is not unreasonable to make the name
+  // field required for these.
+  $field_ids = [
+    'tripal_entity.expression.biosample_name',
+    'tripal_entity.genomic.physical_map_name',
+    'tripal_entity.genetic.genetic_map_name',
+  ];
+  tripal_chado_set_field_required_status($field_ids, TRUE, 'Could not set field required setting');
+}
