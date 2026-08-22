@@ -497,20 +497,24 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     // else specified by $options will be checked.
     // Split our string up into a maximum of 4 substrings or parts.
     $parts = preg_split('/\s+/', $scientific_name, 4);
-    // $scientific_name could be a single word, so make sure this is defined.
-    $parts[1] = $parts[1] ?? '';
-
+    // $scientific_name could be a single word, so make sure a
+    // placeholder for species is defined.
+    $parts[1] ??= '';
+    // Supply null defaults for organisms without infraspecies.
+    $parts[2] ??= NULL;
+    $parts[3] ??= NULL;
     // Setup our conditions for lookup.
     $conditions = [
       'organism.genus' => $parts[0],
       'organism.species' => $parts[1],
+      'organism.infraspecific_name' => $parts[3],
     ];
-    // Remove the abbreviation from rank if it exists.
-    if (array_key_exists(2, $parts)) {
+    if ($parts[2]) {
+      // Expand the abbreviation from rank if it exists.
       $conditions['cvterm.name'] = $this->unabbreviateInfraspecificRank($parts[2]);
     }
-    if (array_key_exists(3, $parts)) {
-      $conditions['organism.infraspecific_name'] = $parts[3];
+    else {
+      $conditions['organism.type_id'] = NULL;
     }
 
     // Check 'case_sensitive' option and pass it through to our getter.
