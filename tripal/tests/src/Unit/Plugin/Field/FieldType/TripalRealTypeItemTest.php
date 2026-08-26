@@ -115,6 +115,7 @@ class TripalRealTypeItemTest extends UnitTestCase {
 
     $idspace_manager = $this->prophesize(TripalCollectionPluginManager::class);
     $idspace_manager->loadCollection(Argument::any())->willReturn($idspace->reveal());
+    $idspace_manager->loadCollection(Argument::any(), Argument::any())->willReturn($idspace->reveal());
 
     $container = new ContainerBuilder();
     $container->set('tripal.collection_plugin_manager.idspace', $idspace_manager->reveal());
