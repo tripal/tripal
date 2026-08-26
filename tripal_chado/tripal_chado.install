@@ -1285,7 +1285,7 @@ function tripal_chado_update_10422() {
 /**
  * Some chado table columns use terms that were not defined. PR 2546.
  */
-function tripal_chado_update_10422() {
+function tripal_chado_update_10423() {
   try {
     $messenger = \Drupal::messenger();
     $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
