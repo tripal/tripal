@@ -62,7 +62,7 @@ class TripalImporterForm implements FormInterface {
       ];
 
       $form['file']['upload_description'] = [
-        '#markup' => $importer->describeUploadFileFormat(),
+        '#markup' => '<p>' . $importer->describeUploadFileFormat() . '</p>',
       ];
     }
 
