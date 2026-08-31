@@ -120,7 +120,8 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
       return;
     }
 
-    // Is an inherited property from ChadoFieldItemBase and contains the standard record identifier term for all fields.
+    // Is an inherited property from ChadoFieldItemBase and contains the
+    // standard record identifier term for all fields.
     $terms = [
       'record_id' => self::$record_id_term,
     ];
