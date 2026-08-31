@@ -1,0 +1,6 @@
+tripal_ws.settings_form:
+  title: 'Tripal Webservices'
+  description: 'Configure Tripal Webservices.'
+  parent: 'tripal.extension'
+  route_name: 'tripal_ws.settings_form'
+  weight: 10

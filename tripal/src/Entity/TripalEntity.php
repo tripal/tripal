@@ -56,6 +56,7 @@ use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
     'bundle' => 'type',
     'uid' => 'user_id',
     'status' => 'status',
+    'uuid' => 'uuid',
   ],
   links: [
     'canonical' => '/bio_data/{tripal_entity}',
@@ -103,6 +104,7 @@ use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
  *     "bundle" = "type",
  *     "uid" = "user_id",
  *     "status" = "status",
+ *     "uuid" = "uuid",
  *   },
  *   links = {
  *     "canonical" = "/bio_data/{tripal_entity}",
@@ -202,6 +204,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $values += [
       'uid' => \Drupal::currentUser()->id(),
     ];
+    
+    if (empty($values['uuid'])) {
+      $values['uuid'] = \Drupal::service('uuid')->generate();
+    }
   }
 
   /**
@@ -843,6 +849,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
       ->setDescription(t('The date and time that this Tripal Content was last edited.'));
+
+    $fields['uuid'] = BaseFieldDefinition::create('uuid')
+      ->setLabel(t('UUID'))
+      ->setDescription(t('The UUID for this entity.'))
+      ->setReadOnly(TRUE);
 
     return $fields;
   }
