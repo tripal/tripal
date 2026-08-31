@@ -368,6 +368,14 @@ field.formatter.settings.chado_integer_type_formatter:
       type: string
       label: 'Thousand marker'
       nullable: true
+    decimal_separator:
+      type: string
+      label: 'Decimal separator'
+      nullable: true
+    decimal_places:
+      type: string
+      label: 'Decimal places'
+      nullable: true
 
 ## Organism Linker Field.
 field.field_settings.chado_organism_type_default:
@@ -677,6 +685,14 @@ field.formatter.settings.chado_sequence_length_formatter_default:
     thousand_separator:
       type: string
       label: 'Thousand marker'
+      nullable: true
+    decimal_separator:
+      type: string
+      label: 'Decimal separator'
+      nullable: true
+    decimal_places:
+      type: string
+      label: 'Decimal places'
       nullable: true
 
 ## Feature Sequence Residues Field.

@@ -15,6 +15,7 @@ use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
 use Drupal\tripal\TripalStorage\DatetimeStoragePropertyType;
+use Drupal\tripal\TripalStorage\RealStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\tripal\Entity\TripalEntityType;
@@ -421,6 +422,10 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       elseif ($type instanceof DatetimeStoragePropertyType) {
         $properties[$type->getKey()] = DataDefinition::create("string");
       }
+      elseif ($type instanceof RealStoragePropertyType) {
+        // We use decimal instead of float to allow arbitrary precision.
+        $properties[$type->getKey()] = DataDefinition::create("decimal");
+      }
       else {
         throw new \RuntimeException('Unknown Tripal Property Type class "' . get_class($type) . '"');
       }
@@ -471,6 +476,13 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
         $column = [
           "type" => "varchar",
           "length" => 32,
+        ];
+        $schema["columns"][$type->getKey()] = $column;
+      }
+      elseif ($type instanceof RealStoragePropertyType) {
+        $column = [
+          "type" => "decimal",
+          "pgsql_type" => "numeric",
         ];
         $schema["columns"][$type->getKey()] = $column;
       }
