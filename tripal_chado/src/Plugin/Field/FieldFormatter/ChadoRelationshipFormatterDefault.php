@@ -5,8 +5,8 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
-use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
+use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy;
 
 /**
  * Plugin implementation of default Tripal Relationship formatter.
@@ -30,6 +30,13 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
   ],
 )]
 class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
+
+  /**
+   * Used to store the cvterm ChadoBuddy instance.
+   *
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy
+   */
+  protected ChadoCvtermBuddy $cvterm_instance;
 
   /**
    * {@inheritdoc}
@@ -74,12 +81,9 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
         if ($field_definition->getType() === 'chado_relationship_by_role_type_default') {
           $type_id = (int) $item->get('type_id')->getString();
           if ($type_id) {
-            $cv_autocomplete = new ChadoCVTermAutocompleteController();
-            $formatted = $cv_autocomplete->formatCVterm($type_id);
-            // formatCVterm returns "name (DB:accession)", extract the name.
-            if ($formatted) {
-              $values['type_name'] = preg_replace('/\s*\([^)]*\)$/', '', $formatted);
-            }
+            $values['type_name'] = $this->cvterm_instance->getCvterm([
+              'cvterm_id' => $type_id,
+            ])->getName();
           }
           else {
             // As a fallback, try to read term info from field settings.
