@@ -220,6 +220,11 @@ class ChadoRelationshipByRoleTypeCRUDTest extends ChadoTestKernelBase {
     $updated_entity = TripalEntity::load($created_entity->id());
     // @debug print_r($updated_entity->toArray());
     $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, $current_scenario['label'] . ' EDIT ');
+
+    // 5. Delete the entity and check that it is gone.
+    $updated_entity->delete();
+    $deleted_entity = TripalEntity::load($updated_entity->id());
+    $this->assertNull($deleted_entity, "We expected the entity to be deleted for our " . $current_scenario['label'] . " scenario.");
   }
 
   /**
