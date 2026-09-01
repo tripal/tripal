@@ -1,0 +1,158 @@
+'Vocabulary add form with a new cv':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_controlled_vocabularies'
+    'args':
+      - null
+    'form_expectations':
+      '#form_id': 'chado_cv_form'
+      'cv_name':
+        '#title': 'Controlled Vocabulary (Ontology) Name'
+        '#value': null
+      'cv_definition':
+        '#title': 'Controlled Vocabulary Definition'
+      'submit':
+        '#value': 'Add'
+      'cancel':
+        '#markup': 'Cancel'
+    'submit_values':
+      'cv_name': 'klingon'
+      'cv_definition': 'Klingon Language Wiki'
+    'submit_expectations':
+      'cv_name': 'klingon'
+      'cv_definition': 'Klingon Language Wiki'
+    'submit_output':
+      - 'Redirecting to'
+    'submit_messages':
+      - 'status: The vocabulary "klingon" has been added'
+    'chado_expectations':
+      - 'table': 'cv'
+        'conditions':
+          - 'column': 'name'
+            'value': 'klingon'
+          - 'column': 'definition'
+            'value': 'Klingon Language Wiki'
+        'count': 1
+'Vocabulary add form with an existing cv':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_controlled_vocabularies'
+    'args':
+      - null
+    'form_expectations':
+      '#form_id': 'chado_cv_form'
+    'submit_values':
+      'cv_name': 'tripal_pub'
+    'submit_expectations':
+      'cv_name': 'tripal_pub'
+    'submit_fails': true
+    'submit_output':
+      - ''
+    'submit_messages':
+      - 'The specified controlled vocabulary already exists'
+'Vocabulary edit form with an existing cv':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_controlled_vocabularies'
+    'args':
+      'cv_id': 2
+    'form_expectations':
+      '#form_id': 'chado_cv_form'
+      'cv_name':
+        '#value': 'local'
+      'cv_id':
+        '#value': 2
+    'submit_values':
+      'cv_name': 'update0'
+      'cv_definition': 'update1'
+    'submit_expectations':
+      'cv_name': 'update0'
+      'cv_definition': 'update1'
+    'submit_output':
+      - 'Redirecting to'
+    'submit_messages':
+      - 'status: The vocabulary "update0" has been updated'
+    'chado_expectations':
+      - 'table': 'cv'
+        'conditions':
+          - 'column': 'name'
+            'value': 'local'
+        'count': 0
+      - 'table': 'cv'
+        'conditions':
+          - 'column': 'name'
+            'value': 'update0'
+          - 'column': 'definition'
+            'value': 'update1'
+        'count': 1
+'Vocabulary edit form with an invalid cv_id argument':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvForm'
+    'args':
+      'cv_id': 500000
+    'submit_fails': true
+    'submit_output':
+      - 'Invalid cv_id "500000" passed to chado_cv_form'
+'Vocabulary delete form with foreign key in use':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvDeleteForm'
+    'args':
+      'cv_id': 2
+    'form_expectations':
+      '#form_id': 'chado_cv_delete_form'
+      'cv_id':
+        '#value': 2
+      'description':
+        '#type': 'table'
+      'cancel':
+        '#value': 'Cancel'
+    'form_messages':
+      - 'foreign key references to this vocabulary, it cannot be deleted'
+    'submit_expectations':
+      'cv_id': 2
+    'submit_output':
+      # Submit here executes the Cancel button.
+      - 'Redirecting to'
+    'chado_expectations':
+      - 'table': 'cv'
+        'conditions':
+          - 'column': 'cv_id'
+            'value': 2
+        'count': 1
+'Vocabulary delete form with foreign key not in use':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvDeleteForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_controlled_vocabularies'
+    'args':
+      'cv_id': 22
+    'form_expectations':
+      '#form_id': 'chado_cv_delete_form'
+      'cv_id':
+        '#value': 22
+      'description':
+        '#type': 'table'
+      'submit':
+        '#value': 'Delete'
+    'triggering_element':
+      '#name': 'delete'
+    'submit_expectations':
+      'cv_id': 22
+    'submit_output':
+      - 'Redirecting to'
+    'submit_messages':
+      - 'has been deleted'
+    'chado_expectations':
+      - 'table': 'cv'
+        'conditions':
+          - 'column': 'cv_id'
+            'value': 22
+        'count': 0
+'Vocabulary delete form with an invalid cv_id argument':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoCvDeleteForm'
+    'args':
+      'cv_id': 900000
+    'submit_fails': true
+    'submit_output':
+      - 'Invalid cv_id "900000" passed to chado_cv_delete_form'
