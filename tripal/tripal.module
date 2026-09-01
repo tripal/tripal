@@ -248,6 +248,10 @@ function import_tripalentitytype_collection(array $options, ?TripalJob $job = NU
 
   $fields = \Drupal::service('tripal.tripalfield_collection');
   $fields->install($chosen_collection_ids);
+
+  // Call rebuild to install any drupal views that may exist.
+  $rebuild = \Drupal::service('tripal.rebuild_service');
+  $rebuild->rebuildViews();
 }
 
 /**
@@ -415,4 +419,15 @@ function tripal_config_schema_info_alter(&$definitions) {
 #[LegacyHook]
 function tripal_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
   return \Drupal::service('tripal.views_hooks')->viewsQueryAlter($view, $query);
+}
+
+/**
+ * Implements hook_views_pre_render().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_views_pre_render(ViewExecutable $view) {
+  return \Drupal::service('tripal.views_hooks')->viewsPreRender($view);
 }
