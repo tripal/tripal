@@ -68,6 +68,9 @@ class ChadoPatchService {
       if ($existing_schema) {
         $this->chado_connection->setSchemaName($existing_schema);
       }
+      if (method_exists($transaction, 'commitOrRelease')) {
+        $transaction->commitOrRelease();
+      }
     }
     catch (\Exception $e) {
       $transaction->rollback();
