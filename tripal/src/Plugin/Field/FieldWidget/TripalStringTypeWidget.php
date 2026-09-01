@@ -41,7 +41,7 @@ class TripalStringTypeWidget extends TripalWidgetBase {
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     foreach ($values as $key => $item) {
-      if ($item['value'] === '' && $this->getSetting('null_if_empty')) {
+      if (array_key_exists('value', $item) && $item['value'] === '' && $this->getSetting('null_if_empty')) {
         $values[$key]['value'] = NULL;
       }
     }
@@ -77,7 +77,7 @@ class TripalStringTypeWidget extends TripalWidgetBase {
   public function settingsSummary() {
     $summary = parent::settingsSummary();
     $summary[] = $this->t('Store NULL if empty: @setting',
-      ['@setting' => $this->getSetting('null_if_empty') ? $this->t('yes') : $this->t('no')]);
+      ['@setting' => $this->getSetting('null_if_empty') ? $this->t('Yes') : $this->t('No')]);
     return $summary;
   }
 

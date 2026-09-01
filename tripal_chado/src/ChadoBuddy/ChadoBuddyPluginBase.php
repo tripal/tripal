@@ -428,13 +428,13 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     // Conditions are not aliased.
     $n = 0;
     foreach ($conditions as $key => $value) {
-      if (in_array($key, $insensitive_columns)) {
+      if ($value === NULL) {
+        $query->isNull($key);
+      }
+      elseif (in_array($key, $insensitive_columns)) {
         $query->where('LOWER(' . $key . ') = LOWER(:value' . $n . ')',
                       [':value' . $n => $value]);
         $n++;
-      }
-      elseif ($value === NULL) {
-        $query->isNull($key);
       }
       else {
         $query->condition($key, $value, '=');
