@@ -25,10 +25,12 @@
           tripalFiles.addUploadTable(
             `${details[0]}-${details[1]}`,
             settings.tripal[settingsVarName]
-        if (settings.tripal?.[settingsVarName]) {
+        const uploaderSettings = settings.tripal?.[settingsVarName];
+
+        if (uploaderSettings) {
           tripalFiles.addUploadTable(
             `${usage_id}-${usage_type}`,
-            settings.tripal[settingsVarName]
+            uploaderSettings
         }
       });
     }
