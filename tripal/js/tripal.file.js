@@ -23,8 +23,6 @@
 
         if (settings.tripal?.[settingsVarName]) {
           tripalFiles.addUploadTable(
-        if (settings.tripal?.[settingsVarName]) {
-          tripalFiles.addUploadTable(
             `${usage_id}-${usage_type}`,
             settings.tripal[settingsVarName]
           );
