@@ -21,7 +21,10 @@
           tripalFiles.addUploadTable(
             `${details[0]}-${details[1]}`,
             settings.tripal[settingsVarName]
-          );
+        if (settings.tripal?.[settingsVarName]) {
+          tripalFiles.addUploadTable(
+            `${usage_id}-${usage_type}`,
+            settings.tripal[settingsVarName]
         }
       });
     }
