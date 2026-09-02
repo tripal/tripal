@@ -512,17 +512,23 @@ class ChadoPublishTest extends ChadoTestKernelBase {
         'datastore' => 'chado_storage',
         'schema_name' => $this->testSchemaName,
       ];
-     $expected_count = 151;
+      $expected_count = 151;
 
       $this->chado_publish->publish($publish_options);
+      // Check that there were the correct number of publications published
+      // to the Drupal field table.
+      // NOTE: The null publication will also be published.
       $drupal_records = $this->getPublicTableRecords('tripal_entity__pub_title', 'pub_title_record_id');
-      // The null publication will also be published.
       $this->assertCount($expected_count, $drupal_records, 'Number of published records is incorrect with ' . $label);
-      // Verify that a field table was populated for each publication.
-      $drupal_records = $this->getPublicTableRecords('tripal_entity__pub_title', 'pub_title_record_id');
-      $this->assertCount($expected_count, $drupal_records, 'Incorrect number of publications published with ' . $label);
       for ($pkey = 1; $pkey <= $expected_count; $pkey++) {
         $this->assertArrayHasKey($pkey, $drupal_records, 'Missing pub_id $pkey when published with ' . $label);
+      }
+      // Verify that a field table was populated for each publication
+      // for the is_obsolete field which is a boolean field.
+      $drupal_records = $this->getPublicTableRecords('tripal_entity__pub_is_obsolete', 'pub_is_obsolete_value');
+      foreach ($drupal_records as $record) {
+        $this->assertObjectHasProperty('pub_is_obsolete_value', $record, 'Missing pub_is_obsolete_value when published with ' . $label);
+        $this->assertEquals(0, $record->pub_is_obsolete_value, 'pub_is_obsolete_value is not 0 when published with ' . $label);
       }
 
       // Unpublish them all.
