@@ -16,10 +16,10 @@
         if (!id.trim()) {
           return;
         }
-        const details = id.split('-');
+        const [usage_id, usage_type, module] = id.split('-');
 
         const settingsVarName =
-          `uploader_${details[0]}_${details[1]}_${details[2]}`;
+          `uploader_${usage_id}_${usage_type}_${module}`;
 
         if (settings.tripal?.[settingsVarName]) {
           tripalFiles.addUploadTable(
