@@ -23,14 +23,11 @@
 
         if (settings.tripal?.[settingsVarName]) {
           tripalFiles.addUploadTable(
-            `${details[0]}-${details[1]}`,
-            settings.tripal[settingsVarName]
-        const uploaderSettings = settings.tripal?.[settingsVarName];
-
-        if (uploaderSettings) {
+        if (settings.tripal?.[settingsVarName]) {
           tripalFiles.addUploadTable(
             `${usage_id}-${usage_type}`,
-            uploaderSettings
+            settings.tripal[settingsVarName]
+          );
         }
       });
     }
