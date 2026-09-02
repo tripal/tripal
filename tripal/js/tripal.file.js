@@ -12,7 +12,7 @@
       ).forEach((element) => {
 
         const id = element.value;
-        
+
         if (!id.trim()) {
           return;
         }
