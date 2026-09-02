@@ -12,6 +12,10 @@
       ).forEach((element) => {
 
         const id = element.value;
+        
+        if (!id.trim()) {
+          return;
+        }
         const details = id.split('-');
 
         const settingsVarName =
