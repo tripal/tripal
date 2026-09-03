@@ -1,0 +1,49 @@
+stock_image:
+    table: 'stock_image'
+    fields:
+        stock_image_id:
+            size: big
+            type: serial
+            'not null': true
+        stock_id:
+            size: big
+            type: int
+            'not null': true
+        image_id:
+            size: big
+            type: int
+            'not null': true
+        type_id:
+            size: big
+            type: int
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - stock_image_id
+    'unique keys':
+        stock_image_c1:
+            - stock_id
+            - image_id
+            - type_id
+    'nulls not distinct':
+        stock_image_c1: true
+    indexes:
+        stock_image_idx1:
+            - stock_id
+        stock_image_idx2:
+            - image_id
+    'foreign keys':
+        stock:
+            table: stock
+            columns:
+                stock_id: stock_id
+        image:
+            table: eimage
+            columns:
+                image_id: eimage_id
+        type_id:
+            table: cvterm
+            columns:
+                type_id: cvterm_id

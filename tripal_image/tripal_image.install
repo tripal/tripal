@@ -1,0 +1,169 @@
+<?php
+
+use Symfony\Component\Yaml\Yaml;
+use Drupal\Core\Hook\Attribute\LegacyHook;
+use Drupal\Core\Messenger\Messenger;
+use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
+use Drupal\tripal_chado\Database\ChadoSchema;
+use Drupal\tripal_chado\Entity\ChadoTermMapping;
+use Drupal\tripal_chado\Services\ChadoTermsInit;
+
+/**
+ * @file
+ *
+ * Installation of the Tripal Image module
+ */
+
+/**
+ * Implements hook_requirements().
+ *
+ * This hook does not support attributes and must remain procedural.
+ */
+function tripal_image_requirements($phase) {
+  $requirements = [];
+  if ($phase == 'install') {
+    if (version_compare(\Drupal::VERSION, 10.6) < 0) {
+      $requirements['tripal_image'] = [
+        'title' => 'tripal_image',
+        'value' => 'ERROR: You must have Drupal version 10.6 or higher installed to use this module.',
+        'severity' => REQUIREMENT_ERROR,
+      ];
+    }
+  }
+  return $requirements;
+}
+
+/**
+ * Implements hook_install().
+ *
+ * Performs actions when the modules is first installed.
+ *
+ * @ingroup tripal_image
+ */
+function tripal_image_install() {
+  $chado = \Drupal::service('tripal_chado.database');
+
+#  // Create tripal terms for the new CV terms defined in YAML files.
+#  tripal_image_show_message('Adding new vocabulary terms');
+#  tripal_image_create_tripal_terms();
+
+  // Add the custom tables needed to associate Chado content with images.
+  tripal_image_show_message('Adding custom tables');
+  \Drupal::service('tripal_image.rebuild_service')->createCustomChadoTables();
+
+  // Associate terms with the linker tables.
+  tripal_image_show_message('Adding linker table terms');
+  tripal_image_add_linker_table_terms();
+
+#  // Import new content types defined in YAML for this module.
+#  tripal_image_show_message('Creating new content types: file, license');
+#  tripal_image_import_content_types();
+
+#  // Insert standard license types.
+#  tripal_image_show_message('Adding and publishing standard license types');
+#  tripal_image_add_default_licenses($chado);
+
+#  // Install the full EDAM ontology.
+#  tripal_image_show_message('Installing the EDAM ontology');
+#  tripal_image_load_EDAM_obo();
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * The hook uninstall does not support attributes and must remain procedural.
+ */
+function tripal_image_uninstall() {
+  // Delete the custom tables created by this module.
+  \Drupal::service('tripal_image.hooks')->tripalImageUninstall();
+}
+
+/**
+ * Displays a status message.
+ *
+ * This handles displaying both to the UI and to drush output.
+ *
+ * @param string $message
+ *   The message to be displayed.
+ */
+function tripal_image_show_message(string $message) {
+  // This is displayed when this module is installed with the UI.
+  \Drupal::messenger()->addStatus($message);
+  // This is displayed when this module is installed with drush.
+  \Drupal::logger('tripal_image')->notice($message);
+}
+
+/**
+ * Creates tripal terms for newly added CV terms for content types.
+ *
+ * The new CV terms are defined in YAML in /config/install/
+ * tripal.tripal_content_terms.tripal_image_content_terms.yml
+ * and files located there are added automatically by Drupal,
+ * so here we just need to install them.
+ *
+ * @return void
+ *   No return value.
+ */
+#function tripal_image_create_tripal_terms(): void {
+#  $terms_init_service = \Drupal::service('tripal_chado.terms_init');
+#  $terms_init_service->installTerms('tripal_image_content_terms');
+#}
+
+/**
+ * Adds the vocabulary terms for the linker table columns.
+ *
+ * @return void
+ *   No return value.
+ */
+function tripal_image_add_linker_table_terms(): void {
+  $storage_id = 'chado_term_mapping';
+  $core_config_id = 'core_mapping';
+  $tripal_image_config_id = 'tripal_image_mapping';
+  /** @var Drupal\Core\Config\Entity\ConfigEntityStorage $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage($storage_id);
+  /** @var Drupal\tripal_chado\Entity\ChadoTermMapping $chado_core_mapping */
+  $chado_core_mapping = $storage->load($core_config_id);
+  $core_mapping_tables = $chado_core_mapping->get('tables');
+
+  // Get a keyed list to be able to determine if a table is already present.
+  $existing_tables = [];
+  foreach ($core_mapping_tables as $table) {
+    $existing_tables[$table['name']] = TRUE;
+  }
+
+  // Get the table mapping for this module.
+  $tripal_image_mapping = $storage->load($tripal_image_config_id);
+  $tripal_image_tables = $tripal_image_mapping->get('tables');
+
+  // Add table mappings from this module to core mapping.
+  $updated = FALSE;
+  foreach ($tripal_image_tables as $table) {
+    if (!isset($existing_tables[$table['name']])) {
+      $core_mapping_tables[] = $table;
+      $updated = TRUE;
+    }
+  }
+  if ($updated) {
+    $chado_core_mapping->set('tables', $core_mapping_tables);
+    $chado_core_mapping->save();
+  }
+}
+
+/**
+ * Creates content types and fields used by this module.
+ *
+ * The two new content types will be file and license, which
+ * are in the "tripal_file" collection defined by this module.
+ *
+ * @return void
+ *   No return value.
+ */
+#function tripal_image_import_content_types(): void {
+#  // Import the content type collection.
+#  $content_type_service = \Drupal::service('tripal.tripalentitytype_collection');
+#  $content_type_service->install(['tripal_image']);
+#
+#  // Import the fields on the new content types.
+#  $fields_service = \Drupal::service('tripal.tripalfield_collection');
+#  $fields_service->install(['tripal_image']);
+#}

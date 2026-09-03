@@ -1,0 +1,60 @@
+<?php
+
+use Drupal\Core\Hook\Attribute\LegacyHook;
+use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
+use Symfony\Component\Yaml\Yaml;
+
+/**
+ * @file
+ * Contains tripal_image.module.
+ */
+
+/**
+ * Implements hook_help().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_image\Hook\TripalImageHooks in
+ * tripal_image/src/Hook/TripalImageHooks.php.
+ */
+#[LegacyHook]
+function tripal_image_help($route_name, RouteMatchInterface $route_match) {
+  return \Drupal::service('tripal_image.hooks')->help($route_name, $route_match);
+}
+
+/**
+ * Implements hook_rebuild().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_image\Hook\TripalImageHooks in
+ * tripal_image/src/Hook/TripalImageHooks.php.
+ */
+#[LegacyHook]
+function tripal_image_rebuild() {
+  return \Drupal::service('tripal_image.hooks')->rebuild();
+}
+
+/**
+ * Deletes the custom chado tables used by this module.
+ *
+ * This is intended to be called when this module is uninstalled.
+ *
+ * @param string|null $chado_schema
+ *   Optional. The chado schema where the custom tables live. If no
+ *   schema is specified then the default schema is used.
+ *
+ * @return void
+ *   No return value.
+ */
+function tripal_image_drop_custom_chado_tables(?string $chado_schema = NULL): void {
+  $config = __DIR__ . '/config/other/tripal_image.custom_tables.yml';
+  $schemas = Yaml::parseFile($config);
+  // Drop tables in reverse order of how they were created.
+  $schemas = array_reverse($schemas);
+  foreach (array_keys($schemas) as $table_name) {
+    $customTable = new ChadoCustomTable($table_name, $chado_schema);
+    $existing_schema = $customTable->getTableSchema();
+    if ($existing_schema) {
+      $customTable->delete();
+    }
+  }
+}

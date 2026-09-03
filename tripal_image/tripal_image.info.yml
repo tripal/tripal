@@ -1,0 +1,10 @@
+name: 'Tripal Image'
+type: 'module'
+description: 'Provides Chado Image Storage and Display for Tripal.'
+core_version_requirement: '^10.6 || ^11.3'
+php: 8.2
+package: 'Tripal'
+version: '4.0.alpha5'
+dependencies:
+  - 'tripal:tripal'
+  - 'tripal:tripal_chado'

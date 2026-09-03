@@ -1,0 +1,24 @@
+id: 'tripal_image_mapping'
+label: 'Tripal Image Term Mapping'
+description: 'Mapping of terms to Tripal Image table columns.'
+dependencies:
+    module:
+        - 'tripal_image'
+    enforced:
+        module:
+            - 'tripal_image'
+tables:
+    -   name: 'stock_image'
+        columns:
+            -   name: 'stock_id'
+                term_id: 'NCIT:C70699'
+                term_name: 'Biospecimen'
+            -   name: 'image_id'
+                term_id: 'data:2968'
+                term_name: 'Image'
+            -   name: 'type_id'
+                term_id: 'schema:additionalType'
+                term_name: 'additionalType'
+            -   name: 'rank'
+                term_id: 'OBCS:0000117'
+                term_name: 'rank order'

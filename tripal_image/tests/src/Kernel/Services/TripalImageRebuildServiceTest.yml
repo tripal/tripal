@@ -1,0 +1,12 @@
+expected_modules:
+  - 'tripal'
+  - 'tripal_chado'
+  - 'tripal_image'
+expected_tables:
+  - name: 'stock_image'
+    before:
+      exists: false
+    after:
+      exists: true
+      type_id: true
+      rank: true
