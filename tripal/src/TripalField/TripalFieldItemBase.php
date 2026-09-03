@@ -10,6 +10,7 @@ use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
@@ -23,6 +24,22 @@ use Drupal\tripal\Entity\TripalEntityType;
  * Defines the Tripal field item base class.
  */
 abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldItemInterface {
+
+  /**
+   * The TripalStorage property types for this field item.
+   *
+   * @var Drupal\tripal\TripalStorage\StoragePropertyType[]
+   *   A list of property types keyed by their StorageProperty::getKey().
+   */
+  protected array $tripalstorage_property_types = [];
+
+  /**
+   * The TripalStorage property values for this field item.
+   *
+   * @var Drupal\tripal\TripalStorage\StoragePropertyValue[]
+   *   A list of property types keyed by their StorageProperty::getKey().
+   */
+  protected array $tripalstorage_property_values = [];
 
   /**
    * {@inheritdoc}
@@ -40,11 +57,11 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       'termAccession' => '',
       // A simple flag to indicate that we should enable debugging information
       // for this field type.
-      // This will be used by ChadoStorage to tell the ChadoFieldDebugger service
-      // to display debugging information. All you need to do as a developer is
-      // set this variable to TRUE in your field and debuggin information will be
-      // displayed on the screen and in the drupal logs when you create, edit,
-      // and load content that has your field attached.
+      // This will be used by ChadoStorage to tell the ChadoFieldDebugger
+      // service to display debugging information. All you need to do as a
+      // developer is set this variable to TRUE in your field and debugging
+      // information will be displayed on the screen and in the drupal logs
+      // when you create, edit, and load content that has your field attached.
       'debug' => FALSE,
     ];
     return $settings + parent::defaultFieldSettings();
@@ -72,9 +89,14 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * Builds the table the describes the term assigned to the field.
    *
    * @param array $elements
+   *   The form elements array of the field settings form, to which we want
+   *   to add the table describing the term assigned to the field.
    * @param \Drupal\tripal\TripalVocabTerms\TripalTerm $term
+   *   The term assigned to the field.
    * @param \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase $idSpace
+   *   The ID space of the term assigned to the field.
    * @param \Drupal\tripal\TripalVocabTerms\TripalVocabularyBase $vocabulary
+   *   The vocabulary of the term assigned to the field.
    */
   public static function buildVocabularyTermTable(
     array &$elements,
@@ -153,11 +175,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $elements['field_term_fs']['table_label'] = [
       '#type' => 'item',
       '#title' => t('The Current Term'),
-      '#description' => t("Terms belong to a vocabulary (e.g. Sequence " .
-          "Ontology) and are identified with a unique accession which is often  " .
-          "numeric but may not be (e.g. gene accession is 0000704 in the Sequence " .
-          "Ontology). Term IDs are prefixed with an ID Space (e.g. SO). The " .
-          "ID Space and the accession will uniquely identify a term (e.g. SO:0000704)."),
+      '#description' => t("Terms belong to a vocabulary (e.g. Sequence Ontology) and are identified with a unique accession which is often numeric but may not be (e.g. gene accession is 0000704 in the Sequence Ontology). Term IDs are prefixed with an ID Space (e.g. SO). The ID Space and the accession will uniquely identify a term (e.g. SO:0000704)."),
     ];
 
     $elements['field_term_fs']['field_term'] = [
@@ -172,11 +190,15 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   /**
    * Provides the form for setting a cv term on a field.
    *
-   * @param $field
+   * @param mixed $field
+   *   The field for which we are building the form.
    * @param array $form
+   *   The existing field settings form elements, to which we want to add
+   *   the cv term settings form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the field settings form.
    */
-  public static function buildFieldTermForm($field, $form, FormStateInterface $form_state) {
+  public static function buildFieldTermForm(mixed $field, $form, FormStateInterface $form_state) {
     $elements = [];
 
     $is_open = FALSE;
@@ -209,14 +231,18 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $elements['debug'] = [
       '#type' => 'checkbox',
       '#title' => 'Enable Debugging',
-      '#description' => 'Enabling debugging on the field will print out a number of debugging messages both on screen and in the logs to help developers diagnose any problems which may be occuring.',
+      '#description' => t('Enabling debugging on the field will print out a number of debugging messages both on screen and in the logs to help developers diagnose any problems which may be occuring.'),
       '#default_value' => $debug,
     ];
 
     $default_vocabulary_term = '';
-    // For Drupal ≥10.2 our values are now in the subform.
-    $vocabulary_term = $form_state->getValue(['field_storage', 'subform', 'settings', 'field_term_fs', 'vocabulary_term'])
-        ?? $form_state->getValue(['settings', 'field_term_fs', 'vocabulary_term']);
+    $vocabulary_term = $form_state->getValue([
+      'field_storage',
+      'subform',
+      'settings',
+      'field_term_fs',
+      'vocabulary_term',
+    ]);
 
     // The term may already be set as the default in the
     // form, but is not yet present in the form state.
@@ -268,29 +294,21 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $elements['field_term_fs'] = [
       '#type' => 'details',
       '#title' => t("Controlled Vocabulary Term"),
-      '#description' => t("All fields attached to a Tripal-based content " .
-          "type must be associated with a controlled vocabulary term. " .
-          "Use caution when changing the term. It should accurately represent " .
-          "the type of data stored in this field.  Using terms that are developed " .
-          "by the community (e.g. Sequence Ontology, etc.) ensures that the " .
-          "data on your site is discoverable and interoperable."),
+      '#description' => t("All fields attached to a Tripal-based content type must be associated with a controlled vocabulary term. Use caution when changing the term. It should accurately represent the type of data stored in this field.  Using terms that are developed by the community (e.g. Sequence Ontology, etc.) ensures that the data on your site is discoverable and interoperable."),
       '#open' => $is_open,
     ];
 
-    $element_title = "Set the Term";
+    $changing_term_mode = FALSE;
     if ($term and $idSpace and $vocabulary) {
       TripalFieldItemBase::buildVocabularyTermTable($elements, $term, $idSpace, $vocabulary);
-      $element_title = "Change the Term";
+      $changing_term_mode = TRUE;
     }
 
     $elements['field_term_fs']["vocabulary_term"] = [
       "#type" => "textfield",
-      "#title" => t($element_title),
+      "#title" => ($changing_term_mode) ? t("Change the Term") : t("Set the Term"),
       "#required" => TRUE,
-      "#description" => t("Enter a vocabulary term name. A set of matching " .
-          "candidates will be provided to choose from. You may find the multiple matching terms " .
-          "from different vocabularies. The full accession for each term is provided " .
-          "to help choose. Only the top 10 best matches are shown at a time."),
+      "#description" => t("Enter a vocabulary term name. A set of matching candidates will be provided to choose from. You may find the multiple matching terms from different vocabularies. The full accession for each term is provided to help choose. Only the top 10 best matches are shown at a time."),
       '#default_value' => $default_vocabulary_term,
       '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
       '#autocomplete_route_parameters' => ['count' => 10],
@@ -354,8 +372,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   }
 
   /**
-   * Returns a list of field terms for all fields on the specified
-   * bundle, including non-chado fields.
+   * Get a list of field terms for all fields on the specified bundle.
+   *
+   * Note: this includes terms on non-Tripal fields.
    *
    * @param string $bundle
    *   The bundle id, e.g. 'project', 'analysis', etc.
@@ -380,8 +399,12 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   }
 
   /**
-   * Returns a placeholder properties array for fields where the
-   * base table has not yet been set when manually adding a field.
+   * Get default placeholder properties for a field.
+   *
+   * This is used when manually adding a field before the base table has been
+   * set, and thus before the field plugin can determine what properties it
+   * needs to have. This allows us to add a field and then set the base table,
+   * which will trigger an update to the properties based on the new base table.
    *
    * @param object $field_definition
    *   The field configuration object. This can be an instance of:
@@ -642,6 +665,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * function performs that task.
    *
    * @param string $key
+   *   The property key to sanitize.
    *
    * @return string
    *   A sanitizied string.
@@ -678,8 +702,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public function tripalValuesTemplate($field_definition, $default_value = NULL) {
 
-    // If we have a parent, then the field is attached to an entity. If it's just
-    // an instance without a parent then the entity_id should stay null.
+    // If we have a parent, then the field is attached to an entity. If it's
+    // just an instance without a parent then the entity_id should stay null.
     $entity_id = NULL;
     $entity_type_id = 'tripal_entity';
     if ($this->getParent()) {
@@ -726,7 +750,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * provided. It ensures that only alphanumeric values are present in the
    * name and that it doesn't exceed Drupal's maximum length.
    *
-   * @param \Drupal\tripal\Entity\TripalEntityType TripalEntityType $bundle
+   * @param \Drupal\tripal\Entity\TripalEntityType $bundle
    *   The TripalEntityType object with information about the bundle.
    * @param string $extra
    *   Extra text to add to the field name after the bundle name.
@@ -780,6 +804,255 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     }
 
     return $max_delta;
+  }
+
+  /**
+   * Retrieves all the property types for this field item.
+   *
+   * @param bool $use_cache
+   *   Indicates if we should use the local cache.
+   *
+   * @return Drupal\tripal\TripalStorage\StoragePropertyType[]
+   *   A list of property types keyed by their StorageProperty::getKey().
+   */
+  public function getTripalStoragePropertyTypes(bool $use_cache = TRUE): array {
+
+    if (empty($this->tripalstorage_property_types) or !$use_cache) {
+      $prop_types = static::tripalTypes($this->getFieldDefinition());
+
+      // $prop_types is not keyed by StorageProperty::getKey() so let's do that.
+      $keyed_proptypes = [];
+      foreach ($prop_types as $prop_type) {
+        $prop_key = $prop_type->getKey();
+        $keyed_proptypes[$prop_key] = $prop_type;
+      }
+
+      // Now lets locally cache this for later use.
+      $this->tripalstorage_property_types = $keyed_proptypes;
+    }
+
+    return $this->tripalstorage_property_types;
+  }
+
+  /**
+   * Retrieve the TripalStorage property type with the specified key.
+   *
+   * @param string $key
+   *   The StorageProperty key for the property type you want.
+   * @param bool $use_cache
+   *   Indicates if we should use the local cache.
+   *
+   * @throws \Exception
+   *   If a property type with key is not returned by self::tripalTypes().
+   *
+   * @return \Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface
+   *   The property type you requested.
+   */
+  public function getTripalStoragePropertyType(string $key, bool $use_cache = TRUE): TripalStoragePropertyTypeInterface {
+    $keyed_proptypes = $this->getTripalStoragePropertyTypes($use_cache);
+
+    if (!array_key_exists($key, $keyed_proptypes)) {
+      $field_name = $this->getParent()->getName();
+      $class = get_class($this);
+      throw new \Exception("Cannot access the '$key' property type for '$field_name' field as it is not defined by its $class::tripalTypes method.");
+    }
+
+    return $keyed_proptypes[$key];
+  }
+
+  /**
+   * Retrieves all the property values for this field item.
+   *
+   * @param bool $use_cache
+   *   Indicates if we should use the local cache.
+   *
+   * @return Drupal\tripal\TripalStorage\StoragePropertyValue[]
+   *   A list of property values keyed by their StorageProperty::getKey().
+   */
+  public function getTripalStoragePropertyValues(bool $use_cache = TRUE): array {
+
+    if (empty($this->tripalstorage_property_values) or !$use_cache) {
+
+      // Parent Tripal Entity.
+      // We use this to get the bundle and id for the entity.
+      if ($this->getParent()) {
+        $entity = $this->getEntity();
+        $entity_type_id = $entity->getEntityTypeId();
+        $entity_id = $entity->id();
+      }
+
+      // Get a list of StoragePropertyType objects.
+      $prop_types = $this->getTripalStoragePropertyTypes();
+
+      // Get the current field items values (keyed by property name).
+      $field_values = $this->getValue();
+
+      // Now use the property type to initialize the value object.
+      foreach ($prop_types as $prop_key => $prop_type) {
+        $prop_value = new StoragePropertyValue($entity_type_id, static::$id,
+          $prop_key, $prop_type->getTerm()->getTermId(), $entity_id);
+
+        // Set the value if it is set in the field.
+        if (array_key_exists($prop_key, $field_values)) {
+          $prop_value->setValue($field_values[$prop_key]);
+        }
+        // Otherwise set a default value based on the property type.
+        else {
+          $prop_value->setDefaultValue($prop_type->getDefaultValue());
+        }
+
+        $this->tripalstorage_property_values[$prop_key] = $prop_value;
+      }
+    }
+
+    return $this->tripalstorage_property_values;
+  }
+
+  /**
+   * Retrieve the TripalStorage property value with the specified key.
+   *
+   * @param string $key
+   *   The StorageProperty key for the property value you want.
+   * @param bool $use_cache
+   *   Indicates if we should use the local cache.
+   *
+   * @return \Drupal\tripal\TripalStorage\StoragePropertyValue
+   *   The property value you requested.
+   */
+  public function getTripalStoragePropertyValue(string $key, bool $use_cache = TRUE): StoragePropertyValue {
+    $keyed_propvalues = $this->getTripalStoragePropertyValues($use_cache);
+
+    if (!array_key_exists($key, $keyed_propvalues)) {
+      $field_name = $this->getParent()->getName();
+      throw new \Exception("Cannot access the '$key' property value for '$field_name' field.");
+    }
+
+    return $keyed_propvalues[$key];
+  }
+
+  /**
+   * Retrieve the values of all TripalStorage Property Values for this field.
+   *
+   * Note: This is a convenience function that returns the values for each
+   * property in this field. Think of it as a quick way to flatten the results
+   * of getTripalStoragePropertyValues() into a simple associative array of
+   * property key => value pairs.
+   *
+   * @return array
+   *   An associative array where each element represents a property of this
+   *   field (i.e. TripalStoragePropertyValue). The key is the property name
+   *   and the value is the value of that property.
+   */
+  public function exportTripalStoragePropertyValues() {
+    $export = [];
+    $keyed_propvalues = $this->getTripalStoragePropertyValues();
+
+    foreach ($keyed_propvalues as $prop_key => $prop_value) {
+      $export[$prop_key] = $prop_value->getValue();
+    }
+
+    return $export;
+  }
+
+  /**
+   * Allows TripalStorage to update the property values of this field item.
+   *
+   * @param array $new_values
+   *   An array of the values to be set on each StoragePropertyValue object.
+   *   This should be keyed by the StoragePropertyValue::getKey().
+   *
+   * @return Drupal\tripal\TripalStorage\StoragePropertyValue[]
+   *   The updated property values keyed by their StorageProperty::getKey().
+   */
+  public function updateTripalStoragePropertyValues(array $new_values): array {
+
+    // Call the getter to ensure all the StoragePropertyValue objects exist.
+    $this->getTripalStoragePropertyValues();
+
+    // For each new value passed in, we update the corresponding property value.
+    foreach ($new_values as $prop_key => $prop_value) {
+      if (array_key_exists($prop_key, $this->tripalstorage_property_values)) {
+        $this->tripalstorage_property_values[$prop_key]->setValue($prop_value);
+      }
+    }
+
+    return $this->tripalstorage_property_values;
+  }
+
+  /**
+   * Update the TripalStorage property values to match the field item values.
+   *
+   * @return Drupal\tripal\TripalStorage\StoragePropertyValue[]
+   *   A list of property values keyed by their StorageProperty::getKey().
+   */
+  public function syncTripalStoragePropertyValues(): array {
+    $prop_values = $this->getTripalStoragePropertyValues();
+
+    // Get the current field items values (keyed by property name).
+    $field_values = $this->getValue();
+
+    // Now update each property value with the associated field value.
+    foreach (array_keys($prop_values) as $prop_key) {
+      // Set the value if it is set in the field.
+      if (array_key_exists($prop_key, $field_values)) {
+        $this->tripalstorage_property_values[$prop_key]->setValue($field_values[$prop_key]);
+      }
+    }
+
+    return $this->tripalstorage_property_values;
+  }
+
+  /**
+   * Update field values to match those in the TripalStorage property values.
+   *
+   * @return array
+   *   The field values after being updated. This is an array keyed by the
+   *   property name where the value is the new value of that field property.
+   */
+  public function syncFieldValuesWithTripalStorage(): array {
+    $prop_values = $this->getTripalStoragePropertyValues();
+
+    // Now update each field with the associated property value.
+    foreach (array_keys($prop_values) as $prop_key) {
+      // Get the value of this TripalStorage property.
+      $prop_value = $prop_values[$prop_key]->getValue();
+      // Set the field value with the same property name.
+      $this->set($prop_key, $prop_value);
+    }
+
+    return $this->getValue();
+  }
+
+  /**
+   * Clears all field values from the given entity.
+   *
+   * This is to prevent Drupal from storing field values when they are
+   * being stored in the TripalStorage backend.
+   *
+   * Note: by clearing the values we mean to set them to their default based
+   * on the property type they represent in TripalStorage.
+   *
+   * @return void
+   *   We do not need to return anything as this updates the current field item.
+   */
+  public function clearFieldValuesForTripalStorage(): void {
+    $keyed_proptypes = $this->getTripalStoragePropertyTypes();
+
+    foreach ($keyed_proptypes as $prop_key => $prop_type) {
+
+      // Determine whether this property should be saved to the Drupal field
+      // tables based on its TripalStorage property type settings.
+      $cache = $prop_type->getCacheStatus();
+
+      // Get the default value for this property based on its TripalStorage
+      // propert type object.
+      $default_value = $prop_type->getDefaultValue();
+
+      // Clear properties that should not be saved in the Drupal field tables.
+      if ($cache === FALSE) {
+        $this->set($prop_key, $default_value);
+      }
+    }
   }
 
 }

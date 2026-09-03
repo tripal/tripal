@@ -2,12 +2,13 @@
 
 namespace Drupal\tripal_chado\TripalStorage;
 
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
 use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
 
 /**
  * Defines the boolean Tripal storage property type.
  */
-class ChadoBoolStoragePropertyType extends BoolStoragePropertyType {
+class ChadoBoolStoragePropertyType extends BoolStoragePropertyType implements TripalStoragePropertyTypeInterface {
 
   /**
    * Constructs a new boolean chado storage property type.

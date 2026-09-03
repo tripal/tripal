@@ -2,12 +2,13 @@
 
 namespace Drupal\tripal_chado\TripalStorage;
 
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
 use Drupal\tripal\TripalStorage\DatetimeStoragePropertyType;
 
 /**
  * Defines the datetime Tripal storage property type.
  */
-class ChadoDatetimeStoragePropertyType extends DatetimeStoragePropertyType {
+class ChadoDatetimeStoragePropertyType extends DatetimeStoragePropertyType implements TripalStoragePropertyTypeInterface {
 
   /**
    * Constructs a new datetime tripal storage property type.

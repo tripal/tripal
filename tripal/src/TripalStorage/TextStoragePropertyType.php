@@ -2,12 +2,14 @@
 
 namespace Drupal\tripal\TripalStorage;
 
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
+
 /**
  * Defines the text Tripal storage property type.
  *
  * Note: A text type is a string with unlimited length.
  */
-class TextStoragePropertyType extends StoragePropertyTypeBase {
+class TextStoragePropertyType extends StoragePropertyTypeBase implements TripalStoragePropertyTypeInterface {
 
   /**
    * Constructs a new text tripal storage property type.

@@ -2,12 +2,13 @@
 
 namespace Drupal\tripal_chado\TripalStorage;
 
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 
 /**
  * Defines the fixed length text Tripal storage property type.
  */
-class ChadoTextStoragePropertyType extends TextStoragePropertyType {
+class ChadoTextStoragePropertyType extends TextStoragePropertyType implements TripalStoragePropertyTypeInterface {
 
   /**
    * Constructs a new text tripal storage property type.
