@@ -45,6 +45,8 @@ class TripalImporterForm implements FormInterface {
         . ' currently only support cardinality of 1, see Tripal issue #1635');
     }
 
+    $form['#attached']['library'][] = 'tripal/tripal.importer';
+
     $form['#title'] = $importer_def['label'];
 
     $form['importer_plugin_id'] = [
@@ -62,7 +64,7 @@ class TripalImporterForm implements FormInterface {
       ];
 
       $form['file']['upload_description'] = [
-        '#markup' => '<p>' . $importer->describeUploadFileFormat() . '</p>',
+        '#markup' => '<div class="tripal-importer-describe-upload">' . $importer->describeUploadFileFormat() . '</div>',
       ];
     }
 

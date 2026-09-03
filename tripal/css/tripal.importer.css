@@ -6,3 +6,7 @@
 form td.tripal-pub-importer-align-top {
   vertical-align: top;
 }
+
+div.tripal-importer-describe-upload {
+  margin-bottom: 10px;
+}
