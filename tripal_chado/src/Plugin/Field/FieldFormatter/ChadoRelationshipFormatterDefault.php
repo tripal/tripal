@@ -6,6 +6,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
+use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy;
 
 /**
  * Plugin implementation of default Tripal Relationship formatter.
@@ -16,6 +17,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
   description: new TranslatableMarkup('A chado relationship formatter'),
   field_types: [
     'chado_relationship_type_default',
+    'chado_relationship_by_role_type_default',
   ],
   valid_tokens: [
     '[accession]',
@@ -28,6 +30,13 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
   ],
 )]
 class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
+
+  /**
+   * Used to store the cvterm ChadoBuddy instance.
+   *
+   * @var \Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy
+   */
+  protected ChadoCvtermBuddy $cvterm_instance;
 
   /**
    * {@inheritdoc}
@@ -64,7 +73,36 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
         $direction = -1;
       }
 
-      // As we did in Tripal 3, the term is processed up a bit to make for nicer display
+      // If this is a "by role" field the type_name may not be stored
+      // on the item. Attempt to resolve it from the type_id or from the
+      // field settings so the formatter can display a meaningful name.
+      if (empty($values['type_name'])) {
+        $field_definition = $items->getFieldDefinition();
+        if ($field_definition->getType() === 'chado_relationship_by_role_type_default') {
+          $type_id = (int) $item->get('type_id')->getString();
+          if ($type_id) {
+            $values['type_name'] = $this->cvterm_instance->getCvterm([
+              'cvterm_id' => $type_id,
+            ])->getName();
+          }
+          else {
+            // As a fallback, try to read term info from field settings.
+            $settings = $field_definition->getSettings();
+            if (!empty($settings['termIdSpace']) && !empty($settings['termAccession'])) {
+              $idspace = $settings['termIdSpace'];
+              $accession = $settings['termAccession'];
+              $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+              $idSpace = $idSpace_manager->loadCollection($idspace);
+              $term = $idSpace ? $idSpace->getTerm($accession) : NULL;
+              if ($term) {
+                $values['type_name'] = $term->getName();
+              }
+            }
+          }
+        }
+      }
+
+      // As we did in Tripal 3, the term is processed up a bit to make for nicer display.
       $this->formatTypeName($values);
 
       // Create a clickable link to the corresponding related entity when one exists.
@@ -79,7 +117,7 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
       }
 
       // Lookup subject and object entity bundle names. ID may be -1 if unpublished.
-      // e.g. for features: mRNA xxx is part of Gene yyy
+      // e.g. for features: mRNA xxx is part of Gene yyy.
       $values['subject_bundle'] = $lookup_manager->getBundleLabel($values['subject_entity_id']);
       $values['object_bundle'] = $lookup_manager->getBundleLabel($values['object_entity_id']);
 
@@ -138,13 +176,14 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
   protected function get_rel_verb(string $rel_type): string {
     $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
     $verb = '';
-    // can skip anything already starting with 'is' or 'has'
+    // Can skip anything already starting with 'is' or 'has'.
     if (!preg_match('/^(is|has) /', $rel_type_clean)) {
       switch ($rel_type_clean) {
         case 'integral part of':
         case 'instance of':
           $verb = 'is an';
           break;
+
         case 'genome of':
         case 'part of':
         case 'position of':
@@ -154,6 +193,7 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
         case 'variant of':
           $verb = 'is a';
           break;
+
         case 'connects on':
         case 'contains':
         case 'derives from':
@@ -163,6 +203,7 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
         case 'overlaps':
         case 'starts':
           break;
+
         default:
           $verb = 'is';
       }
@@ -173,4 +214,5 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
     }
     return $verb;
   }
+
 }

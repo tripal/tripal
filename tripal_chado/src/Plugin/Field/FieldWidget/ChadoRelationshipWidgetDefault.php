@@ -19,6 +19,7 @@ use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
   description: new TranslatableMarkup('The default relationship widget.'),
   field_types: [
     'chado_relationship_type_default',
+    'chado_relationship_by_role_type_default',
   ],
 )]
 class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
@@ -38,7 +39,7 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     $subject_column = $storage_settings['subject_column'] ?? '';
     $object_column = $storage_settings['object_column'] ?? '';
     // During manual field addition there may be no base table
-    // selected yet, in which case bypass this form
+    // selected yet, in which case bypass this form.
     if (!$base_table || !$base_column) {
       return $element;
     }
@@ -58,6 +59,9 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     if ($object_id) {
       $object_name .= ' (' . $object_id . ')';
     }
+
+    $show_term = array_key_exists('type_id', $property_definitions)
+      && ($field_definition->getType() !== 'chado_relationship_by_role_type_default');
 
     $reverse_default = 0;
     $related_default = $object_name;
@@ -82,7 +86,7 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $type_id,
     ];
 
-    // pass the foreign key names through the form for massageFormValues()
+    // Pass the foreign key names through the form for massageFormValues()
     $element['subject_column'] = [
       '#type' => 'value',
       '#default_value' => $subject_column,
@@ -91,29 +95,31 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $object_column,
     ];
-    // pass the field machine name through the form for massageFormValues()
+    // Pass the field machine name through the form for massageFormValues()
     $element['field_name'] = [
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
 
-    // CV term autocomplete. This controller includes synonyms
+    // CV term autocomplete. This controller includes synonyms.
     $term_autocomplete_default = '';
     if ($type_id) {
       $cv_autocomplete = new ChadoCVTermAutocompleteController();
       $term_autocomplete_default = $cv_autocomplete->formatCVterm($type_id);
     }
-    $element['term'] = [
-      '#type' => 'textfield',
-      '#required' => FALSE,
-      '#default_value' => $term_autocomplete_default,
-      '#disabled' => FALSE,
-      '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 10],
-      '#element_validate' => [[static::class, 'validateAutocomplete']],
-    ];
+    if ($show_term) {
+      $element['term'] = [
+        '#type' => 'textfield',
+        '#required' => FALSE,
+        '#default_value' => $term_autocomplete_default,
+        '#disabled' => FALSE,
+        '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
+        '#autocomplete_route_parameters' => ['count' => 10],
+        '#element_validate' => [[static::class, 'validateAutocomplete']],
+      ];
+    }
 
-    // Related record
+    // Related record.
     $element['related_record'] = [
       '#type' => 'textfield',
       '#required' => FALSE,
@@ -131,24 +137,32 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       '#element_validate' => [[static::class, 'validateRelatedRecord']],
     ];
 
-    $element['reverse'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Reverse'),
-      '#default_value' => $reverse_default,
-    ];
+    if ($show_term) {
+      $element['reverse'] = [
+        '#type' => 'checkbox',
+        '#title' => t('Reverse'),
+        '#default_value' => $reverse_default,
+      ];
+    }
 
-    // To reduce clutter, only display these items on the first row
+    // To reduce clutter, only display these items on the first row.
     if ($delta == 0) {
-      $element['term']['#title'] = t('Controlled Vocabulary Term');
+      if ($show_term) {
+        $element['term']['#title'] = t('Controlled Vocabulary Term');
+      }
       $element['related_record']['#title'] = $this->t('Related @table record', ['@table' => $base_table]);
-      $element['reverse']['#description'] = $this->t('if this is the subject of the relationship',
-          ['@table' => $base_table]);
+      if ($show_term) {
+        $element['reverse']['#description'] = $this->t('if this is the subject of the relationship',
+            ['@table' => $base_table]);
+      }
     }
 
     // We also need a div to have a specific combined wrapper in addition to the fieldset.
-    $element['term']['#prefix'] = '<div class="chado-relationship-field-wrapper form-item">'
-        . ($element['term']['#prefix'] ?? '');
-    $element['direction']['#suffix'] = ($element['direction']['#suffix'] ?? '') . '</div>';
+    if ($show_term) {
+      $element['term']['#prefix'] = '<div class="chado-relationship-field-wrapper form-item">'
+          . ($element['term']['#prefix'] ?? '');
+      $element['reverse']['#suffix'] = ($element['reverse']['#suffix'] ?? '') . '</div>';
+    }
 
     // If there is a relationship value and it is not already set,
     // then we want to use '' as the default.
@@ -168,7 +182,7 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       ];
     }
 
-    // Save some initial values to allow later handling of the "Remove" button
+    // Save some initial values to allow later handling of the "Remove" button.
     $this->saveRelatedInitialValues($delta, $field_name, $linker_id, $type_id, $related_id, $reverse_default, $form_state);
 
     return $element;
@@ -187,16 +201,23 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
    * @param int $linker_id
    *   The primary key value of the record in the linking table.
    * @param int $type_id
-   *   The cvterm_id of the relationship type
+   *   The cvterm_id of the relationship type.
    * @param int $related_record_id
-   *   The ID of related record
+   *   The ID of related record.
    * @param int $reverse
-   *   The checkbox to reverse subject:object orientation
-   * @param FormStateInterface &$form_state
+   *   The checkbox to reverse subject:object orientation.
+   * @param \Drupal\Core\Form\FormStateInterface &$form_state
    *   The current form state.
    */
-  protected function saveRelatedInitialValues(int $delta, string $field_name, int $linker_id, int $type_id,
-                                              int $related_record_id, int $reverse, FormStateInterface &$form_state) {
+  protected function saveRelatedInitialValues(
+    int $delta,
+    string $field_name,
+    int $linker_id,
+    int $type_id,
+    int $related_record_id,
+    int $reverse,
+    FormStateInterface &$form_state,
+  ) {
     $storage_values = $form_state->getStorage();
     // We want the initial values, so never update them once saved.
     if (!($storage_values['initial_values'][$field_name][$delta] ?? FALSE)) {
@@ -219,7 +240,7 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     $field_name = $values[$first_delta]['field_name'];
 
     // Convert the widget fields into an updated $values array
-    // with the items expected by the field type
+    // with the items expected by the field type.
     $this->preMassageFormValues($values);
 
     // Handle any empty values so that chado storage properly
@@ -251,7 +272,7 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     // Handle items that were removed with the "Remove" button.
     $this->handleRemove($values, $form, $form_state, $field_name, $retained_records);
 
-    // Reset the weights
+    // Reset the weights.
     $i = 0;
     foreach ($values as $delta => $value) {
       $values[$delta]['_weight'] = $i;
@@ -260,11 +281,8 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     return $values;
   }
 
-
-
-
   /**
-   * Handle items removed using the "Remove" button
+   * Handle items removed using the "Remove" button.
    *
    * @param array &$values
    *   The submitted form values produced by the widget.
@@ -275,12 +293,18 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
    * @param string $field_name
    *   The machine name of this field.
    * @param array $retained_records
-   *   Records in the form state at the time of massaging
+   *   Records in the form state at the time of massaging.
+   *
    * @return void
    *   Changes are made to the $values array
    */
-  protected function handleRemove(array &$values, array $form, FormStateInterface $form_state,
-      string $field_name, array $retained_records): void {
+  protected function handleRemove(
+    array &$values,
+    array $form,
+    FormStateInterface $form_state,
+    string $field_name,
+    array $retained_records,
+  ): void {
     // If there were any values in the initial values that are not
     // present in the current form state, then an existing record
     // was deleted by clicking the "Remove" button. Similarly to
@@ -290,7 +314,7 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     $storage_values = $form_state->getStorage();
     $initial_values = $storage_values['initial_values'][$field_name];
     foreach ($initial_values as $initial_key => $initial_value) {
-      // For initial values, the key is always 'linker_id'
+      // For initial values, the key is always 'linker_id'.
       $linker_id = $initial_value['linker_id'] ?? 0;
       if ($linker_id) {
         $initial_reverse = $initial_value['reverse'];
@@ -318,7 +342,7 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
               $values[$next_delta]['linker_id'] = 0;
               $next_delta++;
             }
-            // Mark the current record for deletion in chado storage
+            // Mark the current record for deletion in chado storage.
             $this->markForDeletion($values, $delta, $initial_reverse, $initial_value['related_record_id']);
           }
         }
@@ -332,13 +356,14 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
    * have the original related record ID present in the correct one for deletion.
    *
    * @param array &$values
-   *   The values array presented by massageFormValues
+   *   The values array presented by massageFormValues.
    * @param int $delta
    *   The numeric index of the item.
    * @param int $reverse
-   *   The checkbox to reverse subject:object orientation
+   *   The checkbox to reverse subject:object orientation.
    * @param int $related_record_id
-   *   The non-host record, either from subject_id or object_id depending on direction
+   *   The non-host record, either from subject_id or object_id depending on direction.
+   *
    * @return void
    */
   protected function markForDeletion(array &$values, $delta, $reverse, $related_record_id): void {
@@ -360,7 +385,8 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
    * array containing the items that are expected by the field type.
    *
    * @param array &$values
-   *   The values array passed to massageFormValues
+   *   The values array passed to massageFormValues.
+   *
    * @return void
    */
   protected function preMassageFormValues(array &$values): void {
@@ -370,36 +396,41 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       $new_value['object_id'] = 0;
       $new_value['type_id'] = 0;
 
-      // Use autocomplete to replace the term with its cvterm_id value
+      // Use autocomplete to replace the term with its cvterm_id value.
       $cvterm_id = 0;
-      if ($value['term']) {
-        $cv_autocomplete = new ChadoCVTermAutocompleteController();
-        $cvterm_id = $cv_autocomplete->getCVtermId($value['term']);
+      $record_id = $value['record_id'];
+      $related_record_id = 0;
+      if ($value['related_record']) {
+        $generic_autocomplete = new ChadoGenericAutocompleteController();
+        $related_record_id = $generic_autocomplete->getPkeyId($value['related_record']);
 
-        // Use the autocomplete to convert the related record to its numeric ID value
-        $record_id = $value['record_id'];
-        $related_record_id = 0;
-        if ($value['related_record']) {
-          // If you add a term but no record, it will just be ignored, thus
-          // we don't add the term until this point, when we know there is a record.
+        if (!empty($value['term'])) {
+          $cv_autocomplete = new ChadoCVTermAutocompleteController();
+          $cvterm_id = $cv_autocomplete->getCVtermId($value['term']);
           $new_value['type_id'] = $cvterm_id;
-          $generic_autocomplete = new ChadoGenericAutocompleteController();
-          $related_record_id = $generic_autocomplete->getPkeyId($value['related_record']);
+        }
+        else {
+          $termIdSpace = $this->getFieldSetting('termIdSpace');
+          $termAccession = $this->getFieldSetting('termAccession');
 
-          // We need to know the orientation to put the appropriate
-          // values in the subject and object columns.
-          if ($value['reverse'] == 1) {
-            $new_value['subject_id'] = $related_record_id;
-            $new_value['object_id'] = $record_id;
-          }
-          else {
-            $new_value['subject_id'] = $record_id;
-            $new_value['object_id'] = $related_record_id;
-          }
+          $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+          $idSpace = $idSpace_manager->loadCollection($termIdSpace);
+          $term = $idSpace->getTerm($termAccession);
+
+          $new_value['type_id'] = $term->getInternalId();
+        }
+
+        if (!empty($value['reverse']) && ($value['reverse'] == 1)) {
+          $new_value['subject_id'] = $related_record_id;
+          $new_value['object_id'] = $record_id;
+        }
+        else {
+          $new_value['subject_id'] = $record_id;
+          $new_value['object_id'] = $related_record_id;
         }
       }
 
-      // Remove widget form items that are not needed for the field
+      // Remove widget form items that are not needed for the field.
       unset($new_value['term']);
       unset($new_value['related_record']);
       unset($new_value['reverse']);
@@ -409,12 +440,12 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
   }
 
   /**
-   * Form element validation handler for the CV term field
+   * Form element validation handler for the CV term field.
    *
    * @param array $element
-   *   The form element being validated
+   *   The form element being validated.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state of the (entire) configuration form
+   *   The form state of the (entire) configuration form.
    */
   public static function validateAutocomplete($element, FormStateInterface $form_state) {
     $element_parents = $element['#parents'];
@@ -426,21 +457,21 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
         $form_state->setErrorByName(implode('][', $element_parents),
             t('The Controlled Vocabulary Term "@term" is not a valid term', ['@term' => $element_value]));
       }
-      // We permit entering a term without a related record, it will just be ignored
+      // We permit entering a term without a related record, it will just be ignored.
     }
   }
 
   /**
-   * Form element validation handler for the related record field
+   * Form element validation handler for the related record field.
    *
    * @param array $element
-   *   The form element being validated
+   *   The form element being validated.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state of the (entire) configuration form
+   *   The form state of the (entire) configuration form.
    */
   public static function validateRelatedRecord($element, FormStateInterface $form_state) {
     $element_parents = $element['#parents'];
-    // element_parents e.g. 0 => "project_relationship", 1 => 0, 2 => "related_record"
+    // element_parents e.g. 0 => "project_relationship", 1 => 0, 2 => "related_record".
     $element_value = $element['#value'];
     if ($element_value != '') {
       $generic_autocomplete = new ChadoGenericAutocompleteController();
@@ -450,7 +481,7 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
             t('The specified record does not include a numeric record ID in parentheses'));
       }
 
-      // The related record cannot be the same as the current record
+      // The related record cannot be the same as the current record.
       $values = $form_state->getValues();
       $record_id = $values[$element_parents[0]][$element_parents[1]]['record_id'] ?? 0;
       if ($record_id and ($record_id == $related_record_id)) {
@@ -467,4 +498,5 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       }
     }
   }
+
 }
