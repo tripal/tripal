@@ -1,0 +1,116 @@
+system-under-test:
+  bundle:
+    label: 'Organism'
+    termIdSpace: 'OBI'
+    termAccession: '0100026'
+    id: 'organism'
+    settings:
+      chado_base_table: 'organism'
+  fields:
+    - name: 'organism_genus'
+      type: 'chado_string_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+      cardinality: 1
+      widget: 'chado_string_type_widget'
+      formatter: 'chado_string_type_formatter'
+      termIdSpace: 'TAXRANK'
+      termAccession: '0000005'
+      settings:
+        termIdSpace: 'TAXRANK'
+        termAccession: '0000005'
+        debug: false
+        max_length: 255
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+          base_table: 'organism'
+          base_column: 'genus'
+    - name: 'organism_species'
+      type: 'chado_string_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+      cardinality: 1
+      widget: 'chado_string_type_widget'
+      formatter: 'chado_string_type_formatter'
+      termIdSpace: 'TAXRANK'
+      termAccession: '0000006'
+      settings:
+        termIdSpace: 'TAXRANK'
+        termAccession: '0000006'
+        debug: false
+        max_length: 255
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+          base_table: 'organism'
+          base_column: 'species'
+    - name: 'organism_abbreviation'
+      type: 'chado_string_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+      cardinality: 1
+      widget: 'chado_string_type_widget'
+      formatter: 'chado_string_type_formatter'
+      termIdSpace: 'local'
+      termAccession: 'abbreviation'
+      settings:
+        termIdSpace: 'local'
+        termAccession: 'abbreviation'
+        debug: false
+        max_length: 255
+        storage_plugin_id: 'chado_storage'
+        storage_plugin_settings:
+          base_table: 'organism'
+          base_column: 'abbreviation'
+scenarios:
+  - label: 'Value for all fields'
+    description: 'Create a page where every field has one value.'
+    create:
+      user_input:
+        organism_abbreviation:
+          - record_id: 0
+            value: 'T. databasica'
+        organism_genus:
+          - record_id: 0
+            value: 'Tripalus'
+        organism_species:
+          - record_id: 0
+            value: 'databasica'
+      expected:
+        organism_abbreviation:
+          - record_id: 0
+            value: 'T. databasica'
+        organism_genus:
+          - record_id: 0
+            value: 'Tripalus'
+        organism_species:
+          - record_id: 0
+            value: 'databasica'
+    syncValues:
+      user_input:
+        organism_abbreviation:
+          - record_id: 1
+            value: 'T. postgresquelus'
+        organism_genus:
+          - record_id: 1
+            value: 'Tripalus'
+        organism_species:
+          - record_id: 1
+            value: 'postrequelus'
+      expected:
+        organism_abbreviation:
+          - record_id: 1
+            value: 'T. postgresquelus'
+        organism_genus:
+          - record_id: 1
+            value: 'Tripalus'
+        organism_species:
+          - record_id: 1
+            value: 'postrequelus'
+    clearValues:
+      expected:
+        organism_abbreviation:
+          - record_id: 1
+            value: 'T. postgresquelus'
+        organism_genus:
+          - record_id: 1
+            value: 'Tripalus'
+        organism_species:
+          - record_id: 1
+            value: 'postrequelus'

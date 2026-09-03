@@ -225,7 +225,7 @@ class PropertyTypeClassTest extends TripalTestKernelBase {
     $this->assertInstanceOf($instance, $propertyType,
       "We created an object but it was not the type we expected.");
     $default = $propertyType->getDefaultValue();
-    $this->assertFalse($default, "We expect the default value to be FALSE for the boolean property type.");
+    $this->assertEquals(0, $default, "We expect the default value to be 0 for the boolean property type.");
 
     // DatetimeStoragePropertyType.
     $type = 'DatetimeStoragePropertyType';
