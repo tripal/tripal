@@ -453,7 +453,7 @@
     }
 
     /**
-     *
+     * Place an upload in pending state.
      */
     pending() {
       this.status = 'pending';
