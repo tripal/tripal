@@ -44,4 +44,9 @@
   --tripalcontent-category9-med: rgba(29, 108, 61, 0.5);
   --tripalcontent-category9-soft: rgba(29, 108, 61, 0.25);
 
+  --tripalcontent-category10-solid: #22807E;
+  --tripalcontent-category10-solid-dark: #4FBDBB;
+  --tripalcontent-category10-med: rgba(42, 156, 154, 0.5);
+  --tripalcontent-category10-soft: rgba(42, 156, 154, 0.25);
+
 }
