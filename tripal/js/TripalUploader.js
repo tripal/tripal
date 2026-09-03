@@ -289,11 +289,11 @@
       }
       jQuery(submit_id)
         .off('click.tripalUploader')
-        .on('click', () => {
-        for(let i = 0; i < categories.length; i++) {
-          this.start(categories[i]);
-        }
-      });
+        .on('click.tripalUploader', () => {
+          categories.forEach((category) => {
+            this.start(category);
+          });
+        });
     }
 
     /**
