@@ -500,9 +500,9 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     // $scientific_name could be a single word, so make sure a
     // placeholder for species is defined.
     $parts[1] ??= '';
-    // Supply null defaults for organisms without infraspecies.
+    // Supply defaults for organisms without infraspecies.
     $parts[2] ??= NULL;
-    $parts[3] ??= NULL;
+    $parts[3] ??= '';
     // Setup our conditions for lookup.
     $conditions = [
       'organism.genus' => $parts[0],
