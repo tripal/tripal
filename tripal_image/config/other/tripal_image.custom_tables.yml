@@ -1,7 +1,47 @@
-stock_image:
-    table: 'stock_image'
+eimageprop:
+    table: 'eimageprop'
     fields:
-        stock_image_id:
+        eimageprop_id:
+            size: big
+            type: serial
+            'not null': true
+        eimage_id:
+            type: int
+            'not null': true
+        type_id:
+            type: int
+            'not null': true
+        value:
+            type: text
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - eimageprop_id
+    'unique keys':
+        fileprop_c1:
+            - eimage_id
+            - type_id
+            - rank
+    indexes:
+        eimageprop_idx1:
+            - eimage_id
+        eimageprop_idx2:
+            - type_id
+    'foreign keys':
+        eimage:
+            table: eimage
+            columns:
+                eimage_id: eimage_id
+        cvterm:
+            table: cvterm
+            columns:
+                type_id: cvterm_id
+stock_eimage:
+    table: 'stock_eimage'
+    fields:
+        stock_eimage_id:
             size: big
             type: serial
             'not null': true
@@ -9,7 +49,7 @@ stock_image:
             size: big
             type: int
             'not null': true
-        image_id:
+        eimage_id:
             size: big
             type: int
             'not null': true
@@ -21,28 +61,28 @@ stock_image:
             'not null': true
             default: 0
     'primary key':
-        - stock_image_id
+        - stock_eimage_id
     'unique keys':
-        stock_image_c1:
+        stock_eimage_c1:
             - stock_id
-            - image_id
+            - eimage_id
             - type_id
     'nulls not distinct':
-        stock_image_c1: true
+        stock_eimage_c1: true
     indexes:
-        stock_image_idx1:
+        stock_eimage_idx1:
             - stock_id
-        stock_image_idx2:
-            - image_id
+        stock_eimage_idx2:
+            - eimage_id
     'foreign keys':
         stock:
             table: stock
             columns:
                 stock_id: stock_id
-        image:
+        eimage:
             table: eimage
             columns:
-                image_id: eimage_id
+                eimage_id: eimage_id
         type_id:
             table: cvterm
             columns:
