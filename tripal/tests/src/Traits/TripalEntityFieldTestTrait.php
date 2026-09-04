@@ -147,15 +147,27 @@ trait TripalEntityFieldTestTrait {
       $drupal_field_records = $query->fetchAllAssoc('delta');
 
       // For each delta in this field...
+      $expected_field_count = 0;
       foreach ($expected_field_delta as $expected_delta => $expected_delta_values) {
-
         // Check that we were able to retrieve a specific field value.
         $field_item = $field_item_list->get($expected_delta);
-        $this->assertInstanceOf(TripalFieldItemInterface::class, $field_item, $message_prefix . "$expected_field_name [$expected_delta] could not be retrieved.");
+        if ($expected_delta_values['count'] ?? 1) {
+          $this->assertInstanceOf(TripalFieldItemInterface::class, $field_item, $message_prefix . "$expected_field_name [$expected_delta] could not be retrieved.");
 
-        // Check record is in the Drupal field table for this delta.
-        $this->assertArrayHasKey($expected_delta, $drupal_field_records, $message_prefix . "$expected_field_name [$expected_delta] should have a record in the Drupal field table '$drupal_field_table'.");
-        $drupal_field_record = $drupal_field_records[$expected_delta];
+          // Check record is in the Drupal field table for this delta.
+          $this->assertArrayHasKey($expected_delta, $drupal_field_records, $message_prefix . "$expected_field_name [$expected_delta] should have a record in the Drupal field table '$drupal_field_table'.");
+          $drupal_field_record = $drupal_field_records[$expected_delta];
+          $expected_field_count++;
+        }
+        // Use count: 0 to indicate that you expect that this field
+        // is NOT present.
+        else {
+          $this->assertNull($field_item, $message_prefix . "$expected_field_name [$expected_delta] was present, but should be absent.");
+
+          // Check record is NOT in the Drupal field table for this delta.
+          $this->assertArrayNotHasKey($expected_delta, $drupal_field_records, $message_prefix . "$expected_field_name [$expected_delta] should NOT have a record in the Drupal field table '$drupal_field_table'.");
+          continue;
+        }
 
         // For each property of the field...
         foreach ($expected_delta_values as $expected_property_type => $expected_value) {
@@ -175,11 +187,11 @@ trait TripalEntityFieldTestTrait {
       // This ensures there were not more then expected. It's checked after the
       // property values/delta are checked to ensure we get more tailored
       // feedback if there are less than expected.
-      $this->assertCount(count($expected_field_delta), $field_item_list, $message_prefix . ": field '$expected_field_name' did not have the expected number of values.");
+      $this->assertCount($expected_field_count, $field_item_list, $message_prefix . ": field '$expected_field_name' did not have the expected number of values.");
 
       // Check the right number of records are in the Drupal field table.
       $this->assertCount(
-        count($expected_field_delta),
+        $expected_field_count,
         $drupal_field_records,
         $message_prefix . ": field '$expected_field_name' did not have the expected number of records in the drupal field table ($drupal_field_table)."
       );
@@ -285,6 +297,7 @@ trait TripalEntityFieldTestTrait {
           'cardinality' => $field_details['cardinality'] ?? 1,
           'required' => $field_details['required'] ?? TRUE,
           'settings' => $field_details['settings'],
+          'display_settings' => $field_details['display_settings'] ?? [],
         ],
         [
           'idspace_plugin_id' => 'tripal_default_id_space',
@@ -393,6 +406,7 @@ trait TripalEntityFieldTestTrait {
     $values['widget_id'] = $values['widget_id'] ?? 'default_tripal_string_type_widget';
     $values['field_type'] = $values['field_type'] ?? 'tripal_string_type';
     $values['settings'] = $values['settings'] ?? [];
+    $values['display_settings'] = $values['display_settings'] ?? [];
     // -- Bundle
     if (array_key_exists('bundle', $values)) {
       $bundle = $values['bundle'];
@@ -438,7 +452,7 @@ trait TripalEntityFieldTestTrait {
     $display_options = [
       'type' => $values['widget_id'],
       'region' => 'content',
-      'settings' => [],
+      'settings' => $values['display_settings'],
     ];
     if (array_key_exists($values['bundle_name'], $this->entityFormDisplay)) {
       $display = $this->entityFormDisplay[$values['bundle_name']];

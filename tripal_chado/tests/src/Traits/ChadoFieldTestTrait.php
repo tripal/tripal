@@ -304,6 +304,7 @@ trait ChadoFieldTestTrait {
           'required' => $field_details['required'] ?? TRUE,
           'cardinality' => $field_details['cardinality'] ?? 1,
           'settings' => $field_details['settings'],
+          'display_settings' => $field_details['display_settings'] ?? [],
         ],
         [
           'idspace_plugin_id' => 'chado_id_space',
