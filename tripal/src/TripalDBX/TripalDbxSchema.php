@@ -479,8 +479,8 @@ EOD;
           AND n.nspname = :schema
         )
       WHERE
-        p.proname ILIKE :function_name
-        AND pg_get_function_identity_arguments(p.oid) ILIKE :func_args
+        p.proname::text ILIKE :function_name
+        AND pg_get_function_identity_arguments(p.oid)::text ILIKE :func_args
     ";
     $args = [
       ':function_name' => $function_name,
@@ -599,10 +599,10 @@ EOD;
     $constraint_exists = $this->connection->query("
       SELECT TRUE
       FROM information_schema.table_constraints
-      WHERE table_name ILIKE :table
-        AND table_schema ILIKE :schema
-        AND constraint_type ILIKE :type
-        AND constraint_name ILIKE :name
+      WHERE table_name::text ILIKE :table
+        AND table_schema::text ILIKE :schema
+        AND constraint_type::text ILIKE :type
+        AND constraint_name::text ILIKE :name
       ;",
       [
         ':table' => $table,
@@ -674,8 +674,8 @@ EOD;
     $constraint_exists = $this->connection->query(
       "SELECT TRUE
       FROM information_schema.table_constraints
-      WHERE table_name ILIKE :table
-        AND table_schema ILIKE :schema
+      WHERE table_name::text ILIKE :table
+        AND table_schema::text ILIKE :schema
         AND constraint_type = 'PRIMARY KEY';",
       [
         ':table' => $table,
