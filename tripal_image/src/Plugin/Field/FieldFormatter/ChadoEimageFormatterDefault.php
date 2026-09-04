@@ -74,7 +74,7 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
       if ($values['image_uri']) {
         $url = $url_generator->generateAbsoluteString($values['image_uri']);
         $basename = basename($url);
-        $image_markup = '<a href="' . $url . '" alt="' . $basename . '"><img src="' . $url . '"></a>';
+        $image_markup = '<a href="' . $url . '"><img src="' . $url . '" alt="' . $basename . '"></a>';
       }
       elseif ($values['eimage_data']) {
         $binary_data = convert_uudecode($values['eimage_data']);
@@ -106,7 +106,8 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
 
       // If the image has one or more properties, split side-by-side for
       // diplaying them, otherwise the image takes up the full width.
-      // Link to the corresponding entity when one exists is not implemented.
+      // Link to the corresponding entity when one exists is not implemented
+      // because eimage is not a content type.
       if ($property_list) {
         $list[$delta] = [
           '#type' => 'container',
@@ -115,20 +116,21 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
           ],
           'left_content' => [
             '#type' => 'container',
+            '#markup' => $image_markup,
             '#attributes' => [
               'class' => ['side-by-side-left'],
+              'style' => ['--tripal-image-max-height: 200px'],
+            ],
+          ],
+          'right_content' => [
+            '#type' => 'container',
+            '#attributes' => [
+              'class' => ['side-by-side-right'],
             ],
             'list' => [
               '#theme' => 'item_list',
               '#list_type' => 'ul',
               '#items' => $property_list,
-            ],
-          ],
-          'right_content' => [
-            '#type' => 'container',
-            '#markup' => $image_markup,
-            '#attributes' => [
-              'class' => ['side-by-side-right'],
             ],
           ],
         ];
@@ -137,6 +139,9 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
         $list[$delta] = [
           '#type' => 'container',
           '#markup' => $image_markup,
+          '#attributes' => [
+            'style' => ['--tripal-image-max-height: 200px'],
+          ],
         ];
       }
     }
