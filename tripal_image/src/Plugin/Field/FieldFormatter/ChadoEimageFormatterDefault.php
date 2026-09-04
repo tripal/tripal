@@ -4,6 +4,7 @@ namespace Drupal\tripal_image\Plugin\Field\FieldFormatter;
 
 use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\image\Entity\ImageStyle;
@@ -34,6 +35,9 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
     $settings['token_string'] = '<strong>[name]</strong>: [value]';
+    $settings['tripal_image_max_thumbnail_height'] = '200px';
+    $settings['tripal_image_thumbnail_regex_pattern'] = '';
+    $settings['tripal_image_thumbnail_regex_replacement'] = '';
     return $settings;
   }
 
@@ -45,6 +49,9 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
 
     $list = [];
     $token_string = $this->getSetting('token_string');
+    $max_thumbnail_height = $this->getSetting('tripal_image_max_thumbnail_height') ?: '200px';
+    $regex_pattern = $this->getSetting('tripal_image_thumbnail_regex_pattern');
+    $regex_replacement = $this->getSetting('tripal_image_thumbnail_regex_replacement');
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
     $url_generator = \Drupal::service('file_url_generator');
 
@@ -73,8 +80,12 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
       $image_markup = '';
       if ($values['image_uri']) {
         $url = $url_generator->generateAbsoluteString($values['image_uri']);
+        $thumbnail_url = $url;
+        if ($regex_pattern) {
+          $thumbnail_url = preg_replace('/' . $regex_pattern . '/', $regex_replacement, $thumbnail_url);
+        }
         $basename = basename($url);
-        $image_markup = '<a href="' . $url . '"><img src="' . $url . '" alt="' . $basename . '"></a>';
+        $image_markup = '<a href="' . $url . '"><img src="' . $thumbnail_url . '" alt="' . $basename . '"></a>';
       }
       elseif ($values['eimage_data']) {
         $binary_data = convert_uudecode($values['eimage_data']);
@@ -119,7 +130,7 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
             '#markup' => $image_markup,
             '#attributes' => [
               'class' => ['side-by-side-left'],
-              'style' => ['--tripal-image-max-height: 200px'],
+              'style' => ['--tripal-image-max-height: ' . $max_thumbnail_height],
             ],
           ],
           'right_content' => [
@@ -140,7 +151,7 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
           '#type' => 'container',
           '#markup' => $image_markup,
           '#attributes' => [
-            'style' => ['--tripal-image-max-height: 200px'],
+            'style' => ['--tripal-image-max-height: ' . $max_thumbnail_height],
           ],
         ];
       }
@@ -171,6 +182,51 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
     }
 
     return $elements;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    $form = parent::settingsForm($form, $form_state);
+
+   $form['tripal_image_max_thumbnail_height'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Maximum height of a thumbnail image'),
+      '#description' => $this->t('Specify a maximum height to use for displaying an image in this field, for example "200px". The image is clickable to view at full resolution.'),
+      '#default_value' => $this->getSetting('tripal_image_max_thumbnail_height'),
+      '#required' => FALSE,
+    ];
+
+   $form['tripal_image_thumbnail_regex_pattern'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Pattern to modify an image URL to retrieve a thumbnail image'),
+      '#description' => $this->t('Specify a combination of pattern and replacement to generate a thumbnail URL from an image URL. For example, substitute "image" with "thumbnail". Do not include regex delimiter characters, e.g. use "image" not "/image/".'),
+      '#default_value' => $this->getSetting('tripal_image_thumbnail_regex_pattern'),
+      '#required' => FALSE,
+    ];
+
+   $form['tripal_image_thumbnail_regex_replacement'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Replacement to modify an image URL to retrieve a thumbnail image'),
+      '#description' => $this->t('The replacement for the matched pattern.'),
+      '#default_value' => $this->getSetting('tripal_image_thumbnail_regex_replacement'),
+      '#required' => FALSE,
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    $summary = parent::settingsSummary();
+    $summary[] = $this->t('Max Height: @max_height',
+                          ['@max_height' => $this->getSetting('tripal_image_max_thumbnail_height')]);
+    $summary[] = $this->t('Thumbnail regex: @set',
+                          ['@set' => $this->getSetting('tripal_image_thumbnail_regex_pattern') ? $this->t('Set') : $this->t('None')]);
+    return $summary;
   }
 
 }

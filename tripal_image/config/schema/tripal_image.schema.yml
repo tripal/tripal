@@ -1,0 +1,16 @@
+## Field Formatter Settings
+field.formatter.settings.chado_eimage_formatter_default:
+  type: mapping
+  mapping:
+    tripal_image_max_thumbnail_height:
+      type: string
+      label: 'Maximum Thumbnail Height'
+      nullable: true
+    tripal_image_thumbnail_regex_pattern:
+      type: string
+      label: 'Regular expression pattern used to generate a thumbnail URL'
+      nullable: true
+    tripal_image_thumbnail_regex_replacement:
+      type: string
+      label: 'Regular expression replacement used to generate a thumbnail URL'
+      nullable: true
