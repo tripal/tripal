@@ -92,7 +92,9 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
         $base64data = base64_encode($binary_data);
         $mime_type = 'image/' . $values['eimage_type'];
         $img_src = 'data:' . $mime_type . ';base64,' . $base64data;
-        $image_markup = Markup::create('<img src="' . $img_src . '" alt="Decoded UUencoded Image">');
+        // To make the image clickable, this duplicates the image source,
+        // so could it be improved?
+        $image_markup = Markup::create('<a href="' . $img_src . '"><img src="' . $img_src . '" alt="Decoded UUencoded Image"></a>');
       }
 
       // Properties are converted to a list.
@@ -116,9 +118,9 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
       }
 
       // If the image has one or more properties, split side-by-side for
-      // diplaying them, otherwise the image takes up the full width.
-      // Link to the corresponding entity when one exists is not implemented
-      // because eimage is not a content type.
+      // diplaying them, otherwise the image can take up the full width.
+      // A link to the corresponding entity when one exists is not
+      // implemented because eimage is not a content type.
       if ($property_list) {
         $list[$delta] = [
           '#type' => 'container',

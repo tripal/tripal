@@ -233,7 +233,7 @@ class ChadoEimageTypeDefault extends ChadoFieldItemBase {
       ]);
 
       // Define the link between the linker table and the object table.
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
         'path' => $linker_table . '.' . $linker_fkey_column,
@@ -313,9 +313,7 @@ class ChadoEimageTypeDefault extends ChadoFieldItemBase {
 
     // Get the base table for the content type.
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-dpm($base_table, "CPC1 isCompatible with base table:");//;;;
     $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
-dpm($linker_tables, "CPC2 isCompatible linker tables:");//;;;
     if (count($linker_tables) < 1) {
       $compatible = FALSE;
     }
@@ -371,9 +369,9 @@ dpm($linker_tables, "CPC2 isCompatible linker tables:");//;;;
 
     // This retrieves the eimage_id value.
     $eimage_id = $values['eimage_id']['value']->getValue();
-print "CPP1 record_id = $record_id\n"; //this is stock_id!
-$x = $values;
-var_dump(array_keys($values));
+#print "CPP1 eimage_id = $eiage_id\n"; //this is stock_id!
+#$x = $values;
+#var_dump(array_keys($values));
 
     // This will retrieve all properties for this image.
     $chado = \Drupal::service('tripal_chado.database');

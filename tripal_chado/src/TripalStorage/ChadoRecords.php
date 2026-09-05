@@ -2207,6 +2207,7 @@ class ChadoRecords {
     if (array_key_exists('delete_if_empty', $record)) {
       foreach ($record['delete_if_empty'] as $del_record) {
         if ($record['values'][$del_record['chado_column']] == $del_record['empty_value']) {
+dpm($del_record, "CPR1 isEmptyRecord returning true");
           return TRUE;
         }
       }
