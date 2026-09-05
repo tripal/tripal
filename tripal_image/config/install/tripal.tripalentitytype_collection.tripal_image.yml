@@ -1,0 +1,21 @@
+id: 'tripal_image'
+label: 'Tripal Image Content Types (Tripal Image)'
+description: 'Image'
+dependencies:
+    module:
+        - 'tripal'
+        - 'tripal_chado'
+        - 'tripal_image'
+    enforced:
+        module:
+            - 'tripal_image'
+content_types:
+    -   label: 'Image'
+        term: 'data:2968'
+        help_text: 'Biological or biomedical data has been rendered into an image, typically for display on screen.'
+        category: 'General'
+        id: 'tripal_image'
+        title_format: 'Image ID: [TripalEntity__entity_id]'
+        url_format: 'eimage/[TripalEntity__entity_id]'
+        settings:
+            chado_base_table: 'eimage'

@@ -1,0 +1,212 @@
+id: 'tripal_image'
+label: 'Tripal Image Fields'
+description: 'Default field configurations provided by the Tripal Image module'
+dependencies:
+    module:
+        - 'tripal'
+        - 'tripal_chado'
+        - 'tripal_image'
+    enforced:
+        module:
+            - 'tripal_image'
+
+fields:
+    -   name: 'eimage_legend'
+        content_type: 'tripal_image'
+        label: 'Legend'
+        type: 'chado_property_type_default'
+        description: 'A description of the image.'
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'eimage'
+                prop_table: 'eimageprop'
+        settings:
+            termIdSpace: 'SIO'
+            termAccession: "000468"
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 10
+          form:
+            default:
+              region: 'content'
+              weight: 10
+              type: 'chado_property_string_widget_default'
+    -   name: 'eimage_image'
+        content_type: 'tripal_image'
+        label: 'Rendered Image'
+        type: 'chado_eimage_type_default'
+        description: 'Displays the image on the screen.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'eimage'
+                base_column: 'eimage_id'
+        settings:
+            termIdSpace: 'data'
+            termAccession: '2968'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 20
+            form:
+                default:
+                    region: 'content'
+                    weight: 20
+    -   name: 'eimage_contact'
+        content_type: 'tripal_image'
+        label: 'Image Provider'
+        type: 'chado_contact_type_default'
+        description: 'An individual or organization that generated or provided this image.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'eimage'
+                linker_table: 'eimage_contact'
+                linker_fkey_column: 'contact_id'
+        settings:
+            termIdSpace: 'NCIT'
+            termAccession: 'C47954'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 30
+          form:
+            default:
+              region: 'content'
+              weight: 30
+    -   name: 'eimage_pub'
+        content_type: 'tripal_image'
+        label: 'Publication'
+        type: 'chado_pub_type_default'
+        description: 'A publication generating or referencing this image.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'eimage'
+                linker_table: 'eimage_pub'
+                linker_fkey_column: 'pub_id'
+        settings:
+            termIdSpace: 'TPUB'
+            termAccession: '0000002'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 31
+          form:
+            default:
+              region: 'content'
+              weight: 31
+    -   name: 'image_uri'
+        content_type: 'tripal_image'
+        label: 'Image URI'
+        type: 'chado_string_type_default'
+        description: 'A URI pointing to a locally or remotely hosted image file.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'eimage'
+                base_column: 'image_uri'
+            max_length: 255
+        settings:
+            termIdSpace: 'data'
+            termAccession: '1047'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 70
+                    settings:
+                        field_prefix: ''
+                        field_suffix: ''
+            form:
+                default:
+                    region: 'content'
+                    weight: 70
+                    settings:
+                        filter_format: 'plain_text'
+                        num_rows: 1
+    -   name: 'eimage_encoding'
+        content_type: 'tripal_image'
+        label: 'Image Type'
+        type: 'chado_string_type_default'
+        description: 'Describes the type of data in eimage_data, e.g. "png" or "jpg".'
+        cardinality: 1
+        # column is NOT NULL, but we can store an empty string.
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'eimage'
+                base_column: 'eimage_type'
+            max_length: 255
+        settings:
+            termIdSpace: 'IAO'
+            termAccession: '0000098'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 80
+                    settings:
+                        field_prefix: ''
+                        field_suffix: ''
+            form:
+                default:
+                    region: 'content'
+                    weight: 80
+                    settings:
+                        filter_format: 'plain_text'
+                        num_rows: 1
+    -   name: 'eimage_data'
+        content_type: 'tripal_image'
+        label: 'UUencoded Image Data'
+        type: 'chado_text_type_default'
+        description: 'We expect images in eimage_data (e.g. JPEGs) to be uuencoded.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'eimage'
+                base_column: 'eimage_data'
+        settings:
+            termIdSpace: 'IAO'
+            termAccession: '0000101'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 81
+                    settings:
+                        field_prefix: ''
+                        field_suffix: ''
+            form:
+                default:
+                    region: 'content'
+                    weight: 81
+                    settings:
+                        filter_format: 'plain_text'
+                        num_rows: 5

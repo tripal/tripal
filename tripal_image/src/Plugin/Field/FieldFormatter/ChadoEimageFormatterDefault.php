@@ -59,20 +59,14 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
     $elements['#attached']['library'][] = 'tripal_image/image_formatter';
 
     foreach ($items as $delta => $item) {
-      $eimage_properties = $item->get('eimage_properties')->getString();
-      if ($eimage_properties) {
-        $eimage_properties = json_decode($eimage_properties, TRUE);
+      $values = [];
+      foreach ($item->getProperties() as $key => $property) {
+        $values[$key] = $property->getString();
       }
-      $values = [
-        'entity_id' => $item->get('entity_id')->getString(),
-        'linker_type_id' => $item->get('linker_type_id')->getString(),
-        'linker_type_name' => $item->get('linker_type_name')->getString(),
-        'linker_rank' => $item->get('linker_rank')->getString(),
-        'eimage_data' => $item->get('eimage_data')->getString(),
-        'eimage_type' => $item->get('eimage_type')->getString(),
-        'image_uri' => $item->get('image_uri')->getString(),
-        'eimage_properties' => $eimage_properties,
-      ];
+      if ($values['eimage_properties']) {
+        $values['eimage_properties'] = json_decode($values['eimage_properties'], TRUE);
+      }
+dpm($values, "CPF2 values");
 
       // The assumption is that images are either stored directly in the
       // eimage table as uuencoded data, or are linked using the image_uri
@@ -100,8 +94,8 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
       // Properties are converted to a list.
       // We only have three possible tokens.
       $property_list = [];
-      if ($eimage_properties) {
-        foreach ($eimage_properties as $label => $items) {
+      if ($values['eimage_properties']) {
+        foreach ($values['eimage_properties'] as $label => $items) {
           $token_values = ['name' => $label];
           // Ranks were used for ordering but are not displayed by default.
           foreach ($items as $rank => $value) {

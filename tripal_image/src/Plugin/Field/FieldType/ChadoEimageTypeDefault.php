@@ -60,6 +60,8 @@ class ChadoEimageTypeDefault extends ChadoFieldItemBase {
 # eimage_data | text                   |           |          |
 # eimage_type | character varying(255) |           | not null |
 # image_uri   | character varying(255) |           |          |
+#COMMENT ON COLUMN eimage.eimage_data IS 'We expect images in eimage_data (e.g. JPEGs) to be uuencoded.';
+#COMMENT ON COLUMN eimage.eimage_type IS 'Describes the type of data in eimage_data.';
 #    -   name: 'eimage'
 #        columns:
 #            -   name: 'eimage_id'
@@ -206,7 +208,7 @@ class ChadoEimageTypeDefault extends ChadoFieldItemBase {
       'fkey' => $linker_fkey_column,
     ]);
 
-    // Base table links directly, although for eimage this never happens.
+    // Base table links directly.
     if ($base_table == $linker_table) {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
         'action' => 'store',
@@ -369,9 +371,6 @@ class ChadoEimageTypeDefault extends ChadoFieldItemBase {
 
     // This retrieves the eimage_id value.
     $eimage_id = $values['eimage_id']['value']->getValue();
-#print "CPP1 eimage_id = $eiage_id\n"; //this is stock_id!
-#$x = $values;
-#var_dump(array_keys($values));
 
     // This will retrieve all properties for this image.
     $chado = \Drupal::service('tripal_chado.database');

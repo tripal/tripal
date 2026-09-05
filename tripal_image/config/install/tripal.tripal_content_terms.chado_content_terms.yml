@@ -1,0 +1,15 @@
+id: 'chado_content_terms'
+label: 'Chado Managed Terms'
+description: 'Terms for Content Types and Chado Fields'
+vocabularies:
+    -   name: 'SIO'
+        label: 'Semanticscience Integrated Ontology'
+        url: 'https://sio.semanticscience.org/'
+        idSpaces:
+            -   name: 'SIO'
+                description: "Semanticscience Integrated Ontology"
+                urlPrefix: "https://semanticscience.org/resource/{db}_{accession}"
+        terms:
+            -   id: 'SIO:000468'
+                name: 'legend'
+                description: 'A legend is a part of a figure that associates textual descriptions with symbols pertaining to plotted entities.'
