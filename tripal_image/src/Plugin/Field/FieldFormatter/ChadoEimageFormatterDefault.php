@@ -294,7 +294,9 @@ class ChadoEimageFormatterDefault extends ChadoFormatterBase {
    * {@inheritdoc}
    */
   public function settingsSummary() {
-    $summary = parent::settingsSummary();
+    $summary = [];
+    // Don't start with parent::settingsSummary() because we want
+    // to exclude the "Set display format" element.
     $summary[] = $this->t('Max Height: @max_height',
                           ['@max_height' => $this->getSetting('tripal_image_max_thumbnail_height')]);
     $summary[] = $this->t('Thumbnail regex: @set',

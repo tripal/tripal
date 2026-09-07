@@ -11,6 +11,31 @@ dependencies:
             - 'tripal_image'
 
 fields:
+    -   name: 'eimage_id'
+        content_type: 'tripal_image'
+        label: 'eimage_id'
+        type: 'chado_integer_type_default'
+        description: 'The internal chado identifier number for this image.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'eimage'
+                base_column: 'eimage_id'
+        settings:
+            termIdSpace: 'data'
+            termAccession: '0842'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'inline'
+              weight: 0
+          form:
+            default:
+              region: 'hidden'
+              weight: 99
     -   name: 'eimage_legend'
         content_type: 'tripal_image'
         label: 'Legend'
@@ -25,11 +50,11 @@ fields:
                 prop_table: 'eimageprop'
         settings:
             termIdSpace: 'SIO'
-            termAccession: "000468"
+            termAccession: '000468'
         display:
           view:
             default:
-              region: 'content'
+              region: 'hidden'
               label: 'above'
               weight: 10
           form:
@@ -62,60 +87,8 @@ fields:
                         tripal_image_disable_link_to_entity: true
             form:
                 default:
-                    region: 'content'
+                    region: 'hidden'
                     weight: 20
-    -   name: 'eimage_contact'
-        content_type: 'tripal_image'
-        label: 'Image Provider'
-        type: 'chado_contact_type_default'
-        description: 'An individual or organization that generated or provided this image.'
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: 'chado_storage'
-            storage_plugin_settings:
-                base_table: 'eimage'
-                linker_table: 'eimage_contact'
-                linker_fkey_column: 'contact_id'
-        settings:
-            termIdSpace: 'NCIT'
-            termAccession: 'C47954'
-        display:
-          view:
-            default:
-              region: 'content'
-              label: 'above'
-              weight: 30
-          form:
-            default:
-              region: 'content'
-              weight: 30
-    -   name: 'eimage_pub'
-        content_type: 'tripal_image'
-        label: 'Publication'
-        type: 'chado_pub_type_default'
-        description: 'A publication generating or referencing this image.'
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: 'chado_storage'
-            storage_plugin_settings:
-                base_table: 'eimage'
-                linker_table: 'eimage_pub'
-                linker_fkey_column: 'pub_id'
-        settings:
-            termIdSpace: 'TPUB'
-            termAccession: '0000002'
-        display:
-          view:
-            default:
-              region: 'content'
-              label: 'above'
-              weight: 31
-          form:
-            default:
-              region: 'content'
-              weight: 31
     -   name: 'image_uri'
         content_type: 'tripal_image'
         label: 'Image URI'
@@ -137,11 +110,11 @@ fields:
                 default:
                     region: 'hidden'
                     label: 'above'
-                    weight: 70
+                    weight: 30
             form:
                 default:
                     region: 'content'
-                    weight: 70
+                    weight: 30
                     settings:
                         filter_format: 'plain_text'
                         num_rows: 1
@@ -149,7 +122,7 @@ fields:
         content_type: 'tripal_image'
         label: 'Image Type'
         type: 'chado_string_type_default'
-        description: 'Describes the type of data in eimage_data, e.g. "png" or "jpg".'
+        description: 'Describes the type of data in "UUencoded Image Data", e.g. "png" or "jpg".'
         cardinality: 1
         required: true
         storage_settings:
@@ -166,11 +139,11 @@ fields:
                 default:
                     region: 'hidden'
                     label: 'above'
-                    weight: 80
+                    weight: 31
             form:
                 default:
                     region: 'content'
-                    weight: 80
+                    weight: 31
                     settings:
                         filter_format: 'plain_text'
                         num_rows: 1
@@ -194,11 +167,146 @@ fields:
                 default:
                     region: 'hidden'
                     label: 'above'
-                    weight: 81
+                    weight: 32
             form:
                 default:
                     region: 'content'
-                    weight: 81
+                    weight: 32
                     settings:
                         filter_format: 'plain_text'
                         num_rows: 5
+
+# Optional Properties
+    -   name: 'eimage_description'
+        content_type: 'tripal_image'
+        label: 'Description'
+        type: 'chado_property_type_default'
+        description: 'A description of this image.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'eimage'
+                prop_table: 'eimageprop'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'description'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 41
+          form:
+            default:
+              region: 'content'
+              weight: 41
+              type: 'chado_property_string_widget_default'
+    -   name: 'eimage_date'
+        content_type: 'tripal_image'
+        label: 'Date'
+        type: 'chado_property_type_default'
+        description: 'The date that this image was acquired.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'eimage'
+                prop_table: 'eimageprop'
+        settings:
+            termIdSpace: 'NCIT'
+            termAccession: 'C25164'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 42
+          form:
+            default:
+              region: 'content'
+              weight: 42
+              type: 'chado_property_string_widget_default'
+    -   name: 'eimage_provider'
+        content_type: 'tripal_image'
+        label: 'Provider'
+        type: 'chado_property_type_default'
+        description: 'The person or group that provided this image.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'eimage'
+                prop_table: 'eimageprop'
+        settings:
+            termIdSpace: 'NCIT'
+            termAccession: 'C37900'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 43
+          form:
+            default:
+              region: 'content'
+              weight: 43
+              type: 'chado_property_string_widget_default'
+
+# Optional Linking Tables - These display only on the image content type.
+    -   name: 'eimage_contact'
+        content_type: 'tripal_image'
+        label: 'Image Provider'
+        type: 'chado_contact_type_default'
+        description: 'An individual or organization that generated or provided this image.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'eimage'
+                linker_table: 'eimage_contact'
+                linker_fkey_column: 'contact_id'
+        settings:
+            termIdSpace: 'NCIT'
+            termAccession: 'C47954'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 80
+          form:
+            default:
+              region: 'content'
+              weight: 80
+    -   name: 'eimage_pub'
+        content_type: 'tripal_image'
+        label: 'Publication'
+        type: 'chado_pub_type_default'
+        description: 'A publication generating or referencing this image.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'eimage'
+                linker_table: 'eimage_pub'
+                linker_fkey_column: 'pub_id'
+        settings:
+            termIdSpace: 'TPUB'
+            termAccession: '0000002'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 81
+          form:
+            default:
+              region: 'content'
+              weight: 81
+

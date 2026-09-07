@@ -10,6 +10,17 @@ dependencies:
         module:
             - 'tripal_image'
 vocabularies:
+    -   name: 'ncit'
+        label: 'NCI Thesaurus OBO Edition'
+        url: 'https://www.ebi.ac.uk/ols4/ontologies/ncit'
+        idSpaces:
+            -   name: 'NCIT'
+                description: 'NCI Thesaurus OBO Edition'
+                urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
+        terms:
+            -   id: 'NCIT:C37900'
+                name: 'Provider'
+                description: 'One that makes something available.'
     -   name: 'SIO'
         label: 'Semanticscience Integrated Ontology'
         url: 'https://sio.semanticscience.org/'

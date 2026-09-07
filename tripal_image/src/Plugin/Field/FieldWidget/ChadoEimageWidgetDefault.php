@@ -90,12 +90,25 @@ class ChadoEimageWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $eimage_id,
     ];
 
+    // Create a select element specific to this content type
+    $options = [
+      'base_table' => 'eimage',
+      'column_name' => 'eimage_id',
+      'type_column' => 'x',
+      'property_table' => 'eimage',
+    ];
+    $select_element = $this->genericSelectElement('eimage_id', $eimage_id, $options);
+    $elements[$linker_fkey_column] = $element + $select_element;
+    $elements[$linker_fkey_column]['#description'] = $this->t('eimage_id value. Add additional images using the image content type and note the eimage_id value there.');
+
     $elements['image_uri'] = [
       '#type' => 'textarea',
       '#default_value' => $item_vals['image_uri'] ?? '',
       '#maxlength' => 255,
       '#rows' => 1,
       '#description' => $this->t('URI for a locally or remotely stored image file'),
+      '#weight' => 90,
+      '#disabled' => TRUE,
       '#element_validate' => [[$this, 'validateUri']],
     ];
 
@@ -106,16 +119,24 @@ class ChadoEimageWidgetDefault extends ChadoWidgetBase {
       '#maxlength' => 255,
       '#rows' => 1,
       '#description' => $this->t('MIME type, e.g. png, jpg for uuencoded images stored in the eimage table.'),
+      '#weight' => 91,
+      '#disabled' => TRUE,
       '#element_validate' => [[$this, 'validateEimageType']],
     ];
 
+    $head_eimage_data = $item_vals['eimage_data'] ?? '';
+    if (strlen($head_eimage_data) > 300) {
+      $head_eimage_data = substr($head_eimage_data, 0, 285) . ' ... ' . $this->t('remainder not shown');
+    }
     $elements['eimage_data'] = [
       '#type' => 'textarea',
       // Normalize is not removing \r for some reason.
       '#normalize_newlines' => TRUE,
-      '#default_value' => $item_vals['eimage_data'] ?? '',
+      '#default_value' => $head_eimage_data,
       '#rows' => 5,
       '#description' => $this->t('UUencoded image'),
+      '#weight' => 92,
+      '#disabled' => TRUE,
       '#element_validate' => [[$this, 'validateEimageData']],
       '#attributes' => [
         'style' => 'font-family: monospace;',

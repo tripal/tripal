@@ -389,6 +389,10 @@ class ChadoEimageTypeDefault extends ChadoFieldItemBase {
     }
     if ($results_array) {
       uksort($results_array, 'strcasecmp');
+      // We want the image legend to always sort to the beginning.
+      if (array_key_exists('legend', $results_array)) {
+        $results_array = ['legend' => $results_array['legend']] + $results_array;
+      }
       $json = json_encode($results_array);
     }
     else {

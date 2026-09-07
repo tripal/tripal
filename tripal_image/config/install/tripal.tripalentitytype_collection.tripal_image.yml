@@ -15,7 +15,7 @@ content_types:
         help_text: 'Biological or biomedical data has been rendered into an image, typically for display on screen.'
         category: 'General'
         id: 'tripal_image'
-        title_format: 'Image ID: [TripalEntity__entity_id]'
+        title_format: 'Eimage ID [eimage_id]: [eimage_legend]'
         url_format: 'eimage/[TripalEntity__entity_id]'
         settings:
             chado_base_table: 'eimage'
