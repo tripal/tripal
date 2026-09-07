@@ -96,7 +96,6 @@ class ChadoEimageWidgetDefault extends ChadoWidgetBase {
       '#maxlength' => 255,
       '#rows' => 1,
       '#description' => $this->t('URI for a locally or remotely stored image file'),
-      '#attributes' => ['class' => ['js-text-full', 'text-full']],
       '#element_validate' => [[$this, 'validateUri']],
     ];
 
@@ -106,18 +105,21 @@ class ChadoEimageWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $item_vals['eimage_type'] ?? '',
       '#maxlength' => 255,
       '#rows' => 1,
-      '#description' => $this->t('MIME type, e.g. png, jpg. Only needed for uuencoded images stored in the eimage table.'),
-      '#attributes' => ['class' => ['js-text-full', 'text-full']],
+      '#description' => $this->t('MIME type, e.g. png, jpg for uuencoded images stored in the eimage table.'),
       '#element_validate' => [[$this, 'validateEimageType']],
     ];
 
     $elements['eimage_data'] = [
       '#type' => 'textarea',
+      // Normalize is not removing \r for some reason.
+      '#normalize_newlines' => TRUE,
       '#default_value' => $item_vals['eimage_data'] ?? '',
       '#rows' => 5,
       '#description' => $this->t('UUencoded image'),
-      '#attributes' => ['class' => ['js-text-full', 'text-full']],
       '#element_validate' => [[$this, 'validateEimageData']],
+      '#attributes' => [
+        'style' => 'font-family: monospace;',
+      ],
     ];
 
     // Save some initial values to allow later handling of the "Remove" button.
@@ -143,6 +145,7 @@ class ChadoEimageWidgetDefault extends ChadoWidgetBase {
     // existing record is removed from the autocomplete field.
     $retained_records = [];
     foreach ($values as $delta => $value) {
+
       if ($value[$linker_key]) {
         $retained_records[$delta] = $value[$linker_key];
       }
@@ -260,9 +263,14 @@ class ChadoEimageWidgetDefault extends ChadoWidgetBase {
     $element_value = $element['#value'];
     $values = $form_state->getValues();
     $eimage_data = $values[$element_parents[0]][$element_parents[1]]['eimage_data'] ?? '';
+    $image_uri = $values[$element_parents[0]][$element_parents[1]]['image_uri'] ?? '';
     if ($eimage_data != '' && $element_value == '') {
       $form_state->setErrorByName(implode('][', $element_parents),
         $this->t('An image type is required'));
+    }
+    // Type has a not null constraint, add a default if necessary.
+    if ($image_uri != '' && $element_value == '') {
+      $form_state->setValueForElement($element,  'uri');
     }
   }
 

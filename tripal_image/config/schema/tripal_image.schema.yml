@@ -2,6 +2,10 @@
 field.formatter.settings.chado_eimage_formatter_default:
   type: mapping
   mapping:
+    tripal_image_disable_link_to_entity:
+      type: boolean
+      label: 'Disable link from image thumbnail to entity'
+      nullable: true
     tripal_image_max_thumbnail_height:
       type: string
       label: 'Maximum Thumbnail Height'
@@ -13,4 +17,8 @@ field.formatter.settings.chado_eimage_formatter_default:
     tripal_image_thumbnail_regex_replacement:
       type: string
       label: 'Regular expression replacement used to generate a thumbnail URL'
+      nullable: true
+    tripal_image_items_per_page:
+      type: integer
+      label: 'The maximum number of items to display before using a pager'
       nullable: true

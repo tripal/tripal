@@ -56,8 +56,10 @@ fields:
             view:
                 default:
                     region: 'content'
-                    label: 'above'
+                    label: 'hidden'
                     weight: 20
+                    settings:
+                        tripal_image_disable_link_to_entity: true
             form:
                 default:
                     region: 'content'
@@ -133,12 +135,9 @@ fields:
         display:
             view:
                 default:
-                    region: 'content'
+                    region: 'hidden'
                     label: 'above'
                     weight: 70
-                    settings:
-                        field_prefix: ''
-                        field_suffix: ''
             form:
                 default:
                     region: 'content'
@@ -152,8 +151,7 @@ fields:
         type: 'chado_string_type_default'
         description: 'Describes the type of data in eimage_data, e.g. "png" or "jpg".'
         cardinality: 1
-        # column is NOT NULL, but we can store an empty string.
-        required: false
+        required: true
         storage_settings:
             storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
@@ -166,12 +164,9 @@ fields:
         display:
             view:
                 default:
-                    region: 'content'
+                    region: 'hidden'
                     label: 'above'
                     weight: 80
-                    settings:
-                        field_prefix: ''
-                        field_suffix: ''
             form:
                 default:
                     region: 'content'
@@ -197,12 +192,9 @@ fields:
         display:
             view:
                 default:
-                    region: 'content'
+                    region: 'hidden'
                     label: 'above'
                     weight: 81
-                    settings:
-                        field_prefix: ''
-                        field_suffix: ''
             form:
                 default:
                     region: 'content'

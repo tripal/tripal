@@ -43,9 +43,9 @@ function tripal_image_requirements($phase) {
 function tripal_image_install() {
   $chado = \Drupal::service('tripal_chado.database');
 
-#  // Create tripal terms for the new CV terms defined in YAML files.
-#  tripal_image_show_message('Adding new vocabulary terms');
-#  tripal_image_create_tripal_terms();
+  // Create tripal terms for the new CV terms defined in YAML files.
+  tripal_image_show_message('Adding new vocabulary terms');
+  tripal_image_create_tripal_terms();
 
   // Add the custom tables needed to associate Chado content with images.
   tripal_image_show_message('Adding custom tables');
@@ -104,10 +104,10 @@ function tripal_image_show_message(string $message) {
  * @return void
  *   No return value.
  */
-#function tripal_image_create_tripal_terms(): void {
-#  $terms_init_service = \Drupal::service('tripal_chado.terms_init');
-#  $terms_init_service->installTerms('tripal_image_content_terms');
-#}
+function tripal_image_create_tripal_terms(): void {
+  $terms_init_service = \Drupal::service('tripal_chado.terms_init');
+  $terms_init_service->installTerms('tripal_image_content_terms');
+}
 
 /**
  * Adds the vocabulary terms for the linker table columns.

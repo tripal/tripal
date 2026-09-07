@@ -197,8 +197,7 @@ class ChadoEimageTypeDefault extends ChadoFieldItemBase {
     ]);
 
     // This property will store the Drupal entity ID of the linked chado
-    // record, if one exists. There is not a content type defined by default,
-    // but a site could create one for the eimage table.
+    // record, if one exists.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'entity_id', self::$drupal_entity_term, [
       'action' => 'function',
       'drupal_store' => TRUE,

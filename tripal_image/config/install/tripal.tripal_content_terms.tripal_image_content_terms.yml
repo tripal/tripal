@@ -1,6 +1,14 @@
-id: 'chado_content_terms'
-label: 'Chado Managed Terms'
-description: 'Terms for Content Types and Chado Fields'
+id: 'tripal_image_content_terms'
+label: 'Tripal Image Terms'
+description: 'Terms for Content Types and Chado Fields for the Tripal image module'
+dependencies:
+    module:
+        - 'tripal'
+        - 'tripal_chado'
+        - 'tripal_image'
+    enforced:
+        module:
+            - 'tripal_image'
 vocabularies:
     -   name: 'SIO'
         label: 'Semanticscience Integrated Ontology'
