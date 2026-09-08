@@ -1123,8 +1123,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $field_list = $field_list + self::discoverLinked($bundle, $field_id, $field_types, $field_instances, $options);
     }
 
-    // Adds collection plugin IDs
-    $field_list = self::discoverPostprocess($field_list);
+    // Adds collection plugin IDs and display options.
+    $field_list = self::discoverPostprocess($field_list, $options);
 
     return $field_list;
   }
@@ -1134,17 +1134,27 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *
    * Used for the field discovery process if a DB or CV
    * is not a tripal collection yet.
+   * Also allows overriding of the default display settings.
    *
    * @param array $field_list
    *   Discoverd field definitions.
+   * @param array $options
+   *   Specific options from the field's discover() function.
+   *   Keys recognized here:
+   *   - 'display': Used to override default display settings.
+   *     For example, to hide the field label, we would use:
+   *     'display' => ['view']['default']['label'] = 'hidden'.
    *
    * @return array
    *   The same array with plugin IDs added.
    */
-  public static function discoverPostprocess(array $field_list): array {
+  public static function discoverPostprocess(array $field_list, array $options = []): array {
     foreach ($field_list as $key => $field) {
       $field_list[$key]['settings']['id_space_plugin_id'] = 'chado_id_space';
       $field_list[$key]['settings']['vocabulary_plugin_id'] = 'chado_vocabulary';
+      if (array_key_exists('display', $options)) {
+        $field_list[$key]['display'] = $options['display'];
+      }
     }
     return $field_list;
   }
