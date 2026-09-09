@@ -102,6 +102,25 @@ class TripalRealTypeItemTest extends UnitTestCase {
   }
 
   /**
+   * GenerateSampleValue() returns the expected array structure.
+   *
+   * Record_id is always 0 (no Chado record exists yet for a sample), and
+   * value is a floating point value between -5000 and 5000.
+   */
+  public function testGenerateSampleValue(): void {
+    $field_def = $this->createMock(FieldDefinitionInterface::class);
+
+    $result = TripalRealTypeItem::generateSampleValue($field_def);
+    $this->assertIsArray($result);
+    $this->assertArrayHasKey(0, $result, 'Real sample value supports cardinality -1, so should be nested under a delta');
+    $this->assertArrayHasKey('record_id', $result[0]);
+    $this->assertArrayHasKey('value', $result[0]);
+    $this->assertSame(0, $result[0]['record_id']);
+    $this->assertGreaterThanOrEqual(-5000, $result[0]['value'], 'Sample floating point value should be >= -5000.0');
+    $this->assertLessThanOrEqual(5000, $result[0]['value'], 'Sample floating point value should be <= 5000.0');
+  }
+
+  /**
    * Sets up a minimal Drupal container with a stub idspace service.
    *
    * StoragePropertyBase::__construct() resolves
