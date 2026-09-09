@@ -52,7 +52,7 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
           FROM {1:cvterm} AS ct
             LEFT JOIN {1:dbxref} AS dx USING(dbxref_id)
             LEFT JOIN {1:db} USING(db_id)
-          WHERE LOWER(ct.name) LIKE :keyword";
+          WHERE LOWER(ct.name)::text LIKE :keyword";
         $args = [':keyword' => $keyword, ':limit' => $count];
         // Limit terms to selected CV when this is specified.
         if ($cv_id) {
