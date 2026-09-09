@@ -424,6 +424,10 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
           $new_value['subject_id'] = $related_record_id;
           $new_value['object_id'] = $record_id;
         }
+        elseif (empty($value['reverse'])) {
+          $new_value['subject_id'] = $related_record_id;
+          $new_value['object_id'] = $record_id;
+        }
         else {
           $new_value['subject_id'] = $record_id;
           $new_value['object_id'] = $related_record_id;
