@@ -31,8 +31,36 @@ class TripalRealTypeWidget extends TripalWidgetBase {
       '#default_value' => $items[$delta]->value ?? '',
       '#placeholder' => $this->getSetting('placeholder'),
       '#attributes' => ['class' => ['js-text-full', 'text-full']],
+      '#element_validate' => [[$this, 'validateRealValue']],
     ];
     return $element;
+  }
+
+  /**
+   * Form element validation: ensures the entered value is a proper real number.
+   */
+  public function validateRealValue(array &$element, FormStateInterface $form_state): void {
+    $value = trim($element['#value'] ?? '');
+    if ($value === '') {
+      return;
+    }
+    // Special infinity values, they can be abbreviated.
+    if (preg_match('/^[+-]inf|[+-]infinity$/i', $value)) {
+      return;
+    }
+    // Remove thousands separator, same as done in massage.
+    $value = $this->removeThousandSeparators($value);
+
+    // Perform validation with native php function.
+    if (filter_var($value, FILTER_VALIDATE_FLOAT) === FALSE) {
+      $form_state->setError(
+        $element,
+        $this->t(
+          '"@value" is not a valid real number.',
+          ['@value' => $value]
+        )
+      );
+    }
   }
 
   /**
@@ -42,11 +70,32 @@ class TripalRealTypeWidget extends TripalWidgetBase {
 
     // Handle any empty values. We can't pass an empty string when a
     // real number is expected.
-    foreach ($values as $val_key => $value) {
-      if ($value['value'] == '') {
+    foreach (array_keys($values) as $val_key) {
+      // Remove any thousand separator characters.
+      $values[$val_key]['value'] = $this->removeThousandSeparators($values[$val_key]['value']);
+      // Remove empty values.
+      if (trim($values[$val_key]['value']) == '') {
         unset($values[$val_key]);
       }
     }
     return $values;
   }
+
+  /**
+   * Removes any thousand separator characters.
+   *
+   * @param $value
+   *   The value to process.
+   *
+   * @return string
+   *   The value with any thousand separators characters removed.
+   */
+  protected function removeThousandSeparators(string $value): string {
+    // Thousand separator hardcoded until we find a need to specify locale.
+    // To do so, we would need to include the php intl module in our docker.
+    $thousand_separator = ',';
+    $value = preg_replace('/' . $thousand_separator . '/', '', $value);
+    return $value;
+  }
+
 }
