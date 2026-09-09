@@ -66,10 +66,6 @@ class TripalRealTypeItemTest extends UnitTestCase {
       'termAccession' => '00001',
     ]);
 
-#    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-#    $x = $idsmanager->createCollection('OBO', 'tripal_default_id_space');
-#var_dump($x);
-#
     $types = TripalRealTypeItem::tripalTypes($field_def);
 
     $this->assertCount(1, $types);
