@@ -485,8 +485,8 @@ BEGIN
   LOOP
     cnt := cnt + 1;
     IF data_type = 'USER-DEFINED' THEN
-        -- RAISE WARNING ' Table (%) has column(s) with user-defined types that will reference the source schema after they are created with the CREATE TABLE LIKE construct. Please modify after cloning.',tblname;
-        RAISE WARNING ' Table (%) has column(s) with user-defined types so using tripal_get_table_ddl() instead of CREATE TABLE LIKE construct.',tblname;
+        -- RAISE WARNING ' Table (%) has column(s) with user-defined types that will reference the source schema after they are created with the CREATE TABLE L I K E construct. Please modify after cloning.',tblname;
+        RAISE WARNING ' Table (%) has column(s) with user-defined types so using tripal_get_table_ddl() instead of CREATE TABLE L I K E construct.',tblname;
     END IF;
 
     buffer := quote_ident(dest_schema) || '.' || quote_ident(tblname);
@@ -888,7 +888,7 @@ BEGIN
     -- -- Matches everything till the first ')' included and replace the rest.
     -- SELECT regexp_replace(qry, '^([^\)]+\)).*$', '\1 RETURNS VOID LANGUAGE plpgsql AS $_$BEGIN END;$_$;', 'is') INTO dest_qry;
     -- -- Matches everything inside the parenthesis (function parameters) that has
-    -- -- something like " OUT,", " INOUT,", " INOUT)" or " OUT)" and removes the
+    -- -- something similar to " OUT,", " INOUT,", " INOUT)" or " OUT)" and removes the
     -- -- "RETURNS VOID" part if so, to avoid inconsistencies.
     -- SELECT regexp_replace(dest_qry, '(\((?:.+\s(?:IN)?OUT\s*,.+|.+\s(?:IN)?OUT\s*)\))\s* RETURNS VOID ', '\1', 'is') INTO dest_qry;
     -- SELECT replace(dest_qry, quote_ident(source_schema) || '.', quote_ident(dest_schema) || '.') INTO dest_qry;
@@ -975,7 +975,7 @@ BEGIN
         FROM information_schema.COLUMNS
        WHERE table_schema = source_schema
          AND TABLE_NAME = tblname
-         AND column_default ~* ('(^|\W)' || quote_ident(source_schema) || '\.')
+         AND column_default::text ~* ('(^|\W)' || quote_ident(source_schema) || '\.')
     LOOP
       IF ddl_only THEN
         -- May need to come back and revisit this since previous sql will not return anything since no schema as created!
@@ -993,7 +993,7 @@ BEGIN
       WHERE
         tablename = tblname
         AND schemaname = dest_schema
-        AND indexdef ~* ('(^|\W)' || quote_ident(source_schema) || '\.')
+        AND indexdef::text ~* ('(^|\W)' || quote_ident(source_schema) || '\.')
     LOOP
       buffer := regexp_replace(buffer::text, '(^|\W)' || quote_ident(source_schema) || '\.', '\1' || quote_ident(dest_schema) || '.', 'gis');
 
