@@ -60,7 +60,7 @@ class DefaultTripalRealTypeFormatter extends TripalFormatterBase {
           // decimal places in the current value.
           if (!$decimal_places) {
             $decimal_places = 0;
-            if (preg_match('/' . preg_quote($decimal_separator, '/') . '(.*)$/', $value, $matches)) {
+            if (preg_match('/' . preg_quote('.', '/') . '(.*)$/', $value, $matches)) {
               $decimal_places = strlen($matches[1]);
             }
           }

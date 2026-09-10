@@ -121,10 +121,10 @@ class DefaultTripalRealTypeFormatterTest extends UnitTestCase {
       'label' => 'Non-default thousand and decimal separators',
       'settings' => [
         'thousand_separator' => '#',
-        'decimal_separator' => '^',
+        'decimal_separator' => 's',
       ],
       'value' => '-1234567.7654321',
-      'expect' => '-1#234#567^7654321',
+      'expect' => '-1#234#567s7654321',
     ];
     $scenarios[] = [
       'label' => 'Prefix and suffix are applied',
@@ -189,19 +189,19 @@ class DefaultTripalRealTypeFormatterTest extends UnitTestCase {
    * @dataProvider provideScenarios
    */
   #[DataProvider('provideScenarios')]
-  public function testFormatReal(array $scenario): void {
-    foreach ($scenario['settings'] as $setting => $value) {
-      $this->formatter->setSetting($setting, $value);
+  public function testFormatReal(string $label, array $settings, string $value, ?string $expect = NULL): void {
+    foreach ($settings as $key => $setting) {
+      $this->formatter->setSetting($key, $setting);
     }
     $elements = $this->formatter->viewElements($this->buildItems([$value]), 'en');
-    if (array_key_exists('expect', $scenario)) {
+    if (!is_null($expect)) {
       $this->assertArrayHasKey(0, $elements,
-        $scenario['label'] . ': Did not return any value');
-      $this->assertSame($scenario['expect'], $elements[0]['#markup'],
-        $scenario['label'] . ': Did not return expected value');
+        $label . ': Did not return any value');
+      $this->assertSame($expect, $elements[0]['#markup'],
+        $label . ': Did not return expected value');
     }
     else {
-      $this->assertCount(0, $elements, $scenario['label'] . ': Did not expect a value');
+      $this->assertCount(0, $elements, $label . ': Did not expect a value');
     }
   }
 
