@@ -20,7 +20,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
   description: new TranslatableMarkup('Indicates that a stock collection is from a specific database.'),
   default_widget: 'chado_stockcollection_db_widget_default',
   default_formatter: 'chado_stockcollection_db_formatter_default',
-  cardinality: 1,
 )]
 class ChadoStockCollectionDbTypeDefault extends ChadoFieldItemBase {
 
