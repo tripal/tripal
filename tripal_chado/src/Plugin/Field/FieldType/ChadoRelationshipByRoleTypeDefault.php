@@ -3,6 +3,7 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal_chado\Database\ChadoConnection;
@@ -79,7 +80,30 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
     $storage_settings['storage_plugin_settings']['linker_table'] = '';
     $storage_settings['storage_plugin_settings']['subject_column'] = '';
     $storage_settings['storage_plugin_settings']['object_column'] = '';
+    // Indicates whether the content of this type fulfills the "subject" or
+    // the "object" role of the relationship.
+    $storage_settings['storage_plugin_settings']['reverse'] = 1;
     return $storage_settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+    $elements = parent::storageSettingsForm($form, $form_state, $has_data);
+
+    $storage_settings = $this->getSetting('storage_plugin_settings');
+    $default_role = $storage_settings['reverse'] ?? 1;
+
+    $elements['storage_plugin_settings']['reverse'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Reverse'),
+      '#description' => $this->t('if this is the subject of the relationship'),
+      '#default_value' => $default_role,
+      '#required' => TRUE,
+    ];
+
+    return $elements;
   }
 
   /**
@@ -163,6 +187,10 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
     $terms['linker_object'] = $mappingObj->getColumnTermId($linker_table, $linker_object_col, 'local:relationship_object');
     $terms['linker_type'] = $mappingObj->getColumnTermId($linker_table, $linker_type_col, 'schema:additionalType');
 
+    // Reverse means the current entity is the object; otherwise it is
+    // the subject.
+    $reverse = !empty($storage_settings['reverse']);
+
     // Columns from linked tables to specify the relationship type.
     $cvterm_schema_def = $schemaObj->getTableDef('cvterm', ['format' => 'Drupal']);
     $terms['type_name'] = $mappingObj->getColumnTermId('cvterm', 'name', 'schema:additionalType');
@@ -218,17 +246,26 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
     ]);
 
     // Links between base and linker (subject/object) using alias mapping.
+    $subject_action = $reverse ? 'store' : 'store_link';
+    $subject_path = $reverse
+      ? $table_alias . '.' . $linker_subject_col
+      : $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $linker_subject_col;
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_id', $terms['linker_subject'], [
-      'action' => 'store_link',
+      'action' => $subject_action,
       'drupal_store' => TRUE,
-      'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $linker_subject_col,
+      'path' => $subject_path,
       'table_alias_mapping' => $table_mapping,
       'as' => 'subject_id',
     ]);
+
+    $object_action = $reverse ? 'store_link' : 'store';
+    $object_path = $reverse
+      ? $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $linker_object_col
+      : $table_alias . '.' . $linker_object_col;
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_id', $terms['linker_object'], [
-      'action' => 'store_link',
+      'action' => $object_action,
       'drupal_store' => TRUE,
-      'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $linker_object_col,
+      'path' => $object_path,
       'table_alias_mapping' => $table_mapping,
       'as' => 'object_id',
     ]);

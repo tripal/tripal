@@ -55,6 +55,7 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
     $list = [];
     $token_string = $this->getSetting('token_string');
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
+    $is_by_role = $items->getFieldDefinition()->getType() === 'chado_relationship_by_role_type_default';
 
     foreach ($items as $delta => $item) {
       $values = [
@@ -121,15 +122,24 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
       $values['subject_bundle'] = $lookup_manager->getBundleLabel($values['subject_entity_id']);
       $values['object_bundle'] = $lookup_manager->getBundleLabel($values['object_entity_id']);
 
-      // Substitute values in token string to generate displayed string.
-      $displayed_string = $token_string;
-      foreach ($values as $key => $value) {
-        $displayed_string = preg_replace("/\[$key\]/", $value, $displayed_string);
+      if ($is_by_role) {
+        // By-role fields list only the related subject or object.
+        $related_name = $direction == 1
+          ? $values['subject_name']
+          : $values['object_name'];
+        $list[$delta] = ['#markup' => $related_name];
       }
+      else {
+        // Substitute values in token string to generate displayed string.
+        $displayed_string = $token_string;
+        foreach ($values as $key => $value) {
+          $displayed_string = preg_replace("/\[$key\]/", $value, $displayed_string);
+        }
 
-      $list[$delta] = [
-        '#markup' => $displayed_string,
-      ];
+        $list[$delta] = [
+          '#markup' => $displayed_string,
+        ];
+      }
     }
 
     // If only one element has been found, don't make into a list.

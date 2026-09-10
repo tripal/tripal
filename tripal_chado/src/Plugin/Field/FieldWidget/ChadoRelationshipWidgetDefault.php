@@ -144,6 +144,12 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
         '#default_value' => $reverse_default,
       ];
     }
+    else {
+      $element['reverse'] = [
+        '#type' => 'value',
+        '#default_value' => $storage_settings['reverse'] ?? 1,
+      ];
+    }
 
     // To reduce clutter, only display these items on the first row.
     if ($delta == 0) {
@@ -421,10 +427,6 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
         }
 
         if (!empty($value['reverse']) && ($value['reverse'] == 1)) {
-          $new_value['subject_id'] = $related_record_id;
-          $new_value['object_id'] = $record_id;
-        }
-        elseif (empty($value['reverse'])) {
           $new_value['subject_id'] = $related_record_id;
           $new_value['object_id'] = $record_id;
         }
