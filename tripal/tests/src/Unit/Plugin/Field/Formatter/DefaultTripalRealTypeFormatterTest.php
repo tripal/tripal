@@ -31,11 +31,6 @@ class DefaultTripalRealTypeFormatterTest extends UnitTestCase {
   private DefaultTripalRealTypeFormatter $formatter;
 
   /**
-   * Reflected handle to the protected formatTimestamp() method.
-   */
-  private \ReflectionMethod $formatTimestamp;
-
-  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -50,18 +45,13 @@ class DefaultTripalRealTypeFormatterTest extends UnitTestCase {
 
     // We use t() a lot, let's make sure we can test functions that use it.
     $this->formatter->setStringTranslation($this->getStringTranslationStub());
-
-#    $this->formatTimestamp = new \ReflectionMethod(
-#      DefaultTripalRealTypeFormatter::class,
-#      'formatTimestamp'
-#    );
   }
 
   /**
    * Builds a mocked FieldItemListInterface whose items return the given values.
    *
    * @param string[] $raw_values
-   *   Raw stored timestamp strings, one per field delta.
+   *   Raw stored real strings, one per field delta.
    *
    * @return \Drupal\Core\Field\FieldItemListInterface
    *   The field item list.
@@ -92,12 +82,10 @@ class DefaultTripalRealTypeFormatterTest extends UnitTestCase {
     return $field_item_list;
   }
 
-  // ---------------------------------------------------------------------------
-  // formatTimestamp()
-  // ---------------------------------------------------------------------------
-
   /**
    * Inputs and expected outputs for the field formatter.
+   *
+   * Tests formatReal() function.
    */
   public static function provideScenarios(): array {
     $scenarios = [];
@@ -196,12 +184,12 @@ class DefaultTripalRealTypeFormatterTest extends UnitTestCase {
   }
 
   /**
-   * Tests the output from several scenarios.
+   * Tests the output from formatReal() scenarios.
    *
    * @dataProvider provideScenarios
    */
   #[DataProvider('provideScenarios')]
-  public function testFormatTimestamp(array $scenario): void {
+  public function testFormatReal(array $scenario): void {
     foreach ($scenario['settings'] as $setting => $value) {
       $this->formatter->setSetting($setting, $value);
     }
@@ -216,10 +204,6 @@ class DefaultTripalRealTypeFormatterTest extends UnitTestCase {
       $this->assertCount(0, $elements, $scenario['label'] . ': Did not expect a value');
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // viewElements() — hide conditions
-  // ---------------------------------------------------------------------------
 
   /**
    * Non-empty value is shown under the default hide condition.
@@ -268,15 +252,10 @@ class DefaultTripalRealTypeFormatterTest extends UnitTestCase {
       'A value that does not match hide_value should still be rendered even if numerically equivalent.');
   }
 
-  // ---------------------------------------------------------------------------
-  // viewElements() — prefix, suffix, and format
-  // ---------------------------------------------------------------------------
-
   /**
    * Field_prefix and field_suffix are prepended and appended to the markup.
    */
   public function testViewElementsAppliesPrefixAndSuffix(): void {
-#    $this->formatter->setSetting('date_format', 'Y-m-d');
     $this->formatter->setSetting('field_prefix', 'distance: ');
     $this->formatter->setSetting('field_suffix', ' km');
     $elements = $this->formatter->viewElements(
@@ -286,9 +265,9 @@ class DefaultTripalRealTypeFormatterTest extends UnitTestCase {
   }
 
   /**
-   * The configured decimal_places is applied to the stored timestamp.
+   * The configured decimal_places is applied to the stored real number.
    */
-  public function testViewElementsRespectsDateFormat(): void {
+  public function testViewElementsRespectsRealFormat(): void {
     $this->formatter->setSetting('decimal_places', '3');
     $elements = $this->formatter->viewElements(
       $this->buildItems(['-12345.6789012345']), 'en'
@@ -303,16 +282,19 @@ class DefaultTripalRealTypeFormatterTest extends UnitTestCase {
     $form_state = $this->createMock(FormStateInterface::class);
     $form = $this->formatter->settingsForm([], $form_state);
 
-    // All keys are present.
-    $keys = ['thosand_separator', 'decimal_separator', 'decimal_places', 'field_prefix', 'field_suffix', 'hide_condition', 'hide_value'];
+    // Check that all expected keys are present.
+    $keys = [
+      'thousand_separator',
+      'decimal_separator',
+      'decimal_places',
+      'field_prefix',
+      'field_suffix',
+      'hide_condition',
+      'hide_value',
+    ];
     foreach ($keys as $key) {
       $this->assertArrayHasKey($key, $form);
     }
-
-    // date_format is required and seeded with the default.
-    $this->assertSame('textfield', $form['date_format']['#type']);
-    $this->assertSame('Y-m-d H:i:s', $form['date_format']['#default_value']);
-    $this->assertTrue($form['date_format']['#required']);
 
     // hide_condition is a radios element with the expected options.
     $this->assertSame('radios', $form['hide_condition']['#type']);
@@ -340,7 +322,7 @@ class DefaultTripalRealTypeFormatterTest extends UnitTestCase {
     $summary = $this->formatter->settingsSummary();
     $this->assertNotEmpty($summary);
     $entry = $summary[0];
-    $this->assertStringContainsString('Places: not psecified', $entry);
+    $this->assertStringContainsString('Places: not specified', $entry);
   }
 
   /**

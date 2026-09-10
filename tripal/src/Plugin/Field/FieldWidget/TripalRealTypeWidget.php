@@ -21,7 +21,6 @@ use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 )]
 class TripalRealTypeWidget extends TripalWidgetBase {
 
-
   /**
    * {@inheritdoc}
    */
@@ -84,14 +83,14 @@ class TripalRealTypeWidget extends TripalWidgetBase {
   /**
    * Removes any thousand separator characters.
    *
-   * @param $value
-   *   The value to process.
+   * @param string $value
+   *   The string value containing a real number to process.
    *
    * @return string
    *   The value with any thousand separators characters removed.
    */
   protected function removeThousandSeparators(string $value): string {
-    // Thousand separator hardcoded until we find a need to specify locale.
+    // Thousand separator is hardcoded until we find a need to specify locale.
     // To do so, we would need to include the php intl module in our docker.
     $thousand_separator = ',';
     $value = preg_replace('/' . $thousand_separator . '/', '', $value);

@@ -31,7 +31,7 @@ class DefaultTripalRealTypeFormatter extends TripalFormatterBase {
     $settings['thousand_separator'] = '';
     $settings['decimal_separator'] = '.';
     $settings['decimal_places'] = '';
-    $settings['hide_condition'] = 'never_hide';
+    $settings['hide_condition'] = 'never';
     $settings['hide_value'] = '';
     return $settings;
   }
@@ -48,7 +48,7 @@ class DefaultTripalRealTypeFormatter extends TripalFormatterBase {
     $decimal_places = $this->getSetting('decimal_places') ?? '';
     $hide_condition = $this->getSetting('hide_condition') ?? 'never';
     $hide_value = $this->getSetting('hide_value') ?? '';
-    foreach($items as $delta => $item) {
+    foreach ($items as $delta => $item) {
       $value = $item->get("value")->getValue() ?? '';
       $hide = ((($hide_condition == '') and !$value)
            or (($hide_condition == 'if_value') and ($value == $hide_value)));
@@ -112,7 +112,10 @@ class DefaultTripalRealTypeFormatter extends TripalFormatterBase {
     $form['decimal_places'] = [
       '#title' => $this->t('Decimal Places'),
       '#description' => $this->t('Number of decimal places to display'),
-      '#type' => 'textfield',
+      '#type' => 'number',
+      '#min' => 0,
+      '#max' => 100,
+      '#step' => 1,
       '#default_value' => $this->getSetting('decimal_places'),
       '#required' => FALSE,
     ];
@@ -122,7 +125,7 @@ class DefaultTripalRealTypeFormatter extends TripalFormatterBase {
       '#options' => [
         '' => $this->t('Hide if zero'),
         'if_value' => $this->t('Hide if equal to a specific value'),
-        'never_hide' => $this->t('Never hide'),
+        'never' => $this->t('Never hide'),
       ],
       '#default_value' => $this->getSetting('hide_condition') ?? '',
     ];

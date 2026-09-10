@@ -42,12 +42,8 @@ class TripalRealTypeWidgetTest extends UnitTestCase {
     $this->widget->setStringTranslation($this->getStringTranslationStub());
   }
 
-  // ---------------------------------------------------------------------------
-  // formElement()
-  // ---------------------------------------------------------------------------
-
   /**
-   * formElement() returns the expected textfield structure with the validator.
+   * Tests that formElement() returns the expected textfield structure.
    */
   public function testFormElementStructure(): void {
     $item = $this->createMock(FieldItemInterface::class);
@@ -66,10 +62,6 @@ class TripalRealTypeWidgetTest extends UnitTestCase {
     $validator_methods = array_column($result['value']['#element_validate'], 1);
     $this->assertContains('validateRealValue', $validator_methods);
   }
-
-  // ---------------------------------------------------------------------------
-  // massageFormValues()
-  // ---------------------------------------------------------------------------
 
   /**
    * Input/output pairs for testMassageFormValues().
@@ -100,10 +92,6 @@ class TripalRealTypeWidgetTest extends UnitTestCase {
     $result = $this->widget->massageFormValues($input, [], $form_state);
     $this->assertSame($expected, $result);
   }
-
-  // ---------------------------------------------------------------------------
-  // validateRealValue()
-  // ---------------------------------------------------------------------------
 
   /**
    * Valid inputs for testValidateRealValueAcceptsValid().
