@@ -32,3 +32,6 @@ vocabularies:
             -   id: 'SIO:000468'
                 name: 'legend'
                 description: 'A legend is a part of a figure that associates textual descriptions with symbols pertaining to plotted entities.'
+            -   id: 'SIO:001050'
+                name: 'sample'
+                description: 'A sample is a limited quantity of something (e.g. an individual or set of individuals from a population, or a portion of a substance) to be used for testing, analysis, inspection, investigation, demonstration, or trial use.'
