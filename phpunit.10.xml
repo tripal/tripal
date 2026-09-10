@@ -60,6 +60,7 @@
       <directory>tripal_layout/tests/src/Kernel</directory>
       <directory>tripal_search_views/tests/src/Kernel</directory>
       <directory>tripal_file/tests/src/Kernel</directory>
+      <directory>tripal_image/tests/src/Kernel</directory>
     </testsuite>
   </testsuites>
   <!-- Settings for coverage reports. -->
@@ -77,6 +78,8 @@
       <file>tripal_search_views/tripal_search_views.module</file>
       <directory suffix=".php">tripal_file/src</directory>
       <file>tripal_file/tripal_file.module</file>
+      <directory suffix=".php">tripal_image/src</directory>
+      <file>tripal_image/tripal_image.module</file>
     </include>
     <exclude>
       <!-- Exclude Interface classes from coverage -->

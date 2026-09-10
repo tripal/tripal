@@ -1,0 +1,34 @@
+id: 'tripal_image_content_terms'
+label: 'Tripal Image Terms'
+description: 'Terms for Content Types and Chado Fields for the Tripal image module'
+dependencies:
+    module:
+        - 'tripal'
+        - 'tripal_chado'
+        - 'tripal_image'
+    enforced:
+        module:
+            - 'tripal_image'
+vocabularies:
+    -   name: 'ncit'
+        label: 'NCI Thesaurus OBO Edition'
+        url: 'https://www.ebi.ac.uk/ols4/ontologies/ncit'
+        idSpaces:
+            -   name: 'NCIT'
+                description: 'NCI Thesaurus OBO Edition'
+                urlPrefix: 'https://purl.obolibrary.org/obo/{db}_{accession}'
+        terms:
+            -   id: 'NCIT:C37900'
+                name: 'Provider'
+                description: 'One that makes something available.'
+    -   name: 'SIO'
+        label: 'Semanticscience Integrated Ontology'
+        url: 'https://sio.semanticscience.org/'
+        idSpaces:
+            -   name: 'SIO'
+                description: "Semanticscience Integrated Ontology"
+                urlPrefix: "https://semanticscience.org/resource/{db}_{accession}"
+        terms:
+            -   id: 'SIO:000468'
+                name: 'legend'
+                description: 'A legend is a part of a figure that associates textual descriptions with symbols pertaining to plotted entities.'

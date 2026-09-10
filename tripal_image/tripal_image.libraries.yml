@@ -1,0 +1,4 @@
+image_formatter:
+  css:
+    component:
+      css/tripal_image_formatter.css: {}

@@ -1,0 +1,18 @@
+services:
+  tripal_image.rebuild_service:
+    class: 'Drupal\tripal_image\Services\TripalImageRebuildService'
+    arguments:
+      - '@tripal_chado.database'
+  'Drupal\tripal_image\Services\TripalImageRebuildService':
+    alias: 'tripal_image.rebuild_service'
+  tripal_image.uninstall_validator:
+    class: 'Drupal\tripal_image\Services\TripalImageUninstallValidator'
+    arguments:
+      - '@entity_type.manager'
+    tags:
+      - name: 'module_install.uninstall_validator'
+    lazy: true
+  tripal_image.hooks:
+    class: 'Drupal\tripal_image\Hook\TripalImageHooks'
+    arguments:
+      - '@tripal_image.rebuild_service'
