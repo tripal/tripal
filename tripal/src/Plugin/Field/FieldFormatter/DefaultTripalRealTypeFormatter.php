@@ -111,7 +111,7 @@ class DefaultTripalRealTypeFormatter extends TripalFormatterBase {
     ];
     $form['decimal_places'] = [
       '#title' => $this->t('Decimal Places'),
-      '#description' => $this->t('Number of decimal places to display'),
+      '#description' => $this->t('Number of decimal places to display, or leave blank for all places.'),
       '#type' => 'number',
       '#min' => 0,
       '#max' => 100,
