@@ -71,6 +71,8 @@ eimage_contact:
             - 'eimage_id'
         eimage_contact_idx2:
             - 'contact_id'
+        eimage_contact_idx3:
+            - 'type_id'
     'foreign keys':
         eimage:
             table: 'eimage'
@@ -113,6 +115,8 @@ eimage_pub:
             - 'eimage_id'
         eimage_pub_idx2:
             - 'pub_id'
+        eimage_pub_idx3:
+            - 'type_id'
     'foreign keys':
         eimage:
             table: 'eimage'
@@ -122,6 +126,108 @@ eimage_pub:
             table: 'pub'
             columns:
                 pub_id: 'pub_id'
+analysis_eimage:
+    table: 'analysis_eimage'
+    fields:
+        analysis_eimage_id:
+            size: 'big'
+            type: 'serial'
+            'not null': true
+        analysis_id:
+            size: 'big'
+            type: 'int'
+            'not null': true
+        eimage_id:
+            size: 'big'
+            type: 'int'
+            'not null': true
+        type_id:
+            size: 'big'
+            type: 'int'
+        rank:
+            type: 'int'
+            'not null': true
+            default: 0
+    'primary key':
+        - 'analysis_eimage_id'
+    'unique keys':
+        analysis_eimage_c1:
+            - 'analysis_id'
+            - 'eimage_id'
+            - 'type_id'
+    'nulls not distinct':
+        analysis_eimage_c1: true
+    indexes:
+        analysis_eimage_idx1:
+            - 'analysis_id'
+        analysis_eimage_idx2:
+            - 'eimage_id'
+        analysis_eimage_idx3:
+            - 'type_id'
+    'foreign keys':
+        analysis:
+            table: 'analysis'
+            columns:
+                analysis_id: 'analysis_id'
+        eimage:
+            table: 'eimage'
+            columns:
+                eimage_id: 'eimage_id'
+        type_id:
+            table: 'cvterm'
+            columns:
+                type_id: 'cvterm_id'
+organism_eimage:
+    table: 'organism_eimage'
+    fields:
+        organism_eimage_id:
+            size: 'big'
+            type: 'serial'
+            'not null': true
+        organism_id:
+            size: 'big'
+            type: 'int'
+            'not null': true
+        eimage_id:
+            size: 'big'
+            type: 'int'
+            'not null': true
+        type_id:
+            size: 'big'
+            type: 'int'
+        rank:
+            type: 'int'
+            'not null': true
+            default: 0
+    'primary key':
+        - 'organism_eimage_id'
+    'unique keys':
+        organism_eimage_c1:
+            - 'organism_id'
+            - 'eimage_id'
+            - 'type_id'
+    'nulls not distinct':
+        organism_eimage_c1: true
+    indexes:
+        organism_eimage_idx1:
+            - 'organism_id'
+        organism_eimage_idx2:
+            - 'eimage_id'
+        organism_eimage_idx3:
+            - 'type_id'
+    'foreign keys':
+        organism:
+            table: 'organism'
+            columns:
+                organism_id: 'organism_id'
+        eimage:
+            table: 'eimage'
+            columns:
+                eimage_id: 'eimage_id'
+        type_id:
+            table: 'cvterm'
+            columns:
+                type_id: 'cvterm_id'
 stock_eimage:
     table: 'stock_eimage'
     fields:
@@ -158,6 +264,8 @@ stock_eimage:
             - 'stock_id'
         stock_eimage_idx2:
             - 'eimage_id'
+        stock_eimage_idx3:
+            - 'type_id'
     'foreign keys':
         stock:
             table: 'stock'
