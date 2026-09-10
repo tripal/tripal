@@ -503,10 +503,6 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     // Supply null defaults for organisms without infraspecies.
     $parts[2] ??= NULL;
     $parts[3] ??= NULL;
-    if ($parts[2]) {
-      // Expand the abbreviation from rank if it exists.
-      $parts[2] = $this->unabbreviateInfraspecificRank($parts[2]);
-    }
     // Setup our conditions for lookup.
     $conditions = [
       'organism.genus' => $parts[0],
@@ -514,7 +510,8 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       'organism.infraspecific_name' => $parts[3],
     ];
     if ($parts[2]) {
-      $conditions['cvterm.name'] = $parts[2];
+      // Expand the abbreviation from rank if it exists.
+      $conditions['cvterm.name'] = $this->unabbreviateInfraspecificRank($parts[2]);
     }
     else {
       $conditions['organism.type_id'] = NULL;
