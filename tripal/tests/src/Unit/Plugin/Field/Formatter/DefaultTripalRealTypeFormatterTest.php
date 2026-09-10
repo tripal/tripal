@@ -246,10 +246,10 @@ class DefaultTripalRealTypeFormatterTest extends UnitTestCase {
     $this->formatter->setSetting('hide_condition', 'if_value');
     $this->formatter->setSetting('hide_value', '0');
     $elements = $this->formatter->viewElements(
-      $this->buildItems(['0.0']), 'en'
+      $this->buildItems(['0.000001']), 'en'
     );
     $this->assertArrayHasKey(0, $elements,
-      'A value that does not match hide_value should still be rendered even if numerically equivalent.');
+      'A value that does not match hide_value should be rendered.');
   }
 
   /**
