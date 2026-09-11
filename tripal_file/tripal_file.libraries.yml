@@ -1,0 +1,4 @@
+tripal_file.field.ChadoFileFormatterDefault:
+  css:
+    component:
+      src/Plugin/Field/FieldFormatter/ChadoFileFormatterDefault.css: {}

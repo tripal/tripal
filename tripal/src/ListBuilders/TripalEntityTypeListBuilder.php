@@ -56,7 +56,10 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
       ];
     }
     $row = $rowData + parent::buildRow($entity);
-    return ['class' => [$data['type-category']], 'data' => $row ];
+    // Strip spaces from category names such as "Tripal File"
+    // so that CSS selection works properly.
+    $category_class = str_replace(' ', '', $data['type-category']);
+    return ['class' => [$category_class], 'data' => $row ];
   }
 
   /**
