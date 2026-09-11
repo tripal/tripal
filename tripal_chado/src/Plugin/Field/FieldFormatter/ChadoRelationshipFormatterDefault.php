@@ -81,10 +81,12 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
         $field_definition = $items->getFieldDefinition();
         if ($field_definition->getType() === 'chado_relationship_by_role_type_default') {
           $type_id = (int) $item->get('type_id')->getString();
+          if (empty($this->cvterm_instance)) {
+            $this->cvterm_instance = \Drupal::service('tripal_chado.chado_buddy')->createInstance('chado_cvterm_buddy', []);
+          }
           if ($type_id) {
-            $values['type_name'] = $this->cvterm_instance->getCvterm([
-              'cvterm_id' => $type_id,
-            ])->getName();
+            $cvterm_record = $this->cvterm_instance->getCvterm(['cvterm.cvterm_id' => $type_id]);
+            $values['type_name'] = $cvterm_record[0]->getValue('cvterm.name');
           }
           else {
             // As a fallback, try to read term info from field settings.
@@ -119,8 +121,8 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
 
       // Lookup subject and object entity bundle names. ID may be -1 if unpublished.
       // e.g. for features: mRNA xxx is part of Gene yyy.
-      $values['subject_bundle'] = $lookup_manager->getBundleLabel($values['subject_entity_id']);
-      $values['object_bundle'] = $lookup_manager->getBundleLabel($values['object_entity_id']);
+      $values['subject_bundle'] = $lookup_manager->getBundleLabel((int) $values['subject_entity_id']);
+      $values['object_bundle'] = $lookup_manager->getBundleLabel((int) $values['object_entity_id']);
 
       if ($is_by_role) {
         // By-role fields list only the related subject or object.
