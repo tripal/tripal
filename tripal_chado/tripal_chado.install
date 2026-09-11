@@ -1281,3 +1281,44 @@ function tripal_chado_update_10422() {
   tripal_chado_field_reload(['chado_feature_type_default'], ['feature_timeaccessioned', 'feature_timelastmodified'], FALSE);
   tripal_chado_field_reload(['chado_assay_type_default'], ['assay_assaydate'], FALSE);
 }
+
+/**
+ * Some chado table columns use terms that were not defined. PR 2546.
+ */
+function tripal_chado_update_10423() {
+  try {
+    $messenger = \Drupal::messenger();
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $term_values = [
+      0 => [
+        'db.name' => 'SIO',
+        'cv.name' => 'SIO',
+        'dbxref.accession' => '000318',
+        'cvterm.name' => 'longitude',
+        'cvterm.definition' => 'Longitude is a geographic position that refers to the angle east or west of a reference meridian between the two geographical poles to another meridian that passes through an arbitrary point.',
+      ],
+      1 => [
+        'db.name' => 'SIO',
+        'cv.name' => 'SIO',
+        'dbxref.accession' => '000319',
+        'cvterm.name' => 'latitude',
+        'cvterm.definition' => "Latitude is a geographic coordinate which refers to the angle from a point on the Earth's surface to the equatorial plane",
+      ],
+      2 => [
+        'db.name' => 'SIO',
+        'cv.name' => 'SIO',
+        'dbxref.accession' => '000438',
+        'cvterm.name' => 'altitude',
+        'cvterm.definition' => 'Altitude is a distance above sea level.',
+      ],
+    ];
+    foreach ($term_values as $term_def) {
+      $cvterm_buddy->upsertCvterm($term_def, []);
+      $messenger->addMessage('Added term ' . $term_def['cv.name'] . ':' . $term_def['cvterm.name']);
+    }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not add term: ' . $e->getMessage());
+  }
+}
