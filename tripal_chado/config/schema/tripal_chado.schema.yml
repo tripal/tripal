@@ -369,6 +369,51 @@ field.formatter.settings.chado_integer_type_formatter:
       label: 'Thousand marker'
       nullable: true
 
+## Real Base Table Field.
+field.field_settings.chado_real_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_real_type_default:
+  type: tripal_chado.base_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_real_type_widget:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_real_type_formatter:
+  type: mapping
+  mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
+    thousand_separator:
+      type: string
+      label: 'Thousand marker'
+      nullable: true
+    decimal_separator:
+      type: string
+      label: 'Decimal separator'
+      nullable: true
+    decimal_places:
+      type: string
+      label: 'Decimal places'
+      nullable: true
+
 ## Organism Linker Field.
 field.field_settings.chado_organism_type_default:
   type: mapping
@@ -710,6 +755,14 @@ field.formatter.settings.chado_sequence_length_formatter_default:
     thousand_separator:
       type: string
       label: 'Thousand marker'
+      nullable: true
+    decimal_separator:
+      type: string
+      label: 'Decimal separator'
+      nullable: true
+    decimal_places:
+      type: string
+      label: 'Decimal places'
       nullable: true
 
 ## Feature Sequence Residues Field.
