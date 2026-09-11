@@ -157,9 +157,7 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
   $file_size = \Drupal::request()->get('file_size', '');
   $chunk_size = \Drupal::request()->get('chunk_size', '');
 
-  // \Drupal::service('file_system')->realpath('');
-  // $user_dir = tripal_get_user_files_dir($uid); //old
-  $user_dir = \Drupal::service('file_system')->realpath(tripal_get_user_files_dir($uid));
+  // This will create the user's directory if it does not exist yet.
   if (!tripal_is_user_files_dir_writeable($uid)) {
     $message = "The user's data directory is not writeable: @user_dir";
     \Drupal::logger('tripal')->error($message, [
@@ -172,6 +170,9 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
     ];
     return new JsonResponse($result);
   }
+
+  // Get the actual filesystem path.
+  $user_dir = \Drupal::service('file_system')->realpath(tripal_get_user_files_dir($uid));
 
   // Make sure we don't go over the user's quota, but only do this check
   // before loading the first chunk so we don't repeat it over and over again.
