@@ -58,13 +58,14 @@ class DefaultTripalRealTypeFormatter extends TripalFormatterBase {
           // it is not, then we need to calculate the value to use for
           // number_format(). This is done by finding the actual number of
           // decimal places in the current value.
-          if (!$decimal_places) {
-            $decimal_places = 0;
+          $item_decimal_places = $decimal_places;
+          if (!strlen($item_decimal_places)) {
+            $item_decimal_places = 0;
             if (preg_match('/' . preg_quote('.', '/') . '(.*)$/', $value, $matches)) {
-              $decimal_places = strlen($matches[1]);
+              $item_decimal_places = strlen($matches[1]);
             }
           }
-          $value = number_format(floatval($value), $decimal_places, $decimal_separator, $thousand_separator);
+          $value = number_format(floatval($value), $item_decimal_places, $decimal_separator, $thousand_separator);
         }
         $elements[$delta] = [
           "#markup" => $field_prefix . $value . $field_suffix,
