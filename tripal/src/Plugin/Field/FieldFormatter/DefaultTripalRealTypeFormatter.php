@@ -9,17 +9,17 @@ use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal\TripalField\TripalFormatterBase;
 
 /**
- * Plugin implementation of default Tripal integer type formatter.
+ * Plugin implementation of default Tripal real type formatter.
  */
 #[TripalFieldFormatter(
-  id: 'default_tripal_integer_type_formatter',
-  label: new TranslatableMarkup('Default Integer Type Formatter'),
-  description: new TranslatableMarkup('The default integer type formatter.'),
+  id: 'default_tripal_real_type_formatter',
+  label: new TranslatableMarkup('Default Real Type Formatter'),
+  description: new TranslatableMarkup('The default real type formatter.'),
   field_types: [
-    'tripal_integer_type',
+    'tripal_real_type',
   ],
 )]
-class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
+class DefaultTripalRealTypeFormatter extends TripalFormatterBase {
 
   /**
    * {@inheritdoc}
@@ -29,7 +29,9 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
     $settings['field_prefix'] = '';
     $settings['field_suffix'] = '';
     $settings['thousand_separator'] = '';
-    $settings['hide_condition'] = '';
+    $settings['decimal_separator'] = '.';
+    $settings['decimal_places'] = '';
+    $settings['hide_condition'] = 'never';
     $settings['hide_value'] = '';
     return $settings;
   }
@@ -42,17 +44,28 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
     $field_prefix = $this->getSetting('field_prefix');
     $field_suffix = $this->getSetting('field_suffix');
     $thousand_separator = $this->getSetting('thousand_separator');
-    $hide_condition = $this->getSetting('hide_condition') ?? '';
+    $decimal_separator = $this->getSetting('decimal_separator') ?? '.';
+    $decimal_places = $this->getSetting('decimal_places') ?? '';
+    $hide_condition = $this->getSetting('hide_condition') ?? 'never';
     $hide_value = $this->getSetting('hide_value') ?? '';
-
-    foreach($items as $delta => $item) {
+    foreach ($items as $delta => $item) {
       $value = $item->get("value")->getValue() ?? '';
       $hide = ((($hide_condition == '') and !$value)
            or (($hide_condition == 'if_value') and ($value == $hide_value)));
       if (!$hide) {
-        if (strlen($value) and strlen($thousand_separator)) {
-          // For an integer we can hardcode the unused decimal setting to 0
-          $value = number_format(floatval($value), 0, '.', $thousand_separator);
+        if (strlen($value) && (strlen($thousand_separator) || strlen($decimal_places))) {
+          // If the decimal places setting is not specified, and by default
+          // it is not, then we need to calculate the value to use for
+          // number_format(). This is done by finding the actual number of
+          // decimal places in the current value.
+          $item_decimal_places = $decimal_places;
+          if (!strlen($item_decimal_places)) {
+            $item_decimal_places = 0;
+            if (preg_match('/' . preg_quote('.', '/') . '(.*)$/', $value, $matches)) {
+              $item_decimal_places = strlen($matches[1]);
+            }
+          }
+          $value = number_format(floatval($value), $item_decimal_places, $decimal_separator, $thousand_separator);
         }
         $elements[$delta] = [
           "#markup" => $field_prefix . $value . $field_suffix,
@@ -71,16 +84,14 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
 
     $form['field_prefix'] = [
       '#title' => $this->t('Text to display before the field value'),
-      '#description' => $this->t('Enter text here that will be displayed before the'
-                     . ' field value, or leave blank for no additional text'),
+      '#description' => $this->t('Enter text here that will be displayed before the field value, or leave blank for no additional text'),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('field_prefix'),
       '#required' => FALSE,
     ];
     $form['field_suffix'] = [
       '#title' => $this->t('Text to display after the field value'),
-      '#description' => $this->t('Enter text here that will be displayed after the'
-                     . ' field value, or leave blank for no additional text'),
+      '#description' => $this->t('Enter text here that will be displayed after the field value, or leave blank for no additional text'),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('field_suffix'),
       '#required' => FALSE,
@@ -90,6 +101,23 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
       '#description' => $this->t('Character to display every three digits'),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('thousand_separator'),
+      '#required' => FALSE,
+    ];
+    $form['decimal_separator'] = [
+      '#title' => $this->t('Decimal Separator'),
+      '#description' => $this->t('Character to use for the decimal point'),
+      '#type' => 'textfield',
+      '#default_value' => $this->getSetting('decimal_separator'),
+      '#required' => FALSE,
+    ];
+    $form['decimal_places'] = [
+      '#title' => $this->t('Decimal Places'),
+      '#description' => $this->t('Number of decimal places to display, or leave blank for all places.'),
+      '#type' => 'number',
+      '#min' => 0,
+      '#max' => 100,
+      '#step' => 1,
+      '#default_value' => $this->getSetting('decimal_places'),
       '#required' => FALSE,
     ];
     $form['hide_condition'] = [
@@ -118,7 +146,11 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
    */
   public function settingsSummary() {
     $summary = parent::settingsSummary();
-    $summary[] = $this->t('Set display format');
+    $decimal_places = $this->getSetting('decimal_places');
+    if (!strlen($decimal_places)) {
+      $decimal_places = $this->t('not specified');
+    }
+    $summary[] = $this->t('Places: @decimal_places', ['@decimal_places' => $decimal_places]);
     return $summary;
   }
 
