@@ -646,7 +646,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       0,
     ];
 
-    // #1: An organism with empty infraspecific rank.
+    // #1: An organism with empty infraspecific name.
     $scenarios[] = [
       [
         [
@@ -660,7 +660,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
-    // #2: An organism with NULL infraspecific rank.
+    // #2: An organism with NULL infraspecific name.
     $scenarios[] = [
       [
         [
