@@ -502,7 +502,8 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     $parts[1] ??= '';
     // Supply defaults for organisms without infraspecies.
     $parts[2] ??= NULL;
-    $parts[3] ??= '';
+    $parts[3] ??= ChadoBuddyPluginBase::NULL_OR_EMPTY;
+
     // Setup our conditions for lookup.
     $conditions = [
       'organism.genus' => $parts[0],
