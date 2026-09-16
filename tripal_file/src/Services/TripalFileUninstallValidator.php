@@ -57,7 +57,7 @@ class TripalFileUninstallValidator implements ModuleUninstallValidatorInterface 
       // will prevent the module uninstall hook from being called, so we
       // can't do this automatically for the user.
       if ($uninstall_blocked) {
-        $reasons[] = $this->t('HINT: Before you can uninstall the "tripal_file" module, you must delete the content types that the module has created. Go to Tripal → Page Structure, and delete the two "Tripal File" content types.');
+        $reasons[] = $this->t('HINT: Before you can uninstall the "tripal_file" module, you must delete the content types that the module has created. Go to Tripal → Page Structure, and delete the two "Tripal File" content types. Then run "drush cron".');
       }
     }
     return $reasons;
