@@ -314,7 +314,7 @@ class ChadoConnection extends TripalDbxConnection {
     // Remove all matching schemas.
     $db = \Drupal::database();
     $schemas = $db->query(
-      "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE '$test_schema%';"
+      "SELECT schema_name FROM information_schema.schemata WHERE schema_name::text LIKE '$test_schema%';"
     );
     $dropped = [];
     foreach ($schemas as $schema) {
