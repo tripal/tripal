@@ -18,7 +18,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 #[TripalFieldType(
   id: 'chado_relationship_type_default',
   category: 'tripal_chado',
-  label: new TranslatableMarkup('Chado Relationship'),
+  label: new TranslatableMarkup('Chado Relationship: All'),
   description: new TranslatableMarkup('Add a relationship to the content type.'),
   default_widget: 'chado_relationship_widget_default',
   default_formatter: 'chado_relationship_formatter_default',
