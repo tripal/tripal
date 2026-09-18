@@ -58,20 +58,31 @@ d3:
   js:
     js/d3.v3.min.js: {}
 
-uploader:
-  version: '1.x'
-  js:
-    js/TripalUploader.js: {}
-
 upload-file:
   version: '1.x'
   js:
     js/TripalUploadFile.js: {}
+  dependencies:
+    - 'core/jquery'
+    - 'core/drupal'
+
+uploader:
+  version: '1.x'
+  js:
+    js/TripalUploader.js: {}
+  dependencies:
+    - 'core/jquery'
+    - 'core/drupal'
+    - 'tripal/upload-file'
 
 tripal-file:
   version: '1.x'
   js:
     js/tripal.file.js: {}
+  dependencies:
+    - 'core/drupal'
+    - 'core/once'
+    - 'tripal/uploader'
 
 vars:
   version: '1.x'
