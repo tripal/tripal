@@ -35,6 +35,11 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   const SUCCESS = 4;
 
   /**
+   * Used for a select condition where either NULL or empty string are valid.
+   */
+  const NULL_OR_EMPTY = 'NULL_OR_EMPTY';
+
+  /**
    * Provides the TripalDBX connection to chado.
    *
    * @var Drupal\tripal_chado\Database\ChadoConnection
@@ -430,6 +435,12 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     foreach ($conditions as $key => $value) {
       if ($value === NULL) {
         $query->isNull($key);
+      }
+      elseif ($value === self::NULL_OR_EMPTY) {
+        $or_condition_group = $query->orConditionGroup();
+        $or_condition_group->isNull($key);
+        $or_condition_group->condition($key, '', '=');
+        $query->condition($or_condition_group);
       }
       elseif (in_array($key, $insensitive_columns)) {
         $query->where('LOWER(' . $key . ') = LOWER(:value' . $n . ')',

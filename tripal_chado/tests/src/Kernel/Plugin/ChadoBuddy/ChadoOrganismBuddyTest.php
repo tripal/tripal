@@ -646,12 +646,13 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       0,
     ];
 
-    // #1: An organism without infraspecific rank.
+    // #1: An organism with empty infraspecific name.
     $scenarios[] = [
       [
         [
           'organism.genus' => 'Tripalus',
           'organism.species' => 'databasica',
+          'organism.infraspecific_name' => '',
         ],
       ],
       'Tripalus databasica',
@@ -659,7 +660,21 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
-    // #2: An organism with infraspecific rank and name.
+    // #2: An organism with NULL infraspecific name.
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.infraspecific_name' => NULL,
+        ],
+      ],
+      'Tripalus databasica',
+      [],
+      1,
+    ];
+
+    // #3: An organism with infraspecific rank and name.
     $scenarios[] = [
       [
         [
@@ -674,7 +689,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
-    // #3: Multiple organisms with the same genus and species.
+    // #4: Multiple organisms with the same genus and species.
     // When no infraspecies in the name, must be likewise in the organism.
     $scenarios[] = [
       [
@@ -696,7 +711,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       0,
     ];
 
-    // #4: An organism with an abbreviation
+    // #5: An organism with an abbreviation
     $scenarios[] = [
       [
         [
@@ -712,7 +727,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
-    // #5: An organism with common name
+    // #6: An organism with common name
     $scenarios[] = [
       [
         [
@@ -728,7 +743,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
-    // #6: Use the case sensitive option = no matched records
+    // #7: Use the case sensitive option = no matched records
     $scenarios[] = [
       [
         [
@@ -745,7 +760,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       0,
     ];
 
-    // #7: Lookup using all options: abbreviation, common_name, case_sensitive
+    // #8: Lookup using all options: abbreviation, common_name, case_sensitive
     $scenarios[] = [
       [
         [
@@ -775,7 +790,7 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       3,
     ];
 
-    // #8: Lookup the same organism using common name + abbreviation
+    // #9: Lookup the same organism using common name + abbreviation
     $scenarios[] = [
       [
         [
