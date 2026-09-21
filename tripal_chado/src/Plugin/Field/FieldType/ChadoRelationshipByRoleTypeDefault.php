@@ -31,7 +31,7 @@ class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
    *
    * @var string
    */
-  public static $id = 'chado_relationship_by_role_type_default';
+  public static $id = 'chado_relationship_by_type_type_default';
 
   /**
    * Indicate if we should provide a column selector in the add field form.
