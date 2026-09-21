@@ -76,8 +76,8 @@ system-under-test:
           base_table: 'analysis'
         storage_plugin_id: 'chado_storage'
     - name: 'analysis_experiment'
-      type: 'chado_relationship_by_role_type_default'
-      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoRelationshipByRoleTypeDefault'
+      type: 'chado_relationship_by_type_type_default'
+      type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoRelationshipByTypeTypeDefault'
       cardinality: -1
       widget: 'chado_relationship_widget_default'
       formatter: 'chado_relationship_formatter_default'

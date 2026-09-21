@@ -604,12 +604,12 @@ field.formatter.settings.chado_pub_formatter_default:
   type: mapping
   mapping: {}
 
-## Relationship By Role Linker Field.
-field.field_settings.chado_relationship_by_role_type_default:
+## Relationship By Type Linker Field.
+field.field_settings.chado_relationship_by_type_type_default:
   type: mapping
   mapping: {}
 
-field.storage_settings.chado_relationship_by_role_type_default:
+field.storage_settings.chado_relationship_by_type_type_default:
   type: tripal_chado.linking_table_storage_settings
   mapping:
     storage_plugin_settings:

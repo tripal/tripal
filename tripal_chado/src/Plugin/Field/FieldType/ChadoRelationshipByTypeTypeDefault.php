@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- * Plugin implementation of default Tripal relationship by role field type.
+ * Plugin implementation of default Tripal relationship by type field type.
  */
 #[TripalFieldType(
   id: 'chado_relationship_by_type_type_default',
@@ -386,7 +386,7 @@ class ChadoRelationshipByTypeTypeDefault extends ChadoFieldItemBase {
     if ($has_linker) {
       $has_type_id = $schema->fieldExists($relationship_table, 'type_id');
       if (!$has_type_id) {
-        \Drupal::messenger()->addError('The Relationship By Role field requires a type_id in the linking table. This is not present in Chado 1.31 but will likely be added in subsequent versions.');
+        \Drupal::messenger()->addError('The Relationship By Type field requires a type_id in the linking table. This is not present in Chado 1.31 but will likely be added in subsequent versions.');
       }
     }
 

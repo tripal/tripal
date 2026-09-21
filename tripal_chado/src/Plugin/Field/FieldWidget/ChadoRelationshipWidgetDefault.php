@@ -19,7 +19,7 @@ use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
   description: new TranslatableMarkup('The default relationship widget.'),
   field_types: [
     'chado_relationship_type_default',
-    'chado_relationship_by_role_type_default',
+    'chado_relationship_by_type_type_default',
   ],
 )]
 class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
@@ -61,7 +61,7 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     }
 
     $show_term = array_key_exists('type_id', $property_definitions)
-      && ($field_definition->getType() !== 'chado_relationship_by_role_type_default');
+      && ($field_definition->getType() !== 'chado_relationship_by_type_type_default');
 
     $reverse_default = 0;
     $related_default = $object_name;

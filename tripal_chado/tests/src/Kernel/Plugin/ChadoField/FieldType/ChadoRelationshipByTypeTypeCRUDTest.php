@@ -21,7 +21,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[Group('tripal-field')]
 #[Group('chado-field')]
 #[RunTestsInSeparateProcesses]
-class ChadoRelationshipByRoleTypeCRUDTest extends ChadoTestKernelBase {
+class ChadoRelationshipByTypeTypeCRUDTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;
 
@@ -61,7 +61,7 @@ class ChadoRelationshipByRoleTypeCRUDTest extends ChadoTestKernelBase {
    *
    * @var string
    */
-  protected string $yaml_info_file = __DIR__ . '/ChadoRelationshipByRoleTypeCRUD-TestInfo.yml';
+  protected string $yaml_info_file = __DIR__ . '/ChadoRelationshipByTypeTypeCRUD-TestInfo.yml';
 
   /**
    * Describes the environment to setup for this test.

@@ -17,7 +17,7 @@ use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoCvtermBuddy;
   description: new TranslatableMarkup('A chado relationship formatter'),
   field_types: [
     'chado_relationship_type_default',
-    'chado_relationship_by_role_type_default',
+    'chado_relationship_by_type_type_default',
   ],
   valid_tokens: [
     '[accession]',
@@ -55,7 +55,7 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
     $list = [];
     $token_string = $this->getSetting('token_string');
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
-    $is_by_role = $items->getFieldDefinition()->getType() === 'chado_relationship_by_role_type_default';
+    $is_by_type = $items->getFieldDefinition()->getType() === 'chado_relationship_by_type_type_default';
 
     foreach ($items as $delta => $item) {
       $values = [
@@ -74,12 +74,12 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
         $direction = -1;
       }
 
-      // If this is a "by role" field the type_name may not be stored
+      // If this is a "by type" field the type_name may not be stored
       // on the item. Attempt to resolve it from the type_id or from the
       // field settings so the formatter can display a meaningful name.
       if (empty($values['type_name'])) {
         $field_definition = $items->getFieldDefinition();
-        if ($field_definition->getType() === 'chado_relationship_by_role_type_default') {
+        if ($field_definition->getType() === 'chado_relationship_by_type_type_default') {
           $type_id = (int) $item->get('type_id')->getString();
           if (empty($this->cvterm_instance)) {
             $this->cvterm_instance = \Drupal::service('tripal_chado.chado_buddy')->createInstance('chado_cvterm_buddy', []);
@@ -124,8 +124,8 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
       $values['subject_bundle'] = $lookup_manager->getBundleLabel((int) $values['subject_entity_id']);
       $values['object_bundle'] = $lookup_manager->getBundleLabel((int) $values['object_entity_id']);
 
-      if ($is_by_role) {
-        // By-role fields list only the related subject or object.
+      if ($is_by_type) {
+        // By-type fields list only the related subject or object.
         $related_name = $direction == 1
           ? $values['subject_name']
           : $values['object_name'];
