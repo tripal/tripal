@@ -24,7 +24,7 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_widget: 'chado_relationship_widget_default',
   default_formatter: 'chado_relationship_formatter_default',
 )]
-class ChadoRelationshipByRoleTypeDefault extends ChadoFieldItemBase {
+class ChadoRelationshipByTypeTypeDefault extends ChadoFieldItemBase {
 
   /**
    * The id for this field. Must match the attribute value.
