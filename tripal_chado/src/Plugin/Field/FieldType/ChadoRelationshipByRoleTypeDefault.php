@@ -19,7 +19,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 #[TripalFieldType(
   id: 'chado_relationship_by_role_type_default',
   category: 'tripal_chado',
-  label: new TranslatableMarkup('Chado Relationship: Specific Role'),
+  label: new TranslatableMarkup('Chado Relationship: Specific Type'),
   description: new TranslatableMarkup('Supports linking relationships of a specific type to the current content type.'),
   default_widget: 'chado_relationship_widget_default',
   default_formatter: 'chado_relationship_formatter_default',
