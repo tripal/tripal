@@ -17,7 +17,7 @@ use Drupal\tripal\Entity\TripalEntityType;
  * Plugin implementation of default Tripal relationship by role field type.
  */
 #[TripalFieldType(
-  id: 'chado_relationship_by_role_type_default',
+  id: 'chado_relationship_by_type_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Relationship: Specific Type'),
   description: new TranslatableMarkup('Supports linking relationships of a specific type to the current content type.'),
