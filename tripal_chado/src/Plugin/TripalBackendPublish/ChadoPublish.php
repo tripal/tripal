@@ -1452,7 +1452,14 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     // Get a list of already-published entities. The key will be the
     // chado table record ID, the values will be the entity IDs.
-    $this->existing_published_entities = $this->entity_lookup_manager->getPublishedEntityIds($this->bundle, 'tripal_entity');
+    // An exception is thrown if the bundle has no required fields.
+    try {
+      $this->existing_published_entities = $this->entity_lookup_manager->getPublishedEntityIds($this->bundle, 'tripal_entity');
+    }
+    catch (\Exception $e) {
+      $this->logger->error($e->getMessage());
+      return [];
+    }
 
     // If not republishing everything, remove any already published records.
     if (!$this->republish) {
