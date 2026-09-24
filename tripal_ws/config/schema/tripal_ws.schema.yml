@@ -1,0 +1,8 @@
+# Schema for the configuration files of the Tripal Webservices module.
+tripal_ws.settings:
+  type: config_object
+  label: 'Tripal Webservices settings'
+  mapping:
+    example:
+      type: string
+      label: 'Example'
