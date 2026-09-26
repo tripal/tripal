@@ -57,60 +57,43 @@ class TripalChadoRebuildService {
    * Executes the rebuild process for tripal.
    */
   public function executeRebuild() {
-
     $this->rebuildViews();
     $this->rebuildChadoTermMappings();
-
-    // Rebuild the Custom Tables and Materialized views views.
-    $dir = $this->module_extension_list->getPath('tripal_chado');
-    $fileStorage = new FileStorage($dir);
-
-    $custom_tables_config = $fileStorage->read('config/install/views.view.chado_custom_tables');
-    $mviews_config = $fileStorage->read('config/install/views.view.chado_mviews');
-
-    $storage = $this->entity_type_manager->getStorage('view');
-
-    // Reload the custom tables view.
-    $view = $storage->load('chado_custom_tables');
-    $view->delete();
-    $view = $storage->create($custom_tables_config);
-    $view->save();
-
-    // Reload the materialized view view.
-    $view = $storage->load('chado_mviews');
-    $view->delete();
-    $view = $storage->create($mviews_config);
-    $view->save();
   }
 
   /**
    * Used to recreate views from default.
    *
    * If the user deletes one of the views that are created on install of the
-   * Tripal Chado module, then this will restore them when the cache is cleared.
+   * Tripal Chado module, then this will restore them when the cache is rebuilt.
+   * If the view exists, then it is not modified.
    */
   public function rebuildViews() {
+    $view_list = [
+      'chado_custom_tables',
+      'chado_mviews',
+      'chado_databases',
+      'chado_database_cross_references',
+      'chado_controlled_vocabularies',
+      'chado_controlled_vocabulary_terms',
+    ];
 
-    // Make sure the Views are present.
     $storage = $this->entity_type_manager->getStorage('view');
     $dir = $this->extension_path_resolver->getPath('module', 'tripal_chado');
     $fileStorage = new FileStorage($dir);
 
-    // The chado_custom_tables view.
-    $view = $storage->load('chado_custom_tables');
-    if (!$view) {
-      $config = $fileStorage->read('config/install/views.view.chado_custom_tables');
-      $view = $storage->create($config);
-      $view->save();
+    foreach ($view_list as $view_id) {
+      $view = $storage->load($view_id);
+      // Only load the view if it does not already exist.
+      if (!$view) {
+        $config = $fileStorage->read('config/install/views.view.' . $view_id);
+        if ($config) {
+          $view = $storage->create($config);
+          $view->save();
+        }
+      }
     }
 
-    // The chado_materialized_views view.
-    $view = $storage->load('chado_mviews');
-    if (!$view) {
-      $config = $fileStorage->read('config/install/views.view.chado_mviews');
-      $view = $storage->create($config);
-      $view->save();
-    }
   }
 
   /**
