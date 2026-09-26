@@ -160,7 +160,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     // Do checks on the featureprop table as well. Ensures the bio type value got added
     $results = $chado->query("SELECT * FROM {1:featureprop}
-      WHERE feature_id = :feature_id AND value LIKE :value;", [
+      WHERE feature_id = :feature_id AND value::text LIKE :value;", [
       ':feature_id' => $gene_feature_id,
       ':value' => 'protein_coding'
     ]);
@@ -172,7 +172,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     // Ensures the GAP value got added
     $results = $chado->query("SELECT * FROM {1:featureprop}
-      WHERE feature_id = :feature_id AND value LIKE :value;", [
+      WHERE feature_id = :feature_id AND value::text LIKE :value;", [
       ':feature_id' => $gene_feature_id,
       ':value' => 'test_gap_1'
     ]);
@@ -183,7 +183,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     // Ensures the NOTE value got added
     $results = $chado->query("SELECT * FROM {1:featureprop}
-      WHERE feature_id = :feature_id AND value LIKE :value;", [
+      WHERE feature_id = :feature_id AND value::text LIKE :value;", [
       ':feature_id' => $gene_feature_id,
       ':value' => 'test_gene_001_note'
     ]);
@@ -1050,7 +1050,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     $gff3_importer->postRun();
 
     $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop}
-      WHERE value ILIKE :value",[
+      WHERE value::text ILIKE :value",[
       ':value' => 'T'
     ]);
     foreach ($results as $row) {
@@ -1058,7 +1058,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     }
 
     $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop}
-      WHERE value ILIKE :value",[
+      WHERE value::text ILIKE :value",[
       ':value' => 'EST'
     ]);
     foreach ($results as $row) {
@@ -1111,7 +1111,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     $gff3_importer->postRun();
 
     $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop}
-      WHERE value ILIKE :value",[
+      WHERE value::text ILIKE :value",[
       ':value' => 'T,EST'
     ]);
     foreach ($results as $row) {
@@ -1166,7 +1166,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     // Check that the chr1_h1 feature (which is a landmark was added to feature table)
     $results = $chado->query("SELECT count(*) as c1 FROM {1:feature}
-      WHERE uniquename ILIKE :value",[
+      WHERE uniquename::text ILIKE :value",[
       ':value' => 'chr1_h1'
     ]);
     foreach ($results as $row) {
@@ -1182,7 +1182,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     // Check if the same chr1_h1 has type_id of chromosome_type_id
     $results = $chado->query("SELECT count(*) as c1 FROM {1:feature}
-      WHERE uniquename ILIKE :value AND type_id = :type_id",[
+      WHERE uniquename::text ILIKE :value AND type_id = :type_id",[
       ':value' => 'chr1_h1',
       ':type_id' => $chromosome_type_id
     ]);
