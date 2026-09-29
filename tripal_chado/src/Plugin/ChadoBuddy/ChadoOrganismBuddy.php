@@ -445,11 +445,10 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       if ($options['abbreviate_rank'] ?? TRUE) {
         $rank = $this->abbreviateInfraspecificRank($rank);
       }
-      $organism_name .= ' ' . $rank . ' ' . $organism_values['organism.infraspecific_name'];
+      $organism_name .= ' ' . $rank;
     }
-    // If we're missing a rank but have an infraspecific name, tag that onto the
-    // end.
-    elseif ($organism_values['organism.infraspecific_name']) {
+    // If there is one, end with infraspecific name.
+    if ($organism_values['organism.infraspecific_name']) {
       $organism_name .= ' ' . $organism_values['organism.infraspecific_name'];
     }
 
@@ -549,6 +548,29 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
           return ChadoBuddyRecord::compareTo($x, $y, 'organism.organism_id');
         };
         $buddies = array_merge($buddies, array_udiff($temp_buddies, $buddies, $buddy_comparator));
+      }
+    }
+
+    // Check the uncommon case of having an infraspecific name, but no type.
+    // The infraspecific name could even be more than one word, for example
+    // NCBI taxid 278110 = "Apium graveolens Rapaceum Group".
+    if (empty($buddies)) {
+      $parts = preg_split('/\s+/', $scientific_name, 3);
+      if (count($parts) == 3) {
+        $conditions = [
+          'organism.genus' => $parts[0],
+          'organism.species' => $parts[1],
+          'organism.type_id' => NULL,
+          'organism.infraspecific_name' => $parts[2],
+        ];
+        // Check 'case_sensitive' option and pass it through to our getter.
+        $lookup_options = [];
+        if (!($options['case_sensitive'] ?? FALSE)) {
+          foreach ($conditions as $key => $value) {
+            $lookup_options['case_insensitive'][] = $key;
+          }
+        }
+        $buddies = $this->getOrganism($conditions, $lookup_options);
       }
     }
 
