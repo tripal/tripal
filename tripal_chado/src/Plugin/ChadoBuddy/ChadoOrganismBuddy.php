@@ -23,6 +23,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 )]
 class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterface, ContainerFactoryPluginInterface {
 
+
   /**
    * A Database query interface for querying Chado using Tripal DBX.
    *
@@ -634,6 +635,11 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       // validate or retrieve the cvterm_id.
       $cvterm_values = $this->subsetInput($values, ['db', 'dbxref', 'cv', 'cvterm'], ['strict' => FALSE]);
       if ($cvterm_values) {
+        $all_null = empty(array_filter($cvterm_values, function ($value) {
+          return $value !== null;
+        }));
+      }
+      if ($cvterm_values && !$all_null) {
         // Use the buddy manager to create a Cvterm buddy instance.
         if (!isset($this->cvterm_buddy)) {
           $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
@@ -730,6 +736,35 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
     }
     // If none of the above matched, rank is returned unchanged.
     return $rank;
+  }
+
+  /**
+   * Handles the special cvterm of "no_rank" for the infraspecific type.
+   *
+   * When we specify NULL for the organism.type_id, we also accept
+   * as an alternative the special cvterm "taxonomic_rank:no_rank",
+   * which is a term that means the same thing as NULL.
+   *
+   * @{inheritdoc}
+   */
+  protected function addConditions(object &$query, array $conditions, array $options): void {
+    $no_rank = FALSE;
+    if (array_key_exists('organism.type_id', $conditions)) {
+      if (is_null($conditions['organism.type_id'])) {
+        unset($conditions['organism.type_id']);
+        $no_rank = TRUE;
+      }
+    }
+    parent::addConditions($query, $conditions, $options);
+    if ($no_rank) {
+      $and_condition_group = $query->andConditionGroup();
+      $and_condition_group->condition('cv.name', 'taxonomic_rank', '=');
+      $and_condition_group->condition('cvterm.name', 'no_rank', '=');
+      $or_condition_group = $query->orConditionGroup();
+      $or_condition_group->isNull('organism.type_id');
+      $or_condition_group->condition($and_condition_group);
+      $query->condition($or_condition_group);
+    }
   }
 
 }
