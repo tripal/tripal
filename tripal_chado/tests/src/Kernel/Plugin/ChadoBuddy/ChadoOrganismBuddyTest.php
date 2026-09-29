@@ -808,6 +808,34 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
+    // #10: An organism with no infraspecific type but infraspecific name.
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.infraspecific_name' => 'perplexus',
+        ],
+      ],
+      'Tripalus databasica perplexus',
+      [],
+      1,
+    ];
+
+    // #11: An organism with no infraspecific type but infraspecific name with spaces.
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.infraspecific_name' => 'valde perplexus',
+        ],
+      ],
+      'Tripalus databasica valde perplexus',
+      [],
+      1,
+    ];
+
     return $scenarios;
   }
 
