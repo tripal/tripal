@@ -816,6 +816,12 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
           'organism.species' => 'databasica',
           'organism.infraspecific_name' => 'perplexus',
         ],
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.type_id' => NULL,
+          'organism.infraspecific_name' => NULL,
+        ],
       ],
       'Tripalus databasica perplexus',
       [],
@@ -828,7 +834,20 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
         [
           'organism.genus' => 'Tripalus',
           'organism.species' => 'databasica',
+          'organism.type_id' => NULL,
           'organism.infraspecific_name' => 'valde perplexus',
+        ],
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.type_id' => NULL,
+          'organism.infraspecific_name' => NULL,
+        ],
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'cvterm.name' => 'subspecies',
+          'organism.infraspecific_name' => 'perplexus',
         ],
       ],
       'Tripalus databasica valde perplexus',
