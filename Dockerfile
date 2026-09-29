@@ -68,6 +68,6 @@ RUN service apache2 start \
 
 RUN service postgresql start \
   && cd /var/www/drupal \
-  && composer require tripal/tripal:4.x-dev tripal/tripal_devtools:4.x-dev --dev --with-all-dependencies \
-  && drush en tripal_devtools --yes \
+  && composer require tripal/tripal:4.x-dev tripal/tripal_devtools:4.x-dev drupal/olivero_dark_switch:1.0.x-dev --dev --with-all-dependencies \
+  && drush en tripal_devtools olivero_dark_switch --yes \
   && service postgresql stop
