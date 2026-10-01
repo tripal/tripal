@@ -855,6 +855,36 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
+    // #12: An organism with no_rank placeholder.
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'cvterm.name' => 'no_rank',
+          'organism.infraspecific_name' => 'perplexus',
+        ],
+      ],
+      'Tripalus databasica perplexus',
+      [],
+      1,
+    ];
+
+    // #13: An organism with no_rank placeholder and also in name.
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'cvterm.name' => 'no_rank',
+          'organism.infraspecific_name' => 'perplexus',
+        ],
+      ],
+      'Tripalus databasica no_rank perplexus',
+      [],
+      1,
+    ];
+
     return $scenarios;
   }
 
