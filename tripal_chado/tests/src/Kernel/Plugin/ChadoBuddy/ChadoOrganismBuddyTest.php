@@ -808,6 +808,83 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
+    // #10: An organism with no infraspecific type but infraspecific name.
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.infraspecific_name' => 'perplexus',
+        ],
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.type_id' => NULL,
+          'organism.infraspecific_name' => NULL,
+        ],
+      ],
+      'Tripalus databasica perplexus',
+      [],
+      1,
+    ];
+
+    // #11: An organism with no infraspecific type but infraspecific name with spaces.
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.type_id' => NULL,
+          'organism.infraspecific_name' => 'valde perplexus',
+        ],
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'organism.type_id' => NULL,
+          'organism.infraspecific_name' => NULL,
+        ],
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'cvterm.name' => 'subspecies',
+          'organism.infraspecific_name' => 'perplexus',
+        ],
+      ],
+      'Tripalus databasica valde perplexus',
+      [],
+      1,
+    ];
+
+    // #12: An organism with no_rank placeholder.
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'cvterm.name' => 'no_rank',
+          'organism.infraspecific_name' => 'perplexus',
+        ],
+      ],
+      'Tripalus databasica perplexus',
+      [],
+      1,
+    ];
+
+    // #13: An organism with no_rank placeholder and also in name.
+    $scenarios[] = [
+      [
+        [
+          'organism.genus' => 'Tripalus',
+          'organism.species' => 'databasica',
+          'cvterm.name' => 'no_rank',
+          'organism.infraspecific_name' => 'perplexus',
+        ],
+      ],
+      'Tripalus databasica no_rank perplexus',
+      [],
+      1,
+    ];
+
     return $scenarios;
   }
 
