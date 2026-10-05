@@ -828,7 +828,8 @@ class ChadoOrganismBuddyTest extends ChadoTestBuddyBase {
       1,
     ];
 
-    // #11: An organism with no infraspecific type but infraspecific name with spaces.
+    // #11: An organism with no infraspecific type but infraspecific name with
+    // spaces.
     $scenarios[] = [
       [
         [

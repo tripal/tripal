@@ -636,7 +636,7 @@ class ChadoOrganismBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInter
       $cvterm_values = $this->subsetInput($values, ['db', 'dbxref', 'cv', 'cvterm'], ['strict' => FALSE]);
       if ($cvterm_values) {
         $all_null = empty(array_filter($cvterm_values, function ($value) {
-          return $value !== null;
+          return $value !== NULL;
         }));
       }
       if ($cvterm_values && !$all_null) {
