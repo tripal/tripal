@@ -65,3 +65,10 @@ RUN service apache2 start \
   && curl https://qlty.sh | sh || true \
   && service apache2 stop \
   && service postgresql stop
+
+RUN service postgresql start \
+  && cd /var/www/drupal \
+  && drush theme:enable olivero \
+  && composer require tripal/tripal:4.x-dev tripal/tripal_devtools:4.x-dev drupal/olivero_dark_switch:1.0.x-dev --dev --with-all-dependencies \
+  && drush en tripal_devtools olivero_dark_switch --yes \
+  && service postgresql stop
