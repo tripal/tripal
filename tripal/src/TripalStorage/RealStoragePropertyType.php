@@ -2,12 +2,14 @@
 
 namespace Drupal\tripal\TripalStorage;
 
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
+
 /**
  * Defines the real Tripal storage property type.
  *
  * Note: A real type is any real floating point number.
  */
-class RealStoragePropertyType extends StoragePropertyTypeBase {
+class RealStoragePropertyType extends StoragePropertyTypeBase implements TripalStoragePropertyTypeInterface {
 
   /**
    * Constructs a new real tripal storage property type.
