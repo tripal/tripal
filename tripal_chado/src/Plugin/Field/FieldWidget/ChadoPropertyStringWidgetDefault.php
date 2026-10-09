@@ -71,6 +71,8 @@ class ChadoPropertyStringWidgetDefault extends ChadoWidgetBase {
     ];
     $elements['value'] = $element + [
       '#type' => 'textfield',
+      // Property values have no length limit, set something large here.
+      '#maxlength' => 8192,
       '#default_value' => $default_value,
       '#title' => '',
       '#description' => '',
