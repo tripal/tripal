@@ -527,11 +527,13 @@ function tripal_chado_set_field_required_status(array $field_ids, bool $required
     foreach ($field_ids as $field_id) {
       /** Drupal\field\Entity\FieldConfig **/
       $field = FieldConfig::load($field_id);
-      $state = $field->isRequired();
-      if ($state != $required) {
-        $field->setRequired($required);
-        $field->save();
-        $messenger->addMessage("Changed field $field_id to be " .($required?'':'not '). 'required');
+      if ($field) {
+        $state = $field->isRequired();
+        if ($state != $required) {
+          $field->setRequired($required);
+          $field->save();
+          $messenger->addMessage("Changed field $field_id to be " .($required?'':'not '). 'required');
+        }
       }
     }
   }
@@ -1283,16 +1285,55 @@ function tripal_chado_update_10422() {
 }
 
 /**
+<<<<<<< HEAD
  * Fix blank descriptions and invalid urls in db and cv records. PR 2462.
+=======
+ * Some chado table columns use terms that were not defined. PR 2546.
+>>>>>>> origin/tv4g4-issue2196-db-cv-manage
  */
 function tripal_chado_update_10423() {
   try {
     $messenger = \Drupal::messenger();
+<<<<<<< HEAD
     $chado_patch_service = \Drupal::service('tripal_chado.patch_service');
     $count = $chado_patch_service->patchChado(__DIR__ . '/config/update/update_10421.yml');
     $messenger->addMessage("Updated $count records");
   }
   catch (\Exception $e) {
     throw new UpdateException('Could not perform update: ' . $e->getMessage());
+=======
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $term_values = [
+      0 => [
+        'db.name' => 'SIO',
+        'cv.name' => 'SIO',
+        'dbxref.accession' => '000318',
+        'cvterm.name' => 'longitude',
+        'cvterm.definition' => 'Longitude is a geographic position that refers to the angle east or west of a reference meridian between the two geographical poles to another meridian that passes through an arbitrary point.',
+      ],
+      1 => [
+        'db.name' => 'SIO',
+        'cv.name' => 'SIO',
+        'dbxref.accession' => '000319',
+        'cvterm.name' => 'latitude',
+        'cvterm.definition' => "Latitude is a geographic coordinate which refers to the angle from a point on the Earth's surface to the equatorial plane",
+      ],
+      2 => [
+        'db.name' => 'SIO',
+        'cv.name' => 'SIO',
+        'dbxref.accession' => '000438',
+        'cvterm.name' => 'altitude',
+        'cvterm.definition' => 'Altitude is a distance above sea level.',
+      ],
+    ];
+    foreach ($term_values as $term_def) {
+      $cvterm_buddy->upsertCvterm($term_def, []);
+      $messenger->addMessage('Added term ' . $term_def['cv.name'] . ':' . $term_def['cvterm.name']);
+    }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not add term: ' . $e->getMessage());
+>>>>>>> origin/tv4g4-issue2196-db-cv-manage
   }
 }

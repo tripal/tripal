@@ -416,3 +416,14 @@ function tripal_config_schema_info_alter(&$definitions) {
 function tripal_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
   return \Drupal::service('tripal.views_hooks')->viewsQueryAlter($view, $query);
 }
+
+/**
+ * Implements hook_field_formatter_info_alter().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal\Hook\TripalHooks in tripal/src/Hook/TripalHooks.php.
+ */
+#[LegacyHook]
+function tripal_field_formatter_info_alter(array &$info) {
+  return \Drupal::service('tripal.hooks')->fieldFormatterInfoAlter($info);
+}

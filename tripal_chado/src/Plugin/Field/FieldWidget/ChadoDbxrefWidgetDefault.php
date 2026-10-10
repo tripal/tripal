@@ -125,6 +125,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     ];
     $element['dbxref_accession'] = [
       '#type' => 'textfield',
+      '#maxlength' => 1024,
       '#attributes' => [
         'placeholder' => t('Database Accession'),
       ],
