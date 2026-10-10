@@ -1285,23 +1285,26 @@ function tripal_chado_update_10422() {
 }
 
 /**
-<<<<<<< HEAD
- * Fix blank descriptions and invalid urls in db and cv records. PR 2462.
-=======
  * Some chado table columns use terms that were not defined. PR 2546.
->>>>>>> origin/tv4g4-issue2196-db-cv-manage
  */
 function tripal_chado_update_10423() {
   try {
     $messenger = \Drupal::messenger();
-<<<<<<< HEAD
     $chado_patch_service = \Drupal::service('tripal_chado.patch_service');
     $count = $chado_patch_service->patchChado(__DIR__ . '/config/update/update_10421.yml');
     $messenger->addMessage("Updated $count records");
   }
   catch (\Exception $e) {
     throw new UpdateException('Could not perform update: ' . $e->getMessage());
-=======
+  }
+}
+
+/**
+ * Fix blank descriptions and invalid urls in db and cv records. PR 2462.
+ */
+function tripal_chado_update_10424() {
+  try {
+    $messenger = \Drupal::messenger();
     $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
     $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
     $term_values = [
@@ -1334,6 +1337,5 @@ function tripal_chado_update_10423() {
   }
   catch (\Exception $e) {
     throw new UpdateException('Could not add term: ' . $e->getMessage());
->>>>>>> origin/tv4g4-issue2196-db-cv-manage
   }
 }
