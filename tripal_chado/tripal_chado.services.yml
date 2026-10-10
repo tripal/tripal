@@ -11,6 +11,10 @@ services:
       - '@entity_type.manager'
       - '@extension.list.module'
       - '@extension.path.resolver'
+  tripal_chado.patch_service:
+    class: 'Drupal\tripal_chado\Services\ChadoPatchService'
+    arguments:
+      - '@tripal_chado.database'
   tripal_chado.field_debugger:
     class: 'Drupal\tripal_chado\Services\ChadoFieldDebugger'
     arguments:
