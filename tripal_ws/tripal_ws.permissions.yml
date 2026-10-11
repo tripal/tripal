@@ -1,0 +1,4 @@
+administer tripal_ws configuration:
+  title: 'Administer Tripal Webservices'
+  description: 'Provides permission to configure Tripal Webservices module settings.'
+  restrict access: TRUE
