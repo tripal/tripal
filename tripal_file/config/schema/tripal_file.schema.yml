@@ -1,0 +1,59 @@
+# Chado File Field.
+field.field_settings.chado_file_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_file_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_file_type_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_file_type_formatter_default:
+  type: mapping
+  mapping: {}
+
+# Chado File Location Field.
+field.field_settings.chado_file_location_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_file_location_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_file_location_widget_default:
+  type: mapping
+  label: 'Chado File Location widget settings'
+  mapping:
+    valid_extensions:
+      type: string
+      label: 'Valid Extensions'
+      nullable: true
+    upload_location:
+      type: string
+      label: 'Upload Location in public://'
+      nullable: false
+
+field.formatter.settings.chado_file_location_formatter_default:
+  type: mapping
+  mapping: {}
+
+# Chado License Field.
+field.field_settings.chado_license_type_default:
+  type: mapping
+  mapping: {}
+
+field.storage_settings.chado_license_type_default:
+  type: tripal_chado.linking_table_storage_settings
+  mapping: {}
+
+field.widget.settings.chado_license_type_widget_default:
+  type: mapping
+  mapping: {}
+
+field.formatter.settings.chado_license_type_formatter_default:
+  type: mapping
+  mapping: {}
