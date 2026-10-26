@@ -296,7 +296,11 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
         // Then get the property back out.
         $chado_buddy_records = $instance->getProperty('project', $i, ['projectprop.type_id' => 1]);
         $this->assertCount(1, $chado_buddy_records, "We did not retrieve exactly one property for project ID $i.");
-        $this->assertEquals($i, $chado_buddy_records[0]->getValue('projectprop.project_id'), "The project_id in the projectprop table for project $i is not as expected.");
+        $this->assertEquals(
+          $i, 
+          $chado_buddy_records[0]->getValue('projectprop.project_id'), 
+          "The project_id in the projectprop table for project ID $i is not as expected."
+        );
       }
     }
     catch (\Exception $e) {
