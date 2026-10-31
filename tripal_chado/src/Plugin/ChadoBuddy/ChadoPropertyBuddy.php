@@ -169,6 +169,9 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     $query->leftJoin('1:dbxref', 'dbxref', 'dbxref.dbxref_id = cvterm.dbxref_id');
     $query->leftJoin('1:db', 'db', 'db.db_id = dbxref.db_id');
 
+    // Add a condition to limit the results to the specified record_id.
+    $query->condition($property_table . '.' . $fkey, $record_id, '=');
+
     // Return the joined fields aliased to the unique names
     // as listed in this function's header.
     foreach ($valid_columns as $key) {

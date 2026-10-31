@@ -527,11 +527,13 @@ function tripal_chado_set_field_required_status(array $field_ids, bool $required
     foreach ($field_ids as $field_id) {
       /** Drupal\field\Entity\FieldConfig **/
       $field = FieldConfig::load($field_id);
-      $state = $field->isRequired();
-      if ($state != $required) {
-        $field->setRequired($required);
-        $field->save();
-        $messenger->addMessage("Changed field $field_id to be " .($required?'':'not '). 'required');
+      if ($field) {
+        $state = $field->isRequired();
+        if ($state != $required) {
+          $field->setRequired($required);
+          $field->save();
+          $messenger->addMessage("Changed field $field_id to be " .($required?'':'not '). 'required');
+        }
       }
     }
   }
