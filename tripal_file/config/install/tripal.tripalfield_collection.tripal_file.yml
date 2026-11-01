@@ -1,0 +1,461 @@
+id: 'tripal_file'
+label: 'Tripal File Fields'
+description: 'Default field configurations provided by the Tripal File module'
+dependencies:
+    module:
+        - 'tripal_file'
+    enforced:
+        module:
+            - 'tripal_file'
+fields:
+    -   name: 'file_name'
+        content_type: 'tripal_file'
+        label: 'Name'
+        type: 'chado_text_type_default'
+        description: 'The name of the file.'
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                base_column: 'name'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'name'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 10
+                    settings:
+                        field_prefix: ''
+                        field_suffix: ''
+            form:
+                default:
+                    region: 'content'
+                    weight: 10
+                    settings:
+                        filter_format: 'plain_text'
+                        num_rows: 1
+
+    -   name: 'file_type'
+        content_type: 'tripal_file'
+        label: 'File Type'
+        type: 'chado_additional_type_type_default'
+        description: 'The type of file.'
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                type_table: 'file'
+                type_column: 'type_id'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'additionalType'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 20
+            form:
+                default:
+                    region: 'content'
+                    weight: 20
+
+    -   name: 'file_description'
+        content_type: 'tripal_file'
+        label: 'Description'
+        type: 'chado_text_type_default'
+        description: 'A description of the file.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                base_column: 'description'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'description'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 30
+                    settings:
+                        field_prefix: ''
+                        field_suffix: ''
+            form:
+                default:
+                    region: 'content'
+                    weight: 30
+
+    -   name: 'file_contact'
+        content_type: 'tripal_file'
+        label: 'File Source'
+        type: 'chado_contact_type_default'
+        description: 'Associates an individual or organization with this record.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                linker_table: 'file_contact'
+                linker_fkey_column: 'contact_id'
+        settings:
+            termIdSpace: 'NCIT'
+            termAccession: 'C47954'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 35
+          form:
+            default:
+              region: 'content'
+              weight: 35
+
+    -   name: 'file_location'
+        content_type: 'tripal_file'
+        label: 'File Location'
+        type: 'chado_file_location_type_default'
+        description: 'The location of the file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                linker_table: 'fileloc'
+                linker_fkey_column: 'file_id'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'itemLocation'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 40
+            form:
+                default:
+                    region: 'content'
+                    weight: 40
+
+    -   name: 'file_license'
+        content_type: 'tripal_file'
+        label: 'License'
+        type: 'chado_license_type_default'
+        description: 'The license associated with this file.'
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                linker_table: 'file_license'
+                linker_fkey_column: 'license_id'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'license'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 50
+            form:
+                default:
+                    region: 'content'
+                    weight: 50
+
+    -   name: 'file_relationship'
+        content_type: 'tripal_file'
+        label: 'Relationship'
+        type: 'chado_relationship_type_default'
+        description: 'Other files related to this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                base_column: 'name'
+                linker_table: 'file_relationship'
+                subject_column: 'subject_id'
+                object_column: 'object_id'
+        settings:
+            termIdSpace: 'SBO'
+            termAccession: '0000374'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 60
+            form:
+                default:
+                    region: 'content'
+                    weight: 60
+
+    -   name: 'file_dbxref'
+        content_type: 'tripal_file'
+        label: 'Database References'
+        type: 'chado_dbxref_type_default'
+        description: 'The IDs where this file may be available in other external online databases.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                linker_table: 'file_dbxref'
+                linker_fkey_column: 'file_id'
+        settings:
+            termIdSpace: 'SBO'
+            termAccession: '0000552'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 70
+          form:
+            default:
+              region: 'content'
+              weight: 70
+
+    -   name: 'file_pub'
+        content_type: 'tripal_file'
+        label: 'Publication'
+        type: 'chado_pub_type_default'
+        description: 'A publication referencing this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                linker_table: 'file_pub'
+                linker_fkey_column: 'pub_id'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'publication'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 81
+          form:
+            default:
+              region: 'content'
+              weight: 81
+
+    -   name: 'file_analysis'
+        content_type: 'tripal_file'
+        label: 'Analysis'
+        type: 'chado_analysis_type_default'
+        description: 'An analysis referencing this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                linker_table: 'analysis_file'
+                linker_fkey_column: 'analysis_id'
+        settings:
+            termIdSpace: 'operation'
+            termAccession: '2945'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 82
+          form:
+            default:
+              region: 'content'
+              weight: 82
+
+    -   name: 'file_organism'
+        content_type: 'tripal_file'
+        label: 'Organism'
+        type: 'chado_organism_type_default'
+        description: 'An organism referencing this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                linker_table: 'organism_file'
+                linker_fkey_column: 'organism_id'
+        settings:
+            termIdSpace: 'TAXRANK'
+            termAccession: '0000005'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 83
+          form:
+            default:
+              region: 'content'
+              weight: 83
+
+    -   name: 'file_project'
+        content_type: 'tripal_file'
+        label: 'Project'
+        type: 'chado_project_type_default'
+        description: 'A project referencing this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                linker_table: 'project_file'
+                linker_fkey_column: 'project_id'
+        settings:
+            termIdSpace: 'NCIT'
+            termAccession: 'C47885'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 84
+          form:
+            default:
+              region: 'content'
+              weight: 84
+
+    -   name: 'file_study'
+        content_type: 'tripal_file'
+        label: 'Study'
+        type: 'chado_study_type_default'
+        description: 'A study referencing this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                linker_table: 'study_file'
+                linker_fkey_column: 'study_id'
+        settings:
+            termIdSpace: 'SIO'
+            termAccession: '001066'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 85
+          form:
+            default:
+              region: 'content'
+              weight: 85
+
+    -   name: 'license_name'
+        content_type: 'tripal_license'
+        label: 'Name'
+        type: 'chado_string_type_default'
+        description: 'The name of the license.'
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'license'
+                base_column: 'name'
+            max_length: 1024
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'name'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 10
+                    settings:
+                        field_prefix: ''
+                        field_suffix: ''
+            form:
+                default:
+                    region: 'content'
+                    weight: 10
+                    settings:
+                        filter_format: 'plain_text'
+                        num_rows: 1
+
+    -   name: 'license_summary'
+        content_type: 'tripal_license'
+        label: 'Summary'
+        type: 'chado_text_type_default'
+        description: 'A summary of the license.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'license'
+                base_column: 'summary'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'description'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 20
+                    settings:
+                        field_prefix: ''
+                        field_suffix: ''
+            form:
+                default:
+                    region: 'content'
+                    weight: 20
+
+    -   name: 'license_uri'
+        content_type: 'tripal_license'
+        label: 'License URI'
+        type: 'chado_text_type_default'
+        description: 'The URI (e.g. web URL) where the full license can be retrieved.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'license'
+                base_column: 'uri'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'url'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 30
+          form:
+            default:
+              region: 'content'
+              weight: 30
+              settings:
+                filter_format: 'plain_text'
+                num_rows: 1
+                null_if_empty: 1
