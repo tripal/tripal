@@ -92,7 +92,7 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
     // use the cvterm of the field as the default.
     if (array_key_exists('linker_type_id', $property_definitions)) {
 
-      if (empty($item['linker_type_id'])) {
+      if (empty($item_vals['linker_type_id'])) {
         $termIdSpace = $this->getFieldSetting('termIdSpace');
         $termAccession = $this->getFieldSetting('termAccession');
 
@@ -100,12 +100,12 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
         $idSpace = $idSpace_manager->loadCollection($termIdSpace);
         $term = $idSpace->getTerm($termAccession);
 
-        $item['linker_type_id'] = $term->getInternalId();
+        $item_vals['linker_type_id'] = $term->getInternalId();
       }
 
       $elements['linker_type_id'] = [
         '#type' => 'value',
-        '#default_value' => $item['linker_type_id'],
+        '#default_value' => $item_vals['linker_type_id'],
       ];
     }
 

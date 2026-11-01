@@ -81,9 +81,6 @@ tables:
             -   name: 'value'
                 term_id: 'NCIT:C25712'
                 term_name: 'Value'
-            -   name: ''
-            -   name: ''
-            -   name: ''
     -   name: 'file_license'
         columns:
             -   name: 'file_id'

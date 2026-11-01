@@ -6,7 +6,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Drupal\tripal\TripalStorage\IntStoragePropertyType;
+use Drupal\tripal\TripalStorage\RealStoragePropertyType;
 
 /**
  * Plugin implementation of the 'real' field type.
@@ -53,7 +53,7 @@ class TripalRealTypeItem extends TripalFieldItemBase {
     $value = [];
 
     $value['record_id'] = 0;
-    $value['value'] = mt_rand(-50000, 50000) / 100;
+    $value['value'] = mt_rand(-500000, 500000) / 100;
 
     return [$value];
   }
@@ -68,7 +68,7 @@ class TripalRealTypeItem extends TripalFieldItemBase {
     $termAccession = $storage_settings['termAccession'];
 
     // Use a default term if one is not set.
-    $term = 'local:property';
+    $term = 'NCIT:C25712';
     if ($termIdSpace) {
       $term = $termIdSpace . ':' . $termAccession;
     }

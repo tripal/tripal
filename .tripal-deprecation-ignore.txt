@@ -42,6 +42,12 @@
 # Example test that triggers this is TripalCultivate::installTest. Triggered whenever a Tripal module with layouts including vertical or horizontal tabs is installed or such layouts are applied.
 %Not supporting attribute discovery in Drupal\\field_group\\FieldGroupFormatterPluginManager is deprecated%
 
+# Module: Field Group Module
+# Location: /var/www/drupal/web/core/includes/bootstrap.inc:397
+# Deprecation: Calling drupal_static() with "field_group_field_info_max_weight" as argument is deprecated in drupal:11.5.0 and is removed from drupal:13.0.0. Use \Drupal::cache('memory')->set() and \Drupal::cache('memory')->get() instead. See https://www.drupal.org/node/2661204
+# Example test that triggers this is TripalCultivate-Phenotypes::testLoadBackups. Triggered in all the test classes where the field_group module is being used.
+%Calling drupal_static\(\) with "field_group_field_info_max_weight" as argument is deprecated%
+
 # Module: Drupal
 # Location: /var/www/drupal/vendor/symfony/error-handler/DebugClassLoader.php:347
 # Deprecation: Method "Twig\Extension\ExtensionInterface::getFunctions()" might add "array" as a native return type declaration in the future. Do the same in implementation "Drupal\devel\Twig\Extension\Debug" now to avoid errors or add an explicit @return annotation to suppress this message.

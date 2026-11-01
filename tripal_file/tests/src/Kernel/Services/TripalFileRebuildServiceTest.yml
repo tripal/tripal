@@ -41,7 +41,8 @@ expected_tables:
     after:
       exists: true
       type_id: true
-      rank: false
+      value: true
+      rank: true
   - name: 'file_dbxref'
     before:
       exists: false

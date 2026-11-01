@@ -1,0 +1,49 @@
+system-under-test:
+  chado_version: '1.3.3.013'
+  bundle:
+    label: 'Geolocation'
+    termIdSpace: 'SIO'
+    termAccession: '000013'
+#    termIdSpace: 'NCIT'
+#    termAccession: 'C25712'
+    id: 'test_geolocation'
+    settings:
+      chado_base_table: 'nd_geolocation'
+  fields:
+  - name: 'nd_geolocation_latitude'
+    type: 'chado_real_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoRealTypeDefault'
+    widget: 'chado_real_type_widget'
+    formatter: 'chado_real_type_formatter'
+    termIdSpace: 'SIO'
+    termAccession: '000319'
+#    termIdSpace: 'NCIT'
+#    termAccession: 'C25712'
+    cardinality: 1
+    required: true
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+        base_table: 'nd_geolocation'
+        base_column: 'latitude'
+scenarios:
+  - label: 'Create and load a latitude value'
+    description: 'Creates a geolocation with only latitude value.'
+    create:
+      user_input:
+        nd_geolocation_latitude:
+        - record_id: 0
+          value: '1.234'
+      expected:
+        nd_geolocation_latitude:
+        - record_id: 1
+          value: '1.234'
+    edit:
+      user_input:
+        nd_geolocation_latitude:
+        - record_id: 1
+          value: '-4.3210'
+      expected:
+        nd_geolocation_latitude:
+        - record_id: 1
+          value: '-4.321'

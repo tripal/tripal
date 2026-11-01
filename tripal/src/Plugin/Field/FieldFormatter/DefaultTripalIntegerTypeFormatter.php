@@ -98,7 +98,7 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
       '#options' => [
         '' => $this->t('Hide if zero'),
         'if_value' => $this->t('Hide if equal to a specific value'),
-        'never_hide' => $this->t('Never hide'),
+        'never' => $this->t('Never hide'),
       ],
       '#default_value' => $this->getSetting('hide_condition') ?? '',
     ];

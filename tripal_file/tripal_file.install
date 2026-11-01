@@ -22,10 +22,10 @@ use Drupal\tripal_chado\Services\ChadoTermsInit;
 function tripal_file_requirements($phase) {
   $requirements = [];
   if ($phase == 'install') {
-    if (version_compare(\Drupal::VERSION, 10.4) < 0) {
+    if (version_compare(\Drupal::VERSION, 10.6) < 0) {
       $requirements['tripal_file'] = [
         'title' => 'tripal_file',
-        'value' => 'ERROR: You must have Drupal version 10.4 or higher installed to use this module.',
+        'value' => 'ERROR: You must have Drupal version 10.6 or higher installed to use this module.',
         'severity' => REQUIREMENT_ERROR,
       ];
     }

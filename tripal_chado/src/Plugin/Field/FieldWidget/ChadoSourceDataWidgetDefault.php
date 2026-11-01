@@ -44,18 +44,22 @@ class ChadoSourceDataWidgetDefault extends ChadoWidgetBase {
     $elements['datasourcegroup']['sourcename'] =  [
       '#title' => t("Name"),
       '#type' => 'textfield',
+      '#maxlength' => 255,
       '#description' => t('The name of the source where data was obtained for this analysis.'),
       '#default_value' => $item_vals['sourcename'] ?? '',
     ];
     $elements['datasourcegroup']['sourceversion'] = [
       '#title' => t('Version'),
       '#type' => 'textfield',
+      '#maxlength' => 255,
       '#description' => t('The version number of the data source (if applicable) for this analysis.'),
       '#default_value' => $item_vals['sourceversion'] ?? '',
     ];
     $elements['datasourcegroup']['sourceuri'] =  [
       '#title' => t("URI"),
       '#type' => 'textfield',
+      // URI has no length limit, set something large here.
+      '#maxlength' => 8192,
       '#description' => t('The URI (e.g. web URL) where the source data can be obtained.'),
       '#default_value' => $item_vals['sourceuri'] ?? '',
     ];

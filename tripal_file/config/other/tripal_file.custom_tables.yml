@@ -154,6 +154,11 @@ file_relationship:
         type_id:
             type: int
             'not null': true
+        value:
+            type: text
+        rank:
+            type: int
+            default: 0
     'primary key':
         - file_relationship_id
     'unique keys':

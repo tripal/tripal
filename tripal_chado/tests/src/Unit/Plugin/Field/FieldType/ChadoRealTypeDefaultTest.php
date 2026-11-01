@@ -22,6 +22,18 @@ use PHPUnit\Framework\Attributes\Group;
 class ChadoRealTypeDefaultTest extends UnitTestCase {
 
   /**
+   * Test that defaultFieldSettings() returns an array and merges parent.
+   */
+  public function testDefaultFieldSettings(): void {
+    $settings = ChadoRealTypeDefault::defaultFieldSettings();
+    $this->assertIsArray($settings);
+    // Test for the known keys.
+    $this->assertArrayHasKey('termIdSpace', $settings);
+    $this->assertArrayHasKey('termAccession', $settings);
+    $this->assertArrayHasKey('debug', $settings);
+  }
+
+  /**
    * TripalTypes() returns null when base_table is empty.
    */
   public function testTripalTypesReturnsNullWithoutBaseTable(): void {
