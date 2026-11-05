@@ -66,7 +66,7 @@ class ChadoCvDeleteForm extends FormBase {
     // Get values of the CV.
     $cv_records = $this->cvterm_buddy->getCv(['cv.cv_id' => $cv_id]);
     if (!$cv_records) {
-      throw new \Exception("Invalid cv_id \"$cv_id\" passed to chado_cv_delete_form");
+      throw new \Exception("Invalid cv_id \"$cv_id\" passed to " .  $this->getFormId());
     }
     $cv_record = reset($cv_records);
 
@@ -115,18 +115,20 @@ class ChadoCvDeleteForm extends FormBase {
       ];
       $form['submit'] = [
         '#type' => 'submit',
-        '#value' => 'Delete',
+        '#name' => 'delete',
+        '#value' => $this->t('Delete'),
       ];
     }
     $form['cancel'] = [
       '#type' => 'submit',
-      '#value' => 'Cancel',
+      '#name' => 'cancel',
+      '#value' => $this->t('Cancel'),
     ];
     return $form;
   }
 
   /**
-   * Form submit hook for the tripal_chado_cv_delete_form form.
+   * Form submit hook for the chado_cv_delete_form form.
    *
    * @param array &$form
    *   The form array definition.
@@ -135,8 +137,7 @@ class ChadoCvDeleteForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $triggering_element = $form_state->getTriggeringElement();
-
-    if ($triggering_element['#value'] == 'Delete') {
+    if ($triggering_element['#name'] == 'delete') {
       $cv_id = $form_state->getValue('cv_id');
       $cv_name = $form_state->getValue('cv_name');
       try {

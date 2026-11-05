@@ -80,7 +80,7 @@ class ChadoCvtermForm extends FormBase {
       $action = 'edit';
       $cvterm_records = $this->cvterm_buddy->getCvterm(['cvterm.cvterm_id' => $cvterm_id]);
       if (!$cvterm_records) {
-        throw new \Exception("Invalid cvterm_id \"$cvterm_id\" passed to chado_cvterm_form");
+        throw new \Exception("Invalid cvterm_id \"$cvterm_id\" passed to " . $this->getFormId());
       }
       $cvterm_record = reset($cvterm_records);
     }
@@ -118,8 +118,10 @@ class ChadoCvtermForm extends FormBase {
       '#value' => $cvterm_id,
     ];
 
+    $is_disabled = ($action == 'edit');
+
     $form['cv_name'] = [
-      '#disabled' => ($action == 'edit'),
+      '#disabled' => $is_disabled,
       '#type' => 'textfield',
       '#title' => $this->t('Controlled Vocabulary (Ontology) Name'),
       '#description' => $this->t('Please select an existing controlled vocabulary'),
@@ -184,7 +186,7 @@ class ChadoCvtermForm extends FormBase {
       '#disabled' => ($action == 'edit'),
       '#type' => 'textfield',
       '#title' => $this->t('External Database Name'),
-      '#description' => $this->t('All terms must be assocated with a database. If there is no database for this term (e.g. it is a custom term specific to this site) then select the database "null" or consider creating a database specific for your site and use that anytime you would like to add terms.'),
+      '#description' => $this->t('All terms must be associated with a database. If there is no database for this term (e.g. it is a custom term specific to this site) then select the database "null" or consider creating a database specific for your site and use that anytime you would like to add terms.'),
       '#required' => TRUE,
       '#default_value' => $default_db_name,
       '#maxlength' => 255,
@@ -284,7 +286,7 @@ class ChadoCvtermForm extends FormBase {
       ]);
       if ($records) {
         $form_state->setErrorByName('dbxref_accession',
-          'The specified accession and version already exists for this database. It cannot be used for more than one term.');
+          'The specified accession and version already exist for this database. It cannot be used for more than one term.');
       }
     }
 
@@ -297,7 +299,7 @@ class ChadoCvtermForm extends FormBase {
       ]);
       if ($records) {
         $form_state->setErrorByName('cvterm_name',
-          'The specified vocabulary term and value of "Is Obsolete" already exists for this vocabulary.');
+          'The specified vocabulary term and value of "Is Obsolete" already exist for this vocabulary.');
       }
     }
   }

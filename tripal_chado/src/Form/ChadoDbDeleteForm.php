@@ -66,7 +66,7 @@ class ChadoDbDeleteForm extends FormBase {
     // Get values of the DB.
     $db_records = $this->dbxref_buddy->getDb(['db.db_id' => $db_id]);
     if (!$db_records) {
-      throw new \Exception("Invalid db_id \"$db_id\" passed to chado_db_delete_form");
+      throw new \Exception("Invalid db_id \"$db_id\" passed to " . $this->getFormId());
     }
     $db_record = reset($db_records);
 
@@ -110,25 +110,27 @@ class ChadoDbDeleteForm extends FormBase {
     else {
       $form['sure'] = [
         '#markup' => '<p><strong>'
-        . $this->t('Be VERY CAREFUL when deleting databases, they may be referenced by other records. We recommend you make a backup before deleting databases.')
+        . $this->t('Be VERY CAREFUL when deleting databases, they may be referenced by other systems. We recommend you make a backup before deleting databases.')
         . '<br>'
         . $this->t('Are you sure you want to delete this database?')
         . '</strong></p>',
       ];
       $form['submit'] = [
         '#type' => 'submit',
-        '#value' => 'Delete',
+        '#name' => 'delete',
+        '#value' => $this->t('Delete'),
       ];
     }
     $form['cancel'] = [
       '#type' => 'submit',
-      '#value' => 'Cancel',
+      '#name' => 'cancel',
+      '#value' => $this->t('Cancel'),
     ];
     return $form;
   }
 
   /**
-   * Form submit hook for the tripal_chado_db_delete_form form.
+   * Form submit hook for the chado_db_delete_form form.
    *
    * @param array &$form
    *   The form array definition.
@@ -138,7 +140,7 @@ class ChadoDbDeleteForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $triggering_element = $form_state->getTriggeringElement();
 
-    if ($triggering_element['#value'] == 'Delete') {
+    if (($triggering_element['#name'] ?? '') == 'delete') {
       $db_id = $form_state->getValue('db_id');
       $db_name = $form_state->getValue('db_name');
       try {

@@ -8,7 +8,7 @@ use Drupal\views\ResultRow;
 use Drupal\Core\Render\Markup;
 
 /**
- * Field handler to present a link to edit a chado CV term.
+ * Field handler to present a link to edit a dbxref url prefix.
  *
  * @ingroup views_field_handlers
  */
