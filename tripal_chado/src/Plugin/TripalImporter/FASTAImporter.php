@@ -24,6 +24,7 @@ use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;
     'nuc',
     'faa',
     'fna',
+    'gz',
   ],
   upload_description: new TranslatableMarkup('Please provide a plain text file following the <a target="_blank" href="https://en.wikipedia.org/wiki/FASTA_format">FASTA format specification</a>.'),
   upload_title: new TranslatableMarkup('FASTA File'),
@@ -495,7 +496,7 @@ class FASTAImporter extends ChadoImporterBase {
 
     $this->logger->notice("Step 1: Finding sequences...");
     $filesize = filesize($file_path);
-    $fh = fopen($file_path, 'r');
+    $fh = $this->tripalFopen($file_path, 'r');
     if (!$fh) {
       $this->logger->error("Cannot open file: @dfile",
         ['@dfile' => $file_path]

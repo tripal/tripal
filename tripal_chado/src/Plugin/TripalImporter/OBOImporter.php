@@ -31,6 +31,7 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   description: new TranslatableMarkup('Import vocabularies and terms in OBO format.'),
   file_types: [
     'obo',
+    'gz',
   ],
   upload_description: new TranslatableMarkup('Please provide the details for importing a new OBO file. The file must have a .obo extension.'),
   upload_title: new TranslatableMarkup('New OBO File'),
@@ -2487,7 +2488,7 @@ class OBOImporter extends ChadoImporterBase {
     $this->setInterval(5);
 
     // iterate through the lines in the OBO file and parse the stanzas
-    $fh = fopen($obo_file, 'r');
+    $fh = $this->tripalFopen($obo_file, 'r');
     while ($line = fgets($fh)) {
       $line_num++;
       $size = mb_strlen($line);
