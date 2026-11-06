@@ -28,6 +28,7 @@ use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy;
     'gff',
     'gff3',
     'txt',
+    'gz',
   ],
   upload_description: new TranslatableMarkup('Please provide a plain text, tab-delimited file following the <a target="_blank" href="https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md">GFF3 Specification</a>. It is expected that all landmark features are associated with the same organism and that the types (column 3) are sequence ontology terms.'),
   upload_title: new TranslatableMarkup('GFF3 File'),
@@ -655,7 +656,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
 
     // Open the GFF3 file.
     $this->logger->notice("Opening @gff_file", ['@gff_file' => $this->gff_file]);
-    $this->gff_file_h = fopen($this->gff_file, 'r');
+    $this->gff_file_h = $this->tripalFopen($this->gff_file, 'r');
     if (!$this->gff_file_h) {
       throw new \Exception('Cannot open file: ' . $this->gff_file);
     }
@@ -1875,7 +1876,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $this->logger->notice("Opening temporary cache file: @cfile",
       ['@cfile' => $this->gff_cache_file_name]
     );
-    $this->gff_cache_file = fopen($this->gff_cache_file_name, "r+");
+    $this->gff_cache_file = $this->tripalFopen($this->gff_cache_file_name, "r+");
   }
 
   /**
