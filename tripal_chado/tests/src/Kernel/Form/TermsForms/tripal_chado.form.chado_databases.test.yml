@@ -1,0 +1,175 @@
+'Database add form with a new db':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_databases'
+    'args':
+      - null
+    'form_expectations':
+      '#form_id': 'chado_db_form'
+      'db_name':
+        '#title': 'External Database Name'
+        '#value': null
+      'db_description':
+        '#title': 'Database Description'
+      'db_url':
+        '#title': 'Database URL'
+      'db_urlprefix':
+        '#title': 'Database URL Prefix'
+      'submit':
+        '#value': 'Add'
+      'cancel':
+        '#markup': 'Cancel'
+    'submit_values':
+      'db_name': 'skynet'
+      'db_description': 'An artificial neural network-based conscious group mind and artificial general superintelligence system'
+      'db_url': 'https://skynet.org'
+      'db_urlprefix': 'https://skynet.org/{db}/{accession}'
+    'submit_expectations':
+      'db_name': 'skynet'
+      'db_description': 'An artificial neural network-based conscious group mind and artificial general superintelligence system'
+      'db_url': 'https://skynet.org'
+      'db_urlprefix': 'https://skynet.org/{db}/{accession}'
+    'submit_output':
+      - 'Redirecting to'
+    'submit_messages':
+      - 'status: The database "skynet" has been added'
+    'chado_expectations':
+      - 'table': 'db'
+        'conditions':
+          - 'column': 'name'
+            'value': 'skynet'
+          - 'column': 'description'
+            'value': 'An artificial neural network-based conscious group mind and artificial general superintelligence system'
+          - 'column': 'url'
+            'value': 'https://skynet.org'
+          - 'column': 'urlprefix'
+            'value': 'https://skynet.org/{db}/{accession}'
+        'count': 1
+'Database add form with an existing db':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbForm'
+    'args':
+      - null
+    'form_expectations':
+      '#form_id': 'chado_db_form'
+    'submit_values':
+      'db_name': 'data'
+    'submit_expectations':
+      'db_name': 'data'
+    'submit_fails': true
+    'submit_output':
+      - ''
+    'submit_messages':
+      - 'The specified database already exists'
+'Database edit form with an existing db':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_databases'
+    'args':
+      'db_id': 15
+    'form_expectations':
+      '#form_id': 'chado_db_form'
+      'db_name':
+        '#value': 'local'
+      'db_id':
+        '#value': 15
+    'submit_values':
+      'db_name': 'update0'
+      'db_description': 'update1'
+      'db_url': 'update2'
+      'db_urlprefix': 'update3'
+    'submit_expectations':
+      'db_name': 'update0'
+      'db_description': 'update1'
+      'db_url': 'update2'
+      'db_urlprefix': 'update3'
+    'submit_output':
+      - 'Redirecting to'
+    'submit_messages':
+      - 'status: The database "update0" has been updated'
+    'chado_expectations':
+      - 'table': 'db'
+        'conditions':
+          - 'column': 'name'
+            'value': 'local'
+        'count': 0
+      - 'table': 'db'
+        'conditions':
+          - 'column': 'name'
+            'value': 'update0'
+          - 'column': 'description'
+            'value': 'update1'
+          - 'column': 'url'
+            'value': 'update2'
+          - 'column': 'urlprefix'
+            'value': 'update3'
+        'count': 1
+'Database edit form with an invalid db_id argument':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbForm'
+    'args':
+      'db_id': 500000
+    'submit_fails': true
+    'submit_output':
+      - 'Invalid db_id "500000" passed to chado_db_form'
+'Database delete form with foreign key in use':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbDeleteForm'
+    'args':
+      'db_id': 15
+    'form_expectations':
+      '#form_id': 'chado_db_delete_form'
+      'db_id':
+        '#value': 15
+      'description':
+        '#type': 'table'
+      'cancel':
+        '#value': 'Cancel'
+    'form_messages':
+      - 'foreign key references to this database, it cannot be deleted'
+    'submit_expectations':
+      'db_id': 15
+    'submit_output':
+      # Submit here executes the Cancel button.
+      - 'Redirecting to'
+    'chado_expectations':
+      - 'table': 'db'
+        'conditions':
+          - 'column': 'db_id'
+            'value': 15
+        'count': 1
+'Database delete form with foreign key not in use':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbDeleteForm'
+    'setup':
+      'views':
+        - 'config/install/views.view.chado_databases'
+    'args':
+      'db_id': 5
+    'form_expectations':
+      '#form_id': 'chado_db_delete_form'
+      'db_id':
+        '#value': 5
+      'description':
+        '#type': 'table'
+      'submit':
+        '#value': 'Delete'
+    'triggering_element':
+      '#value': 'Delete'
+    'submit_expectations':
+      'db_id': 5
+    'submit_output':
+      - 'Redirecting to'
+    'submit_messages':
+      - 'has been deleted'
+    'chado_expectations':
+      - 'table': 'db'
+        'conditions':
+          - 'column': 'db_id'
+            'value': 5
+        'count': 0
+'Database delete form with an invalid db_id argument':
+  - 'form_class': 'Drupal\tripal_chado\Form\ChadoDbDeleteForm'
+    'args':
+      'db_id': 900000
+    'submit_fails': true
+    'submit_output':
+      - 'Invalid db_id "900000" passed to chado_db_delete_form'
