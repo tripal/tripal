@@ -501,8 +501,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
           $file_remote = $this->arguments['files'][$i]['file_remote'];
           $this->logger->notice('Download file: %file_remote...', ['%file_remote' => $file_remote]);
 
-          // If this file is compressed then keep the .gz extension so we can
-          // uncompress it later.
+          // If this file is compressed then keep the .gz extension so we
+          // know to uncompress it later.
           $ext = '';
           if (preg_match('/^(.*?)\.gz$/', $file_remote)) {
             $ext = '.gz';
@@ -522,35 +522,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
           // Set the path to the local temporary file for the importer to use.
           $this->arguments['files'][$i]['file_path'] = $temp;
-        }
-
-        // Is this file compressed? If so, then uncompress it.
-        $matches = [];
-        if (preg_match('/^(.*?)\.gz$/', $this->arguments['files'][$i]['file_path'], $matches)) {
-          $this->logger->notice('Uncompressing: %file', ['%file' => $this->arguments['files'][$i]['file_path']]);
-          $buffer_size = 4096;
-          $new_file_path = $matches[1];
-          $gzfile = gzopen($this->arguments['files'][$i]['file_path'], 'rb');
-          $out_file = fopen($new_file_path, 'wb');
-          if (!$out_file) {
-            throw new \Exception("Cannot uncompress file: new temporary file, '$new_file_path', cannot be created.");
-          }
-
-          // Keep repeating until the end of the input file
-          while (!gzeof($gzfile)) {
-            // Read buffer-size bytes
-            // Both fwrite and gzread are binary-safe
-            fwrite($out_file, gzread($gzfile, $buffer_size));
-          }
-
-          // Files are done, close files
-          fclose($out_file);
-          gzclose($gzfile);
-
-          // Now remove the .gz file and reset the file_path to the new
-          // uncompressed version.
-          unlink($this->arguments['files'][$i]['file_path']);
-          $this->arguments['files'][$i]['file_path'] = $new_file_path;
         }
       }
     }
@@ -774,8 +745,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     string $filename,
     string $mode,
     bool $use_include_path = FALSE,
-    ?resource $context = NULL,
-  ): resource|false {
+    $context = NULL,
+  ) {
     if (preg_match('/\.gz$/', $filename) && !preg_match('/compress.zlib:\/\//', $filename)) {
       $filename = 'compress.zlib://' . $filename;
     }
