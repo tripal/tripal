@@ -751,4 +751,36 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     return $valid;
   }
 
+  /**
+   * Transparently allows reading from gz compressed files.
+   *
+   * If the file name ends with a ".gz" extension, then include the
+   * zlib stream wrapper. All later file operation function calls
+   * can then seamlessly work with this compressed file.
+   *
+   * @param string $filename
+   *   The system path of the file.
+   * @param string $mode
+   *   The type of access to the stream, e.g. 'r' to read.
+   * @param bool $use_include_path
+   *   Set to true if you want to search for the file in the include_path.
+   * @param resource|null $context
+   *   A context stream resource.
+   *
+   * @return resource|bool
+   *   The opened file handle, or FALSE if file was not opened.
+   */
+  protected function tripalFopen(
+    string $filename,
+    string $mode,
+    bool $use_include_path = FALSE,
+    ?resource $context = NULL,
+  ): resource|false {
+    if (preg_match('/\.gz$/', $filename) && !preg_match('/compress.zlib:\/\//', $filename)) {
+      $filename = 'compress.zlib://' . $filename;
+    }
+    $fh = fopen($filename, $mode, $use_include_path, $context);
+    return $fh;
+  }
+
 }
