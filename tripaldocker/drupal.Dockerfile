@@ -191,6 +191,7 @@ RUN composer create-project drupal/recommended-project:${drupalversion} --stabil
   && composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true \
   && rm composer.lock \
   && packages="${requiredcomposerpackages} ${composerpackages}" \
+  && if $(dpkg --compare-versions "${drupalversion}" "lt" "11"); then echo "downgrading robo, see issue #2616"; composer require consolidation/robo:5.1.* ; fi \
   && composer require --dev $packages \
   && composer install
 
