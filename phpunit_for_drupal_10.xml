@@ -2,7 +2,7 @@
 <!--
   generate for use with
 
-  PHPUnit 9
+  PHPUnit 9 on Drupal 10.x
 
   -->
 <!-- PHPUnit expects functional tests to be run with either a privileged user
