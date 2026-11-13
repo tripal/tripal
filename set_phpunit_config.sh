@@ -1,14 +1,14 @@
 #!/bin/bash
 
 ##
-## Determine config file based on PHPunit version.
+## Determine PHPunit config file based on Drupal version.
 ##
 ## This script should be run within a working site environment
 ## and within the same directory as this script.
 ##
 ## What will this script do?
 ##
-## 1. Run phpunit --version to detect the current
+## 1. Run drush status to detect the current Drupal
 ##    version installed.
 ## 2. Extract the first and second parts of the semantic
 ##    version and save as MAJOR and MINOR respectively.
@@ -20,21 +20,21 @@
 
 ## FALLBACK
 ## Set to the highest config version.
-configfile='phpunit.11.xml'
+configfile='phpunit.12.xml'
 
-version_str=$(phpunit --version)
-major_version=$(echo "$version_str" | sed -E 's/^PHPUnit ([0-9]+).*/\1/')
-minor_version=$(echo "$version_str" | sed -E 's/^PHPUnit [0-9]+\.([0-9]+).*/\1/')
-# Check for phpunit.MAJOR.MINOR.xml (e.g. phpunit.9.6.xml)
-versioned_file="phpunit.${major_version}.${minor_version}.xml"
+# Drupal version can either be of the form "11.2.3" or "11.2-dev".
+drupal_version_string=$(drush status | grep 'Drupal version' | sed -e 's/^.*: //' -e 's/[ -].*$//')
+IFS='.' read -ra drupal_version_parts <<< "$drupal_version_string"
+# Check for phpunit_for_drupal_MAJOR.MINOR.xml (e.g. phpunit_for_drupal_11.4.xml)
+versioned_file="phpunit_for_drupal_${drupal_version_parts[0]}.${drupal_version_parts[1]}.xml"
 if [ -f "$versioned_file" ]; then
   echo "Option 1: $versioned_file --found!"
   configfile="$versioned_file"
   ln -s $versioned_file phpunit.xml
 else
   echo "Option 1: $versioned_file --doesn't exist."
-  # Check for phpunit.MAJOR.xml (e.g. phpunit.10.xml)
-  versioned_file="phpunit.${major_version}.xml"
+  # Check for phpunit_for_drupal_MAJOR.xml (e.g. phpunit_for_drupal_12.xml)
+  versioned_file="phpunit_for_drupal_${drupal_version_parts[0]}.xml"
   if [ -f "$versioned_file" ]; then
     echo "Option 2: $versioned_file --found!"
       configfile="$versioned_file"
