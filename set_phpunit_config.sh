@@ -53,5 +53,5 @@ ln -s $configfile phpunit.xml
 echo ""
 echo "Using phpunit config file: $configfile"
 if [[ -n "$GITHUB_OUTPUT" ]] ; then
-  echo "Using phpunit config file: $configfile" >> $GITHUB_OUTPUT
+  echo "configfile=$configfile" >> $GITHUB_OUTPUT
 fi
