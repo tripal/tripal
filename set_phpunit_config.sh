@@ -20,15 +20,17 @@
 
 ## FALLBACK
 ## Set to the highest config version.
-configfile='phpunit.12.xml'
+configfile='phpunit_for_drupal_phpunit.12.xml'
 
 # Drupal version can either be of the form "11.2.3" or "11.2-dev".
 # test-tripal-action will pass it on the command line, otherwise
 # look it up using drush.
 drupal_version_string="$1"
-if [[ -n "$drupal_version_string" ]] ; then
+echo "CP1 drupal_version_string=\"$drupal_version_string\""
+if [[ -z "$drupal_version_string" ]] ; then
   drupal_version_string=$(drush status | grep 'Drupal version' | sed -e 's/^.*: //' -e 's/[ -].*$//')
 fi
+echo "CP2 drupal_version_string=\"$drupal_version_string\""
 IFS='.' read -ra drupal_version_parts <<< "$drupal_version_string"
 # Check for phpunit_for_drupal_MAJOR.MINOR.xml (e.g. phpunit_for_drupal_11.4.xml)
 versioned_file="phpunit_for_drupal_${drupal_version_parts[0]}.${drupal_version_parts[1]}.xml"
