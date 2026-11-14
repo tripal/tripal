@@ -39,11 +39,6 @@ RUN service apache2 start \
   && allmodules="${tripalmodules} ${modules}" \
   && vendor/bin/drush en ${allmodules} -y \
   && cd web/modules/contrib/tripal \
-&& echo "CP1" \
-&& ls -ltr \
-&& echo "CP2" \
-&& cat set_phpunit_config.sh \
-&& echo "CP3" \
   && rm phpunit.xml \
   && bash set_phpunit_config.sh \
   && service postgresql stop
