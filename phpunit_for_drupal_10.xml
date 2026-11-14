@@ -1,55 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  generated for use with
+  generate for use with
 
-  PHPUnit 11
+  PHPUnit 9 on Drupal 10.x
 
   -->
-<!-- For how to customize PHPUnit configuration, see core/tests/README.md. -->
 <!-- PHPUnit expects functional tests to be run with either a privileged user
  or your current system user. See core/tests/README.md and
  https://www.drupal.org/node/2116263 for details.
 -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         bootstrap="tripal/tests/tripal-bootstrap.php"
+         bootstrap="../../../core/tests/bootstrap.php"
          colors="true"
          beStrictAboutTestsThatDoNotTestAnything="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutChangesToGlobalState="true"
-         failOnRisky="true"
-         failOnWarning="true"
-         failOnDeprecation="true"
-         failOnPhpunitWarning="true"
-         displayDetailsOnTestsThatTriggerErrors="true"
-         displayDetailsOnTestsThatTriggerWarnings="true"
-         displayDetailsOnTestsThatTriggerDeprecations="true"
-         displayDetailsOnPhpunitDeprecations="true"
-         displayDetailsOnSkippedTests="true"
+         printerClass="\Drupal\Tests\Listeners\HtmlOutputPrinter"
          cacheResult="false"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
-         cacheDirectory=".phpunit.cache">
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd">
   <php>
     <!-- Set error reporting to E_ALL. -->
     <ini name="error_reporting" value="32767"/>
     <!-- Do not limit the amount of memory tests take to run. -->
     <ini name="memory_limit" value="-1"/>
+    <!-- We do not do deprecation testing on the lowest Drupal versions -->
+    <env name="SYMFONY_DEPRECATIONS_HELPER" value="disabled"/>
     <!-- Handling of functional tests. See core/phpunit.xml.dist -->
     <env name="MINK_DRIVER_CLASS" value=""/>
     <env name="MINK_DRIVER_ARGS" value=""/>
     <env name="MINK_DRIVER_ARGS_WEBDRIVER" value=""/>
   </php>
-  <extensions>
-    <!-- Debug dump() printer. -->
-    <bootstrap class="Drupal\TestTools\Extension\Dump\DebugDump">
-      <parameter name="colors" value="true"/>
-      <parameter name="printCaller" value="true"/>
-    </bootstrap>
-  </extensions>
   <testsuites>
-    <testsuite name="unit">
-      <directory>tripal/tests/src/Unit</directory>
-      <directory>tripal_biodb/tests/src/Unit</directory>
-      <directory>tripal_chado/tests/src/Unit</directory>
+    <testsuite name="tripal">
+      <directory>tripal/tests</directory>
+    </testsuite>
+    <testsuite name="tripal_biodb">
+      <directory>tripal_biodb/tests</directory>
+    </testsuite>
+    <testsuite name="tripal_chado">
+      <directory>tripal_chado/tests</directory>
+    </testsuite>
+    <testsuite name="tripal_layout">
+      <directory>tripal_layout/tests</directory>
+    </testsuite>
+    <testsuite name="tripal_search_views">
+      <directory>tripal_search_views/tests</directory>
     </testsuite>
     <testsuite name="functional">
       <directory>tripal/tests/src/Functional</directory>
@@ -63,8 +58,11 @@
       <directory>tripal_search_views/tests/src/Kernel</directory>
     </testsuite>
   </testsuites>
-  <!-- Settings for coverage reports. -->
-  <source ignoreSuppressionOfDeprecations="true">
+  <listeners>
+    <listener class="\Drupal\Tests\Listeners\DrupalListener">
+    </listener>
+  </listeners>
+  <coverage>
     <include>
       <directory suffix=".php">tripal/src</directory>
       <file>tripal/tripal.module</file>
@@ -95,5 +93,5 @@
       <directory suffix=".php">tripal/src/TripalDBX/Exceptions</directory>
       <directory suffix=".php">tripal_biodb/src/Exception</directory>
     </exclude>
-  </source>
+  </coverage>
 </phpunit>

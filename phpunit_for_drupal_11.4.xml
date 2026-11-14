@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  generate for use with
+  generated for use with
 
-  PHPUnit 10
+  PHPUnit 11 on Drupal 11.4
 
   -->
 <!-- For how to customize PHPUnit configuration, see core/tests/README.md. -->
@@ -26,22 +26,24 @@
          displayDetailsOnPhpunitDeprecations="true"
          displayDetailsOnSkippedTests="true"
          cacheResult="false"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
          cacheDirectory=".phpunit.cache">
   <php>
     <!-- Set error reporting to E_ALL. -->
     <ini name="error_reporting" value="32767"/>
     <!-- Do not limit the amount of memory tests take to run. -->
     <ini name="memory_limit" value="-1"/>
-    <!-- Defines regular expressions for deprecations in external modules
-      that we want to ignore. Includes those defined by Drupal. -->
-    <env name="SYMFONY_DEPRECATIONS_HELPER" value="ignoreFile=../../../modules/contrib/tripal/.deprecation-ignore.txt"/>
     <!-- Handling of functional tests. See core/phpunit.xml.dist -->
     <env name="MINK_DRIVER_CLASS" value=""/>
     <env name="MINK_DRIVER_ARGS" value=""/>
     <env name="MINK_DRIVER_ARGS_WEBDRIVER" value=""/>
   </php>
   <extensions>
+    <!-- Debug dump() printer. -->
+    <bootstrap class="Drupal\TestTools\Extension\Dump\DebugDump">
+      <parameter name="colors" value="true"/>
+      <parameter name="printCaller" value="true"/>
+    </bootstrap>
   </extensions>
   <testsuites>
     <testsuite name="unit">
