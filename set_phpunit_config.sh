@@ -22,16 +22,19 @@
 ## Set to the highest config version.
 configfile='phpunit_for_drupal_phpunit.12.xml'
 
-# Drupal version can either be of the form "11.2.3" or "11.2-dev".
-# test-tripal-action will pass it on the command line, otherwise
+# Drupal version can be of the form "11.2.3", "11.2.x", or "11.2-dev".
+# test-tripal-action will pass the version on the command line, otherwise
 # look it up using drush.
 drupal_version_string="$1"
-echo "CP1 drupal_version_string=\"$drupal_version_string\""
-if [[ -z "$drupal_version_string" ]] ; then
+if [[ -n "$drupal_version_string" ]] ; then
+  drupal_version_string=$(echo $drupal_version_string | sed -e 's/\-.*$//')
+else
   drupal_version_string=$(drush status | grep 'Drupal version' | sed -e 's/^.*: //' -e 's/[ -].*$//')
 fi
-echo "CP2 drupal_version_string=\"$drupal_version_string\""
+
+# Divide the version up into its parts based on the period delimiters.
 IFS='.' read -ra drupal_version_parts <<< "$drupal_version_string"
+
 # Check for phpunit_for_drupal_MAJOR.MINOR.xml (e.g. phpunit_for_drupal_11.4.xml)
 versioned_file="phpunit_for_drupal_${drupal_version_parts[0]}.${drupal_version_parts[1]}.xml"
 if [ -f "$versioned_file" ]; then
@@ -50,10 +53,16 @@ else
     echo "Final Option: RESORTING TO FALLBACK config file."
   fi
 fi
+
+# Make the symlink to the selected version.
 rm -f phpunit.xml
 ln -s $configfile phpunit.xml
-echo ""
-echo "Using phpunit config file: $configfile"
+
+# Set variable for test-tripal-action.
 if [[ -n "$GITHUB_OUTPUT" ]] ; then
   echo "configfile=$configfile" >> $GITHUB_OUTPUT
 fi
+
+# Final status message.
+echo ""
+echo "Using phpunit config file: $configfile"
