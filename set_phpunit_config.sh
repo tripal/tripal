@@ -37,7 +37,7 @@ if [[ -z "$drupal_version_str" ]] ; then
   drupal_version_str=$(drush status | grep 'Drupal version' | sed -E 's/^.*: //')
 fi
 drupal_major_version=$(echo "$drupal_version_str" | sed -E 's/^([0-9]+).*/\1/')
-drupal_minor_version=$(echo "$drupal_version_str" | sed -E 's/^[0-9]+\.([0-9]+).*/\1/')
+drupal_minor_version=$(echo "$drupal_version_str" | sed -E 's/^[0-9]+\.([0-9x]+).*/\1/')
 
 # Get and parse phpunit version in case we need the legacy behavior.
 phpunit_version_str=$(phpunit --version)
