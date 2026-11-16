@@ -33,6 +33,9 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
     $this->chado_connection->insert('1:project')
       ->fields(['name' => 'proj002'])
       ->execute();
+    $this->chado_connection->insert('1:project')
+      ->fields(['name' => 'proj003'])
+      ->execute();
   }
 
   /**
@@ -266,6 +269,43 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
     $chado_buddy_records = $instance->getProperty('project', 1, ['projectprop.rank' => 5]);
     $this->assertEquals(0, count($chado_buddy_records), "We did not delete multiple property records");
 
+  }
+
+  /**
+   * Tests getProperty() with the same property attached to multiple records.
+   *
+   * This is to trigger the bug reported in issue #2565
+   */
+  public function testGetPropertyWithMultipleRecords() {
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $instance = $type->createInstance('chado_property_buddy', []);
+
+    try {
+      // Insert the same property for all 3 project records.
+      for ($i = 1; $i <= 3; $i++) {
+        $instance->insertProperty(
+          'project',
+          $i,
+          [
+            'projectprop.type_id' => 1,
+            'projectprop.value' => 'prop001',
+          ],
+          [],
+        );
+
+        // Then get the property back out.
+        $chado_buddy_records = $instance->getProperty('project', $i, ['projectprop.type_id' => 1]);
+        $this->assertCount(1, $chado_buddy_records, "We did not retrieve exactly one property for project ID $i.");
+        $this->assertEquals(
+          $i, 
+          $chado_buddy_records[0]->getValue('projectprop.project_id'), 
+          "The project_id in the projectprop table for project ID $i is not as expected."
+        );
+      }
+    }
+    catch (\Exception $e) {
+      $this->fail("Exception thrown when retrieving the inserted property for project ID $i: " . $e->getMessage());
+    }
   }
 
 }
