@@ -2,10 +2,12 @@
 
 namespace Drupal\tripal\TripalStorage;
 
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
+
 /**
  * Defines the variable character Tripal storage property type.
  */
-class VarCharStoragePropertyType extends StoragePropertyTypeBase {
+class VarCharStoragePropertyType extends StoragePropertyTypeBase implements TripalStoragePropertyTypeInterface {
 
   /**
    * Constructs a new variable character tripal storage property type.

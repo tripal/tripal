@@ -113,4 +113,13 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
     return [];
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  public function isDrupalStoreByFieldNameKey(string $field_name, string $key, object|null $property_type = NULL): bool|null {
+
+    // All Drupal Store properties obviously need to be stored in Drupal.
+    return TRUE;
+  }
+
 }
