@@ -31,7 +31,6 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   description: new TranslatableMarkup('Import vocabularies and terms in OBO format.'),
   file_types: [
     'obo',
-    'gz',
   ],
   upload_description: new TranslatableMarkup('Please provide the details for importing a new OBO file. The file must have a .obo extension.'),
   upload_title: new TranslatableMarkup('New OBO File'),

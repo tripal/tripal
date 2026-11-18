@@ -24,7 +24,6 @@ use Drupal\tripal_chado\Controller\ChadoOrganismFormElementController;
     'nuc',
     'faa',
     'fna',
-    'gz',
   ],
   upload_description: new TranslatableMarkup('Please provide a plain text file following the <a target="_blank" href="https://en.wikipedia.org/wiki/FASTA_format">FASTA format specification</a>.'),
   upload_title: new TranslatableMarkup('FASTA File'),

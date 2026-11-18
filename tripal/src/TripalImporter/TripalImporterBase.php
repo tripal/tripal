@@ -6,7 +6,9 @@ use Drupal\Component\Plugin\PluginBase;
 use Drupal\file\Entity\File;
 use Drupal\user\Entity\User;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+use Drupal\Core\Form\FormState;
 use Drupal\Core\Messenger\Messenger;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tripal\Services\TripalFileRetriever;
 use Drupal\tripal\Services\TripalLogger;
@@ -17,6 +19,8 @@ use Drupal\tripal\TripalImporter\Interfaces\TripalImporterInterface;
  * Defines an interface for tripal impoerter plugins.
  */
 abstract class TripalImporterBase extends PluginBase implements TripalImporterInterface {
+
+  use StringTranslationTrait;
 
   /**
    * Needed to allow AJAX on TripalImporter forms once Dependency injection is used.
@@ -246,6 +250,73 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   }
 
   /**
+   * Returns a list of supported file extensions.
+   *
+   * If the PHP zlib extension is installed, we transparently support
+   * appending ".gz" to supported file extensions.
+   * Drupal does not support compound extensions, so we use just
+   * "gz" for those and validate later if $drupal_compatible is set.
+   *
+   * @param bool $drupal_compatible
+   *   Default FALSE, if TRUE, compound extensions are reduced to the
+   *   last part, e.g. 'gff3.gz' becomes 'gz'.
+   *
+   * @return array
+   *   The list of supported file extensions.
+   */
+  public function getFileTypes(bool $drupal_compatible = FALSE) {
+    $file_types = $this->plugin_definition['file_types'];
+    if (extension_loaded('zlib')) {
+      if ($drupal_compatible) {
+        $file_types[] = 'gz';
+      }
+      else {
+        $updated_types = [];
+        foreach ($file_types as $file_type) {
+          $updated_types[] = $file_type;
+          $updated_types[] = $file_type . '.gz';
+        }
+        $file_types = $updated_types;
+      }
+    }
+    return $file_types;
+  }
+
+  /**
+   * Validates that a file is of an allowed type by its file extension.
+   *
+   * @param string $file_name
+   *   The file name, can be local or remote.
+   * @param string $form_element
+   *   The name of the form field supplying the file name.
+   * @param Drupal\Core\Form\FormState|null $form_state
+   *   The state of the importer form.
+   *
+   * @return bool
+   *   TRUE if valid, FALSE in non-supported file extension.
+   *   Also sets form error if not valid.
+   *   An empty $file_name also returns TRUE.
+   */
+  public function validateFile(string $file_name, string $form_element = '', ?FormState $form_state = NULL): bool {
+    $valid = TRUE;
+    if ($file_name) {
+      $valid = FALSE;
+      $file_types = $this->getFileTypes();
+      foreach ($file_types as $file_type) {
+        if (preg_match('/' . $file_type . '$/i', $file_name)) {
+          $valid = TRUE;
+          break;
+        }
+      }
+    }
+    if (!$valid && $form_state) {
+      $form_state->setErrorByName($form_element, $this->t('The file "@file_name" is not a valid type for this importer.',
+        ['@file_name' => $file_name]));
+    }
+    return $valid;
+  }
+
+  /**
    * Provide more informative description than is ideal in the annotation alone.
    *
    * NOTE: Supports full HTML.
@@ -256,11 +327,11 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    */
   public function describeUploadFileFormat() {
     $default_description = $this->plugin_definition['upload_description'];
-    $file_types = $this->plugin_definition['file_types'];
+    $file_types = $this->getFileTypes();
     return $default_description . ' The following file extensions are supported: ' . implode(', ', $file_types) . '.';
   }
 
-   /**
+  /**
    * Associate this importer with the Tripal job that is running it.
    *
    * Associating an import with a job will allow the importer to log messages
