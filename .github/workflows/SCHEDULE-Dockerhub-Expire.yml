@@ -27,7 +27,7 @@ jobs:
       - uses: 'actions/checkout@v6'
 
       - name: 'Docker Hub Cleanup'
-        uses: 'tripal/dockerhub_expire@v1.0.0'
+        uses: 'tripal/dockerhub_expire@v1.1.0'
         with:
           username: '${{ secrets.DOCKERHUB_USERNAME }}'
           password: '${{ secrets.DOCKERHUB_PERSONAL_ACCESS_TOKEN_RWD }}'
