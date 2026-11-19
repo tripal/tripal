@@ -599,7 +599,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
           // Store in the list of files to clean up when finished.
           $this->temporary_files[] = $temp_file_path;
 
-          // Download the remote file contents to a local temporary file
+          // Download the remote file contents to a local temporary file.
           $status = $this->fileretriever->downloadFile($file_remote, $temp_file_path);
           if (!$status) {
             $this->is_prepared = FALSE;
@@ -630,7 +630,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
     // If we get here and no exception has been thrown then either:
     // 1) files were added but none needed to be prepared.
-    // 2) files were not added (check for files being required happens elsewhere).
+    // 2) files were not added (check for files being required happens
+    //    elsewhere).
     $this->is_prepared = TRUE;
 
   }
@@ -651,6 +652,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    *   If the file was compressed, a path to a temporary uncompressed
    *   copy of that file. It the file was not compressed, the input
    *   file that will be returned.
+   *
    * @throws \Exception
    *   Exception if temporary output file cannot be created.
    */
@@ -677,7 +679,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
         throw new \Exception("Cannot uncompress file '$compressed_file_path': new temporary file, '$uncompressed_file_path', cannot be created.");
       }
 
-      // Keep repeating until the end of the input file
+      // Keep repeating until the end of the input file.
       while (!gzeof($gzfile)) {
         // Read buffer-size bytes.
         // Both fwrite and gzread are binary-safe.
