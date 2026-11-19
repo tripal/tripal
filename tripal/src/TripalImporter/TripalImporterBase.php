@@ -273,7 +273,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    */
   public function getFileTypes(bool $drupal_compatible = FALSE) {
     $file_types = $this->plugin_definition['file_types'];
-    if (extension_loaded('zlib')) {
+    $file_seekable = $this->plugin_definition['file_seekable'] ?? FALSE;
+    if (extension_loaded('zlib') && !$file_seekable) {
       if ($drupal_compatible) {
         $file_types[] = 'gz';
       }
