@@ -144,6 +144,13 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   protected $plugin_definition;
 
   /**
+   * Stores temporary files so we can clean them up after a run.
+   *
+   * @var array
+   */
+  protected array $temporary_files = [];
+
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * @param Symfony\Component\DependencyInjection\ContainerInterface $container
@@ -565,9 +572,10 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    * it has been uncompressed.
    */
   public function prepareFiles() {
-
     try {
       for ($i = 0; $i < count($this->arguments['files']); $i++) {
+
+        // Retrieve a remote file.
         if (!empty($this->arguments['files'][$i]['file_remote'])) {
           $file_remote = $this->arguments['files'][$i]['file_remote'];
           $this->logger->notice('Download file: %file_remote...', ['%file_remote' => $file_remote]);
@@ -580,20 +588,40 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
           }
           // Create a temporary file.
           $fs_service = \Drupal::service('file_system');
-          $temp = $fs_service->tempnam("temporary://", 'import_') . $ext;
-          $temp = $fs_service->realpath($temp);
-          $this->logger->notice('Saving as: %file', ['%file' => $temp]);
+          $temp_uri = $fs_service->tempnam('temporary://', 'import_');
+          if ($ext) {
+            $fs_service->move($temp_uri, $temp_uri . $ext);
+            $temp_uri .= $ext;
+          }
+          $temp_file_path = $fs_service->realpath($temp_uri);
+          $this->logger->notice('Saving as: %file', ['%file' => $temp_file_path]);
+
+          // Store in the list of files to clean up when finished.
+          $this->temporary_files[] = $temp_file_path;
 
           // Download the remote file contents to a local temporary file
-          $status = $this->fileretriever->downloadFile($file_remote, $temp);
+          $status = $this->fileretriever->downloadFile($file_remote, $temp_file_path);
           if (!$status) {
             $this->is_prepared = FALSE;
             return;
           }
 
           // Set the path to the local temporary file for the importer to use.
-          $this->arguments['files'][$i]['file_path'] = $temp;
+          $this->arguments['files'][$i]['file_path'] = $temp_file_path;
         }
+
+        // Uncompress a downloaded or uploaded file if the importer requests it.
+        if (!empty($this->arguments['files'][$i]['file_path'])) {
+          $file_path = $this->arguments['files'][$i]['file_path'];
+          $this->arguments['files'][$i]['file_path'] = $this->uncompressFile($file_path);
+        }
+
+        // Uncompress a local file if the importer requests it.
+        if (!empty($this->arguments['files'][$i]['file_local'])) {
+          $file_local = $this->arguments['files'][$i]['file_local'];
+          $this->arguments['files'][$i]['file_local'] = $this->uncompressFile($file_local);
+        }
+
       }
     }
     catch (\Exception $e) {
@@ -608,6 +636,62 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   }
 
   /**
+   * Creates a temporary uncompressed version of a compressed file.
+   *
+   * If the supplied file is not compressed, that file path is
+   * returned unmodified. The flag that indicates if the importer only
+   * supports uncompressed files is stored as the importer's 'file_seekable'
+   * definition value. This will be set when the importer uses fseek(),
+   * because fseek() cannot be used on compressed files.
+   *
+   * @param string $compressed_file_path
+   *   A file that may or may not be compressed.
+   *
+   * @return string
+   *   If the file was compressed, a path to a temporary uncompressed
+   *   copy of that file. It the file was not compressed, the input
+   *   file that will be returned.
+   * @throws \Exception
+   *   Exception if temporary output file cannot be created.
+   */
+  protected function uncompressFile(string $compressed_file_path): string {
+    $uncompressed_file_path = $compressed_file_path;
+
+    // This specifies if compressed files need to be uncompressed.
+    $need_to_uncompress = $this->plugin_definition['file_seekable'] ?? FALSE;
+
+    // Determine if file is compressed, and if so, uncompress.
+    if ($need_to_uncompress && preg_match('/^(.*?)\.gz$/', $compressed_file_path)) {
+      $fs_service = \Drupal::service('file_system');
+      $temp = $fs_service->tempnam('temporary://', 'import_');
+      $uncompressed_file_path = $fs_service->realpath($temp);
+
+      // Store in the list of files to clean up when finished.
+      $this->temporary_files[] = $uncompressed_file_path;
+
+      $this->logger->notice('Uncompressing: %file', ['%file' => $compressed_file_path]);
+      $buffer_size = 4096;
+      $gzfile = gzopen($compressed_file_path, 'rb');
+      $out_file = fopen($uncompressed_file_path, 'wb');
+      if (!$out_file) {
+        throw new \Exception("Cannot uncompress file '$compressed_file_path': new temporary file, '$uncompressed_file_path', cannot be created.");
+      }
+
+      // Keep repeating until the end of the input file
+      while (!gzeof($gzfile)) {
+        // Read buffer-size bytes.
+        // Both fwrite and gzread are binary-safe.
+        fwrite($out_file, gzread($gzfile, $buffer_size));
+      }
+
+      // Files are done, close files.
+      fclose($out_file);
+      gzclose($gzfile);
+    }
+    return $uncompressed_file_path;
+  }
+
+  /**
    * Cleans up any temporary files that were created by the prepareFile().
    *
    * This function should be called after a run() to remove any temporary
@@ -615,18 +699,15 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    */
   public function cleanFile() {
     try {
-      // If a remote file was downloaded then remove it.
-      for ($i = 0; $i < count($this->arguments['files']); $i++) {
-        if (!empty($this->arguments['files'][$i]['file_remote']) and
-          file_exists($this->arguments['files'][$i]['file_path'])) {
-          $this->logger->notice('Removing downloaded file...');
-          unlink($this->arguments['files'][$i]['file_path']);
-          $this->is_prepared = FALSE;
+      foreach ($this->temporary_files as $temporary_file) {
+        if (file_exists($temporary_file)) {
+          $this->logger->notice('Removing temporary file "' . $temporary_file . '"');
+          unlink($temporary_file);
         }
       }
     }
     catch (\Exception $e) {
-      throw new \Exception('Cannot remove importer temporary file: ' . $e->getMessage());
+      throw new \Exception('Cannot remove importer temporary file "' . $temporary_file . '": ' . $e->getMessage());
     }
   }
 
@@ -722,7 +803,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    *   No return value.
    */
   public function postRun() {
-
+    $this->cleanFile();
   }
 
   /**
@@ -799,6 +880,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    * If the file name ends with a ".gz" extension, then include the
    * zlib stream wrapper. All later file operation function calls
    * can then seamlessly work with this compressed file.
+   *
+   * Note that if reading a compressed file, then fseek() cannot be used.
    *
    * @param string $filename
    *   The system path of the file.
