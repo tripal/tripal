@@ -29,6 +29,7 @@ use Drupal\tripal_chado\Plugin\ChadoBuddy\ChadoOrganismBuddy;
     'gff3',
     'txt',
   ],
+  file_seekable: true,
   upload_description: new TranslatableMarkup('Please provide a plain text, tab-delimited file following the <a target="_blank" href="https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md">GFF3 Specification</a>. It is expected that all landmark features are associated with the same organism and that the types (column 3) are sequence ontology terms.'),
   upload_title: new TranslatableMarkup('GFF3 File'),
   use_analysis: true,
