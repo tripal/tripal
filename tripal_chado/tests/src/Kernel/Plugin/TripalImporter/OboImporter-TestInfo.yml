@@ -50,7 +50,7 @@ scenarios:
     description: 'Tests importing of the EDAM ontology. To reduce time required, a small subset of the full ontology is used.'
     tripal_cv_obo:
       name: 'EDAM'
-      path: '{tripal_chado}/tests/fixtures/obo_loader/test_EDAM.obo'
+      path: '{tripal_chado}/tests/fixtures/obo_loader/test_EDAM.obo.gz'
     expect_db2cv_count: 3
     expect_cv_root_count: 0
     expect:
