@@ -123,7 +123,7 @@
       'description':
         '#type': 'table'
       'cancel':
-        '#value': 'Cancel'
+        '#name': 'cancel'
     'form_messages':
       - 'foreign key references to this database, it cannot be deleted'
     'submit_expectations':
@@ -151,9 +151,9 @@
       'description':
         '#type': 'table'
       'submit':
-        '#value': 'Delete'
+        '#name': 'delete'
     'triggering_element':
-      '#value': 'Delete'
+      '#name': 'delete'
     'submit_expectations':
       'db_id': 5
     'submit_output':

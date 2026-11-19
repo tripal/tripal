@@ -45,12 +45,14 @@ class TripalChadoViewsQuery extends Sql {
     // intended strictly for chado table views, and drupal does not
     // play well with our 1: prefixing notation.
     $chado_connection = $this->getConnection();
-    $chado_connection->useTripalDbxSchemaFor('Drupal\Core\Database\Query\Query');
+    
+    $tripaldbx_namespace = 'Drupal\Core\Database\Query\Query';
+    $chado_connection->useTripalDbxSchemaFor($tripaldbx_namespace);
 
     parent::execute($view);
 
     // Undo the override.
-    $chado_connection->useDrupalSchemaFor('Drupal\Core\Database\Query\Query');
+    $chado_connection->useDrupalSchemaFor($tripaldbx_namespace);
   }
 
 }
