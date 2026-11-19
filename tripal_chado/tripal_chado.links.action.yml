@@ -12,7 +12,7 @@ tripal_chado.chado_db_link:
   options:
     attributes:
       class:
-        - view-action-link-no-plus
+        - tripal-chado-view-action-link-no-plus
 tripal_chado.chado_dbxref_form:
   route_name: tripal_chado.chado_dbxref_form
   title: 'Add a new database cross reference'
@@ -31,7 +31,7 @@ tripal_chado.chado_cvterm_link:
   options:
     attributes:
       class:
-        - view-action-link-no-plus
+        - tripal-chado-view-action-link-no-plus
 tripal_chado.chado_cvterm_form:
   route_name: tripal_chado.chado_cvterm_form
   title: 'Add a new vocabulary term'
