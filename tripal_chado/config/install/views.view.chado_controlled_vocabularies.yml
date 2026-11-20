@@ -720,7 +720,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/cv\">Add a new vocabulary</a>\r\n<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/terms/chado_cvterm\">Controlled Vocabulary Terms</a>\r\n<p>The following table lists the controlled vocabularies managed by Tripal in various chado schemas.</p>"
+          content: '<p>The following table lists the controlled vocabularies managed by Tripal in various chado schemas.</p>'
           tokenize: false
       footer: {  }
       display_extenders: {  }
