@@ -1,0 +1,130 @@
+system-under-test:
+  chado_version: '1.3.3.013'
+  termIdSpace:
+  - 'NCIT'
+  bundle:
+    label: 'Project'
+    termIdSpace: 'NCIT'
+    termAccession: 'C47885'
+    id: 'test_project'
+    settings:
+      chado_base_table: 'project'
+  fields:
+  - name: 'project_name'
+    type: 'chado_string_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+    widget: 'chado_string_type_widget'
+    formatter: 'chado_string_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'name'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'project'
+          base_column: 'name'
+      max_length: 255
+  - name: 'project_description'
+    type: 'chado_text_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
+    widget: 'chado_text_type_widget'
+    formatter: 'chado_text_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'description'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'project'
+          base_column: 'description'
+  - name: 'project_file'
+    type: 'chado_file_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoFileTypeTypeDefault'
+    widget: 'chado_file_widget_default'
+    formatter: 'chado_file_formatter_default'
+    termIdSpace: 'SIO'
+    termAccession: '000396'
+    cardinality: -1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'project'
+          linker_table: 'project_file'
+          linker_fkey_column: 'file_id'
+scenarios:
+  - label: 'Add files when edited'
+    description: 'Create a project entity'
+    create:
+      user_input:
+        project_name:
+        - record_id: 0
+          value: 'The Tripal Project'
+        project_description:
+        - record_id: 0
+          value: 'This project will have one file attached'
+        project_file:
+        - record_id: 0
+          linker_id: 0
+          file_id: 1
+          linker_rank: 4
+      expected:
+        project_name:
+        - record_id: 1
+          value: 'The Tripal Project'
+        project_description:
+        - record_id: 1
+          value: 'This project will have one file attached'
+        project_file:
+        - record_id: 1
+          linker_id: 1
+          file_id: 1
+          linker_type_id: ''
+          linker_rank: 4
+    edit:
+      user_input:
+        project_name:
+        - record_id: 1
+          value: 'The Tripal 4 Project'
+        project_description:
+          record_id: 1
+          value: 'This project will have three files attached'
+        project_file:
+        - record_id: 1
+          linker_id: 1
+          file_id: 1
+          linker_type_id: null
+          linker_rank: 4
+        - record_id: 1
+          linker_id: 0
+          file_id: 2
+          linker_type_id: 5
+          linker_rank: 6
+        - record_id: 1
+          linker_id: 0
+          file_id: 3
+          linker_type_id: 7
+          linker_rank: 8
+      expected:
+        project_name:
+        - record_id: 1
+          value: 'The Tripal 4 Project'
+        project_description:
+        - record_id: 1
+          value: 'This project will have three files attached'
+        project_file:
+        - record_id: 1
+          # linker records get deleted and remade with a new ID, so 2 instead of 1 here
+          linker_id: 2
+          file_id: 1
+          linker_type_id: ''
+          linker_rank: 4
+        - record_id: 1
+          linker_id: 3
+          file_id: 2
+          linker_type_id: 5
+          linker_rank: 6
+        - record_id: 1
+          linker_id: 4
+          file_id: 3
+          linker_type_id: 7
+          linker_rank: 8
