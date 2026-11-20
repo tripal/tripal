@@ -1,10 +1,11 @@
 #tripal-chado-sequence-format {
   font-family: Consolas, monaco, monospace;
   font-size: 12px;
-  height: 195px; /* height set to bisect characters in last row as visible scroll feedback */
+  max-height: 195px; /* height set to bisect characters in last row as visible scroll feedback */
   display: inline-block;
   max-width: 100%;
-  overflow: scroll;
+  overflow: auto;
+  scrollbar-gutter: stable;
   line-height: normal !important;
   border: 1px solid #DDDDDD;
   padding: 10px;
