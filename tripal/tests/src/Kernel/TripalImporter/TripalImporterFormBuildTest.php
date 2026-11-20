@@ -263,6 +263,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     $expected['file_local'] = TRUE;
     $expected['file_remote'] = TRUE;
     $expected['file_required'] = TRUE;
+    $expected['file_seekable'] = TRUE;
     $manager = $this->setMockManager([$plugin_id => $expected]);
     $container->set('tripal.importer', $manager);
 

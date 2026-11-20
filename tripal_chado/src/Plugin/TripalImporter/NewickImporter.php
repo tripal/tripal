@@ -18,6 +18,7 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
     'txt',
     'newick',
   ],
+  file_seekable: true,
   upload_description: new TranslatableMarkup('Please provide the Newick formatted tree file (one tree per file only).'),
   upload_title: new TranslatableMarkup('Newick Tree File'),
   use_analysis: true,

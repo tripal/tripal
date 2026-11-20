@@ -60,7 +60,7 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
     'id' => 'fakeImporterName',
     'label' => 'Gemstone Loader',
     'description' => 'Imports details on the incredible diversity of gemstones created by our earth into Chado.',
-    'file_types' => ["gem", "txt"],
+    'file_types' => ["gem", "txt", "com"],
     'upload_description' => "Please provide a plain text, tab-delimited file of gemstone descriptions making sure to include the details which make them most unique and beautiful.",
     'upload_title' => 'Gemstone Descriptions',
     'use_analysis' => FALSE,
@@ -201,9 +201,9 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
     // --- CASE ERROR
     // --- Supply a file which does not exist locally
     $bad_remote_uri = [
-      '/var/di/dump/doo',
-      'relative/but/not/here',
-      'singleWord.no',
+      '/var/di/dump/fake.gem',
+      'relative/but/not/here.txt',
+      'singleWord.no.com',
     ];
     foreach ($bad_remote_uri as $test_file_path) {
       // Now setup the form_state.
@@ -290,13 +290,15 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
     \Drupal::messenger()->deleteAll();
 
     // --- CASE ERROR
-    // --- Supply a text string that is clearly not a URL for file_remote and ensure it fails.
+    // --- Supply a text string that is clearly not a URL for file_remote
+    // and ensure it fails. Because extension is checked first, that must
+    // specify a valid type.
     $bad_remote_uri = [
-      'lalalalalalala',
-      'http://.com',
-      'http://...',
-      'http://',
-      'http://£$"%$&*.com',
+      'lalalalalalala.txt',
+      'http://.com.gem',
+      'http://....txt',
+      'http://.gem',
+      'http://£$"%$&*.com.txt',
     ];
     foreach ($bad_remote_uri as $test_file_path) {
       // Now setup the form_state.
@@ -337,7 +339,7 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
     // --- CASE ERROR
     // --- Supply a URI that is valid but does not resolve to a web page.
     $bad_remote_uri = [
-      'http://notreallyasite.com/',
+      'http://notreallyasite.com/x.txt',
       'https://notreallyatripalsite.github.com',
     ];
     foreach ($bad_remote_uri as $test_file_path) {

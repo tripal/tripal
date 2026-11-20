@@ -121,7 +121,7 @@ class NewickImporterTest extends ChadoTestBrowserBase {
     $run_args = [
       'files' => [
         0 => [
-          'file_path' => __DIR__ . '/../../../fixtures/newick_loader/newick_T92076.tree',
+          'file_path' => __DIR__ . '/../../../fixtures/newick_loader/newick_T92076.tree.gz',
         ],
       ],
       'analysis_id' => $analysis_id,
@@ -136,7 +136,7 @@ class NewickImporterTest extends ChadoTestBrowserBase {
     ];
 
     $file_details = [
-      'file_local' => __DIR__ . '/../../../fixtures/newick_loader/newick_T92076.tree',
+      'file_local' => __DIR__ . '/../../../fixtures/newick_loader/newick_T92076.tree.gz',
     ];
 
     $newick_importer->createImportJob($run_args, $file_details);

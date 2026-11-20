@@ -8,6 +8,7 @@ namespace Drupal\tripal\Form;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\file\Entity\File;
 
 /**
  * Provides the base form specification for tripal importers.
@@ -69,7 +70,7 @@ class TripalImporterForm implements FormInterface {
     }
 
     if (array_key_exists('file_upload', $importer_def) and $importer_def['file_upload'] == TRUE) {
-      $existing_files = tripal_get_user_uploads($user->id(), $importer_def['file_types']);
+      $existing_files = tripal_get_user_uploads($user->id(), $importer->getFileTypes(TRUE));
       if (count($existing_files) > 0) {
         $fids = [0 => '--Select a file--'];
         foreach ($existing_files as $fid => $file) {
@@ -93,7 +94,7 @@ class TripalImporterForm implements FormInterface {
             'then the status will quickly update to "Complete".',
         '#usage_type' => 'tripal_importer',
         '#usage_id' => 0,
-        '#allowed_types' => $importer_def['file_types'],
+        '#allowed_types' => $importer->getFileTypes(TRUE),
         '#cardinality' => $importer_def['cardinality'],
       ];
     }
@@ -297,61 +298,73 @@ class TripalImporterForm implements FormInterface {
     $file_existing = NULL;
 
     // Determine which file source was specified.
+    $file_valid = TRUE;
     if (array_key_exists('file_local', $importer_def) and $importer_def['file_local'] == TRUE) {
       $file_local = trim($form_values['file_local']);
+      $file_valid = $importer->validateFile($file_local, 'file_local', $form_state);
     }
     if (array_key_exists('file_upload', $importer_def) and $importer_def['file_upload'] == TRUE) {
       $file_upload = trim($form_values['file_upload']);
-      if (array_key_exists('file_upload_existing', $form_values) and $form_values['file_upload_existing']) {
-        $file_existing = $form_values['file_upload_existing'];
+      if ($file_upload) {
+        $file_upload_name = File::load($file_upload)->getFilename();
+        $file_valid = $importer->validateFile($file_upload_name, 'file_upload', $form_state);
+      }
+      $file_existing = $form_values['file_upload_existing'] ?? '';
+      if ($file_existing) {
+        $file_existing_name = File::load($file_existing)->getFilename();
+        $file_valid = $importer->validateFile($file_existing_name, 'file_upload_existing', $form_state);
       }
     }
     if (array_key_exists('file_remote', $importer_def) and $importer_def['file_remote'] == TRUE) {
       $file_remote = trim($form_values['file_remote']);
+      $file_valid = $importer->validateFile($file_remote, 'file_remote', $form_state);
     }
 
-    // How many methods were specified for the source of the file?
-    $n_methods = ($file_local?1:0) + ($file_remote?1:0) + (($file_upload or $file_existing)?1:0);
-    // If a file is required, the user must provide at least one file source method.
-    if (array_key_exists('file_required', $importer_def) and ($importer_def['file_required'] == TRUE) and ($n_methods == 0)) {
-      $form_state->setErrorByName('file_local', t('You must provide a file location or upload a file.'));
-    }
-    // No more than one method can be specified.
-    elseif ($n_methods > 1) {
-      $field = $file_remote?'file_remote':'file_local';
-      $form_state->setErrorByName($field, t('You have specified more than one source option for'
-                                          . ' the file, only one may be used at a time.'));
-    }
-    // A single file source has been provided. If local or remote, check that it is valid.
-    else {
-      // If the file is local make sure it exists on the local filesystem.
-      if ($file_local) {
-        // check to see if the file is located local to Drupal
-        $file_local = trim($file_local);
-        $dfile = \Drupal::root() . '/' . $file_local;
-        if (!file_exists($dfile)) {
-          // if not local to Drupal, the file must be someplace else, just use
-          // the full path provided
-          $dfile = $file_local;
-        }
-        if (!file_exists($dfile)) {
-          $form_state->setErrorByName('file_local', t('Cannot find the file on the system.'
-            . ' Check that the file exists or that the web server has permission to read the file.'));
-        }
+    // Perform further file validation only if file type passed check above.
+    if ($file_valid) {
+      // How many methods were specified for the source of the file?
+      $n_methods = ($file_local?1:0) + ($file_remote?1:0) + (($file_upload or $file_existing)?1:0);
+      // If a file is required, the user must provide at least one file source method.
+      if (array_key_exists('file_required', $importer_def) and ($importer_def['file_required'] == TRUE) and ($n_methods == 0)) {
+        $form_state->setErrorByName('file_local', t('You must provide a file location or upload a file.'));
       }
-      elseif ($file_remote) {
-        // Validate that the remote URI is of the correct format.
-        if (filter_var($file_remote, FILTER_VALIDATE_URL) === false) {
-          $form_state->setErrorByName('file_remote', t('The Remote Path provided is not a valid URI.'));
+      // No more than one method can be specified.
+      elseif ($n_methods > 1) {
+        $field = $file_remote?'file_remote':'file_local';
+        $form_state->setErrorByName($field, t('You have specified more than one source option for'
+                                            . ' the file, only one may be used at a time.'));
+      }
+      // A single file source has been provided. If local or remote, check that it is valid.
+      else {
+        // If the file is local make sure it exists on the local filesystem.
+        if ($file_local) {
+          // check to see if the file is located local to Drupal
+          $file_local = trim($file_local);
+          $dfile = \Drupal::root() . '/' . $file_local;
+          if (!file_exists($dfile)) {
+            // if not local to Drupal, the file must be someplace else, just use
+            // the full path provided
+            $dfile = $file_local;
+          }
+          if (!file_exists($dfile)) {
+            $form_state->setErrorByName('file_local', t('Cannot find the file on the system.'
+              . ' Check that the file exists or that the web server has permission to read the file.'));
+          }
         }
+        elseif ($file_remote) {
+          // Validate that the remote URI is of the correct format.
+          if (filter_var($file_remote, FILTER_VALIDATE_URL) === false) {
+            $form_state->setErrorByName('file_remote', t('The Remote Path provided is not a valid URI.'));
+          }
 
-        // Validate a correct format remote URI to make sure it can be
-        // accessed, with successful HTTP response code 200.
-        else {
-          $headers = @get_headers($file_remote);
-          if (($headers === false) or (!is_array($headers)) or (!strpos($headers[0], '200'))) {
-            $form_state->setErrorByName('file_remote', t('The Remote Path provided cannot be accessed.'
-              . ' Check that it is correct.'));
+          // Validate a correct format remote URI to make sure it can be
+          // accessed, with successful HTTP response code 200.
+          else {
+            $headers = @get_headers($file_remote);
+            if (($headers === false) or (!is_array($headers)) or (!strpos($headers[0], '200'))) {
+              $form_state->setErrorByName('file_remote', t('The Remote Path provided cannot be accessed.'
+                . ' Check that it is correct.'));
+            }
           }
         }
       }

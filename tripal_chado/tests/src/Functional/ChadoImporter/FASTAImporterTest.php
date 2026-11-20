@@ -64,7 +64,7 @@ class FASTAImporterTest extends ChadoTestBrowserBase {
     $run_args = [
       'files' => [
         0 => [
-          'file_path' => __DIR__ . '/../../../fixtures/fasta_loader/Citrus_sinensis-orange1.1g015632m.g.fasta',
+          'file_path' => __DIR__ . '/../../../fixtures/fasta_loader/Citrus_sinensis-orange1.1g015632m.g.fasta.gz',
         ],
       ],
       'schema_name' => $schema_name,
@@ -84,7 +84,7 @@ class FASTAImporterTest extends ChadoTestBrowserBase {
     ];
 
     $file_details = [
-      'file_local' => __DIR__ . '/../../../fixtures/fasta_loader/Citrus_sinensis-orange1.1g015632m.g.fasta',
+      'file_local' => __DIR__ . '/../../../fixtures/fasta_loader/Citrus_sinensis-orange1.1g015632m.g.fasta.gz',
     ];
 
     $fasta_importer->createImportJob($run_args, $file_details);
