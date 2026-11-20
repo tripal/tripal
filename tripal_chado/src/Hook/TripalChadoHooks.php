@@ -7,8 +7,6 @@ use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 
-use Drupal\views\Plugin\views\query\QueryPluginBase;
-
 /**
  * Hook implementations for the Tripal Chado module.
  */
@@ -128,6 +126,22 @@ class TripalChadoHooks {
     $definitions['tripal.content_type.*']['mapping']['third_party_settings']['mapping']['tripal']['mapping']
       = $tct_mapping;
 
+  }
+
+  /**
+   * Implements hook_page_attachments().
+   *
+   * Attaches css to style some action buttons to not have "+".
+   */
+  #[Hook('page_attachments')]
+  public function pageAttachments(array &$attachments): void {
+    $route_name = \Drupal::routeMatch()->getRouteName();
+    if (in_array($route_name, [
+      'view.chado_databases.page_1',
+      'view.chado_controlled_vocabularies.page_1',
+    ], TRUE)) {
+      $attachments['#attached']['library'][] = 'tripal_chado/tripal_chado.views';
+    }
   }
 
   /**
@@ -740,7 +754,7 @@ class TripalChadoHooks {
    * Implements hook_field_formatter_info_alter().
    */
   #[Hook('field_formatter_info_alter')]
-  function fieldFormatterInfoAlter(array &$info) {
+  public function fieldFormatterInfoAlter(array &$info) {
     // Allows us the option to use Drupal's formatter for real numbers.
     if (isset($info['number_decimal'])) {
       $info['number_decimal']['field_types'][] = 'chado_real_type_default';
