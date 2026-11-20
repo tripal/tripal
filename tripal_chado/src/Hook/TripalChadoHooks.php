@@ -754,7 +754,7 @@ class TripalChadoHooks {
    * Implements hook_field_formatter_info_alter().
    */
   #[Hook('field_formatter_info_alter')]
-  protected function fieldFormatterInfoAlter(array &$info) {
+  public function fieldFormatterInfoAlter(array &$info) {
     // Allows us the option to use Drupal's formatter for real numbers.
     if (isset($info['number_decimal'])) {
       $info['number_decimal']['field_types'][] = 'chado_real_type_default';
