@@ -272,19 +272,21 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    *   The list of supported file extensions.
    */
   public function getFileTypes(bool $drupal_compatible = FALSE) {
-    $file_types = $this->plugin_definition['file_types'];
-    $file_seekable = $this->plugin_definition['file_seekable'] ?? FALSE;
-    if (extension_loaded('zlib') && !$file_seekable) {
-      if ($drupal_compatible) {
-        $file_types[] = 'gz';
-      }
-      else {
-        $updated_types = [];
-        foreach ($file_types as $file_type) {
-          $updated_types[] = $file_type;
-          $updated_types[] = $file_type . '.gz';
+    $file_types = $this->plugin_definition['file_types'] ?? [];
+    if ($file_types) {
+      $file_seekable = $this->plugin_definition['file_seekable'] ?? FALSE;
+      if (extension_loaded('zlib') && !$file_seekable) {
+        if ($drupal_compatible) {
+          $file_types[] = 'gz';
         }
-        $file_types = $updated_types;
+        else {
+          $updated_types = [];
+          foreach ($file_types as $file_type) {
+            $updated_types[] = $file_type;
+            $updated_types[] = $file_type . '.gz';
+          }
+          $file_types = $updated_types;
+        }
       }
     }
     return $file_types;
@@ -310,11 +312,17 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     if ($file_name) {
       $valid = FALSE;
       $file_types = $this->getFileTypes();
-      foreach ($file_types as $file_type) {
-        if (preg_match('/' . $file_type . '$/i', $file_name)) {
-          $valid = TRUE;
-          break;
+      if ($file_types) {
+        foreach ($file_types as $file_type) {
+          if (preg_match('/' . $file_type . '$/i', $file_name)) {
+            $valid = TRUE;
+            break;
+          }
         }
+      }
+      else {
+        // Always valid if not limiting file types.
+        $valid = TRUE;
       }
     }
     if (!$valid && $form_state) {
@@ -336,7 +344,10 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   public function describeUploadFileFormat() {
     $default_description = $this->plugin_definition['upload_description'];
     $file_types = $this->getFileTypes();
-    return $default_description . ' The following file extensions are supported: ' . implode(', ', $file_types) . '.';
+    if ($file_types) {
+      $default_description .= ' The following file extensions are supported: ' . implode(', ', $file_types) . '.';
+    }
+    return $default_description;
   }
 
   /**
