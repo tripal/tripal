@@ -719,6 +719,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
           unlink($temporary_file);
         }
       }
+      $this->temporary_files = [];
     }
     catch (\Exception $e) {
       throw new \Exception('Cannot remove importer temporary file "' . $temporary_file . '": ' . $e->getMessage());
