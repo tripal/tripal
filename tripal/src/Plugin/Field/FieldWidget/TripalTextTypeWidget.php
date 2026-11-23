@@ -121,7 +121,7 @@ class TripalTextTypeWidget extends TripalWidgetBase {
       '#required' => TRUE,
     ];
 
-   $element['null_if_empty'] = [
+    $element['null_if_empty'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Store NULL for empty string'),
       '#description' => $this->t('If the form element contains an empty string, store a NULL in the database table instead of the empty string.'),
