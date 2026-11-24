@@ -6,6 +6,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\views\ViewExecutable;
 
 /**
  * Hook implementations for the Tripal Chado module.
@@ -129,19 +130,13 @@ class TripalChadoHooks {
   }
 
   /**
-   * Implements hook_page_attachments().
+   * Implements hook_views_pre_render().
    *
-   * Attaches css to style some action buttons to not have "+".
+   * Attaches css to style views.
    */
-  #[Hook('page_attachments')]
-  public function pageAttachments(array &$attachments): void {
-    $route_name = \Drupal::routeMatch()->getRouteName();
-    if (in_array($route_name, [
-      'view.chado_databases.page_1',
-      'view.chado_controlled_vocabularies.page_1',
-    ], TRUE)) {
-      $attachments['#attached']['library'][] = 'tripal_chado/tripal_chado.views';
-    }
+  #[Hook('views_pre_render')]
+  public function viewsPreRender(ViewExecutable $view): void {
+    $view->element['#attached']['library'][] = 'tripal_chado/tripal_chado.views';
   }
 
   /**
