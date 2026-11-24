@@ -26,16 +26,48 @@ class TripalCitationTypeWidget extends TripalWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
-    // Define your form elements here.
-    // If you have chosen to make a widget which does not allow editing of the
-    // data then you should display it in disabled elements.
-    $element['value'] = $element + [
-      '#type' => 'textfield',
-      '#default_value' => $items[$delta]->value ?? '',
-      '#placeholder' => $this->getSetting('placeholder'),
-      '#maxlength' => $this->getFieldSetting('max_length'),
-      '#attributes' => ['class' => ['js-text-full', 'text-full']],
-    ];
+    $value = $items[$delta]->value ?? '';
+
+    $entity = $items->getEntity();
+    $publications = [];
+
+    foreach ($entity->getFieldDefinitions() as $field_definition) {
+      if ($field_definition->getType() !== 'chado_pub_type_default') {
+        continue;
+      }
+
+      $field_name = $field_definition->getName();
+      if (!$entity->hasField($field_name)) {
+        continue;
+      }
+
+      foreach ($entity->get($field_name) as $publication_item) {
+        $pub_id = $publication_item->getValue()['pub_id'] ?? NULL;
+
+        if ($pub_id == '1') {
+          continue;
+        }
+        if ($pub_id !== NULL && $pub_id !== '' && $pub_id !== 0 && $pub_id !== '0') {
+          $publications[$pub_id] = $publication_item->getValue()['pub_title'] ?? '';
+        }
+      }
+    }
+
+    if (!empty($publications)) {
+      $element['value'] = $element + [
+        '#type' => 'select',
+        '#title' => $this->t('Citation'),
+        '#default_value' => $value,
+        '#options' => $publications,
+        '#description' => $this->t('Select a publication that to create citation for this content page.'),
+      ];
+    }
+    else {
+      $element['value'] = $element + [
+        '#title' => $this->t('Citation'),
+        '#markup' => 'A citation will be generated using the provided data and will be displayed once the content is created.',
+      ];
+    }
 
     return $element;
   }

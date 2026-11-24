@@ -9,7 +9,7 @@ use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal\TripalField\TripalFormatterBase;
 
 /**
- * Plugin implementation of the 'default_tripal_citation_type_formatter' field formatter.
+ * Plugin implementation of the 'default_tripal_citation_type_formatter'.
  */
 #[TripalFieldFormatter(
   id: 'default_tripal_citation_type_formatter',
@@ -27,32 +27,41 @@ class DefaultTripalCitationTypeFormatter extends TripalFormatterBase {
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
 
-    $settings['field_prefix'] = '';
-    $settings['field_suffix'] = '';
-    $settings['hide_condition'] = '';
-    $settings['hide_value'] = '';
+    $settings['citation_template'] = '';
 
     return $settings;
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
+
     $elements = [];
 
-    $field_prefix = $this->getSetting('field_prefix');
-    $field_suffix = $this->getSetting('field_suffix');
-    $hide_condition = $this->getSetting('hide_condition') ?? '';
-    $hide_value = $this->getSetting('hide_value') ?? '';
+    $token_parser = \Drupal::service('tripal.token_parser');
 
     foreach ($items as $delta => $item) {
-      $value = $item->get('value')->getString() ?? '';
-      $hide = ((($hide_condition == 'if_value') and ($value == $hide_value))
-            or (($hide_condition == '') and !strlen($value)));
-      if (!$hide) {
+      $entity = $items->getEntity();
+      $template = $this->getSetting('citation_template') ?? '';
+
+      $selected_pub_id = $item->get('value')->getString();
+      $publication = $this->getAssociatedPublication($selected_pub_id);
+      if ($publication !== NULL) {
+        $citation = $publication;
+      }
+      else {
+        $values = $this->buildTokenValues($entity, $template);
+        $citation = $token_parser->replaceTokens($template, $values);
+        $citation = preg_replace('/\.\s*\./', '.', $citation);
+        $citation = preg_replace('/,\s*,/', ',', $citation);
+        $citation = preg_replace('/\s+/', ' ', $citation);
+        $citation = trim($citation);
+      }
+
+      if ($citation !== '') {
         $elements[$delta] = [
-          "#markup" => $field_prefix . $value . $field_suffix,
+          '#markup' => $citation,
         ];
       }
     }
@@ -61,43 +70,87 @@ class DefaultTripalCitationTypeFormatter extends TripalFormatterBase {
   }
 
   /**
+   * Build token values keyed by entity field machine name.
+   */
+  protected function buildTokenValues($entity, string $template) {
+
+    $values = [];
+
+    preg_match_all('/\[([^\[\]]+)\]/', $template, $matches);
+    $field_names = [];
+    foreach ($matches[1] as $token_string) {
+      foreach (explode('|', $token_string) as $field_name) {
+        $field_names[$field_name] = TRUE;
+      }
+    }
+
+    foreach (array_keys($field_names) as $field_name) {
+      if (!$entity->hasField($field_name)) {
+        continue;
+      }
+
+      $field = $entity->get($field_name);
+      if ($field->isEmpty()) {
+        continue;
+      }
+
+      $first_item = $field->first();
+      $main_property = $first_item->mainDisplayPropertyName();
+
+      $values[$field_name] = $first_item->getValue()[$main_property] ?? '';
+    }
+
+    return $values;
+  }
+
+  /**
+   * Find an associated Chado publication and retrieve its citation.
+   *
+   * @return string|null
+   *   The publication's citation, or NULL if no publication is associated.
+   */
+  protected function getAssociatedPublication(string $selected_pub_id): ?string {
+    $id_space_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+
+    $id_space = $id_space_manager->loadCollection('TPUB');
+    $citation_term = $id_space->getTerm('0000003');
+
+    $chado = \Drupal::service('tripal_chado.database');
+    $citation = $chado->select('1:pubprop', 'pp')
+      ->fields('pp', ['value'])
+      ->condition('pub_id', (int) $selected_pub_id)
+      ->condition('type_id', $citation_term->getInternalId())
+      ->orderBy('rank')
+      ->range(0, 1)
+      ->execute()
+      ->fetchField();
+
+    if ($citation !== FALSE && $citation !== NULL) {
+      return (string) $citation;
+    }
+    return NULL;
+  }
+
+  /**
    * {@inheritdoc}
    */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    $form = parent::settingsForm($form, $form_state);
+  public function settingsForm(
+    array $form,
+    FormStateInterface $form_state,
+  ) {
 
-    $form['field_prefix'] = [
-      '#title' => $this->t('Text to display before the field value'),
-      '#description' => $this->t('Enter text here that will be displayed before the value. This may include HTML for formatting, <em>e.g.</em> for italics use &lt;em&gt;'),
-      '#type' => 'textfield',
-      '#default_value' => $this->getSetting('field_prefix'),
-      '#required' => FALSE,
-    ];
+    $form =
+      parent::settingsForm(
+        $form,
+        $form_state
+      );
 
-    $form['field_suffix'] = [
-      '#title' => $this->t('Text to display after the field value'),
-      '#description' => $this->t('Enter text here that will be displayed after the value. This may include HTML for formatting, <em>e.g.</em> for italics use &lt;/em&gt;'),
-      '#type' => 'textfield',
-      '#default_value' => $this->getSetting('field_suffix'),
-      '#required' => FALSE,
-    ];
-
-    $form['hide_condition'] = [
-      '#title' => $this->t('You may provide a condition when the field is not displayed'),
-      '#type' => 'radios',
-      '#options' => [
-        '' => $this->t('Hide if empty'),
-        'never' => $this->t('Never hide'),
-        'if_value' => $this->t('Hide if empty or equal to a specific value'),
-      ],
-      '#default_value' => $this->getSetting('hide_condition') ?? '',
-    ];
-
-    $form['hide_value'] = [
-      '#title' => $this->t('Specific value to be hidden'),
-      '#description' => $this->t('A value that you do not want displayed, e.g. "N/A" for a string, or "0" for a number'),
-      '#type' => 'textfield',
-      '#default_value' => $this->getSetting('hide_value') ?? '',
+    $form['citation_template'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Generated citation template'),
+      '#description' => $this->t('Used only when no associated publication is available. Enter entity field machine names in square brackets, separated by the punctuation you want in the citation, for example [field1].[field2].[field3].'),
+      '#default_value' => $this->getSetting('citation_template'),
+      '#rows' => 3,
       '#required' => FALSE,
     ];
 
@@ -110,7 +163,15 @@ class DefaultTripalCitationTypeFormatter extends TripalFormatterBase {
   public function settingsSummary() {
 
     $summary = parent::settingsSummary();
-    $summary[] = $this->t('Set display format');
+
+    $summary[] =
+      $this->t(
+        'Generated citation template: @template',
+        [
+          '@template' =>
+            $this->getSetting('citation_template'),
+        ]
+      );
 
     return $summary;
   }
