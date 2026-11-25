@@ -195,7 +195,7 @@ function tripal_get_user_uploads($uid, $allowed_types = [], $module = 'tripal') 
     $file = \Drupal\file\Entity\File::load($fid);
     foreach ($allowed_types as $type) {
       // if (preg_match('/\.' . $type . '$/', $file->filename)) { // old
-      if (preg_match('/\.' . $type . '$/', $file->getFilename())) {  
+      if (preg_match('/\.' . $type . '$/i', $file->getFilename())) {
         $files_list[$fid] = $file;
       }
     }

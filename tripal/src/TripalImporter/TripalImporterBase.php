@@ -6,7 +6,9 @@ use Drupal\Component\Plugin\PluginBase;
 use Drupal\file\Entity\File;
 use Drupal\user\Entity\User;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+use Drupal\Core\Form\FormState;
 use Drupal\Core\Messenger\Messenger;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tripal\Services\TripalFileRetriever;
 use Drupal\tripal\Services\TripalLogger;
@@ -17,6 +19,8 @@ use Drupal\tripal\TripalImporter\Interfaces\TripalImporterInterface;
  * Defines an interface for tripal impoerter plugins.
  */
 abstract class TripalImporterBase extends PluginBase implements TripalImporterInterface {
+
+  use StringTranslationTrait;
 
   /**
    * Needed to allow AJAX on TripalImporter forms once Dependency injection is used.
@@ -140,6 +144,13 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   protected $plugin_definition;
 
   /**
+   * Stores temporary files so we can clean them up after a run.
+   *
+   * @var array
+   */
+  protected array $temporary_files = [];
+
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * @param Symfony\Component\DependencyInjection\ContainerInterface $container
@@ -246,6 +257,82 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   }
 
   /**
+   * Returns a list of supported file extensions.
+   *
+   * If the PHP zlib extension is installed, we transparently support
+   * appending ".gz" to supported file extensions.
+   * Drupal does not support compound extensions, so we use just
+   * "gz" for those and validate later if $drupal_compatible is set.
+   *
+   * @param bool $drupal_compatible
+   *   Default FALSE, if TRUE, compound extensions are reduced to the
+   *   last part, e.g. 'gff3.gz' becomes 'gz'.
+   *
+   * @return array
+   *   The list of supported file extensions.
+   */
+  public function getFileTypes(bool $drupal_compatible = FALSE) {
+    $file_types = $this->plugin_definition['file_types'] ?? [];
+    if ($file_types) {
+      $file_seekable = $this->plugin_definition['file_seekable'] ?? FALSE;
+      if (extension_loaded('zlib') && !$file_seekable) {
+        if ($drupal_compatible) {
+          $file_types[] = 'gz';
+        }
+        else {
+          $updated_types = [];
+          foreach ($file_types as $file_type) {
+            $updated_types[] = $file_type;
+            $updated_types[] = $file_type . '.gz';
+          }
+          $file_types = $updated_types;
+        }
+      }
+    }
+    return $file_types;
+  }
+
+  /**
+   * Validates that a file is of an allowed type by its file extension.
+   *
+   * @param string $file_name
+   *   The file name, can be local or remote.
+   * @param string $form_element
+   *   The name of the form field supplying the file name.
+   * @param Drupal\Core\Form\FormState|null $form_state
+   *   The state of the importer form.
+   *
+   * @return bool
+   *   TRUE if valid, FALSE in non-supported file extension.
+   *   Also sets form error if not valid.
+   *   An empty $file_name also returns TRUE.
+   */
+  public function validateFile(string $file_name, string $form_element = '', ?FormState $form_state = NULL): bool {
+    $valid = TRUE;
+    if ($file_name) {
+      $valid = FALSE;
+      $file_types = $this->getFileTypes();
+      if ($file_types) {
+        foreach ($file_types as $file_type) {
+          if (preg_match('/' . $file_type . '$/i', $file_name)) {
+            $valid = TRUE;
+            break;
+          }
+        }
+      }
+      else {
+        // Always valid if not limiting file types.
+        $valid = TRUE;
+      }
+    }
+    if (!$valid && $form_state) {
+      $form_state->setErrorByName($form_element, $this->t('The file "@file_name" is not a valid type for this importer.',
+        ['@file_name' => $file_name]));
+    }
+    return $valid;
+  }
+
+  /**
    * Provide more informative description than is ideal in the annotation alone.
    *
    * NOTE: Supports full HTML.
@@ -256,11 +343,14 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    */
   public function describeUploadFileFormat() {
     $default_description = $this->plugin_definition['upload_description'];
-    $file_types = $this->plugin_definition['file_types'];
-    return $default_description . ' The following file extensions are supported: ' . implode(', ', $file_types) . '.';
+    $file_types = $this->getFileTypes();
+    if ($file_types) {
+      $default_description .= ' The following file extensions are supported: ' . implode(', ', $file_types) . '.';
+    }
+    return $default_description;
   }
 
-   /**
+  /**
    * Associate this importer with the Tripal job that is running it.
    *
    * Associating an import with a job will allow the importer to log messages
@@ -494,64 +584,56 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    * it has been uncompressed.
    */
   public function prepareFiles() {
-
     try {
       for ($i = 0; $i < count($this->arguments['files']); $i++) {
+
+        // Retrieve a remote file.
         if (!empty($this->arguments['files'][$i]['file_remote'])) {
           $file_remote = $this->arguments['files'][$i]['file_remote'];
           $this->logger->notice('Download file: %file_remote...', ['%file_remote' => $file_remote]);
 
-          // If this file is compressed then keep the .gz extension so we can
-          // uncompress it later.
+          // If this file is compressed then keep the .gz extension so we
+          // know to uncompress it later.
           $ext = '';
           if (preg_match('/^(.*?)\.gz$/', $file_remote)) {
             $ext = '.gz';
           }
           // Create a temporary file.
           $fs_service = \Drupal::service('file_system');
-          $temp = $fs_service->tempnam("temporary://", 'import_') . $ext;
-          $temp = $fs_service->realpath($temp);
-          $this->logger->notice('Saving as: %file', ['%file' => $temp]);
+          $temp_uri = $fs_service->tempnam('temporary://', 'import_');
+          if ($ext) {
+            $fs_service->move($temp_uri, $temp_uri . $ext);
+            $temp_uri .= $ext;
+          }
+          $temp_file_path = $fs_service->realpath($temp_uri);
+          $this->logger->notice('Saving as: %file', ['%file' => $temp_file_path]);
 
-          // Download the remote file contents to a local temporary file
-          $status = $this->fileretriever->downloadFile($file_remote, $temp);
+          // Store in the list of files to clean up when finished.
+          $this->temporary_files[] = $temp_file_path;
+
+          // Download the remote file contents to a local temporary file.
+          $status = $this->fileretriever->downloadFile($file_remote, $temp_file_path);
           if (!$status) {
             $this->is_prepared = FALSE;
             return;
           }
 
           // Set the path to the local temporary file for the importer to use.
-          $this->arguments['files'][$i]['file_path'] = $temp;
+          $this->arguments['files'][$i]['file_path'] = $temp_file_path;
         }
 
-        // Is this file compressed? If so, then uncompress it.
-        $matches = [];
-        if (preg_match('/^(.*?)\.gz$/', $this->arguments['files'][$i]['file_path'], $matches)) {
-          $this->logger->notice('Uncompressing: %file', ['%file' => $this->arguments['files'][$i]['file_path']]);
-          $buffer_size = 4096;
-          $new_file_path = $matches[1];
-          $gzfile = gzopen($this->arguments['files'][$i]['file_path'], 'rb');
-          $out_file = fopen($new_file_path, 'wb');
-          if (!$out_file) {
-            throw new \Exception("Cannot uncompress file: new temporary file, '$new_file_path', cannot be created.");
-          }
-
-          // Keep repeating until the end of the input file
-          while (!gzeof($gzfile)) {
-            // Read buffer-size bytes
-            // Both fwrite and gzread are binary-safe
-            fwrite($out_file, gzread($gzfile, $buffer_size));
-          }
-
-          // Files are done, close files
-          fclose($out_file);
-          gzclose($gzfile);
-
-          // Now remove the .gz file and reset the file_path to the new
-          // uncompressed version.
-          unlink($this->arguments['files'][$i]['file_path']);
-          $this->arguments['files'][$i]['file_path'] = $new_file_path;
+        // Uncompress a downloaded or uploaded file if the importer requests it.
+        if (!empty($this->arguments['files'][$i]['file_path'])) {
+          $file_path = $this->arguments['files'][$i]['file_path'];
+          $this->arguments['files'][$i]['file_path'] = $this->uncompressFile($file_path);
         }
+
+        // Uncompress a local file if the importer requests it.
+        if (!empty($this->arguments['files'][$i]['file_local'])) {
+          $file_local = $this->arguments['files'][$i]['file_local'];
+          $this->arguments['files'][$i]['file_local'] = $this->uncompressFile($file_local);
+        }
+
       }
     }
     catch (\Exception $e) {
@@ -560,9 +642,67 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
     // If we get here and no exception has been thrown then either:
     // 1) files were added but none needed to be prepared.
-    // 2) files were not added (check for files being required happens elsewhere).
+    // 2) files were not added (check for files being required happens
+    //    elsewhere).
     $this->is_prepared = TRUE;
 
+  }
+
+  /**
+   * Creates a temporary uncompressed version of a compressed file.
+   *
+   * If the supplied file is not compressed, that file path is
+   * returned unmodified. The flag that indicates if the importer only
+   * supports uncompressed files is stored as the importer's 'file_seekable'
+   * definition value. This will be set when the importer uses fseek(),
+   * because fseek() cannot be used on compressed files.
+   *
+   * @param string $compressed_file_path
+   *   A file that may or may not be compressed.
+   *
+   * @return string
+   *   If the file was compressed, a path to a temporary uncompressed
+   *   copy of that file. It the file was not compressed, the input
+   *   file that will be returned.
+   *
+   * @throws \Exception
+   *   Exception if temporary output file cannot be created.
+   */
+  protected function uncompressFile(string $compressed_file_path): string {
+    $uncompressed_file_path = $compressed_file_path;
+
+    // This specifies if compressed files need to be uncompressed.
+    $need_to_uncompress = $this->plugin_definition['file_seekable'] ?? FALSE;
+
+    // Determine if file is compressed, and if so, uncompress.
+    if ($need_to_uncompress && preg_match('/^(.*?)\.gz$/', $compressed_file_path)) {
+      $fs_service = \Drupal::service('file_system');
+      $temp = $fs_service->tempnam('temporary://', 'import_');
+      $uncompressed_file_path = $fs_service->realpath($temp);
+
+      // Store in the list of files to clean up when finished.
+      $this->temporary_files[] = $uncompressed_file_path;
+
+      $this->logger->notice('Uncompressing: %file', ['%file' => $compressed_file_path]);
+      $buffer_size = 4096;
+      $gzfile = gzopen($compressed_file_path, 'rb');
+      $out_file = fopen($uncompressed_file_path, 'wb');
+      if (!$out_file) {
+        throw new \Exception("Cannot uncompress file '$compressed_file_path': new temporary file, '$uncompressed_file_path', cannot be created.");
+      }
+
+      // Keep repeating until the end of the input file.
+      while (!gzeof($gzfile)) {
+        // Read buffer-size bytes.
+        // Both fwrite and gzread are binary-safe.
+        fwrite($out_file, gzread($gzfile, $buffer_size));
+      }
+
+      // Files are done, close files.
+      fclose($out_file);
+      gzclose($gzfile);
+    }
+    return $uncompressed_file_path;
   }
 
   /**
@@ -573,18 +713,16 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    */
   public function cleanFile() {
     try {
-      // If a remote file was downloaded then remove it.
-      for ($i = 0; $i < count($this->arguments['files']); $i++) {
-        if (!empty($this->arguments['files'][$i]['file_remote']) and
-          file_exists($this->arguments['files'][$i]['file_path'])) {
-          $this->logger->notice('Removing downloaded file...');
-          unlink($this->arguments['files'][$i]['file_path']);
-          $this->is_prepared = FALSE;
+      foreach ($this->temporary_files as $temporary_file) {
+        if (file_exists($temporary_file)) {
+          $this->logger->notice('Removing temporary file "' . $temporary_file . '"');
+          unlink($temporary_file);
         }
       }
+      $this->temporary_files = [];
     }
     catch (\Exception $e) {
-      throw new \Exception('Cannot remove importer temporary file: ' . $e->getMessage());
+      throw new \Exception('Cannot remove importer temporary file "' . $temporary_file . '": ' . $e->getMessage());
     }
   }
 
@@ -680,7 +818,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    *   No return value.
    */
   public function postRun() {
-
+    $this->cleanFile();
   }
 
   /**
@@ -749,6 +887,40 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       }
     }
     return $valid;
+  }
+
+  /**
+   * Transparently allows reading from gz compressed files.
+   *
+   * If the file name ends with a ".gz" extension, then include the
+   * zlib stream wrapper. All later file operation function calls
+   * can then seamlessly work with this compressed file.
+   *
+   * Note that if reading a compressed file, then fseek() cannot be used.
+   *
+   * @param string $filename
+   *   The system path of the file.
+   * @param string $mode
+   *   The type of access to the stream, e.g. 'r' to read.
+   * @param bool $use_include_path
+   *   Set to true if you want to search for the file in the include_path.
+   * @param resource|null $context
+   *   A context stream resource.
+   *
+   * @return resource|bool
+   *   The opened file handle, or FALSE if file was not opened.
+   */
+  protected function tripalFopen(
+    string $filename,
+    string $mode,
+    bool $use_include_path = FALSE,
+    $context = NULL,
+  ) {
+    if (preg_match('/\.gz$/', $filename) && !preg_match('/compress.zlib:\/\//', $filename)) {
+      $filename = 'compress.zlib://' . $filename;
+    }
+    $fh = fopen($filename, $mode, $use_include_path, $context);
+    return $fh;
   }
 
 }

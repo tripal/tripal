@@ -70,6 +70,9 @@ class TripalImporter extends Plugin {
    *   necessary to require that the user provide a file for uploading if the
    *   loader keeps track of previous files and makes those available for
    *   selection.
+   * @param array|null $file_seekable
+   *   A flag indicating that fseek() needs to be supported. Default FALSE.
+   *   If file is compressed, a temporary uncompressed version is created.
    * @param array|null $publish
    *   An associative array indicating what Tripal Content should be published
    *   after import. It is keyed by the list type and the value indicates what
@@ -128,6 +131,7 @@ class TripalImporter extends Plugin {
     public readonly ?bool $file_local = TRUE,
     public readonly ?bool $file_remote = TRUE,
     public readonly ?bool $file_required = TRUE,
+    public readonly ?bool $file_seekable = FALSE,
     public readonly ?array $publish = [],
     public readonly ?bool $hidden = FALSE,
     public readonly ?array $argument_list = [],

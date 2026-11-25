@@ -2487,7 +2487,7 @@ class OBOImporter extends ChadoImporterBase {
     $this->setInterval(5);
 
     // iterate through the lines in the OBO file and parse the stanzas
-    $fh = fopen($obo_file, 'r');
+    $fh = $this->tripalFopen($obo_file, 'r');
     while ($line = fgets($fh)) {
       $line_num++;
       $size = mb_strlen($line);

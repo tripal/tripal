@@ -525,7 +525,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     $run_args = [
       'files' => [
         0 => [
-          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_protein_generation.gff'
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_protein_generation.gff.gz'
         ]
       ],
       //Skip protein feature generation
@@ -552,7 +552,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     ];
 
     $file_details = [
-      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_protein_generation.gff',
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_protein_generation.gff.gz',
     ];
 
     $has_exception = false;
@@ -1244,7 +1244,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     $run_args = [
       'files' => [
         0 => [
-          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_Citrus_sinensis-orange1.1g015632m.g.gff3'
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_Citrus_sinensis-orange1.1g015632m.g.gff3.gz'
         ]
       ],
       'schema_name' => $schema_name,
@@ -1269,7 +1269,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     ];
 
     $file_details = [
-      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_Citrus_sinensis-orange1.1g015632m.g.gff3',
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_Citrus_sinensis-orange1.1g015632m.g.gff3.gz',
     ];
 
 
