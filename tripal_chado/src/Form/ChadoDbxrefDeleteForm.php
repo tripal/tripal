@@ -66,7 +66,7 @@ class ChadoDbxrefDeleteForm extends FormBase {
     // Get values of the CV term.
     $dbxref_records = $this->dbxref_buddy->getDbxref(['dbxref.dbxref_id' => $dbxref_id]);
     if (!$dbxref_records) {
-      throw new \Exception("Invalid dbxref_id \"$dbxref_id\" passed to " . $this->getFormId());
+      throw new \Exception("Invalid dbxref_id \"$dbxref_id\" passed to chado_dbxref_delete_form");
     }
     $dbxref_record = reset($dbxref_records);
 
@@ -120,20 +120,18 @@ class ChadoDbxrefDeleteForm extends FormBase {
       ];
       $form['submit'] = [
         '#type' => 'submit',
-        '#name' => 'delete',
-        '#value' => $this->t('Delete'),
+        '#value' => 'Delete',
       ];
     }
     $form['cancel'] = [
       '#type' => 'submit',
-      '#name' => 'cancel',
-      '#value' => $this->t('Cancel'),
+      '#value' => 'Cancel',
     ];
     return $form;
   }
 
   /**
-   * Form submit hook for the chado_dbxref_delete_form form.
+   * Form submit hook for the tripal_chado_dbxref_delete_form form.
    *
    * @param array &$form
    *   The form array definition.
@@ -143,7 +141,7 @@ class ChadoDbxrefDeleteForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $triggering_element = $form_state->getTriggeringElement();
 
-    if (($triggering_element['#name'] ?? '') == 'delete') {
+    if ($triggering_element['#value'] == 'Delete') {
       $dbxref_id = $form_state->getValue('dbxref_id');
       $db_name = $form_state->getValue('db_name');
       $dbxref_accession = $form_state->getValue('dbxref_accession');
