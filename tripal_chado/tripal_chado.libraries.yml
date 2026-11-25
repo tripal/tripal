@@ -60,3 +60,8 @@ tripal_chado-field-ui:
       css/tripal_chado.field_ui.css: {}
   dependencies:
     - 'field_ui/drupal.field_ui.manage_fields'
+
+tripal_chado.views:
+  css:
+    theme:
+      css/tripal_chado.views.css: {}

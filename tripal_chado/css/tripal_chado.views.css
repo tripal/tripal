@@ -1,0 +1,11 @@
+/**
+ * Used for styling in administrative drupal views.
+ */
+
+/**
+ * Remove the "+" icon from some navigation action links.
+ */
+.tripal-chado-view-action-link-no-plus::before {
+  content: none;
+  display: none;
+}

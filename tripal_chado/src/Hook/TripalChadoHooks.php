@@ -6,8 +6,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-
-use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\views\ViewExecutable;
 
 /**
  * Hook implementations for the Tripal Chado module.
@@ -128,6 +127,16 @@ class TripalChadoHooks {
     $definitions['tripal.content_type.*']['mapping']['third_party_settings']['mapping']['tripal']['mapping']
       = $tct_mapping;
 
+  }
+
+  /**
+   * Implements hook_views_pre_render().
+   *
+   * Attaches css to style views.
+   */
+  #[Hook('views_pre_render')]
+  public function viewsPreRender(ViewExecutable $view): void {
+    $view->element['#attached']['library'][] = 'tripal_chado/tripal_chado.views';
   }
 
   /**
@@ -740,7 +749,7 @@ class TripalChadoHooks {
    * Implements hook_field_formatter_info_alter().
    */
   #[Hook('field_formatter_info_alter')]
-  function fieldFormatterInfoAlter(array &$info) {
+  public function fieldFormatterInfoAlter(array &$info) {
     // Allows us the option to use Drupal's formatter for real numbers.
     if (isset($info['number_decimal'])) {
       $info['number_decimal']['field_types'][] = 'chado_real_type_default';
