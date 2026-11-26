@@ -42,18 +42,22 @@ class TripalCitationTypeWidget extends TripalWidgetBase {
       }
 
       foreach ($entity->get($field_name) as $publication_item) {
-        $pub_id = $publication_item->getValue()['pub_id'] ?? NULL;
+        $publication = $publication_item->getValue();
+        $pub_id = $publication['pub_id'] ?? NULL;
 
         if ($pub_id == '1') {
           continue;
         }
         if ($pub_id !== NULL && $pub_id !== '' && $pub_id !== 0 && $pub_id !== '0') {
-          $publications[$pub_id] = $publication_item->getValue()['pub_title'] ?? '';
+          $publications[$pub_id] = $publication['pub_title'] ?? '';
         }
       }
     }
 
     if (!empty($publications)) {
+      if ($value === '') {
+        $value = array_key_last($publications);
+      }
       $element['value'] = $element + [
         '#type' => 'select',
         '#title' => $this->t('Citation'),
@@ -64,9 +68,12 @@ class TripalCitationTypeWidget extends TripalWidgetBase {
     }
     else {
       $element['value'] = $element + [
+        '#type' => 'textarea',
+        '#rows' => 1,
+        '#disabled' => TRUE,
         '#title' => $this->t('Citation'),
-        '#markup' => 'A citation will be generated using the provided data and will be displayed once the content is created.',
       ];
+      $element['value']['#description'] = $this->t('A citation will be generated using the provided data and will be displayed once the content is created.');
     }
 
     return $element;
