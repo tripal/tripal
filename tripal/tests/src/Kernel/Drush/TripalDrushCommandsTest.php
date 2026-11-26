@@ -99,6 +99,7 @@ class TripalDrushCommandsTest extends TripalTestKernelBase {
       $this->container->get('entity_type.manager'),
       $this->container->get('tripal.tripalentitytype_collection'),
       $this->container->get('tripal.tripalfield_collection'),
+      $this->container->get('tripal.rebuild_service'),
       $this->container->get('tripal.sync_tripal_field_storage'),
     );
     $this->drush_command->setLogger($mock_logger);
