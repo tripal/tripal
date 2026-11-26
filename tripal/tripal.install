@@ -795,7 +795,7 @@ function tripal_tripal_admin_notifications_schema() {
         'not null' => TRUE,
       ],
       'actions' => [
-        'description' => 'Actions that can be performed on the notification, like disimissal or import.',
+        'description' => 'Actions that can be performed on the notification, e.g. dismissal or import.',
         'type' => 'text',
         'not null' => FALSE,
       ],

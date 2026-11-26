@@ -32,11 +32,16 @@ class BoolStoragePropertyType extends StoragePropertyTypeBase {
   /**
    * Returns the default empty value of the correct type for this property.
    *
-   * @return bool
-   *   A boolean FALSE value.
+   * Drupal uses integers for booleans for compatibility with various database
+   * engines. If we return a FALSE here, it may be replaced with an empty
+   * string when placeholders are substituted deep inside Drupal and Postgres
+   * will throw an exception.
+   *
+   * @return int
+   *   A boolean FALSE value encoded as an integer.
    */
   public function getDefaultValue() {
-    return FALSE;
+    return 0;
   }
 
 }

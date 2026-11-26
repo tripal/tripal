@@ -1,30 +1,34 @@
-(function ($) {
-  Drupal.behaviors.TripalFile = {
-    attach: function (context, settings) {
-      // Initialize the TripalUploader object.
-      var tripal_files = new TripalUploader();
+(function (Drupal, once) {
 
-      // All tables that belong to the html5-file form element should
-      // be enabled for uploading.
-      $('.tripal-html5-file-upload-table-key').each(function (index) {
-        // If we already attached functionality to the field, skip it
-        if ($(this).data('tripal.file')) {
+  Drupal.behaviors.TripalFile = {
+    attach(context, settings) {
+
+      const tripalFiles = new Drupal.TripalUploader();
+
+      once(
+        'tripal-file-init',
+        '.tripal-html5-file-upload-table-key',
+        context
+      ).forEach((element) => {
+
+        const id = element.value;
+
+        if (!id.trim()) {
           return;
         }
+        const [usage_id, usage_type, module] = id.split('-');
 
-        // Set the field status
-        $(this).data('tripal.file', true);
+        const settingsVarName =
+          `uploader_${usage_id}_${usage_type}_${module}`;
 
-        // The settings for this uploader are provided in a custom variable
-        // specific to the table. We can get the variable name by piecing
-        // together parts of the table ID.
-        var id                = $(this).val();
-        var details           = id.split('-');
-        var settings_var_name = 'uploader_' + details[0] + '_' + details[1] + '_' + details[2];
-
-        // Initialize the table for uploads.
-        tripal_files.addUploadTable(details[0] + '-' + details[1], settings.tripal[settings_var_name]);
+        if (settings.tripal?.[settingsVarName]) {
+          tripalFiles.addUploadTable(
+            `${usage_id}-${usage_type}`,
+            settings.tripal[settingsVarName]
+          );
+        }
       });
     }
   };
-})(jQuery);
+
+})(Drupal, once);

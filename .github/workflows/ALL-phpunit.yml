@@ -64,7 +64,7 @@ jobs:
       - name: 'Checkout Repository'
         uses: 'actions/checkout@v6'
       - name: 'Run Automated testing'
-        uses: 'tripal/test-tripal-action@v1.8'
+        uses: 'tripal/test-tripal-action@v1.9'
         with:
           directory-name: 'tripal'
           modules: ''

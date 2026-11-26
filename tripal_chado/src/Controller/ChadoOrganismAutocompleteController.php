@@ -135,7 +135,7 @@ class ChadoOrganismAutocompleteController extends ChadoGenericAutocompleteContro
       // A single "%" wildcard is used to indicate that we should return
       // all records. This is used for a form select element.
       if ($string != '%') {
-        $query->where("CONCAT_WS(' ', genus, species, name, infraspecific_name) ILIKE :value",
+        $query->where("CONCAT_WS(' ', genus, species, name, infraspecific_name)::text ILIKE :value",
             [':value' => $condition_value]);
       }
       $query->orderBy('organism', 'ASC');

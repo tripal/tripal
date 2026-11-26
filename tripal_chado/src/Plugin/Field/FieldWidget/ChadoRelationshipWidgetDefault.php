@@ -105,6 +105,8 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     }
     $element['term'] = [
       '#type' => 'textfield',
+      // Max for cvterm name is 1024, plus some for (cvterm_id).
+      '#maxlength' => 1036,
       '#required' => FALSE,
       '#default_value' => $term_autocomplete_default,
       '#disabled' => FALSE,
@@ -116,6 +118,8 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     // Related record
     $element['related_record'] = [
       '#type' => 'textfield',
+      // Relationship tables store only the integer, so a nice big limit here.
+      '#maxlength' => 8192,
       '#required' => FALSE,
       '#default_value' => $related_default,
       '#disabled' => FALSE,

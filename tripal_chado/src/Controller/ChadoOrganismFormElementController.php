@@ -109,7 +109,7 @@ class ChadoOrganismFormElementController extends ChadoGenericAutocompleteControl
       // Note: We don't need to trim here since this is a partial string
       // comparison.
       if ($string != '%') {
-        $query->where("CONCAT_WS(' ', genus, species, name, infraspecific_name) ILIKE :value",
+        $query->where("CONCAT_WS(' ', genus, species, name, infraspecific_name)::text ILIKE :value",
             [':value' => $condition_value]);
       }
       $query->orderBy('organism', 'ASC');

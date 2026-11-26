@@ -244,6 +244,8 @@ class ChadoPhylotreeVisWidgetDefault extends ChadoWidgetBase {
       $element['settings']['org_colors'][$i]['organism'] = [
         '#prefix' => '<div class="chado-phylotreevis-widget-settings-field-wrapper form-item">',
         '#type' => 'textfield',
+        // Sum of various columns plus three spaces.
+        '#maxlength' => 2561,
         '#description' => $this->t('Organism'),
         '#default_value' => $org_colors[$i]['organism'] ?? '',
         '#autocomplete_route_name' => 'tripal_chado.organism_autocomplete',

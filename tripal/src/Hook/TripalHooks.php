@@ -248,4 +248,18 @@ class TripalHooks {
     ];
   }
 
+  /**
+   * Implements hook_field_formatter_info_alter().
+   */
+  #[Hook('field_formatter_info_alter')]
+  function fieldFormatterInfoAlter(array &$info) {
+    // Allows us the option to use Drupal's formatter for real numbers.
+    if (isset($info['number_decimal'])) {
+      $info['number_decimal']['field_types'][] = 'tripal_real_type';
+    }
+    if (isset($info['number_float'])) {
+      $info['number_float']['field_types'][] = 'tripal_real_type';
+    }
+  }
+
 }

@@ -73,6 +73,18 @@ function tripal_chado_form_alter(&$form, FormStateInterface $form_state, $form_i
 }
 
 /**
+ * Implements hook_field_formatter_info_alter().
+ *
+ * This legacy hook is only run for Drupal < 11, and is replaced by class
+ * Drupal\tripal_chado\Hook\TripalChadoHooks in
+ * tripal/src/Hook/TripalChadoHooks.php.
+ */
+#[LegacyHook]
+function tripal_chado_field_formatter_info_alter(array &$info) {
+  return \Drupal::service('tripal_chado.hooks')->fieldFormatterInfoAlter($info);
+}
+
+/**
  * Implements hook_views_data_alter().
  *
  * This legacy hook is only run for Drupal < 11, and is replaced by class
