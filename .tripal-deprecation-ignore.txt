@@ -92,3 +92,9 @@
 # Deprecation: Using gin.theme is deprecated in drupal:11.5.0 and is removed from drupal:13.0.0. Use classes instead. See https://www.drupal.org/node/3581222
 # Example test that triggers this: testTripalAccessOwnContentCheck
 %.theme is deprecated in drupal:11.5.0 and is removed from drupal:13.0.0%
+
+# Module: Drupal 11.3, 11.4, 11.5
+# Location: /var/www/drupal/vendor/symfony/error-handler/DebugClassLoader.php:363
+# Deprecation: The "Drupal\Core\Template\Loader\FilesystemLoader::addPath()" method will require a new "bool $check" argument in the next major version of its parent class "Twig\Loader\FilesystemLoader", not defining it is deprecated.
+# Example test that triggers this: testTripalAccessOwnContentCheck
+%The "Drupal\\Core\\Template\\Loader\\FilesystemLoader::addPath\(\)" method will require a new "bool \$check" argument%
