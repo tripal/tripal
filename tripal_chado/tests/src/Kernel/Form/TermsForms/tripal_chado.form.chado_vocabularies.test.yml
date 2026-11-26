@@ -136,7 +136,7 @@
       'submit':
         '#value': 'Delete'
     'triggering_element':
-      '#name': 'delete'
+      '#value': 'Delete'
     'submit_expectations':
       'cv_id': 22
     'submit_output':
