@@ -18,7 +18,7 @@ abstract class ChadoFormatterBase extends TripalFormatterBase {
     $plugin_definition = $this->getPluginDefinition();
 
     // If specified in the annotation, provide a form element for the token string.
-    if (array_key_exists('valid_tokens', $plugin_definition)) {
+    if ($plugin_definition['valid_tokens'] ?? NULL) {
       $valid_tokens = $plugin_definition['valid_tokens'];
       $valid_tokens_str = '"' . implode('", "', $valid_tokens) . '"';
 
@@ -43,7 +43,7 @@ abstract class ChadoFormatterBase extends TripalFormatterBase {
     $summary = parent::settingsSummary();
     // If a settings form was specified in the annotation, provide the label for the settings cog.
     $plugin_definition = $this->getPluginDefinition();
-    if (array_key_exists('valid_tokens', $plugin_definition)) {
+    if ($plugin_definition['valid_tokens'] ?? NULL) {
       $summary[] = $this->t('Set display format');
     }
     return $summary;

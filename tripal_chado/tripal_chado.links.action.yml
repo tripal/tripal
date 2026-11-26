@@ -1,0 +1,39 @@
+# Management links for db and cv views.
+tripal_chado.chado_db_form:
+  route_name: 'tripal_chado.chado_db_form'
+  title: 'Add a new database'
+  appears_on:
+    - 'view.chado_databases.page_1'
+tripal_chado.chado_db_link:
+  route_name: 'view.chado_database_cross_references.page_1'
+  title: 'Database Accessions'
+  appears_on:
+    - 'view.chado_databases.page_1'
+  options:
+    attributes:
+      class:
+        - 'tripal-chado-view-action-link-no-plus'
+tripal_chado.chado_dbxref_form:
+  route_name: 'tripal_chado.chado_dbxref_form'
+  title: 'Add a new database cross reference'
+  appears_on:
+    - 'view.chado_database_cross_references.page_1'
+tripal_chado.chado_cv_form:
+  route_name: 'tripal_chado.chado_db_form'
+  title: 'Add a new vocabulary'
+  appears_on:
+    - 'view.chado_controlled_vocabularies.page_1'
+tripal_chado.chado_cvterm_link:
+  route_name: 'view.chado_controlled_vocabulary_terms.page_1'
+  title: 'Controlled Vocabulary Terms'
+  appears_on:
+    - 'view.chado_controlled_vocabularies.page_1'
+  options:
+    attributes:
+      class:
+        - 'tripal-chado-view-action-link-no-plus'
+tripal_chado.chado_cvterm_form:
+  route_name: 'tripal_chado.chado_cvterm_form'
+  title: 'Add a new vocabulary term'
+  appears_on:
+    - 'view.chado_controlled_vocabulary_terms.page_1'
