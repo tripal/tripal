@@ -657,7 +657,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     // If we've reached our interval then print update info.
     if ($ipercent > 0 and $ipercent != $this->reported and $ipercent % $this->interval == 0) {
       $now = time();
-      if ($now - $this->last_update_time > $this->update_interval) {
+      if ($now - $this->last_update_time >= $this->update_interval) {
         $memory = number_format(memory_get_usage());
         $spercent = sprintf("%.2f", $percent);
         $this->logger->notice(
