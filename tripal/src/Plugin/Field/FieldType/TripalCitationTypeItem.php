@@ -46,7 +46,6 @@ class TripalCitationTypeItem extends TripalFieldItemBase {
   public static function defaultStorageSettings() {
     $settings = [
       'storage_plugin_id' => 'drupal_sql_storage',
-      'max_length' => 255,
     ];
     return $settings + parent::defaultStorageSettings();
   }
@@ -89,10 +88,8 @@ class TripalCitationTypeItem extends TripalFieldItemBase {
       $term = $termIdSpace . ':' . $termAccession;
     }
 
-    $max_length = $storage_settings['max_length'] ?? 255;
-
     return [
-      new VarCharStoragePropertyType($entity_type_id, self::$id, "value", $term, $max_length),
+      new VarCharStoragePropertyType($entity_type_id, self::$id, "value", $term),
     ];
   }
 
