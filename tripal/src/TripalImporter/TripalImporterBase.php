@@ -88,6 +88,20 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   private $interval;
 
   /**
+   * The minimum number of seconds between percent progress messages.
+   *
+   * @var float
+   */
+  protected float $update_interval = 5;
+
+  /**
+   * The time that the last percent progress message was printed.
+   *
+   * @var float
+   */
+  protected float $last_update_time = 0;
+
+  /**
    * Each time the job progress is updated this variable gets set.  It is
    * used to calculate if the $interval has passed for the next update.
    */
@@ -642,18 +656,22 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
     // If we've reached our interval then print update info.
     if ($ipercent > 0 and $ipercent != $this->reported and $ipercent % $this->interval == 0) {
-      $memory = number_format(memory_get_usage());
-      $spercent = sprintf("%.2f", $percent);
-      $this->logger->notice(
-        t("Percent complete: " . $spercent . " %. Memory: " . $memory . " bytes.")
-         . "\r"
-      );
+      $now = time();
+      if ($now - $this->last_update_time >= $this->update_interval) {
+        $memory = number_format(memory_get_usage());
+        $spercent = sprintf("%.2f", $percent);
+        $this->logger->notice(
+          t("Percent complete: " . $spercent . " %. Memory: " . $memory . " bytes.")
+           . "\r"
+        );
+        $this->reported = $ipercent;
+        $this->last_update_time = $now;
 
-      // If we have a job then update the job progress too.
-      if ($this->job) {
-        $this->job->setProgress($percent);
+        // If we have a job then update the job progress too.
+        if ($this->job) {
+          $this->job->setProgress($percent);
+        }
       }
-      $this->reported = $ipercent;
     }
 
     // If we're done then indicate so.
@@ -696,6 +714,19 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    */
   protected function setInterval($interval) {
     $this->interval = $interval;
+  }
+
+  /**
+   * Updates the minimum time between percent progress messages.
+   *
+   * @param float $interval
+   *   A positive numeric value representing time in seconds.
+   *
+   * @return void
+   *   No return value.
+   */
+  protected function setUpdateInterval(float $interval): void {
+    $this->update_interval = $interval;
   }
 
   /**

@@ -723,6 +723,9 @@ class TripalImporterBaseTest extends TripalTestKernelBase {
       $this->setTotalItems(100);
       $this->setInterval(40);
 
+      // Set the minimum time to zero so it does not mask progress messages.
+      $this->setUpdateInterval(0);
+
       // Let's start by setting the number of items handled to 0.
       // At this point we expect a message to be logged saying 0% complete.
       ob_start();
