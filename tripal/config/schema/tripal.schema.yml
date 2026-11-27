@@ -142,6 +142,10 @@ field.field_settings.tripal_datetime_type:
   type: mapping
   mapping: {}
 
+field.field_settings.tripal_citation_type:
+  type: mapping
+  mapping: {}
+
 ## Field storage settings...
 field.storage_settings.tripal_boolean_type:
   type: mapping
@@ -185,6 +189,10 @@ field.storage_settings.tripal_datetime_type:
   type: mapping
   mapping: {}
 
+field.storage_settings.tripal_citation_type:
+  type: mapping
+  mapping: {}
+
 ## Field widget settings...
 field.widget.settings.default_tripal_boolean_type_widget:
   type: mapping
@@ -220,6 +228,10 @@ field.widget.settings.default_tripal_datetime_type_widget:
   type: mapping
   mapping: {}
 
+field.widget.settings.default_tripal_citation_type_widget:
+  type: mapping
+  mapping: {}
+
 ## Field formatter settings...
 field.formatter.settings.default_tripal_boolean_type_formatter:
   type: mapping
@@ -236,6 +248,14 @@ field.formatter.settings.default_tripal_boolean_type_formatter:
       type: string
       label: 'Hide condition'
       nullable: true
+
+field.formatter.settings.default_tripal_citation_type_formatter:
+  type: mapping
+  mapping:
+    citation_template:
+      type: text
+      label: 'Used only when no associated publication is available. Enter entity field machine names in square brackets, separated by the punctuation you want in the citation, for example [field1].[field2].[field3].'
+      nullable: false
 
 field.formatter.settings.default_tripal_integer_type_formatter:
   type: mapping
