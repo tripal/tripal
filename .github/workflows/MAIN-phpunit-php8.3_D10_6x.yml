@@ -1,5 +1,5 @@
 
-name: 'PHPUnit'
+name: 'PHPUnit 8.3 10.6.x 18'
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
     branches:
       - '4.x'
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '2 5 * * *'
 
 permissions: read-all
 

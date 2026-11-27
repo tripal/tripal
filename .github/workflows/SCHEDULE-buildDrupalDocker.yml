@@ -7,8 +7,8 @@ on:
   # Allows us to schedule when this workflow is run.
   # This ensures we pick up any new changes in Drupal.
   schedule:
-    # Run at 2am every night.
-    - cron: '0 2 * * *'
+    # Run at 2:11am UTC every night.
+    - cron: '11 2 * * *'
 
 permissions: read-all
 
