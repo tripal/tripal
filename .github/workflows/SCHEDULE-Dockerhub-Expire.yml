@@ -14,9 +14,9 @@ name: 'Remove obsolete images from DockerHub'
 on:
   # To allow manual run.
   workflow_dispatch:
-  # Run at 5am every morning, 1 hour after images are built.
+  # Run at 5:11am UTC every morning, about 1.5 hours after images are built.
   schedule:
-    - cron: '0 5 * * *'
+    - cron: '21 5 * * *'
 
 permissions: 'read-all'
 
