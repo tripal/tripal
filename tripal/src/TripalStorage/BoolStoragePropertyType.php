@@ -2,10 +2,12 @@
 
 namespace Drupal\tripal\TripalStorage;
 
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
+
 /**
  * Defines the boolean Tripal storage property type.
  */
-class BoolStoragePropertyType extends StoragePropertyTypeBase {
+class BoolStoragePropertyType extends StoragePropertyTypeBase implements TripalStoragePropertyTypeInterface {
 
   /**
    * Constructs a new boolean tripal storage property type.

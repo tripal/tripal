@@ -2,10 +2,12 @@
 
 namespace Drupal\tripal\TripalStorage;
 
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
+
 /**
  * Defines the integer Tripal storage property type.
  */
-class IntStoragePropertyType extends StoragePropertyTypeBase {
+class IntStoragePropertyType extends StoragePropertyTypeBase implements TripalStoragePropertyTypeInterface {
 
   /**
    * Constructs a new integer tripal storage property type.

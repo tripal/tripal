@@ -2,10 +2,12 @@
 
 namespace Drupal\tripal\TripalStorage;
 
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
+
 /**
  * Base class for a Tripal storage property type.
  */
-class StoragePropertyTypeBase extends StoragePropertyBase {
+class StoragePropertyTypeBase extends StoragePropertyBase implements TripalStoragePropertyTypeInterface {
 
   /**
    * Indicate if this property should be stored in the Drupal field tables.
@@ -14,7 +16,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *   TRUE if this property should be saved in the Drupal field table, and
    *   FALSE otherwise.
    */
-  public bool $cache_status;
+  public bool $cache_status = TRUE;
 
   /**
    * Constructs a new tripal storage property type base.
@@ -47,7 +49,6 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
     $this->sortable = TRUE;
     $this->readOnly_ = FALSE;
     $this->required = FALSE;
-    $this->cache_status = TRUE;
     $this->storage_settings = $storage_settings;
   }
 
@@ -272,11 +273,22 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   }
 
   /**
+   * Returns the default value of this storage property type.
+   *
+   * @return mixed
+   *   The default value.
+   */
+  public function getDefaultValue() {
+    $class_name = get_class($this);
+    throw new \Exception("$class_name::getDefaultValue() was not implemented; thus this exception was thrown by the parent class. Please implement this method and return a default value of the correct primitive type for this property type.");
+  }
+
+  /**
    * The id of this storage property type base.
    *
    * @var string
    */
-  private $id;
+  protected $id;
 
   /**
    * The cardinality of this storage property type base.
@@ -287,7 +299,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @var bool
    */
-  private $cardinality;
+  protected $cardinality;
 
   /**
    * The searchability of this storage property type base.
@@ -298,7 +310,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @var bool
    */
-  private $searchability;
+  protected $searchability;
 
   /**
    * The supported operations of this storage property type base.
@@ -309,7 +321,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @var array
    */
-  private $operations;
+  protected $operations;
 
   /**
    * The sortable property of this storage property type base.
@@ -320,7 +332,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @var bool
    */
-  private $sortable;
+  protected $sortable;
 
   /**
    * The read only property of this storage property type base.
@@ -331,7 +343,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @var bool
    */
-  private $readOnly_;
+  protected $readOnly_;
 
   /**
    * The required of this storage property type base.
@@ -342,13 +354,13 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @var bool
    */
-  private $required;
+  protected $required;
 
   /**
    * An array of elements required for this property by the storage backend.
    *
    * @var array
    */
-  private $storage_settings;
+  protected $storage_settings;
 
 }

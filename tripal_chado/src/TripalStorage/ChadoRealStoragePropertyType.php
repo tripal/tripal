@@ -2,12 +2,13 @@
 
 namespace Drupal\tripal_chado\TripalStorage;
 
+use Drupal\tripal\TripalStorage\Interfaces\TripalStoragePropertyTypeInterface;
 use Drupal\tripal\TripalStorage\RealStoragePropertyType;
 
 /**
  * Defines the real (floating point) number Tripal storage property type.
  */
-class ChadoRealStoragePropertyType extends RealStoragePropertyType {
+class ChadoRealStoragePropertyType extends RealStoragePropertyType implements TripalStoragePropertyTypeInterface {
 
   /**
    * Constructs a new real tripal storage property type.
